@@ -472,5 +472,123 @@ export class SeedService {
     console.log(`   - Created ${concepts.length + examples.length + hiddenRewards.length + 1} content items`);
     console.log(`   - Created ${savedQuestions.length} sample questions for placement test`);
   }
+
+  /**
+   * Seed Learning Nodes cho một subject
+   * @param subjectId - ID của subject cần seed nodes
+   * @param nodesData - Mảng các node data
+   */
+  async seedLearningNodesForSubject(
+    subjectId: string,
+    nodesData: Array<{
+      title: string;
+      description: string;
+      order: number;
+      prerequisites?: string[];
+      icon?: string;
+      concepts?: Array<{ title: string; content: string }>;
+      examples?: Array<{ title: string; content: string; media?: any }>;
+    }>,
+  ): Promise<void> {
+    console.log(`🌱 Seeding Learning Nodes for subject: ${subjectId}`);
+
+    const subject = await this.subjectRepository.findOne({
+      where: { id: subjectId },
+    });
+
+    if (!subject) {
+      throw new Error(`Subject with ID ${subjectId} not found`);
+    }
+
+    const savedNodes: LearningNode[] = [];
+
+    for (const nodeData of nodesData) {
+      // Tạo Learning Node
+      const node = this.nodeRepository.create({
+        subjectId,
+        title: nodeData.title,
+        description: nodeData.description,
+        order: nodeData.order,
+        prerequisites: nodeData.prerequisites || [],
+        contentStructure: {
+          concepts: nodeData.concepts?.length || 0,
+          examples: nodeData.examples?.length || 0,
+          hiddenRewards: 3,
+          bossQuiz: 1,
+        },
+        metadata: {
+          icon: nodeData.icon || '📚',
+          position: { x: (nodeData.order - 1) * 100, y: 0 },
+        },
+      });
+
+      const savedNode = await this.nodeRepository.save(node);
+      savedNodes.push(savedNode);
+
+      // Cập nhật prerequisites nếu cần
+      if (savedNodes.length > 1 && !nodeData.prerequisites) {
+        const prevNode = savedNodes[savedNodes.length - 2];
+        savedNode.prerequisites = [prevNode.id];
+        await this.nodeRepository.save(savedNode);
+      }
+
+      // Tạo Concepts
+      if (nodeData.concepts) {
+        for (let i = 0; i < nodeData.concepts.length; i++) {
+          const concept = this.contentItemRepository.create({
+            nodeId: savedNode.id,
+            type: 'concept',
+            title: nodeData.concepts[i].title,
+            content: nodeData.concepts[i].content,
+            order: i + 1,
+            rewards: { xp: 10, coin: 1 },
+          });
+          await this.contentItemRepository.save(concept);
+        }
+      }
+
+      // Tạo Examples
+      if (nodeData.examples) {
+        for (let i = 0; i < nodeData.examples.length; i++) {
+          const example = this.contentItemRepository.create({
+            nodeId: savedNode.id,
+            type: 'example',
+            title: nodeData.examples[i].title,
+            content: nodeData.examples[i].content,
+            media: nodeData.examples[i].media,
+            order: i + 1,
+            rewards: { xp: 15, coin: 2 },
+          });
+          await this.contentItemRepository.save(example);
+        }
+      }
+
+      // Tạo Boss Quiz
+      const bossQuiz = this.contentItemRepository.create({
+        nodeId: savedNode.id,
+        type: 'boss_quiz',
+        title: `Boss Quiz: ${nodeData.title}`,
+        content: `Kiểm tra kiến thức về ${nodeData.title}`,
+        order: 100,
+        quizData: {
+          question: `Câu hỏi về ${nodeData.title}?`,
+          options: [
+            'A. Đáp án 1',
+            'B. Đáp án 2',
+            'C. Đáp án 3',
+            'D. Đáp án 4',
+          ],
+          correctAnswer: 0,
+          explanation: 'Giải thích đáp án đúng',
+        },
+        rewards: { xp: 50, coin: 10 },
+      });
+      await this.contentItemRepository.save(bossQuiz);
+
+      console.log(`✅ Created node: ${nodeData.title}`);
+    }
+
+    console.log(`✅ Successfully seeded ${savedNodes.length} Learning Nodes!`);
+  }
 }
 

@@ -55,7 +55,46 @@ export class RoadmapService {
     const onboardingData = user.onboardingData || {};
 
     // Get all nodes for this subject
-    const nodes = await this.nodesService.findBySubject(subjectId);
+    let nodes = await this.nodesService.findBySubject(subjectId);
+    
+    // ✅ Nếu chưa có nodes, tự động tạo bằng AI
+    if (nodes.length === 0) {
+      console.log(`⚠️  No learning nodes found for subject "${subject.name}". Auto-generating with AI...`);
+      
+      try {
+        // Tự động tạo 10-15 nodes tùy theo subject
+        const numberOfNodes = 12; // Có thể điều chỉnh dựa trên subject type
+        
+        // Lấy thông tin từ onboarding để tạo nodes phù hợp hơn
+        const subjectName = subject.name;
+        const subjectDescription = subject.description;
+        
+        // Nếu có topics từ metadata hoặc description, extract ra
+        let topics: string[] | undefined;
+        if (subject.metadata && (subject.metadata as any).topics) {
+          topics = (subject.metadata as any).topics;
+        }
+        
+        // Tự động tạo nodes bằng AI
+        const generatedNodes = await this.nodesService.generateNodesFromRawData(
+          subjectId,
+          subjectName,
+          subjectDescription,
+          topics,
+          numberOfNodes,
+        );
+        
+        nodes = generatedNodes;
+        console.log(`✅ Auto-generated ${nodes.length} Learning Nodes for "${subjectName}"`);
+      } catch (error) {
+        console.error('❌ Error auto-generating learning nodes:', error);
+        throw new BadRequestException(
+          `Failed to generate learning nodes for this subject. Please try again later. Error: ${error.message}`,
+        );
+      }
+    }
+    
+    // Đảm bảo có ít nhất 1 node
     if (nodes.length === 0) {
       throw new BadRequestException('No learning nodes available for this subject');
     }

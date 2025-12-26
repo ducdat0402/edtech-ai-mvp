@@ -41,6 +41,10 @@ export class QuestsService {
     // Update progress for each quest
     const updatedQuests = await Promise.all(
       userQuests.map(async (userQuest) => {
+        if (!userQuest.quest) {
+          return null;
+        }
+        
         const progress = await this.calculateQuestProgress(
           userId,
           userQuest.quest,
@@ -52,7 +56,7 @@ export class QuestsService {
           id: userQuest.id,
           quest: userQuest.quest,
           progress,
-          target: userQuest.quest.requirements.target,
+          target: userQuest.quest.requirements?.target || 0,
           status: userQuest.status,
           completedAt: userQuest.completedAt,
           claimedAt: userQuest.claimedAt,
@@ -60,7 +64,7 @@ export class QuestsService {
       }),
     );
 
-    return updatedQuests;
+    return updatedQuests.filter((quest) => quest !== null);
   }
 
   private async generateDailyQuests(
@@ -155,6 +159,10 @@ export class QuestsService {
     userId: string,
     quest: Quest,
   ): Promise<number> {
+    if (!quest || !quest.type) {
+      return 0;
+    }
+    
     switch (quest.type) {
       case QuestType.COMPLETE_ITEMS:
         // Count completed items today
@@ -225,21 +233,23 @@ export class QuestsService {
     });
 
     for (const userQuest of userQuests) {
-      if (userQuest.quest.type === questType) {
-        userQuest.progress += amount;
-
-        // Check if completed
-        const target = userQuest.quest.requirements.target || 0;
-        if (
-          userQuest.progress >= target &&
-          userQuest.status === QuestStatus.ACTIVE
-        ) {
-          userQuest.status = QuestStatus.COMPLETED;
-          userQuest.completedAt = new Date();
-        }
-
-        await this.userQuestRepository.save(userQuest);
+      if (!userQuest.quest || userQuest.quest.type !== questType) {
+        continue;
       }
+      
+      userQuest.progress += amount;
+
+      // Check if completed
+      const target = userQuest.quest.requirements?.target || 0;
+      if (
+        userQuest.progress >= target &&
+        userQuest.status === QuestStatus.ACTIVE
+      ) {
+        userQuest.status = QuestStatus.COMPLETED;
+        userQuest.completedAt = new Date();
+      }
+
+      await this.userQuestRepository.save(userQuest);
     }
   }
 
@@ -264,15 +274,19 @@ export class QuestsService {
       throw new Error('Reward already claimed');
     }
 
+    if (!userQuest.quest) {
+      throw new Error('Quest data not found');
+    }
+
     // Apply rewards
     const rewards = userQuest.quest.rewards;
-    if (rewards.xp) {
+    if (rewards?.xp) {
       await this.currencyService.addXP(userId, rewards.xp);
     }
-    if (rewards.coin) {
+    if (rewards?.coin) {
       await this.currencyService.addCoins(userId, rewards.coin);
     }
-    if (rewards.shard && rewards.shardAmount) {
+    if (rewards?.shard && rewards?.shardAmount) {
       await this.currencyService.addShard(
         userId,
         rewards.shard,

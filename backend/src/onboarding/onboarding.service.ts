@@ -7,6 +7,14 @@ interface ConversationSession {
   userId: string;
   messages: Array<{ role: string; content: string }>;
   extractedData: {
+    // New fields
+    nickname?: string;
+    age?: number;
+    currentLevel?: string;
+    subject?: string; // Ngành học/chủ đề chính
+    targetGoal?: string;
+    dailyTime?: number;
+    // Legacy fields
     fullName?: string;
     phone?: string;
     interests?: string[];
@@ -14,6 +22,7 @@ interface ConversationSession {
     experienceLevel?: string;
   };
   completed: boolean;
+  turnCount: number;
 }
 
 @Injectable()
@@ -39,6 +48,7 @@ export class OnboardingService {
         ],
         extractedData: {},
         completed: false,
+        turnCount: 0,
       });
     }
 
@@ -61,19 +71,42 @@ export class OnboardingService {
         session.messages,
       );
       session.extractedData = { ...session.extractedData, ...extracted };
+      
+      // ✅ Save onboarding data ngay khi có targetGoal (không cần đợi completed)
+      if (extracted.targetGoal) {
+        console.log(`💾 Saving targetGoal to user profile: "${extracted.targetGoal}"`);
+        await this.usersService.updateOnboardingData(
+          userId,
+          session.extractedData,
+        );
+      }
     }
+
+    // Calculate slots filled
+    const slotsFilled = {
+      nickname: !!session.extractedData.nickname,
+      age: !!session.extractedData.age,
+      currentLevel: !!session.extractedData.currentLevel,
+      targetGoal: !!session.extractedData.targetGoal,
+      dailyTime: !!session.extractedData.dailyTime,
+    };
+
+    // Increment turn count
+    session.turnCount++;
 
     // Generate AI response
     const aiResponse = await this.aiService.generateOnboardingResponse(
       chatDto.message,
       session.messages.slice(0, -1), // All messages except the last one
       session.extractedData,
+      session.turnCount,
+      slotsFilled,
     );
 
     // Add AI response to history
     session.messages.push({
       role: 'assistant',
-      content: aiResponse,
+      content: aiResponse.response,
     });
 
     // Check if onboarding is complete (has name and at least one interest)
@@ -101,11 +134,14 @@ export class OnboardingService {
     }
 
     return {
-      response: aiResponse,
+      response: aiResponse.response,
       sessionId: chatDto.sessionId || userId,
       extractedData: session.extractedData,
-      completed: session.completed,
+      completed: session.completed || aiResponse.shouldTerminate,
       conversationHistory: session.messages,
+      shouldTerminate: aiResponse.shouldTerminate,
+      canProceed: aiResponse.canProceed,
+      missingSlots: aiResponse.missingSlots,
     };
   }
 

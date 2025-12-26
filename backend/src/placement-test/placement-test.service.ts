@@ -1,9 +1,11 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PlacementTest, TestStatus, DifficultyLevel } from './entities/placement-test.entity';
 import { Question } from './entities/question.entity';
 import { UsersService } from '../users/users.service';
+import { SubjectsService } from '../subjects/subjects.service';
+import { AiService } from '../ai/ai.service';
 
 @Injectable()
 export class PlacementTestService {
@@ -13,6 +15,9 @@ export class PlacementTestService {
     @InjectRepository(Question)
     private questionRepository: Repository<Question>,
     private usersService: UsersService,
+    @Inject(forwardRef(() => SubjectsService))
+    private subjectsService: SubjectsService,
+    private aiService: AiService,
   ) {}
 
   async startTest(userId: string, subjectId?: string): Promise<PlacementTest> {
@@ -24,30 +29,165 @@ export class PlacementTestService {
       },
     });
 
+    // ✅ Nếu có test cũ, complete nó trước khi tạo test mới
     if (existingTest) {
-      return existingTest;
+      console.log(`⚠️  Found existing test, completing it first...`);
+      existingTest.status = TestStatus.COMPLETED;
+      existingTest.completedAt = new Date();
+      await this.testRepository.save(existingTest);
+      console.log(`✅ Completed old test`);
     }
 
-    // Get questions based on subject (or general if no subject)
-    // Use 5-10 questions depending on availability
-    const questions = await this.getQuestionsForTest(subjectId, 10);
+    // ✅ Nếu không có subjectId, determine từ user's onboarding data
+    if (!subjectId) {
+      try {
+        const user = await this.usersService.findById(userId);
+        const onboardingData = user?.onboardingData || {};
+        const subject = onboardingData.subject; // Ngành học
+        const targetGoal = onboardingData.targetGoal;
+        
+        console.log(`🔍 User onboarding data:`, JSON.stringify(onboardingData, null, 2));
+        console.log(`🔍 Subject (ngành học): "${subject}"`);
+        console.log(`🔍 Target goal: "${targetGoal}"`);
+        
+        // Ưu tiên: Sử dụng subject (ngành học) nếu có
+        if (subject) {
+          console.log(`🔍 Determining subject ID from subject: "${subject}"`);
+          subjectId = await this.determineSubjectFromTargetGoal(subject);
+          if (subjectId) {
+            console.log(`✅ Found subject ID: ${subjectId}`);
+          } else {
+            console.log(`⚠️  Could not determine subject ID from subject: "${subject}"`);
+          }
+        }
+        
+        // Fallback: Nếu không có subject, thử từ targetGoal
+        if (!subjectId && targetGoal) {
+          console.log(`🔍 Fallback: Determining subject from targetGoal: "${targetGoal}"`);
+          subjectId = await this.determineSubjectFromTargetGoal(targetGoal);
+          if (subjectId) {
+            console.log(`✅ Found subject ID from targetGoal: ${subjectId}`);
+          } else {
+            console.log(`⚠️  Could not determine subject from targetGoal: "${targetGoal}"`);
+          }
+        }
+        
+        if (!subjectId) {
+          console.log(`⚠️  No subject found, will generate questions from subject/targetGoal`);
+        }
+      } catch (error) {
+        console.error('❌ Error determining subject from onboarding:', error);
+        // Continue without subjectId
+      }
+    }
+
+    // ✅ Progressive Generation Strategy:
+    // 1. Generate first question immediately
+    // 2. Create test with first question
+    // 3. Return immediately so user can start
+    // 4. Generate remaining 9 questions in background
     
-    if (questions.length === 0) {
-      throw new BadRequestException('No questions available for placement test. Please seed the database first.');
+    const TOTAL_QUESTIONS = 10;
+    let firstQuestion: Question | null = null;
+    let subjectName: string | undefined;
+    
+    // Determine subjectName for background generation
+    if (!subjectId) {
+      try {
+        const user = await this.usersService.findById(userId);
+        const onboardingData = user?.onboardingData || {};
+        subjectName = onboardingData.subject;
+        if (!subjectName && onboardingData.targetGoal) {
+          subjectName = this.extractSubjectFromTargetGoal(onboardingData.targetGoal);
+        }
+      } catch (error) {
+        console.error('❌ Error getting user data:', error);
+      }
+    }
+    
+    // Try to get first question from existing questions (only 1 question, not all 10)
+    try {
+      if (subjectName) {
+        // Try to find one existing question with this subject
+        const allNullSubjectQuestions = await this.questionRepository.find({
+          where: { subjectId: null },
+          take: 20,
+          order: { createdAt: 'DESC' },
+        });
+        
+        const subjectQuestions = allNullSubjectQuestions.filter(q => {
+          const metadata = q.metadata as any;
+          const qSubject = (metadata?.subject || metadata?.targetGoal || '').toLowerCase();
+          const userSubject = subjectName.toLowerCase();
+          if (!qSubject) return false;
+          return qSubject.includes(userSubject) || userSubject.includes(qSubject);
+        });
+        
+        if (subjectQuestions.length > 0) {
+          firstQuestion = subjectQuestions[0];
+          console.log(`✅ Found existing first question for subject: ${subjectName}`);
+        }
+      } else if (subjectId) {
+        // Try to get one question from DB
+        const dbQuestions = await this.getQuestionsForTest(subjectId, 1);
+        if (dbQuestions.length > 0) {
+          firstQuestion = dbQuestions[0];
+          console.log(`✅ Found existing first question for subjectId: ${subjectId}`);
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error finding existing question:', error);
+    }
+    
+    // If no existing question, generate first one immediately
+    if (!firstQuestion) {
+      // Generate first question immediately
+      console.log(`🚀 Generating first question immediately...`);
+      try {
+        if (subjectName) {
+          const generated = await this.generateQuestionsFromTargetGoal(subjectName, 1);
+          if (generated.length > 0) {
+            firstQuestion = generated[0];
+            console.log(`✅ Generated first question about ${subjectName}`);
+          }
+        } else if (subjectId) {
+          const subject = await this.subjectsService.findById(subjectId);
+          if (subject) {
+            const generated = await this.generateQuestionsWithAI(subjectId, 1);
+            if (generated.length > 0) {
+              firstQuestion = generated[0];
+              console.log(`✅ Generated first question for subject ${subject.name}`);
+            }
+          }
+        } else {
+          // Fallback: get one general question
+          const generalQuestions = await this.getQuestionsForTest(undefined, 1);
+          if (generalQuestions.length > 0) {
+            firstQuestion = generalQuestions[0];
+            console.log(`✅ Using general first question`);
+          }
+        }
+      } catch (error) {
+        console.error('❌ Error generating first question:', error);
+      }
+    }
+    
+    if (!firstQuestion) {
+      throw new BadRequestException('Failed to generate first question. Please try again.');
     }
 
-    // Create test
+    // Create test with first question only
     const test = this.testRepository.create({
       userId,
       subjectId: subjectId || null,
       status: TestStatus.IN_PROGRESS,
-      questions: questions.map((q) => ({
-        questionId: q.id,
-        question: q.question,
-        options: q.options,
-        correctAnswer: q.correctAnswer,
-        difficulty: q.difficulty,
-      })),
+      questions: [{
+        questionId: firstQuestion.id,
+        question: firstQuestion.question,
+        options: firstQuestion.options,
+        correctAnswer: firstQuestion.correctAnswer,
+        difficulty: firstQuestion.difficulty,
+      }],
       currentQuestionIndex: 0,
       adaptiveData: {
         currentDifficulty: DifficultyLevel.BEGINNER,
@@ -59,7 +199,24 @@ export class PlacementTestService {
       startedAt: new Date(),
     });
 
-    return this.testRepository.save(test);
+    const savedTest = await this.testRepository.save(test);
+    
+    console.log(`✅ Created test with first question. Total will be ${TOTAL_QUESTIONS} questions.`);
+    
+    // ✅ Generate remaining questions in background (non-blocking)
+    // Pass empty array since we only have first question, need to generate 9 more
+    this.generateRemainingQuestionsInBackground(
+      savedTest.id,
+      userId,
+      subjectId,
+      subjectName,
+      [], // No existing questions beyond first one
+      TOTAL_QUESTIONS,
+    ).catch(error => {
+      console.error('❌ Error generating remaining questions in background:', error);
+    });
+    
+    return savedTest;
   }
 
   async getCurrentTest(userId: string): Promise<PlacementTest | null> {
@@ -77,16 +234,66 @@ export class PlacementTestService {
     question: any;
     progress: { current: number; total: number };
   }> {
-    const test = await this.getCurrentTest(userId);
+    let test = await this.getCurrentTest(userId);
     if (!test) {
       throw new NotFoundException('No active test found');
     }
 
-    if (test.currentQuestionIndex >= test.questions.length) {
+    const TOTAL_QUESTIONS = 10;
+    const currentIndex = test.currentQuestionIndex;
+    
+    // Check if current question exists
+    if (currentIndex >= test.questions.length) {
+      // Question not ready yet, try to generate it immediately
+      console.log(`⚠️  Question ${currentIndex + 1} not ready yet, generating immediately...`);
+      
+      try {
+        const user = await this.usersService.findById(userId);
+        const onboardingData = user?.onboardingData || {};
+        const subjectName = onboardingData.subject;
+        const subjectId = test.subjectId;
+        
+        let newQuestion: Question | null = null;
+        if (subjectName) {
+          const generated = await this.generateQuestionsFromTargetGoal(subjectName, 1);
+          if (generated.length > 0) newQuestion = generated[0];
+        } else if (subjectId) {
+          const subject = await this.subjectsService.findById(subjectId);
+          if (subject) {
+            const generated = await this.generateQuestionsWithAI(subjectId, 1);
+            if (generated.length > 0) newQuestion = generated[0];
+          }
+        }
+        
+        if (newQuestion) {
+          // Add to test
+          test.questions.push({
+            questionId: newQuestion.id,
+            question: newQuestion.question,
+            options: newQuestion.options,
+            correctAnswer: newQuestion.correctAnswer,
+            difficulty: newQuestion.difficulty,
+          });
+          await this.testRepository.save(test);
+          console.log(`✅ Generated question ${currentIndex + 1} immediately`);
+        }
+      } catch (error) {
+        console.error('❌ Error generating question immediately:', error);
+        throw new BadRequestException(`Question ${currentIndex + 1} is not ready yet. Please wait a moment.`);
+      }
+      
+      // Reload test
+      test = await this.getCurrentTest(userId);
+      if (!test || currentIndex >= test.questions.length) {
+        throw new BadRequestException(`Question ${currentIndex + 1} is not ready yet. Please wait a moment.`);
+      }
+    }
+
+    if (currentIndex >= TOTAL_QUESTIONS) {
       throw new BadRequestException('Test already completed');
     }
 
-    const currentQuestion = test.questions[test.currentQuestionIndex];
+    const currentQuestion = test.questions[currentIndex];
     const question = await this.questionRepository.findOne({
       where: { id: currentQuestion.questionId },
     });
@@ -100,8 +307,8 @@ export class PlacementTestService {
         difficulty: currentQuestion.difficulty,
       },
       progress: {
-        current: test.currentQuestionIndex + 1,
-        total: test.questions.length,
+        current: currentIndex + 1,
+        total: TOTAL_QUESTIONS, // Always show total as 10
       },
     };
   }
@@ -115,17 +322,63 @@ export class PlacementTestService {
     explanation?: string;
     nextQuestion?: any;
     completed: boolean;
+    progress: { current: number; total: number };
   }> {
-    const test = await this.getCurrentTest(userId);
+    const TOTAL_QUESTIONS = 10;
+    let test = await this.getCurrentTest(userId);
     if (!test) {
       throw new NotFoundException('No active test found');
     }
 
-    if (test.currentQuestionIndex >= test.questions.length) {
+    const currentIndex = test.currentQuestionIndex;
+    
+    // Ensure current question exists
+    if (currentIndex >= test.questions.length) {
+      // Try to generate it immediately
+      try {
+        const user = await this.usersService.findById(userId);
+        const onboardingData = user?.onboardingData || {};
+        const subjectName = onboardingData.subject;
+        const subjectId = test.subjectId;
+        
+        let newQuestion: Question | null = null;
+        if (subjectName) {
+          const generated = await this.generateQuestionsFromTargetGoal(subjectName, 1);
+          if (generated.length > 0) newQuestion = generated[0];
+        } else if (subjectId) {
+          const subject = await this.subjectsService.findById(subjectId);
+          if (subject) {
+            const generated = await this.generateQuestionsWithAI(subjectId, 1);
+            if (generated.length > 0) newQuestion = generated[0];
+          }
+        }
+        
+        if (newQuestion) {
+          test.questions.push({
+            questionId: newQuestion.id,
+            question: newQuestion.question,
+            options: newQuestion.options,
+            correctAnswer: newQuestion.correctAnswer,
+            difficulty: newQuestion.difficulty,
+          });
+          await this.testRepository.save(test);
+        }
+      } catch (error) {
+        console.error('❌ Error generating question:', error);
+      }
+      
+      // Reload test
+      test = await this.getCurrentTest(userId);
+      if (!test || currentIndex >= test.questions.length) {
+        throw new BadRequestException('Current question is not ready yet. Please wait a moment.');
+      }
+    }
+
+    if (currentIndex >= test.questions.length) {
       throw new BadRequestException('Test already completed');
     }
 
-    const currentQuestion = test.questions[test.currentQuestionIndex];
+    const currentQuestion = test.questions[currentIndex];
     const isCorrect = answer === currentQuestion.correctAnswer;
 
     // Update question with answer
@@ -158,8 +411,8 @@ export class PlacementTestService {
     // Move to next question
     test.currentQuestionIndex++;
 
-    // Check if completed
-    const completed = test.currentQuestionIndex >= test.questions.length;
+    // Check if completed (always 10 questions total)
+    const completed = test.currentQuestionIndex >= TOTAL_QUESTIONS;
 
     if (completed) {
       // Calculate score and level
@@ -199,20 +452,77 @@ export class PlacementTestService {
       isCorrect,
       explanation: question?.explanation,
       completed,
+      progress: {
+        current: savedTest.currentQuestionIndex + 1,
+        total: TOTAL_QUESTIONS,
+      },
     };
 
-    // If not completed, get next question
+    // If not completed, get next question (or generate if not ready)
     if (!completed) {
-      const nextQuestion = savedTest.questions[savedTest.currentQuestionIndex];
-      const nextQuestionData = await this.questionRepository.findOne({
-        where: { id: nextQuestion.questionId },
-      });
-      result.nextQuestion = {
-        id: nextQuestionData.id,
-        question: nextQuestion.question,
-        options: nextQuestion.options,
-        difficulty: nextQuestion.difficulty,
-      };
+      const nextIndex = savedTest.currentQuestionIndex;
+      
+      // Check if next question exists
+      if (nextIndex < savedTest.questions.length) {
+        const nextQuestion = savedTest.questions[nextIndex];
+        const nextQuestionData = await this.questionRepository.findOne({
+          where: { id: nextQuestion.questionId },
+        });
+        if (nextQuestionData) {
+          result.nextQuestion = {
+            id: nextQuestionData.id,
+            question: nextQuestion.question,
+            options: nextQuestion.options,
+            difficulty: nextQuestion.difficulty,
+          };
+        }
+      } else {
+        // Next question not ready yet, try to generate it
+        console.log(`⚠️  Next question ${nextIndex + 1} not ready, generating immediately...`);
+        try {
+          const user = await this.usersService.findById(userId);
+          const onboardingData = user?.onboardingData || {};
+          const subjectName = onboardingData.subject;
+          const subjectId = savedTest.subjectId;
+          
+          let newQuestion: Question | null = null;
+          if (subjectName) {
+            const generated = await this.generateQuestionsFromTargetGoal(subjectName, 1);
+            if (generated.length > 0) newQuestion = generated[0];
+          } else if (subjectId) {
+            const subject = await this.subjectsService.findById(subjectId);
+            if (subject) {
+              const generated = await this.generateQuestionsWithAI(subjectId, 1);
+              if (generated.length > 0) newQuestion = generated[0];
+            }
+          }
+          
+          if (newQuestion) {
+            // Add to test
+            savedTest.questions.push({
+              questionId: newQuestion.id,
+              question: newQuestion.question,
+              options: newQuestion.options,
+              correctAnswer: newQuestion.correctAnswer,
+              difficulty: newQuestion.difficulty,
+            });
+            await this.testRepository.save(savedTest);
+            
+            result.nextQuestion = {
+              id: newQuestion.id,
+              question: newQuestion.question,
+              options: newQuestion.options,
+              difficulty: newQuestion.difficulty,
+            };
+            console.log(`✅ Generated next question immediately`);
+          } else {
+            result.nextQuestion = null; // Will show loading in frontend
+          }
+        } catch (error) {
+          console.error('❌ Error generating next question:', error);
+          result.nextQuestion = null; // Will show loading in frontend
+        }
+      }
     }
 
     return result;
@@ -266,6 +576,382 @@ export class PlacementTestService {
     }
 
     return questions.slice(0, count);
+  }
+
+  /**
+   * Extract ngành học từ targetGoal
+   * Ví dụ: "chơi bài tori no uta" → "piano"
+   */
+  private extractSubjectFromTargetGoal(targetGoal: string): string | undefined {
+    if (!targetGoal) return undefined;
+    
+    const goal = targetGoal.toLowerCase();
+    
+    // Keyword mapping để extract ngành học
+    const subjectKeywords: { keywords: string[]; subject: string }[] = [
+      { keywords: ['piano', 'đàn piano'], subject: 'piano' },
+      { keywords: ['guitar', 'đàn guitar'], subject: 'guitar' },
+      { keywords: ['violin', 'đàn violin'], subject: 'violin' },
+      { keywords: ['drum', 'trống'], subject: 'drum' },
+      { keywords: ['nhạc', 'âm nhạc', 'music'], subject: 'music' },
+      { keywords: ['excel', 'bảng tính'], subject: 'excel' },
+      { keywords: ['python'], subject: 'python' },
+      { keywords: ['javascript', 'js'], subject: 'javascript' },
+      { keywords: ['java'], subject: 'java' },
+      { keywords: ['web', 'website'], subject: 'web' },
+      { keywords: ['vẽ', 'drawing'], subject: 'drawing' },
+      { keywords: ['tiếng anh', 'english'], subject: 'english' },
+    ];
+    
+    for (const mapping of subjectKeywords) {
+      if (mapping.keywords.some(kw => goal.includes(kw))) {
+        return mapping.subject;
+      }
+    }
+    
+    return undefined;
+  }
+
+  /**
+   * Determine subject ID from user's targetGoal or subject name
+   * Nếu không tìm thấy subject, sẽ dùng AI để generate questions trực tiếp từ subject name
+   */
+  private async determineSubjectFromTargetGoal(targetGoalOrSubject: string): Promise<string | undefined> {
+    if (!targetGoalOrSubject) return undefined;
+
+    const goal = targetGoalOrSubject.toLowerCase();
+    console.log(`🔍 Analyzing targetGoalOrSubject: "${goal}"`);
+
+    try {
+      // Get all subjects
+      const explorerSubjects = await this.subjectsService.findByTrack('explorer');
+      const scholarSubjects = await this.subjectsService.findByTrack('scholar');
+      const allSubjects = [...explorerSubjects, ...scholarSubjects];
+      
+      if (allSubjects.length === 0) {
+        console.log('⚠️  No subjects found in database');
+        return undefined;
+      }
+
+      // Keyword mapping - mở rộng để hỗ trợ nhiều môn học hơn
+      const keywordMappings: { keywords: string[]; subjectNames: string[] }[] = [
+        // Công nghệ thông tin
+        {
+          keywords: ['excel', 'spreadsheet', 'bảng tính'],
+          subjectNames: ['excel', 'microsoft excel'],
+        },
+        {
+          keywords: ['python', 'lập trình python', 'programming python'],
+          subjectNames: ['python', 'lập trình python'],
+        },
+        {
+          keywords: ['javascript', 'js', 'lập trình javascript'],
+          subjectNames: ['javascript', 'js'],
+        },
+        {
+          keywords: ['java', 'lập trình java'],
+          subjectNames: ['java'],
+        },
+        {
+          keywords: ['web', 'website', 'frontend', 'backend'],
+          subjectNames: ['web', 'html', 'css', 'react'],
+        },
+        {
+          keywords: ['data', 'data science', 'machine learning', 'ai'],
+          subjectNames: ['data', 'machine learning', 'ai'],
+        },
+        {
+          keywords: ['sql', 'database', 'cơ sở dữ liệu'],
+          subjectNames: ['sql', 'database'],
+        },
+        // Âm nhạc
+        {
+          keywords: ['piano', 'đàn piano', 'học piano', 'chơi piano', 'pianoforte'],
+          subjectNames: ['piano', 'âm nhạc', 'music', 'piano'],
+        },
+        {
+          keywords: ['guitar', 'đàn guitar', 'học guitar', 'chơi guitar'],
+          subjectNames: ['guitar', 'âm nhạc', 'music'],
+        },
+        {
+          keywords: ['nhạc', 'âm nhạc', 'music', 'học nhạc'],
+          subjectNames: ['âm nhạc', 'music'],
+        },
+        {
+          keywords: ['violin', 'đàn violin', 'học violin'],
+          subjectNames: ['violin', 'âm nhạc', 'music'],
+        },
+        {
+          keywords: ['drum', 'trống', 'học trống'],
+          subjectNames: ['drum', 'trống', 'âm nhạc'],
+        },
+        // Nghệ thuật
+        {
+          keywords: ['vẽ', 'drawing', 'hội họa', 'painting'],
+          subjectNames: ['vẽ', 'drawing', 'painting', 'nghệ thuật'],
+        },
+        {
+          keywords: ['design', 'thiết kế', 'design'],
+          subjectNames: ['design', 'thiết kế'],
+        },
+        // Ngôn ngữ
+        {
+          keywords: ['tiếng anh', 'english', 'học tiếng anh'],
+          subjectNames: ['tiếng anh', 'english'],
+        },
+        {
+          keywords: ['tiếng nhật', 'japanese', 'học tiếng nhật'],
+          subjectNames: ['tiếng nhật', 'japanese'],
+        },
+        {
+          keywords: ['tiếng trung', 'chinese', 'học tiếng trung'],
+          subjectNames: ['tiếng trung', 'chinese'],
+        },
+      ];
+
+      // Try keyword matching
+      for (const mapping of keywordMappings) {
+        const hasKeyword = mapping.keywords.some(kw => goal.includes(kw));
+        if (hasKeyword) {
+          // Find matching subject
+          for (const subjectName of mapping.subjectNames) {
+            const subject = allSubjects.find(
+              s => s.name.toLowerCase().includes(subjectName) ||
+                   subjectName.includes(s.name.toLowerCase())
+            );
+            if (subject) {
+              console.log(`✅ Matched subject: ${subject.name} (${subject.id})`);
+              return subject.id;
+            }
+          }
+        }
+      }
+
+      // Fallback: Try to find any subject that matches part of the goal
+      for (const subject of allSubjects) {
+        const subjectNameLower = subject.name.toLowerCase();
+        if (goal.includes(subjectNameLower) || subjectNameLower.includes(goal)) {
+          console.log(`✅ Found subject by partial match: ${subject.name} (${subject.id})`);
+          return subject.id;
+        }
+      }
+
+      console.log(`⚠️  No subject found for: ${targetGoalOrSubject}`);
+      console.log(`💡 Will use AI to generate questions directly from subject name`);
+      return undefined;
+    } catch (error) {
+      console.error('Error determining subject:', error);
+      return undefined;
+    }
+  }
+
+  /**
+   * Generate remaining questions in background and update test
+   * This runs asynchronously so the user can start answering immediately
+   */
+  private async generateRemainingQuestionsInBackground(
+    testId: string,
+    userId: string,
+    subjectId: string | undefined,
+    subjectName: string | undefined,
+    existingQuestions: Question[],
+    totalNeeded: number,
+  ): Promise<void> {
+    try {
+      const currentCount = 1 + existingQuestions.length; // First question + existing
+      const neededCount = totalNeeded - currentCount;
+      
+      if (neededCount <= 0) {
+        console.log(`✅ Already have enough questions (${currentCount}/${totalNeeded}), no need to generate more`);
+        return;
+      }
+
+      console.log(`🔄 Generating ${neededCount} remaining questions in background...`);
+      
+      let newQuestions: Question[] = [];
+      
+      if (subjectName) {
+        // Generate from subject name
+        newQuestions = await this.generateQuestionsFromTargetGoal(subjectName, neededCount);
+      } else if (subjectId) {
+        // Generate from subject ID
+        newQuestions = await this.generateQuestionsWithAI(subjectId, neededCount);
+      } else {
+        // Fallback: get general questions
+        newQuestions = await this.getQuestionsForTest(undefined, neededCount);
+      }
+
+      if (newQuestions.length > 0) {
+        // Update test with new questions
+        const test = await this.testRepository.findOne({
+          where: { id: testId, userId },
+        });
+
+        if (test && test.status === TestStatus.IN_PROGRESS) {
+          // Add new questions to existing questions (excluding first question which is already there)
+          const newQuestionData = newQuestions.map((q) => ({
+            questionId: q.id,
+            question: q.question,
+            options: q.options,
+            correctAnswer: q.correctAnswer,
+            difficulty: q.difficulty,
+          }));
+
+          // Merge: keep first question, add existing questions (if any), then add new questions
+          const allQuestions = [
+            test.questions[0], // First question
+            ...existingQuestions.map(q => ({
+              questionId: q.id,
+              question: q.question,
+              options: q.options,
+              correctAnswer: q.correctAnswer,
+              difficulty: q.difficulty,
+            })),
+            ...newQuestionData,
+          ];
+
+          test.questions = allQuestions.slice(0, totalNeeded); // Ensure exactly totalNeeded questions
+          await this.testRepository.save(test);
+          
+          console.log(`✅ Updated test with ${newQuestions.length} additional questions (total: ${test.questions.length}/${totalNeeded})`);
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error generating remaining questions in background:', error);
+    }
+  }
+
+  /**
+   * Generate questions directly from targetGoal using AI
+   * Dùng khi không tìm thấy subject trong database
+   */
+  private async generateQuestionsFromTargetGoal(
+    targetGoal: string,
+    count: number,
+  ): Promise<Question[]> {
+    try {
+      console.log(`🎯 Generating ${count} questions for targetGoal: "${targetGoal}"`);
+      
+      const questions: Question[] = [];
+      const difficulties: DifficultyLevel[] = [
+        DifficultyLevel.BEGINNER,
+        DifficultyLevel.INTERMEDIATE,
+        DifficultyLevel.ADVANCED,
+      ];
+
+      // Generate questions with mixed difficulties
+      for (let i = 0; i < count; i++) {
+        try {
+          const difficulty = difficulties[i % difficulties.length];
+          console.log(`🤖 Generating question ${i + 1}/${count} for "${targetGoal}" (${difficulty})...`);
+
+          const aiQuestion = await this.aiService.generatePlacementQuestion(
+            targetGoal,
+            difficulty,
+          );
+
+          // Save to database without subjectId (null = general question for this subject)
+          const question = this.questionRepository.create({
+            question: aiQuestion.question,
+            options: aiQuestion.options,
+            correctAnswer: aiQuestion.correctAnswer,
+            difficulty: difficulty,
+            subjectId: null, // No subject, generated from subject name
+            explanation: aiQuestion.explanation || '',
+            metadata: {
+              isAIGenerated: true,
+              generatedAt: new Date().toISOString(),
+              subject: targetGoal, // Store subject name (ngành học) for reference
+              targetGoal: targetGoal, // Keep for backward compatibility
+            },
+          });
+
+          const saved = await this.questionRepository.save(question);
+          questions.push(saved);
+          console.log(`✅ Saved AI-generated question from targetGoal: ${saved.id}`);
+
+          // Small delay to avoid rate limiting
+          if (i < count - 1) {
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
+        } catch (error) {
+          console.error(`Error generating question ${i + 1}:`, error);
+          // Continue with next question
+        }
+      }
+
+      return questions;
+    } catch (error) {
+      console.error('Error in generateQuestionsFromTargetGoal:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Generate questions using AI when not available in database
+   */
+  private async generateQuestionsWithAI(
+    subjectId: string,
+    count: number,
+  ): Promise<Question[]> {
+    try {
+      const subject = await this.subjectsService.findById(subjectId);
+      if (!subject) {
+        console.error(`Subject ${subjectId} not found`);
+        return [];
+      }
+
+      const questions: Question[] = [];
+      const difficulties: DifficultyLevel[] = [
+        DifficultyLevel.BEGINNER,
+        DifficultyLevel.INTERMEDIATE,
+        DifficultyLevel.ADVANCED,
+      ];
+
+      // Generate questions with mixed difficulties
+      for (let i = 0; i < count; i++) {
+        try {
+          const difficulty = difficulties[i % difficulties.length];
+          console.log(`🤖 Generating question ${i + 1}/${count} for ${subject.name} (${difficulty})...`);
+
+          const aiQuestion = await this.aiService.generatePlacementQuestion(
+            subject.name,
+            difficulty,
+          );
+
+          // Save to database
+          const question = this.questionRepository.create({
+            question: aiQuestion.question,
+            options: aiQuestion.options,
+            correctAnswer: aiQuestion.correctAnswer,
+            difficulty: difficulty,
+            subjectId: subjectId,
+            explanation: aiQuestion.explanation || '',
+            metadata: {
+              isAIGenerated: true,
+              generatedAt: new Date().toISOString(),
+            },
+          });
+
+          const saved = await this.questionRepository.save(question);
+          questions.push(saved);
+          console.log(`✅ Saved AI-generated question: ${saved.id}`);
+
+          // Small delay to avoid rate limiting
+          if (i < count - 1) {
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
+        } catch (error) {
+          console.error(`Error generating question ${i + 1}:`, error);
+          // Continue with next question
+        }
+      }
+
+      return questions;
+    } catch (error) {
+      console.error('Error in generateQuestionsWithAI:', error);
+      return [];
+    }
   }
 }
 

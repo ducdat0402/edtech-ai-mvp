@@ -41,6 +41,10 @@ export class Question {
   metadata: {
     category?: string;
     tags?: string[];
+    isAIGenerated?: boolean;
+    generatedAt?: string;
+    subject?: string; // Store subject name (ngành học) for questions generated from subject
+    targetGoal?: string; // Store targetGoal for questions generated from user's goal (legacy)
   };
 
   @CreateDateColumn()
