@@ -25,7 +25,9 @@ export class RoadmapController {
 
   @Get()
   async getRoadmap(@Request() req, @Body() body?: { subjectId?: string }) {
-    return this.roadmapService.getRoadmap(req.user.id, body?.subjectId);
+    const roadmap = await this.roadmapService.getRoadmap(req.user.id, body?.subjectId);
+    // Return null explicitly if no roadmap exists (instead of undefined)
+    return roadmap || null;
   }
 
   @Get(':roadmapId/today')

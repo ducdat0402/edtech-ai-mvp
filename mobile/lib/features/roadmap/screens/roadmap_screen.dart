@@ -31,17 +31,49 @@ class _RoadmapScreenState extends State<RoadmapScreen> {
     _loadRoadmap();
   }
 
-  Future<void> _loadRoadmap() async {
+  Future<void> _loadRoadmap({bool autoGenerate = false}) async {
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
       
-      // Load roadmap
-      final roadmapResponse = await apiService.getRoadmap(subjectId: widget.subjectId);
+      // Load roadmap - can return null if no roadmap exists
+      var roadmap = await apiService.getRoadmap(subjectId: widget.subjectId);
       
-      // Handle response - convert to Map (API always returns Map or null)
-      final roadmap = roadmapResponse is Map
-          ? Map<String, dynamic>.from(roadmapResponse)
-          : null;
+      // ✅ Nếu chưa có roadmap và autoGenerate = true, thử tự động tạo
+      if (roadmap == null && autoGenerate) {
+        try {
+          // Lấy subjectId từ widget hoặc từ user profile
+          String? subjectIdToUse = widget.subjectId;
+          
+          // Nếu không có subjectId, thử lấy từ user profile (placement test result)
+          if (subjectIdToUse == null) {
+            try {
+              final userProfile = await apiService.getUserProfile();
+              final placementTestLevel = userProfile['placementTestLevel'];
+              
+              // Nếu đã có placement test, thử tìm subject từ onboarding data
+              if (placementTestLevel != null) {
+                final onboardingData = userProfile['onboardingData'] as Map<String, dynamic>?;
+                if (onboardingData != null) {
+                  // Có thể có recommendedSubject hoặc subjectId trong onboarding
+                  // Tạm thời bỏ qua, user sẽ chọn subject thủ công
+                }
+              }
+            } catch (e) {
+              print('Error getting user profile: $e');
+            }
+          }
+          
+          // Nếu có subjectId, tự động generate roadmap
+          if (subjectIdToUse != null) {
+            print('🔄 Auto-generating roadmap for subject: $subjectIdToUse');
+            roadmap = await apiService.generateRoadmap(subjectIdToUse);
+            print('✅ Roadmap generated successfully');
+          }
+        } catch (e) {
+          print('⚠️  Error auto-generating roadmap: $e');
+          // Không throw error, chỉ log - user có thể tạo thủ công
+        }
+      }
       
       // Load today's lesson if roadmap exists
       Map<String, dynamic>? todayLesson;
@@ -49,8 +81,7 @@ class _RoadmapScreenState extends State<RoadmapScreen> {
         final roadmapId = roadmap['id'];
         if (roadmapId != null) {
           try {
-            final todayResponse = await apiService.getTodayLesson(roadmapId.toString());
-            todayLesson = Map<String, dynamic>.from(todayResponse as Map);
+            todayLesson = await apiService.getTodayLesson(roadmapId.toString());
           } catch (e) {
             // Today lesson might not exist yet
             print('Error loading today lesson: $e');
@@ -62,12 +93,53 @@ class _RoadmapScreenState extends State<RoadmapScreen> {
         _roadmapData = roadmap;
         _todayLesson = todayLesson;
         _isLoading = false;
+        _error = null; // Clear any previous errors
       });
     } catch (e) {
       setState(() {
         _error = e.toString();
         _isLoading = false;
+        _roadmapData = null;
+        _todayLesson = null;
       });
+    }
+  }
+  
+  Future<void> _generateRoadmap(String subjectId) async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+    
+    try {
+      final apiService = Provider.of<ApiService>(context, listen: false);
+      await apiService.generateRoadmap(subjectId);
+      
+      // Reload roadmap after generation
+      await _loadRoadmap();
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Đã tạo lộ trình học tập thành công! 🎉'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -119,6 +191,67 @@ class _RoadmapScreenState extends State<RoadmapScreen> {
       context.push('/nodes/$nodeId');
     }
   }
+  
+  Widget _buildEmptyState() {
+    return FutureBuilder<Map<String, dynamic>>(
+      future: _getUserProfileForSubject(),
+      builder: (context, snapshot) {
+        // Show loading while fetching
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        
+        // Check placement test status
+        final userData = snapshot.data ?? {};
+        final hasPlacementTest = userData['placementTestLevel'] != null || 
+                                 userData['placementTestScore'] != null;
+        final placementTestLevel = userData['placementTestLevel'] as String?;
+        
+        return EmptyStateWidget(
+          icon: Icons.calendar_today,
+          title: 'Chưa có lộ trình học tập',
+          message: hasPlacementTest
+              ? 'Bạn đã hoàn thành placement test (${placementTestLevel ?? 'N/A'}). Hãy chọn môn học để tạo lộ trình học tập.'
+              : 'Hãy hoàn thành placement test để tạo lộ trình',
+          action: hasPlacementTest
+              ? Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: () => context.go('/subjects'),
+                      icon: const Icon(Icons.school),
+                      label: const Text('Chọn môn học'),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    OutlinedButton(
+                      onPressed: () => context.go('/placement-test'),
+                      child: const Text('Làm lại Placement Test'),
+                    ),
+                  ],
+                )
+              : ElevatedButton(
+                  onPressed: () => context.go('/placement-test'),
+                  child: const Text('Bắt đầu Placement Test'),
+                ),
+        );
+      },
+    );
+  }
+  
+  Future<Map<String, dynamic>> _getUserProfileForSubject() async {
+    try {
+      final apiService = Provider.of<ApiService>(context, listen: false);
+      final profile = await apiService.getUserProfile();
+      print('📊 User profile: placementTestLevel=${profile['placementTestLevel']}, placementTestScore=${profile['placementTestScore']}');
+      return profile;
+    } catch (e) {
+      print('❌ Error getting user profile: $e');
+      return {};
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -140,15 +273,7 @@ class _RoadmapScreenState extends State<RoadmapScreen> {
                   onRetry: _loadRoadmap,
                 )
               : _roadmapData == null
-                  ? EmptyStateWidget(
-                      icon: Icons.calendar_today,
-                      title: 'Chưa có lộ trình học tập',
-                      message: 'Hãy hoàn thành placement test để tạo lộ trình',
-                      action: ElevatedButton(
-                        onPressed: () => context.go('/placement-test'),
-                        child: const Text('Bắt đầu Placement Test'),
-                      ),
-                    )
+                  ? _buildEmptyState()
                   : RefreshIndicator(
                       onRefresh: _loadRoadmap,
                       child: _buildRoadmap(),

@@ -135,17 +135,68 @@ class ApiService {
     return response.data;
   }
 
-  Future<Map<String, dynamic>> getRoadmap({String? subjectId}) async {
-    final response = await _apiClient.get(
-      ApiConstants.getRoadmap,
-      queryParameters: subjectId != null ? {'subjectId': subjectId} : null,
-    );
-    return response.data;
+  Future<Map<String, dynamic>?> getRoadmap({String? subjectId}) async {
+    try {
+      final response = await _apiClient.get(
+        ApiConstants.getRoadmap,
+        queryParameters: subjectId != null ? {'subjectId': subjectId} : null,
+      );
+      
+      // Handle null or empty response (no roadmap exists)
+      if (response.data == null || 
+          (response.data is String && (response.data as String).isEmpty)) {
+        return null;
+      }
+      
+      // Handle empty string response
+      if (response.data is String) {
+        final dataStr = response.data as String;
+        if (dataStr.isEmpty || dataStr.trim().isEmpty) {
+          return null;
+        }
+        // If it's a non-empty string, might be error message
+        throw Exception(dataStr);
+      }
+      
+      // Handle Map response
+      if (response.data is Map) {
+        return Map<String, dynamic>.from(response.data as Map);
+      }
+      
+      // Unknown type
+      return null;
+    } catch (e) {
+      // If 404 or no roadmap, return null instead of throwing
+      final errorStr = e.toString().toLowerCase();
+      if (errorStr.contains('404') || 
+          errorStr.contains('not found') ||
+          errorStr.contains('null')) {
+        return null;
+      }
+      rethrow;
+    }
   }
 
-  Future<Map<String, dynamic>> getTodayLesson(String roadmapId) async {
-    final response = await _apiClient.get(ApiConstants.todayLesson(roadmapId));
-    return response.data;
+  Future<Map<String, dynamic>?> getTodayLesson(String roadmapId) async {
+    try {
+      final response = await _apiClient.get(ApiConstants.todayLesson(roadmapId));
+      // Handle null response
+      if (response.data == null) {
+        return null;
+      }
+      // Handle string response (error message)
+      if (response.data is String) {
+        throw Exception(response.data as String);
+      }
+      // Return Map
+      return Map<String, dynamic>.from(response.data as Map);
+    } catch (e) {
+      // If 404 or not found, return null instead of throwing
+      if (e.toString().contains('404') || e.toString().contains('not found')) {
+        return null;
+      }
+      rethrow;
+    }
   }
 
   Future<Map<String, dynamic>> completeDay(String roadmapId, int dayNumber) async {

@@ -185,20 +185,17 @@ class _AnalysisCompleteScreenState extends State<AnalysisCompleteScreen> {
                               const SizedBox(width: 12),
                               Expanded(
                                 child: ElevatedButton(
-                                  onPressed: () {
-                                    // Navigate to first subject or roadmap
-                                    final recommendedSubject = _analysisData!['recommendedSubject'] as Map<String, dynamic>?;
-                                    if (recommendedSubject != null && recommendedSubject['id'] != null) {
-                                      context.go('/subjects/${recommendedSubject['id']}/intro');
-                                    } else {
-                                      // Try to navigate to roadmap
-                                      context.go('/roadmap');
+                                  onPressed: () async {
+                                    // Navigate to subjects list to choose subject
+                                    // User needs to select a subject to generate roadmap
+                                    if (mounted) {
+                                      context.go('/subjects');
                                     }
                                   },
                                   style: ElevatedButton.styleFrom(
                                     padding: const EdgeInsets.symmetric(vertical: 16),
                                   ),
-                                  child: const Text('Bắt đầu học'),
+                                  child: const Text('Chọn môn học'),
                                 ),
                               ),
                             ],
