@@ -41,6 +41,172 @@ export class AiService {
     }
   }
 
+  /**
+   * Stream chat response from OpenAI
+   * Returns an async generator that yields chunks of text
+   */
+  async *streamChat(
+    messages: Array<{ role: string; content: string }>,
+  ): AsyncGenerator<string, void, unknown> {
+    if (!this.openai) {
+      throw new Error('OpenAI API not configured. Please set OPENAI_API_KEY in .env');
+    }
+
+    try {
+      // Convert messages to OpenAI format
+      const openaiMessages: Array<{ role: 'user' | 'assistant'; content: string }> = messages.map((msg) => ({
+        role: (msg.role === 'user' ? 'user' : 'assistant') as 'user' | 'assistant',
+        content: msg.content,
+      }));
+
+      const stream = await this.openai.chat.completions.create({
+        model: this.model,
+        messages: openaiMessages,
+        stream: true,
+      });
+
+      for await (const chunk of stream) {
+        const content = chunk.choices[0]?.delta?.content;
+        if (content) {
+          yield content;
+        }
+      }
+    } catch (error) {
+      console.error('OpenAI streaming error:', error);
+      throw new Error('Failed to stream AI response');
+    }
+  }
+
+  /**
+   * Stream onboarding response from OpenAI
+   * Returns an async generator that yields chunks of text, then metadata
+   */
+  async *streamOnboardingResponse(
+    userMessage: string,
+    conversationHistory: Array<{ role: string; content: string }>,
+    extractedData: any,
+    turnCount: number,
+    slotsFilled: {
+      nickname: boolean;
+      age: boolean;
+      currentLevel: boolean;
+      targetGoal: boolean;
+      dailyTime: boolean;
+    },
+  ): AsyncGenerator<string | { __metadata: true; shouldTerminate: boolean; missingSlots: string[]; canProceed: boolean }, void, unknown> {
+    if (!this.openai) {
+      throw new Error('OpenAI API not configured');
+    }
+
+    const MAX_TURNS = 7;
+    const requiredSlots = ['targetGoal', 'nickname', 'age', 'currentLevel', 'dailyTime'];
+    const missingSlots = requiredSlots.filter(slot => !slotsFilled[slot]);
+
+    // Build system prompt (same logic as generateOnboardingResponse)
+    let systemPrompt = '';
+    
+    if (turnCount >= MAX_TURNS) {
+      systemPrompt = `
+Bạn đã hỏi ${turnCount} câu. Đây là câu hỏi cuối cùng.
+
+Hãy tóm tắt lại thông tin đã thu thập được và kết thúc cuộc trò chuyện một cách tự nhiên.
+Gợi ý người dùng bấm nút "Xong / Test thôi" để tiếp tục.
+
+Thông tin đã có:
+${JSON.stringify(extractedData, null, 2)}
+
+Thông tin còn thiếu:
+${missingSlots.join(', ')}
+
+Hãy tóm tắt và kết thúc một cách thân thiện.
+`;
+    } else if (missingSlots.length === 0) {
+      systemPrompt = `
+Bạn đã thu thập đủ thông tin! Hãy tóm tắt lại và gợi ý người dùng bấm nút "Xong / Test thôi" để tiếp tục.
+
+Thông tin đã thu thập:
+- Biệt danh: ${extractedData.nickname}
+- Tuổi: ${extractedData.age}
+- Trình độ: ${extractedData.currentLevel}
+- Mục tiêu: ${extractedData.targetGoal}
+- Thời gian học: ${extractedData.dailyTime} phút/ngày
+
+Hãy kết thúc một cách tự nhiên và khuyến khích người dùng tiếp tục.
+`;
+    } else {
+      const priorityOrder = ['targetGoal', 'nickname', 'age', 'currentLevel', 'dailyTime'];
+      const nextSlotToAsk = priorityOrder.find(slot => missingSlots.includes(slot)) || missingSlots[0];
+      
+      systemPrompt = `
+Bạn là AI tutor thân thiện. Nhiệm vụ: Thu thập 5 thông tin QUAN TRỌNG theo thứ tự ưu tiên:
+1. targetGoal (Mục tiêu học tập) - QUAN TRỌNG NHẤT, hỏi đầu tiên
+2. nickname (Biệt danh)
+3. age (Tuổi)
+4. currentLevel (beginner/intermediate/advanced)
+5. dailyTime (Thời gian học/ngày - phút)
+
+Thông tin ĐÃ CÓ:
+${JSON.stringify(extractedData, null, 2)}
+
+Thông tin CÒN THIẾU:
+${missingSlots.join(', ')}
+
+Thông tin CẦN HỎI TIẾP THEO (ưu tiên): ${nextSlotToAsk || 'không có'}
+
+Bạn đã hỏi ${turnCount}/${MAX_TURNS} câu. Hãy hỏi về thông tin còn thiếu theo thứ tự ưu tiên, một cách tự nhiên, ngắn gọn (1-2 câu).
+Đặc biệt: Nếu chưa có targetGoal, hãy hỏi về mục tiêu học tập trước tiên.
+
+Nếu đã có đủ 3/5 thông tin, có thể gợi ý người dùng bấm "Xong / Test thôi" nếu họ muốn.
+`;
+    }
+
+    try {
+      // Build conversation history for OpenAI
+      const openaiMessages: Array<{ role: 'user' | 'assistant' | 'system'; content: string }> = [
+        { role: 'system', content: systemPrompt },
+      ];
+
+      // Add conversation history
+      for (const msg of conversationHistory) {
+        if (msg.role === 'user' || msg.role === 'assistant') {
+          openaiMessages.push({
+            role: msg.role === 'user' ? 'user' : 'assistant',
+            content: msg.content,
+          });
+        }
+      }
+
+      // Add current user message
+      openaiMessages.push({ role: 'user', content: userMessage });
+
+      const stream = await this.openai.chat.completions.create({
+        model: this.model,
+        messages: openaiMessages,
+        stream: true,
+      });
+
+      let fullResponse = '';
+      for await (const chunk of stream) {
+        const content = chunk.choices[0]?.delta?.content;
+        if (content) {
+          fullResponse += content;
+          yield content;
+        }
+      }
+
+      // Yield metadata after streaming completes (as a special object)
+      yield {
+        __metadata: true,
+        shouldTerminate: turnCount >= MAX_TURNS || missingSlots.length === 0,
+        missingSlots,
+        canProceed: missingSlots.length <= 2,
+      };
+    } catch (error) {
+      console.error('Error streaming onboarding response:', error);
+      throw new Error('Failed to stream AI response');
+    }
+  }
+
   async extractOnboardingData(
     conversationHistory: Array<{ role: string; content: string }>,
   ): Promise<{

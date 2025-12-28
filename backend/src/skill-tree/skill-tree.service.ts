@@ -6,7 +6,8 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { SkillTree, SkillTreeStatus } from './entities/skill-tree.entity';
-import { SkillNode, NodeStatus, NodeType } from './entities/skill-node.entity';
+import { SkillNode, NodeType } from './entities/skill-node.entity';
+import { NodeStatus } from './entities/node-status.enum';
 import { UserSkillProgress } from './entities/user-skill-progress.entity';
 import { UsersService } from '../users/users.service';
 import { SubjectsService } from '../subjects/subjects.service';
@@ -34,7 +35,7 @@ export class SkillTreeService {
   async generateSkillTree(
     userId: string,
     subjectId: string,
-  ): Promise<SkillTree> {
+  ): Promise<SkillTree & { isNewSubject?: boolean; generatingMessage?: string }> {
     // Check if user already has a skill tree for this subject
     const existing = await this.skillTreeRepository.findOne({
       where: {
@@ -60,6 +61,10 @@ export class SkillTreeService {
       throw new NotFoundException('Subject not found');
     }
 
+    // ✅ Check if subject is newly created (within last 5 minutes)
+    const isNewSubject = subject.createdAt && 
+      (new Date().getTime() - new Date(subject.createdAt).getTime()) < 5 * 60 * 1000;
+
     // Get placement test result
     const placementTestLevel = user.placementTestLevel || 'beginner';
     const onboardingData = user.onboardingData || {};
@@ -72,6 +77,11 @@ export class SkillTreeService {
       console.log(
         `⚠️  No learning nodes found for subject "${subject.name}". Auto-generating with AI...`,
       );
+
+      // Nếu là subject mới, thêm message
+      const generatingMessage = isNewSubject 
+        ? 'Bạn đợi tí, môn học này chưa có trong hệ thống, bạn chờ chúng mình tạo skill tree trong giây lát nhé'
+        : 'Đang tạo learning nodes cho môn học này...';
 
       try {
         const numberOfNodes = 12;
@@ -96,6 +106,20 @@ export class SkillTreeService {
         console.log(
           `✅ Auto-generated ${learningNodes.length} Learning Nodes for "${subjectName}"`,
         );
+
+        // Return skill tree with message if it's a new subject
+        const skillTree = await this.createSkillTreeFromNodes(
+          userId,
+          subjectId,
+          learningNodes,
+          placementTestLevel,
+        );
+
+        return {
+          ...skillTree,
+          isNewSubject,
+          generatingMessage: isNewSubject ? generatingMessage : undefined,
+        } as SkillTree & { isNewSubject?: boolean; generatingMessage?: string };
       } catch (error) {
         console.error('❌ Error auto-generating learning nodes:', error);
         throw new BadRequestException(
@@ -110,6 +134,24 @@ export class SkillTreeService {
       );
     }
 
+    // Create skill tree from existing nodes
+    return await this.createSkillTreeFromNodes(
+      userId,
+      subjectId,
+      learningNodes,
+      placementTestLevel,
+    );
+  }
+
+  /**
+   * Helper method to create skill tree from learning nodes
+   */
+  private async createSkillTreeFromNodes(
+    userId: string,
+    subjectId: string,
+    learningNodes: any[],
+    placementTestLevel: string,
+  ): Promise<SkillTree> {
     // Create skill tree
     const skillTree = this.skillTreeRepository.create({
       userId,

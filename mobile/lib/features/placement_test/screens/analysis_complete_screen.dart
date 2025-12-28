@@ -30,6 +30,11 @@ class _AnalysisCompleteScreenState extends State<AnalysisCompleteScreen> {
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
       final data = await apiService.getTestAnalysis(widget.testId);
+      
+      // Debug: Print data to see what we're getting
+      print('📊 Analysis data: $data');
+      print('📊 subjectId: ${data['subjectId']}');
+      
       setState(() {
         _analysisData = data;
         _isLoading = false;
@@ -169,36 +174,53 @@ class _AnalysisCompleteScreenState extends State<AnalysisCompleteScreen> {
                           ],
 
                           // Action Buttons
-                          Row(
-                            children: [
-                              Expanded(
-                                child: OutlinedButton(
-                                  onPressed: () {
-                                    context.go('/dashboard');
-                                  },
-                                  style: OutlinedButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(vertical: 16),
+                          Builder(
+                            builder: (context) {
+                              // Get subjectId directly from test result (API returns PlacementTest entity directly)
+                              final subjectId = _analysisData!['subjectId'] as String?;
+                              
+                              return Row(
+                                children: [
+                                  Expanded(
+                                    child: OutlinedButton(
+                                      onPressed: () {
+                                        context.go('/dashboard');
+                                      },
+                                      style: OutlinedButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(vertical: 16),
+                                      ),
+                                      child: const Text('Dashboard'),
+                                    ),
                                   ),
-                                  child: const Text('Dashboard'),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: ElevatedButton(
-                                  onPressed: () async {
-                                    // Navigate to subjects list to choose subject
-                                    // User needs to select a subject to generate roadmap
-                                    if (mounted) {
-                                      context.go('/subjects');
-                                    }
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(vertical: 16),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: ElevatedButton(
+                                      onPressed: () async {
+                                        if (mounted) {
+                                          if (subjectId != null && subjectId.isNotEmpty) {
+                                            // Test đã có subjectId từ onboarding
+                                            // Skill tree đã được tự động tạo ở backend
+                                            // Navigate trực tiếp đến skill tree để xem tổng quan
+                                            context.go('/skill-tree?subjectId=$subjectId');
+                                          } else {
+                                            // Không có subjectId, cho user chọn môn học
+                                            context.go('/subjects');
+                                          }
+                                        }
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(vertical: 16),
+                                      ),
+                                      child: Text(
+                                        subjectId != null && subjectId.isNotEmpty
+                                            ? 'Xem Skill Tree'
+                                            : 'Chọn môn học',
+                                      ),
+                                    ),
                                   ),
-                                  child: const Text('Chọn môn học'),
-                                ),
-                              ),
-                            ],
+                                ],
+                              );
+                            },
                           ),
                         ],
                       ),

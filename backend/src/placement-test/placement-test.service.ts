@@ -6,6 +6,7 @@ import { Question } from './entities/question.entity';
 import { UsersService } from '../users/users.service';
 import { SubjectsService } from '../subjects/subjects.service';
 import { AiService } from '../ai/ai.service';
+import { SkillTreeService } from '../skill-tree/skill-tree.service';
 
 @Injectable()
 export class PlacementTestService {
@@ -18,6 +19,8 @@ export class PlacementTestService {
     @Inject(forwardRef(() => SubjectsService))
     private subjectsService: SubjectsService,
     private aiService: AiService,
+    @Inject(forwardRef(() => SkillTreeService))
+    private skillTreeService: SkillTreeService,
   ) {}
 
   async startTest(userId: string, subjectId?: string): Promise<PlacementTest> {
@@ -438,6 +441,64 @@ export class PlacementTestService {
         score,
         test.level,
       );
+
+      // ✅ Cập nhật test.subjectId nếu chưa có (từ onboarding data)
+      if (!test.subjectId) {
+        try {
+          const user = await this.usersService.findById(userId);
+          const onboardingData = user?.onboardingData || {};
+          const subject = onboardingData.subject; // Ngành học
+          const targetGoal = onboardingData.targetGoal;
+          
+          let foundSubjectId: string | undefined;
+          
+          if (subject) {
+            foundSubjectId = await this.determineSubjectFromTargetGoal(subject);
+            if (foundSubjectId) {
+              test.subjectId = foundSubjectId;
+              console.log(`✅ Updated test.subjectId from onboarding.subject: ${foundSubjectId}`);
+            } else {
+              // Không tìm thấy subject, tự động tạo mới
+              foundSubjectId = await this.createSubjectIfNotExists(subject);
+              if (foundSubjectId) {
+                test.subjectId = foundSubjectId;
+                console.log(`✅ Created new subject and updated test.subjectId: ${foundSubjectId}`);
+              }
+            }
+          } else if (targetGoal) {
+            foundSubjectId = await this.determineSubjectFromTargetGoal(targetGoal);
+            if (foundSubjectId) {
+              test.subjectId = foundSubjectId;
+              console.log(`✅ Updated test.subjectId from onboarding.targetGoal: ${foundSubjectId}`);
+            } else {
+              // Không tìm thấy subject, tự động tạo mới từ targetGoal
+              const subjectName = this.extractSubjectFromTargetGoal(targetGoal) || targetGoal;
+              foundSubjectId = await this.createSubjectIfNotExists(subjectName);
+              if (foundSubjectId) {
+                test.subjectId = foundSubjectId;
+                console.log(`✅ Created new subject from targetGoal and updated test.subjectId: ${foundSubjectId}`);
+              }
+            }
+          }
+        } catch (error) {
+          console.error(`❌ Error updating test.subjectId from onboarding:`, error);
+        }
+      }
+
+      // ✅ Tự động tạo skill tree cho môn học này (nếu có subjectId)
+      if (test.subjectId) {
+        try {
+          console.log(`🌳 Auto-generating skill tree for subjectId: ${test.subjectId}`);
+          await this.skillTreeService.generateSkillTree(userId, test.subjectId);
+          console.log(`✅ Skill tree generated successfully`);
+        } catch (error) {
+          console.error(`❌ Error auto-generating skill tree:`, error);
+          // Không throw error để không làm gián đoạn flow
+          // Skill tree có thể được tạo sau khi user vào skill tree screen
+        }
+      } else {
+        console.log(`⚠️  No subjectId found in test or onboarding, skipping skill tree generation`);
+      }
     }
 
     const savedTest = await this.testRepository.save(test);
@@ -535,6 +596,34 @@ export class PlacementTestService {
 
     if (!test) {
       throw new NotFoundException('Test not found');
+    }
+
+    // ✅ Fallback: Nếu test không có subjectId, thử lấy từ user's onboarding data
+    if (!test.subjectId) {
+      try {
+        const user = await this.usersService.findById(userId);
+        const onboardingData = user?.onboardingData || {};
+        const subject = onboardingData.subject; // Ngành học
+        const targetGoal = onboardingData.targetGoal;
+        
+        if (subject) {
+          const foundSubjectId = await this.determineSubjectFromTargetGoal(subject);
+          if (foundSubjectId) {
+            test.subjectId = foundSubjectId;
+            await this.testRepository.save(test);
+            console.log(`✅ Updated test.subjectId from onboarding.subject in getTestResult: ${foundSubjectId}`);
+          }
+        } else if (targetGoal) {
+          const foundSubjectId = await this.determineSubjectFromTargetGoal(targetGoal);
+          if (foundSubjectId) {
+            test.subjectId = foundSubjectId;
+            await this.testRepository.save(test);
+            console.log(`✅ Updated test.subjectId from onboarding.targetGoal in getTestResult: ${foundSubjectId}`);
+          }
+        }
+      } catch (error) {
+        console.error(`❌ Error updating test.subjectId in getTestResult:`, error);
+      }
     }
 
     return test;
@@ -737,10 +826,42 @@ export class PlacementTestService {
       }
 
       console.log(`⚠️  No subject found for: ${targetGoalOrSubject}`);
-      console.log(`💡 Will use AI to generate questions directly from subject name`);
+      console.log(`💡 Will try to create subject automatically`);
       return undefined;
     } catch (error) {
       console.error('Error determining subject:', error);
+      return undefined;
+    }
+  }
+
+  /**
+   * Tự động tạo subject nếu chưa có trong database
+   */
+  private async createSubjectIfNotExists(subjectName: string): Promise<string | undefined> {
+    if (!subjectName) return undefined;
+
+    try {
+      // Normalize subject name
+      const normalizedName = subjectName.trim();
+      if (!normalizedName) return undefined;
+
+      // Determine track: music-related subjects go to explorer, others to scholar
+      const musicKeywords = ['piano', 'guitar', 'violin', 'drum', 'nhạc', 'âm nhạc', 'music'];
+      const isMusic = musicKeywords.some(kw => normalizedName.toLowerCase().includes(kw));
+      const track = isMusic ? 'explorer' : 'scholar';
+
+      // Use SubjectsService to create subject
+      const savedSubject = await this.subjectsService.createIfNotExists(
+        normalizedName,
+        `Khóa học về ${normalizedName}`,
+        track,
+      );
+
+      console.log(`✅ Created/found subject "${savedSubject.name}" (${savedSubject.id}) in track "${track}"`);
+      
+      return savedSubject.id;
+    } catch (error) {
+      console.error(`❌ Error creating subject "${subjectName}":`, error);
       return undefined;
     }
   }
@@ -830,56 +951,83 @@ export class PlacementTestService {
     count: number,
   ): Promise<Question[]> {
     try {
-      console.log(`🎯 Generating ${count} questions for targetGoal: "${targetGoal}"`);
+      console.log(`🎯 Generating ${count} questions for targetGoal: "${targetGoal}" (parallel mode)`);
       
-      const questions: Question[] = [];
       const difficulties: DifficultyLevel[] = [
         DifficultyLevel.BEGINNER,
         DifficultyLevel.INTERMEDIATE,
         DifficultyLevel.ADVANCED,
       ];
 
-      // Generate questions with mixed difficulties
-      for (let i = 0; i < count; i++) {
-        try {
-          const difficulty = difficulties[i % difficulties.length];
-          console.log(`🤖 Generating question ${i + 1}/${count} for "${targetGoal}" (${difficulty})...`);
+      // Generate questions in parallel batches to avoid API rate limits
+      const BATCH_SIZE = 5; // Generate 5 questions at a time
+      const questions: Question[] = [];
 
-          const aiQuestion = await this.aiService.generatePlacementQuestion(
-            targetGoal,
-            difficulty,
-          );
+      for (let batchStart = 0; batchStart < count; batchStart += BATCH_SIZE) {
+        const batchEnd = Math.min(batchStart + BATCH_SIZE, count);
+        const batchSize = batchEnd - batchStart;
+        
+        console.log(`🚀 Generating batch ${Math.floor(batchStart / BATCH_SIZE) + 1}: questions ${batchStart + 1}-${batchEnd} (${batchSize} parallel)`);
 
-          // Save to database without subjectId (null = general question for this subject)
-          const question = this.questionRepository.create({
-            question: aiQuestion.question,
-            options: aiQuestion.options,
-            correctAnswer: aiQuestion.correctAnswer,
-            difficulty: difficulty,
-            subjectId: null, // No subject, generated from subject name
-            explanation: aiQuestion.explanation || '',
-            metadata: {
-              isAIGenerated: true,
-              generatedAt: new Date().toISOString(),
-              subject: targetGoal, // Store subject name (ngành học) for reference
-              targetGoal: targetGoal, // Keep for backward compatibility
-            },
-          });
+        // Create promises for this batch
+        const batchPromises = Array.from({ length: batchSize }, async (_, i) => {
+          const questionIndex = batchStart + i;
+          const difficulty = difficulties[questionIndex % difficulties.length];
+          
+          try {
+            console.log(`🤖 [Batch] Generating question ${questionIndex + 1}/${count} for "${targetGoal}" (${difficulty})...`);
 
-          const saved = await this.questionRepository.save(question);
-          questions.push(saved);
-          console.log(`✅ Saved AI-generated question from targetGoal: ${saved.id}`);
+            const aiQuestion = await this.aiService.generatePlacementQuestion(
+              targetGoal,
+              difficulty,
+            );
 
-          // Small delay to avoid rate limiting
-          if (i < count - 1) {
-            await new Promise(resolve => setTimeout(resolve, 500));
+            // Save to database without subjectId (null = general question for this subject)
+            const question = this.questionRepository.create({
+              question: aiQuestion.question,
+              options: aiQuestion.options,
+              correctAnswer: aiQuestion.correctAnswer,
+              difficulty: difficulty,
+              subjectId: null, // No subject, generated from subject name
+              explanation: aiQuestion.explanation || '',
+              metadata: {
+                isAIGenerated: true,
+                generatedAt: new Date().toISOString(),
+                subject: targetGoal, // Store subject name (ngành học) for reference
+                targetGoal: targetGoal, // Keep for backward compatibility
+              },
+            });
+
+            const saved = await this.questionRepository.save(question);
+            console.log(`✅ Saved AI-generated question ${questionIndex + 1}/${count} from targetGoal: ${saved.id}`);
+            return saved;
+          } catch (error) {
+            console.error(`❌ Error generating question ${questionIndex + 1}:`, error);
+            return null; // Return null for failed questions
           }
-        } catch (error) {
-          console.error(`Error generating question ${i + 1}:`, error);
-          // Continue with next question
+        });
+
+        // Wait for all questions in this batch to complete
+        const batchResults = await Promise.allSettled(batchPromises);
+        
+        // Collect successful questions
+        batchResults.forEach((result, index) => {
+          if (result.status === 'fulfilled' && result.value) {
+            questions.push(result.value);
+          } else {
+            console.error(`❌ Failed to generate question ${batchStart + index + 1}:`, result.status === 'rejected' ? result.reason : 'Unknown error');
+          }
+        });
+
+        console.log(`✅ Batch ${Math.floor(batchStart / BATCH_SIZE) + 1} completed: ${questions.length}/${count} questions generated so far`);
+
+        // Small delay between batches to avoid rate limiting (only if not last batch)
+        if (batchEnd < count) {
+          await new Promise(resolve => setTimeout(resolve, 200));
         }
       }
 
+      console.log(`✅ Completed generating ${questions.length}/${count} questions for "${targetGoal}"`);
       return questions;
     } catch (error) {
       console.error('Error in generateQuestionsFromTargetGoal:', error);
@@ -889,6 +1037,7 @@ export class PlacementTestService {
 
   /**
    * Generate questions using AI when not available in database
+   * Now uses parallel batch processing for better performance
    */
   private async generateQuestionsWithAI(
     subjectId: string,
@@ -901,52 +1050,81 @@ export class PlacementTestService {
         return [];
       }
 
-      const questions: Question[] = [];
+      console.log(`🎯 Generating ${count} questions for ${subject.name} (parallel mode)`);
+
       const difficulties: DifficultyLevel[] = [
         DifficultyLevel.BEGINNER,
         DifficultyLevel.INTERMEDIATE,
         DifficultyLevel.ADVANCED,
       ];
 
-      // Generate questions with mixed difficulties
-      for (let i = 0; i < count; i++) {
-        try {
-          const difficulty = difficulties[i % difficulties.length];
-          console.log(`🤖 Generating question ${i + 1}/${count} for ${subject.name} (${difficulty})...`);
+      // Generate questions in parallel batches to avoid API rate limits
+      const BATCH_SIZE = 5; // Generate 5 questions at a time
+      const questions: Question[] = [];
 
-          const aiQuestion = await this.aiService.generatePlacementQuestion(
-            subject.name,
-            difficulty,
-          );
+      for (let batchStart = 0; batchStart < count; batchStart += BATCH_SIZE) {
+        const batchEnd = Math.min(batchStart + BATCH_SIZE, count);
+        const batchSize = batchEnd - batchStart;
+        
+        console.log(`🚀 Generating batch ${Math.floor(batchStart / BATCH_SIZE) + 1}: questions ${batchStart + 1}-${batchEnd} (${batchSize} parallel)`);
 
-          // Save to database
-          const question = this.questionRepository.create({
-            question: aiQuestion.question,
-            options: aiQuestion.options,
-            correctAnswer: aiQuestion.correctAnswer,
-            difficulty: difficulty,
-            subjectId: subjectId,
-            explanation: aiQuestion.explanation || '',
-            metadata: {
-              isAIGenerated: true,
-              generatedAt: new Date().toISOString(),
-            },
-          });
+        // Create promises for this batch
+        const batchPromises = Array.from({ length: batchSize }, async (_, i) => {
+          const questionIndex = batchStart + i;
+          const difficulty = difficulties[questionIndex % difficulties.length];
+          
+          try {
+            console.log(`🤖 [Batch] Generating question ${questionIndex + 1}/${count} for ${subject.name} (${difficulty})...`);
 
-          const saved = await this.questionRepository.save(question);
-          questions.push(saved);
-          console.log(`✅ Saved AI-generated question: ${saved.id}`);
+            const aiQuestion = await this.aiService.generatePlacementQuestion(
+              subject.name,
+              difficulty,
+            );
 
-          // Small delay to avoid rate limiting
-          if (i < count - 1) {
-            await new Promise(resolve => setTimeout(resolve, 500));
+            // Save to database
+            const question = this.questionRepository.create({
+              question: aiQuestion.question,
+              options: aiQuestion.options,
+              correctAnswer: aiQuestion.correctAnswer,
+              difficulty: difficulty,
+              subjectId: subjectId,
+              explanation: aiQuestion.explanation || '',
+              metadata: {
+                isAIGenerated: true,
+                generatedAt: new Date().toISOString(),
+              },
+            });
+
+            const saved = await this.questionRepository.save(question);
+            console.log(`✅ Saved AI-generated question ${questionIndex + 1}/${count}: ${saved.id}`);
+            return saved;
+          } catch (error) {
+            console.error(`❌ Error generating question ${questionIndex + 1}:`, error);
+            return null; // Return null for failed questions
           }
-        } catch (error) {
-          console.error(`Error generating question ${i + 1}:`, error);
-          // Continue with next question
+        });
+
+        // Wait for all questions in this batch to complete
+        const batchResults = await Promise.allSettled(batchPromises);
+        
+        // Collect successful questions
+        batchResults.forEach((result, index) => {
+          if (result.status === 'fulfilled' && result.value) {
+            questions.push(result.value);
+          } else {
+            console.error(`❌ Failed to generate question ${batchStart + index + 1}:`, result.status === 'rejected' ? result.reason : 'Unknown error');
+          }
+        });
+
+        console.log(`✅ Batch ${Math.floor(batchStart / BATCH_SIZE) + 1} completed: ${questions.length}/${count} questions generated so far`);
+
+        // Small delay between batches to avoid rate limiting (only if not last batch)
+        if (batchEnd < count) {
+          await new Promise(resolve => setTimeout(resolve, 200));
         }
       }
 
+      console.log(`✅ Completed generating ${questions.length}/${count} questions for ${subject.name}`);
       return questions;
     } catch (error) {
       console.error('Error in generateQuestionsWithAI:', error);

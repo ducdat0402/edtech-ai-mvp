@@ -31,6 +31,86 @@ export class SubjectsService {
     });
   }
 
+  /**
+   * Tìm subject theo tên (case-insensitive)
+   */
+  async findByName(name: string): Promise<Subject | null> {
+    const allSubjects = [
+      ...(await this.findByTrack('explorer')),
+      ...(await this.findByTrack('scholar')),
+    ];
+    
+    return allSubjects.find(
+      s => s.name.toLowerCase() === name.toLowerCase()
+    ) || null;
+  }
+
+  /**
+   * Tạo subject mới nếu chưa tồn tại
+   */
+  async createIfNotExists(
+    name: string,
+    description?: string,
+    track: 'explorer' | 'scholar' = 'explorer',
+  ): Promise<Subject> {
+    // Check if exists
+    const existing = await this.findByName(name);
+    if (existing) {
+      return existing;
+    }
+
+    // Create new subject
+    const newSubject = this.subjectRepository.create({
+      name: name.charAt(0).toUpperCase() + name.slice(1), // Capitalize first letter
+      description: description || `Khóa học về ${name}`,
+      track: track,
+      metadata: {
+        icon: this.getSubjectIcon(name),
+        color: this.getSubjectColor(name),
+      },
+    });
+
+    return await this.subjectRepository.save(newSubject);
+  }
+
+  /**
+   * Get icon for subject based on name
+   */
+  private getSubjectIcon(subjectName: string): string {
+    const name = subjectName.toLowerCase();
+    if (name.includes('piano')) return '🎹';
+    if (name.includes('guitar')) return '🎸';
+    if (name.includes('violin')) return '🎻';
+    if (name.includes('drum')) return '🥁';
+    if (name.includes('nhạc') || name.includes('music')) return '🎵';
+    if (name.includes('excel')) return '📊';
+    if (name.includes('python')) return '🐍';
+    if (name.includes('javascript') || name.includes('js')) return '📜';
+    if (name.includes('java')) return '☕';
+    if (name.includes('web')) return '🌐';
+    if (name.includes('vẽ') || name.includes('drawing')) return '🎨';
+    if (name.includes('english') || name.includes('tiếng anh')) return '🇬🇧';
+    return '📚'; // Default icon
+  }
+
+  /**
+   * Get color for subject based on name
+   */
+  private getSubjectColor(subjectName: string): string {
+    const name = subjectName.toLowerCase();
+    if (name.includes('piano') || name.includes('guitar') || name.includes('violin') || name.includes('drum') || name.includes('nhạc') || name.includes('music')) {
+      return '#FF6B6B'; // Red for music
+    }
+    if (name.includes('excel')) return '#4ECDC4'; // Teal
+    if (name.includes('python')) return '#45B7D1'; // Blue
+    if (name.includes('javascript') || name.includes('js')) return '#FFA07A'; // Light salmon
+    if (name.includes('java')) return '#FF8C00'; // Dark orange
+    if (name.includes('web')) return '#98D8C8'; // Mint
+    if (name.includes('vẽ') || name.includes('drawing')) return '#F7DC6F'; // Yellow
+    if (name.includes('english') || name.includes('tiếng anh')) return '#BB8FCE'; // Purple
+    return '#95A5A6'; // Default gray
+  }
+
   // Fog of War: Chỉ hiện nodes đã unlock
   async getAvailableNodesForUser(
     userId: string,

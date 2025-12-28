@@ -4,6 +4,7 @@ import {
   Post,
   Body,
   Param,
+  Query,
   UseGuards,
   Request,
 } from '@nestjs/common';
@@ -24,8 +25,26 @@ export class SkillTreeController {
   }
 
   @Get()
-  async getSkillTree(@Request() req, @Body() body?: { subjectId?: string }) {
-    return this.skillTreeService.getSkillTree(req.user.id, body?.subjectId);
+  async getSkillTree(
+    @Request() req,
+    @Query('subjectId') subjectId?: string,
+  ) {
+    // If subjectId provided, try to get or generate skill tree
+    if (subjectId) {
+      // Check if skill tree exists
+      const existing = await this.skillTreeService.getSkillTree(req.user.id, subjectId);
+      
+      if (!existing) {
+        // Skill tree doesn't exist, generate it
+        // This will return with generatingMessage if it's a new subject
+        return this.skillTreeService.generateSkillTree(req.user.id, subjectId);
+      }
+      
+      return existing;
+    }
+    
+    // No subjectId, return user's skill trees
+    return this.skillTreeService.getSkillTree(req.user.id);
   }
 
   @Post(':nodeId/unlock')

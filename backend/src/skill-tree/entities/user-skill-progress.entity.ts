@@ -10,7 +10,7 @@ import {
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { SkillNode } from './skill-node.entity';
-import { NodeStatus } from './skill-node.entity';
+import { NodeStatus } from './node-status.enum';
 
 @Entity('user_skill_progress')
 @Index(['userId', 'skillNodeId'], { unique: true })

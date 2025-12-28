@@ -13,13 +13,6 @@ import { SkillTree } from './skill-tree.entity';
 import { LearningNode } from '../../learning-nodes/entities/learning-node.entity';
 import { UserSkillProgress } from './user-skill-progress.entity';
 
-export enum NodeStatus {
-  LOCKED = 'locked', // Chưa unlock
-  UNLOCKED = 'unlocked', // Đã unlock nhưng chưa học
-  IN_PROGRESS = 'in_progress', // Đang học
-  COMPLETED = 'completed', // Đã hoàn thành
-}
-
 export enum NodeType {
   SKILL = 'skill', // Kỹ năng chính
   CONCEPT = 'concept', // Khái niệm

@@ -22,6 +22,7 @@ class _SkillTreeScreenState extends State<SkillTreeScreen> {
   Map<String, dynamic>? _skillTreeData;
   bool _isLoading = true;
   String? _error;
+  String? _generatingMessage;
 
   @override
   void initState() {
@@ -30,20 +31,89 @@ class _SkillTreeScreenState extends State<SkillTreeScreen> {
   }
 
   Future<void> _loadSkillTree() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+      _generatingMessage = null;
+    });
+
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
+      
+      // First, try to get existing skill tree
       final skillTree = await apiService.getSkillTree(subjectId: widget.subjectId);
 
-      setState(() {
-        _skillTreeData = skillTree;
-        _isLoading = false;
-        _error = null;
-      });
+      // Check if there's a generating message (from generateSkillTree response)
+      final generatingMessage = skillTree?['generatingMessage'] as String?;
+      final isNewSubject = skillTree?['isNewSubject'] as bool? ?? false;
+
+      // If skill tree is null and we have subjectId, it means we need to generate
+      // Show message immediately while generating
+      if (skillTree == null && widget.subjectId != null) {
+        setState(() {
+          _generatingMessage = 'Bạn đợi tí, môn học này chưa có trong hệ thống, bạn chờ chúng mình tạo skill tree trong giây lát nhé';
+        });
+
+        // Generate skill tree
+        try {
+          final generatedTree = await apiService.generateSkillTree(widget.subjectId!);
+          
+          setState(() {
+            _skillTreeData = generatedTree;
+            _isLoading = false;
+            _error = null;
+            // Keep message if it's a new subject
+            if (generatedTree['isNewSubject'] == true) {
+              _generatingMessage = generatedTree['generatingMessage'] as String?;
+            } else {
+              _generatingMessage = null;
+            }
+          });
+
+          // Show snackbar after generation completes
+          if (mounted && isNewSubject && generatingMessage != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: const Text('Đã tạo Skill Tree thành công! 🎉'),
+                backgroundColor: Colors.green,
+                duration: const Duration(seconds: 3),
+              ),
+            );
+          }
+        } catch (e) {
+          setState(() {
+            _error = 'Không thể tạo Skill Tree: ${e.toString()}';
+            _isLoading = false;
+            _skillTreeData = null;
+            _generatingMessage = null;
+          });
+        }
+      } else {
+        // Skill tree exists or no subjectId
+        setState(() {
+          _skillTreeData = skillTree;
+          _isLoading = false;
+          _error = null;
+          _generatingMessage = generatingMessage;
+        });
+
+        // Show message if it's a new subject being generated
+        if (isNewSubject && generatingMessage != null && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(generatingMessage),
+              duration: const Duration(seconds: 5),
+              backgroundColor: Colors.blue,
+            ),
+          );
+        }
+      }
     } catch (e) {
       setState(() {
         _error = e.toString();
         _isLoading = false;
         _skillTreeData = null;
+        _generatingMessage = null;
       });
     }
   }
@@ -149,7 +219,7 @@ class _SkillTreeScreenState extends State<SkillTreeScreen> {
         ],
       ),
       body: _isLoading
-          ? _buildSkeletonLoader()
+          ? _buildLoadingState()
           : _error != null
               ? AppErrorWidget(
                   message: _error!,
@@ -172,6 +242,52 @@ class _SkillTreeScreenState extends State<SkillTreeScreen> {
           SkeletonCard(height: 100),
           const SizedBox(height: 24),
           SkeletonCard(height: 300),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const CircularProgressIndicator(),
+          const SizedBox(height: 24),
+          if (_generatingMessage != null) ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              child: Card(
+                color: Colors.blue.shade50,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      Icon(Icons.info_outline, color: Colors.blue.shade700),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          _generatingMessage!,
+                          style: TextStyle(
+                            color: Colors.blue.shade900,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ] else ...[
+            const Text(
+              'Đang tải Skill Tree...',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey,
+              ),
+            ),
+          ],
         ],
       ),
     );

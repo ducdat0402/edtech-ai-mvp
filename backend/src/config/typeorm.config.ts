@@ -14,6 +14,9 @@ import { Roadmap } from '../roadmap/entities/roadmap.entity';
 import { RoadmapDay } from '../roadmap/entities/roadmap-day.entity';
 import { Quest } from '../quests/entities/quest.entity';
 import { UserQuest } from '../quests/entities/user-quest.entity';
+import { SkillTree } from '../skill-tree/entities/skill-tree.entity';
+import { SkillNode } from '../skill-tree/entities/skill-node.entity';
+import { UserSkillProgress } from '../skill-tree/entities/user-skill-progress.entity';
 
 @Injectable()
 export class TypeOrmConfigService implements TypeOrmOptionsFactory {
@@ -37,6 +40,9 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
         RoadmapDay,
         Quest,
         UserQuest,
+        SkillTree,
+        SkillNode,
+        UserSkillProgress,
       ],
       synchronize: this.configService.get<string>('NODE_ENV') === 'development',
       logging: this.configService.get<string>('NODE_ENV') === 'development',
