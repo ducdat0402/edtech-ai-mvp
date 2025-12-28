@@ -7,6 +7,7 @@ import { UserCurrencyModule } from '../user-currency/user-currency.module';
 import { LearningNode } from '../learning-nodes/entities/learning-node.entity';
 import { ContentItemsModule } from '../content-items/content-items.module';
 import { QuestsModule } from '../quests/quests.module';
+import { SkillTreeModule } from '../skill-tree/skill-tree.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { QuestsModule } from '../quests/quests.module';
     UserCurrencyModule,
     ContentItemsModule,
     forwardRef(() => QuestsModule),
+    forwardRef(() => SkillTreeModule),
   ],
   controllers: [UserProgressController],
   providers: [UserProgressService],

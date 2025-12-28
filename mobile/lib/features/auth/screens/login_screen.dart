@@ -36,6 +36,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (result['success'] == true) {
         if (mounted) {
+          // Always go to dashboard after login
+          // User can access onboarding via button on dashboard
           context.go('/dashboard');
         }
       } else {

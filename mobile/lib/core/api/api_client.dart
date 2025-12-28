@@ -64,6 +64,20 @@ class ApiClient {
             // Token expired, clear and redirect to login
             _storage.delete(key: _tokenKey);
           }
+          // For 200 with null/empty response, don't treat as error
+          if (error.response?.statusCode == 200 &&
+              (error.response?.data == null ||
+                  (error.response?.data is String &&
+                      (error.response?.data as String).isEmpty))) {
+            // Return success response with null data
+            return handler.resolve(
+              Response(
+                requestOptions: error.requestOptions,
+                data: null,
+                statusCode: 200,
+              ),
+            );
+          }
           return handler.next(error);
         },
       ),
@@ -86,7 +100,8 @@ class ApiClient {
   }
 
   // GET request
-  Future<Response> get(String path, {Map<String, dynamic>? queryParameters}) async {
+  Future<Response> get(String path,
+      {Map<String, dynamic>? queryParameters}) async {
     try {
       return await _dio.get(path, queryParameters: queryParameters);
     } catch (e) {
@@ -95,9 +110,11 @@ class ApiClient {
   }
 
   // POST request
-  Future<Response> post(String path, {dynamic data, Map<String, dynamic>? queryParameters}) async {
+  Future<Response> post(String path,
+      {dynamic data, Map<String, dynamic>? queryParameters}) async {
     try {
-      final response = await _dio.post(path, data: data, queryParameters: queryParameters);
+      final response =
+          await _dio.post(path, data: data, queryParameters: queryParameters);
       // Log response for debugging
       if (kDebugMode) {
         debugPrint('[API] Response status: ${response.statusCode}');
@@ -130,4 +147,3 @@ class ApiClient {
     }
   }
 }
-

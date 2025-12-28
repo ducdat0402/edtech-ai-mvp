@@ -15,6 +15,7 @@ import { AiModule } from './ai/ai.module';
 import { OnboardingModule } from './onboarding/onboarding.module';
 import { PlacementTestModule } from './placement-test/placement-test.module';
 import { RoadmapModule } from './roadmap/roadmap.module';
+import { SkillTreeModule } from './skill-tree/skill-tree.module';
 import { QuestsModule } from './quests/quests.module';
 import { LeaderboardModule } from './leaderboard/leaderboard.module';
 import { HealthModule } from './health/health.module';
@@ -43,6 +44,7 @@ import { TypeOrmConfigService } from './config/typeorm.config';
     OnboardingModule,
     PlacementTestModule,
     RoadmapModule,
+    SkillTreeModule,
     QuestsModule,
     LeaderboardModule,
     HealthModule,

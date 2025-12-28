@@ -18,6 +18,7 @@ class ApiConstants {
   static const String scholarSubjects = '/subjects/scholar';
   static String subjectDetail(String id) => '/subjects/$id';
   static String subjectNodes(String id) => '/subjects/$id/nodes';
+  static String subjectIntro(String id) => '/subjects/$id/intro';
 
   // Learning Nodes
   static String nodesBySubject(String subjectId) => '/nodes/subject/$subjectId';
@@ -36,7 +37,7 @@ class ApiConstants {
 
   // Quests
   static const String dailyQuests = '/quests/daily';
-  static String claimQuest(String questId) => '/quests/$questId/claim';
+  static String claimQuest(String userQuestId) => '/quests/$userQuestId/claim';
   static const String questHistory = '/quests/history';
 
   // Leaderboard
@@ -51,11 +52,17 @@ class ApiConstants {
   static const String submitAnswer = '/test/submit';
   static String testResult(String testId) => '/test/result/$testId';
 
-  // Roadmap
+  // Roadmap (Legacy - có thể giữ lại hoặc xóa sau)
   static const String generateRoadmap = '/roadmap/generate';
   static const String getRoadmap = '/roadmap';
   static String todayLesson(String roadmapId) => '/roadmap/$roadmapId/today';
   static String completeDay(String roadmapId) => '/roadmap/$roadmapId/complete-day';
+
+  // Skill Tree
+  static const String generateSkillTree = '/skill-tree/generate';
+  static const String getSkillTree = '/skill-tree';
+  static String unlockNode(String nodeId) => '/skill-tree/$nodeId/unlock';
+  static String completeNode(String nodeId) => '/skill-tree/$nodeId/complete';
 
   // Onboarding
   static const String onboardingChat = '/onboarding/chat';

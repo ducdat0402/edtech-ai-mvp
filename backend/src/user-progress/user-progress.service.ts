@@ -7,6 +7,7 @@ import { UserCurrencyService } from '../user-currency/user-currency.service';
 import { ContentItemsService } from '../content-items/content-items.service';
 import { QuestsService } from '../quests/quests.service';
 import { QuestType } from '../quests/entities/quest.entity';
+import { SkillTreeService } from '../skill-tree/skill-tree.service';
 
 @Injectable()
 export class UserProgressService {
@@ -19,6 +20,8 @@ export class UserProgressService {
     private contentItemsService: ContentItemsService,
     @Inject(forwardRef(() => QuestsService))
     private questsService: QuestsService,
+    @Inject(forwardRef(() => SkillTreeService))
+    private skillTreeService: SkillTreeService,
   ) {}
 
   async getOrCreate(userId: string, nodeId: string): Promise<UserProgress> {
@@ -171,6 +174,20 @@ export class UserProgressService {
         // Bonus rewards for completing node
         await this.currencyService.addXP(userId, 50);
         await this.currencyService.addCoins(userId, 10);
+
+        // ✅ Auto-complete corresponding skill node
+        try {
+          await this.skillTreeService.completeSkillNodeFromLearningNode(
+            userId,
+            nodeId,
+          );
+        } catch (error) {
+          // Log but don't fail - skill tree might not exist yet
+          console.error(
+            `Error completing skill node for learning node ${nodeId}:`,
+            error,
+          );
+        }
       }
 
       const savedProgress = await this.progressRepository.save(progress);
