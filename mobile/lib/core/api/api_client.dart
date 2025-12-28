@@ -64,19 +64,6 @@ class ApiClient {
             // Token expired, clear and redirect to login
             _storage.delete(key: _tokenKey);
           }
-          // For 200 with null/empty response, don't treat as error
-          if (error.response?.statusCode == 200 && 
-              (error.response?.data == null || 
-               (error.response?.data is String && (error.response?.data as String).isEmpty))) {
-            // Return success response with null data
-            return handler.resolve(
-              Response(
-                requestOptions: error.requestOptions,
-                data: null,
-                statusCode: 200,
-              ),
-            );
-          }
           return handler.next(error);
         },
       ),

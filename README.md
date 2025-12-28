@@ -1,368 +1,214 @@
-# 🎓 EdTech AI MVP
+# EdTech AI MVP
 
-> Ứng dụng học tập thông minh với AI, gamification, và adaptive learning
+Nền tảng học tập cá nhân hóa bằng AI trên mobile, giúp người dùng học kỹ năng thực tế một cách thú vị, nhớ lâu và duy trì thói quen học hàng ngày.
 
-[![Flutter](https://img.shields.io/badge/Flutter-3.0+-blue.svg)](https://flutter.dev)
-[![NestJS](https://img.shields.io/badge/NestJS-10.0+-red.svg)](https://nestjs.com)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14+-blue.svg)](https://www.postgresql.org)
-[![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4-green.svg)](https://openai.com)
+## 🎯 Tính năng chính
 
----
-
-## 📖 Tổng quan
-
-EdTech AI MVP là một nền tảng học tập thông minh kết hợp:
-- **AI-Powered Onboarding**: Chat với AI để tạo profile học tập cá nhân
-- **Adaptive Placement Test**: Test thích ứng để xác định level phù hợp
-- **Personalized Roadmap**: Lộ trình học 30 ngày được tạo tự động
-- **Gamification**: Streaks, quests, leaderboard để tăng động lực
-- **Fog of War Learning**: Học tập theo cấu trúc knowledge graph với progressive unlock
-
----
-
-## ✨ Tính năng chính
-
-### 🎯 Core Features
-- ✅ **Authentication**: Register, Login, JWT-based security
-- ✅ **AI Onboarding**: Conversational onboarding với OpenAI
-- ✅ **Adaptive Placement Test**: Test thích ứng với AI-generated questions
-- ✅ **Knowledge Graph**: Visual learning path với Fog of War
-- ✅ **Content Learning**: Text, Video, Code examples, Interactive quizzes
-- ✅ **30-Day Roadmap**: Personalized learning path
-- ✅ **Gamification**: Streaks, Daily Quests, Leaderboard, Points system
-- ✅ **Progress Tracking**: Real-time progress với visual indicators
-
-### 🎨 UX Features
-- ✅ **Skeleton Loaders**: Shimmer animations cho loading states
-- ✅ **Error Handling**: Comprehensive error widgets với retry
-- ✅ **Empty States**: Informative empty states với actions
-- ✅ **Pull-to-Refresh**: Easy data refresh trên tất cả screens
-- ✅ **Bottom Navigation**: Quick access to main features
-- ✅ **Responsive Design**: Works trên mọi screen sizes
-
----
+- **Học tập cá nhân hóa qua AI conversational** - Onboarding bằng chat với AI
+- **Gamification mạnh** - Streak, XP, daily quests, leaderboard
+- **Lộ trình học 30 ngày tự động** - Dựa trên trình độ thực tế
+- **Hybrid learning** - Video + Quiz + Simulation thực hành
+- **Spaced Repetition System (SRS)** - Nhắc ôn đúng lúc
 
 ## 🏗️ Kiến trúc
 
-### Tech Stack
-
-**Backend**
-- **Framework**: NestJS 10+
-- **Database**: PostgreSQL 14+ với TypeORM
-- **Authentication**: JWT
-- **AI**: OpenAI API (GPT-4)
-- **Validation**: class-validator
-
-**Mobile**
-- **Framework**: Flutter 3.0+
-- **State Management**: Provider
-- **Routing**: go_router
-- **HTTP Client**: Dio
-- **Video Player**: video_player, chewie
-
-### Project Structure
-
-```
-edtech-ai-mvp/
-├── backend/                 # NestJS Backend
-│   ├── src/
-│   │   ├── auth/          # Authentication
-│   │   ├── users/         # User management
-│   │   ├── subjects/      # Subject management
-│   │   ├── learning-nodes/# Learning nodes
-│   │   ├── content-items/ # Content items
-│   │   ├── user-progress/ # Progress tracking
-│   │   ├── roadmap/       # 30-day roadmap
-│   │   ├── placement-test/# Placement test
-│   │   ├── quests/        # Daily quests
-│   │   ├── leaderboard/   # Leaderboard
-│   │   ├── user-currency/ # Currency system
-│   │   └── ai/            # AI integration
-│   └── package.json
-│
-├── mobile/                 # Flutter Mobile App
-│   ├── lib/
-│   │   ├── app/           # App config & routing
-│   │   ├── core/          # Core utilities
-│   │   │   ├── services/  # API services
-│   │   ├── widgets/       # Reusable widgets
-│   │   └── features/      # Feature modules
-│   │       ├── auth/
-│   │       ├── onboarding/
-│   │       ├── placement_test/
-│   │       ├── subjects/
-│   │       ├── learning_nodes/
-│   │       ├── content/
-│   │       ├── roadmap/
-│   │       ├── quests/
-│   │       ├── leaderboard/
-│   │       ├── profile/
-│   │       └── dashboard/
-│   └── pubspec.yaml
-│
-└── docs/                   # Documentation
-    ├── PROJECT_STATUS.md
-    ├── IMPLEMENTATION_SUMMARY.md
-    ├── TEST_CHECKLIST.md
-    └── QUICK_START_GUIDE.md
-```
-
----
+- **Backend**: NestJS + PostgreSQL + Redis + JWT
+- **Mobile**: Flutter (sắp triển khai)
+- **AI**: Google Gemini 1.5 Flash
 
 ## 🚀 Quick Start
 
-### Prerequisites
-- Node.js 18+
-- PostgreSQL 14+
-- Flutter 3.0+
-- OpenAI API Key
-
 ### Backend Setup
 
+#### Option 1: Dùng Docker (Khuyến nghị)
+
 ```bash
-# 1. Install dependencies
+# Start PostgreSQL và Redis
+docker-compose up -d
+
+# Setup backend
 cd backend
-npm install
-
-# 2. Setup database
-createdb edtech_ai_mvp
-
-# 3. Configure environment
 cp .env.example .env
-# Edit .env với your credentials
+# Sửa .env với: DATABASE_URL=postgres://edtech_user:edtech_pass@localhost:5432/edtech_db
 
-# 4. Run migrations
-npm run migration:run
-
-# 5. Seed database (optional)
-npm run seed
-
-# 6. Start server
-npm run start:dev
+npm install
+npm run seed  # Seed sample data
+npm start
 ```
 
-Backend chạy tại: `http://localhost:3000`
+#### Option 2: Setup thủ công
 
-### Mobile Setup
+Xem chi tiết trong `backend/SETUP.md`
 
 ```bash
-# 1. Install dependencies
-cd mobile
-flutter pub get
+cd backend
+cp .env.example .env
+# Sửa .env với thông tin PostgreSQL của bạn
 
-# 2. Configure API
-# Update mobile/lib/core/config/api_config.dart
-# với backend URL
-
-# 3. Run app
-flutter run
+npm install
+npm run seed
+npm start
 ```
 
-📖 **Chi tiết**: Xem [QUICK_START_GUIDE.md](./QUICK_START_GUIDE.md)
+### Environment Variables
 
----
+Tạo file `backend/.env` với nội dung:
 
-## 📱 Screenshots
-
-### Onboarding & Placement Test
-- AI Chat interface
-- Adaptive placement test
-- Analysis results
-
-### Learning Flow
-- Knowledge graph visualization
-- Node map với Fog of War
-- Content viewer với multiple types
-
-### Gamification
-- Streak display
-- Daily quests
-- Leaderboard
-
----
-
-## 📚 Documentation
-
-- **[PROJECT_STATUS.md](./PROJECT_STATUS.md)** - Project status và roadmap
-- **[IMPLEMENTATION_SUMMARY.md](./IMPLEMENTATION_SUMMARY.md)** - Chi tiết implementation
-- **[TEST_CHECKLIST.md](./TEST_CHECKLIST.md)** - Test cases và checklist
-- **[QUICK_START_GUIDE.md](./QUICK_START_GUIDE.md)** - Setup và quick start
-
----
-
-## 🎯 User Flow
-
-```
-Register/Login
-    ↓
-Onboarding Chat (AI)
-    ↓
-Placement Test (Adaptive)
-    ↓
-Analysis Complete
-    ↓
-Subject Introduction (Knowledge Graph)
-    ↓
-Learning Node Map (Fog of War)
-    ↓
-Node Detail → Content Viewer
-    ↓
-Complete Content → Update Progress
-    ↓
-30-Day Roadmap → Daily Lessons
-    ↓
-Daily Quests → Claim Rewards
-    ↓
-Leaderboard → View Rankings
+```env
+DATABASE_URL=postgres://user:pass@localhost:5432/edtech_db
+REDIS_URL=redis://localhost:6379
+JWT_SECRET=your-secret-key-here
+JWT_EXPIRES_IN=7d
+GEMINI_API_KEY=your-gemini-api-key
+PORT=3000
+NODE_ENV=development
+CORS_ORIGIN=http://localhost:3000
 ```
 
----
+### API Endpoints
 
-## 🔌 API Endpoints
+#### Authentication
+- `POST /api/v1/auth/register` - Đăng ký
+- `POST /api/v1/auth/login` - Đăng nhập
+- `GET /api/v1/auth/verify` - Verify token
+- `GET /api/v1/auth/me` - Lấy thông tin user hiện tại
 
-### Authentication
-- `POST /auth/register` - Register user
-- `POST /auth/login` - Login
-- `GET /auth/me` - Get current user
+#### Users
+- `GET /api/v1/users/profile` - Lấy profile (cần JWT)
 
-### Learning
-- `GET /subjects/:id/intro` - Subject introduction
-- `GET /subjects/:id/nodes` - Subject nodes
-- `GET /nodes/:id` - Node detail
-- `GET /content/:id` - Content detail
-- `POST /progress/complete-item` - Complete content
+## 📁 Cấu trúc dự án
 
-### Roadmap
-- `POST /roadmap/generate` - Generate roadmap
-- `GET /roadmap` - Get roadmap
-- `GET /roadmap/:id/today` - Today's lesson
-- `POST /roadmap/:id/complete-day` - Complete day
+```
+edtech-ai-mvp/
+├── backend/          # NestJS backend
+│   ├── src/
+│   │   ├── auth/     # Authentication module
+│   │   ├── users/    # Users module
+│   │   ├── config/   # Configuration files
+│   │   └── main.ts   # Entry point
+│   └── package.json
+├── mobile/           # Flutter app (đang setup)
+├── shared/           # Shared code/types
+└── docs/             # Documentation
+```
 
-### Gamification
-- `GET /quests/daily` - Daily quests
-- `POST /quests/:id/claim` - Claim quest
-- `GET /leaderboard/global` - Global leaderboard
-- `GET /leaderboard/weekly` - Weekly leaderboard
+## 🔄 Roadmap
 
-📖 **Chi tiết**: Xem [PROJECT_STATUS.md](./PROJECT_STATUS.md#-api-endpoints)
+### ✅ Đã hoàn thành
 
----
+- [x] Setup NestJS backend structure
+- [x] Implement Auth module (register, login, verify)
+- [x] Setup User entity và database
+- [x] **Gamification System** - Currency, Progress, Shards
+- [x] **Subjects & Learning Nodes** - Explorer và Scholar tracks
+- [x] **Fog of War** - Chỉ hiện nodes đã unlock
+- [x] **Unlock Mechanism** - Coin + Payment cho Scholar track
+- [x] **Content Items** - Concepts, Examples, Hidden Rewards, Boss Quiz
+
+### 🚧 Đang phát triển
+
+- [x] Dashboard module (aggregator) ✅
+- [x] Onboarding AI chat (Gemini integration) ✅
+- [x] Placement test (Adaptive testing) ✅
+- [x] Roadmap generation (30-day personalized learning path) ✅
+- [x] Daily Quests system ✅
+- [x] Leaderboard ✅
+- [x] Swagger API Documentation ✅
+- [x] Health Check Endpoint ✅
+- [x] Global Error Handling ✅
+- [x] **Backend 100% Complete** ✅
+- [ ] Flutter mobile app
 
 ## 🧪 Testing
 
-### Test Checklist
-Xem [TEST_CHECKLIST.md](./TEST_CHECKLIST.md) để có danh sách đầy đủ test cases.
+Sau khi seed database, bạn có thể test API:
 
 ### Quick Test
 ```bash
-# Backend
-npm run test
+# Linux/Mac
+cd backend
+chmod +x scripts/test-api.sh
+./scripts/test-api.sh
 
-# Mobile
-flutter test
+# Windows
+cd backend
+scripts\test-api.bat
 ```
 
----
+### Manual Testing
+Xem file `backend/API_TEST.md` để có hướng dẫn chi tiết test từng endpoint với cURL hoặc Postman.
 
-## 🛠️ Development
+### API Documentation (Swagger)
+Sau khi start server, truy cập: `http://localhost:3000/api/v1/docs`
+- Interactive API documentation
+- Test endpoints trực tiếp từ browser
+- JWT authentication support
 
-### Backend Commands
+### Seed Data
 ```bash
-npm run start:dev      # Development mode
-npm run build          # Build for production
-npm run start:prod     # Production mode
-npm run migration:run   # Run migrations
-npm run seed           # Seed database
+cd backend
+npm run seed
 ```
 
-### Mobile Commands
-```bash
-flutter run            # Run app
-flutter test           # Run tests
-flutter build apk      # Build Android
-flutter build ios      # Build iOS
-```
+Seed sẽ tạo:
+- 2 subjects (1 Explorer, 1 Scholar)
+- 1 learning node với 20 content items
+- 9 sample questions cho placement test
 
----
+## 📚 API Endpoints
 
-## 📊 Project Status
+### Authentication
+- `POST /api/v1/auth/register` - Đăng ký
+- `POST /api/v1/auth/login` - Đăng nhập
+- `GET /api/v1/auth/verify` - Verify token
+- `GET /api/v1/auth/me` - Thông tin user hiện tại
 
-### ✅ Completed
-- [x] Authentication system
-- [x] AI onboarding chat
-- [x] Adaptive placement test
-- [x] Learning flow (subjects, nodes, content)
-- [x] 30-day roadmap
-- [x] Gamification (streaks, quests, leaderboard)
-- [x] Dashboard & Profile
-- [x] Navigation system
-- [x] UX improvements
+### Currency & Gamification
+- `GET /api/v1/currency` - Lấy coins, XP, streak, shards
 
-### 🚧 In Progress
-- [ ] Unit tests
-- [ ] Integration tests
-- [ ] Performance optimization
-- [ ] Offline support
+### Subjects
+- `GET /api/v1/subjects/explorer` - Danh sách subjects Explorer
+- `GET /api/v1/subjects/scholar` - Danh sách subjects Scholar (với unlock status)
+- `GET /api/v1/subjects/:id` - Chi tiết subject
+- `GET /api/v1/subjects/:id/nodes` - Nodes đã unlock (Fog of War)
 
-### 📋 Planned
-- [ ] Push notifications
-- [ ] Analytics tracking
-- [ ] Dark mode
-- [ ] Localization (i18n)
+### Learning Nodes
+- `GET /api/v1/nodes/subject/:subjectId` - Tất cả nodes của subject
+- `GET /api/v1/nodes/:id` - Chi tiết node
 
-📖 **Chi tiết**: Xem [PROJECT_STATUS.md](./PROJECT_STATUS.md)
+### Content Items
+- `GET /api/v1/content/node/:nodeId` - Content items của node
+- `GET /api/v1/content/:id` - Chi tiết content item
 
----
+### Progress Tracking
+- `GET /api/v1/progress/node/:nodeId` - Tiến độ của user trong node (với HUD)
+- `POST /api/v1/progress/complete-item` - Hoàn thành 1 content item
 
-## 🤝 Contributing
+### Unlock Scholar
+- `POST /api/v1/unlock/scholar` - Unlock subject Scholar (coin + payment)
+- `GET /api/v1/unlock/transactions` - Lịch sử unlock transactions
 
-1. Fork the repository
-2. Create feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to branch (`git push origin feature/AmazingFeature`)
-5. Open Pull Request
+### Placement Test
+- `POST /api/v1/test/start` - Bắt đầu placement test (optional: subjectId)
+- `GET /api/v1/test/current` - Lấy câu hỏi hiện tại và tiến độ
+- `POST /api/v1/test/submit` - Submit đáp án (adaptive difficulty)
+- `GET /api/v1/test/result/:testId` - Lấy kết quả test
 
----
+### Onboarding AI
+- `POST /api/v1/onboarding/chat` - Chat với AI để onboarding (conversational)
+- `GET /api/v1/onboarding/status` - Lấy trạng thái onboarding
+- `POST /api/v1/onboarding/reset` - Reset onboarding session
+
+### Leaderboard
+- `GET /api/v1/leaderboard/global?limit=100&page=1` - Global leaderboard (public)
+- `GET /api/v1/leaderboard/weekly?limit=100&page=1` - Weekly leaderboard (requires auth)
+- `GET /api/v1/leaderboard/subject/:subjectId?limit=100&page=1` - Subject leaderboard (requires auth)
+- `GET /api/v1/leaderboard/me` - User's rank (requires auth)
+
+### Health Check
+- `GET /api/v1/health` - Server health status
 
 ## 📝 License
 
-This project is licensed under the MIT License.
+ISC
 
----
-
-## 👥 Team
-
-- **Backend**: NestJS, TypeORM, PostgreSQL
-- **Mobile**: Flutter, Provider, go_router
-- **AI**: OpenAI API
-
----
-
-## 🆘 Support
-
-Nếu gặp vấn đề:
-1. Check [QUICK_START_GUIDE.md](./QUICK_START_GUIDE.md) - Common Issues
-2. Review [TEST_CHECKLIST.md](./TEST_CHECKLIST.md)
-3. Check error logs
-4. Create issue trên GitHub
-
----
-
-## 🎉 Acknowledgments
-
-- OpenAI cho AI capabilities
-- Flutter team cho amazing framework
-- NestJS team cho robust backend framework
-- Community cho support và feedback
-
----
-
-## 📞 Contact
-
-- **Project**: EdTech AI MVP
-- **Version**: 1.0.0
-- **Last Updated**: 2024
-
----
-
-**Made with ❤️ for better education**

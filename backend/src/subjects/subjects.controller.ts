@@ -46,11 +46,5 @@ export class SubjectsController {
     // Fog of War: Chỉ trả về nodes đã unlock
     return this.subjectsService.getAvailableNodesForUser(req.user.id, id);
   }
-
-  @Get(':id/intro')
-  @UseGuards(JwtAuthGuard)
-  async getSubjectIntro(@Request() req, @Param('id') id: string) {
-    return this.subjectsService.getSubjectIntro(req.user.id, id);
-  }
 }
 

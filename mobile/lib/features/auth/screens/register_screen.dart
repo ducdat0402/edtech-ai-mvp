@@ -38,7 +38,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       if (result['success'] == true) {
         if (mounted) {
-          // New users go to dashboard, can access onboarding via button
           context.go('/dashboard');
         }
       } else {

@@ -18,7 +18,6 @@ class ApiConstants {
   static const String scholarSubjects = '/subjects/scholar';
   static String subjectDetail(String id) => '/subjects/$id';
   static String subjectNodes(String id) => '/subjects/$id/nodes';
-  static String subjectIntro(String id) => '/subjects/$id/intro';
 
   // Learning Nodes
   static String nodesBySubject(String subjectId) => '/nodes/subject/$subjectId';
@@ -37,7 +36,7 @@ class ApiConstants {
 
   // Quests
   static const String dailyQuests = '/quests/daily';
-  static String claimQuest(String userQuestId) => '/quests/$userQuestId/claim';
+  static String claimQuest(String questId) => '/quests/$questId/claim';
   static const String questHistory = '/quests/history';
 
   // Leaderboard
