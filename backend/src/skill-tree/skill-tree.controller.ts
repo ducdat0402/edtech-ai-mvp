@@ -52,6 +52,69 @@ export class SkillTreeController {
     return this.skillTreeService.unlockNode(req.user.id, nodeId);
   }
 
+  @Post('unlock-next')
+  async unlockNextNode(
+    @Request() req,
+    @Body() body: { subjectId: string },
+  ) {
+    // Get skill tree for subject
+    const skillTree = await this.skillTreeService.getSkillTree(
+      req.user.id,
+      body.subjectId,
+    );
+
+    if (!skillTree) {
+      throw new Error('Skill tree not found');
+    }
+
+    return this.skillTreeService.unlockNextNode(req.user.id, skillTree.id);
+  }
+
+  @Get('next-unlockable')
+  async getNextUnlockableNodes(
+    @Request() req,
+    @Query('subjectId') subjectId: string,
+  ) {
+    console.log(`🔍 [API] getNextUnlockableNodes called for user ${req.user.id}, subjectId: ${subjectId}`);
+    
+    // Get skill tree for subject
+    const skillTree = await this.skillTreeService.getSkillTree(
+      req.user.id,
+      subjectId,
+    );
+
+    if (!skillTree) {
+      console.log(`⚠️  [API] No skill tree found for subjectId: ${subjectId}`);
+      return { nodes: [], hasNext: false };
+    }
+
+    console.log(`✅ [API] Found skill tree ${skillTree.id}`);
+    console.log(`📊 [API] Skill tree stats: ${skillTree.completedNodes}/${skillTree.totalNodes} completed, ${skillTree.unlockedNodes} unlocked`);
+    
+    // Log all nodes and their status
+    for (const node of skillTree.nodes) {
+      const progress = (node as any).userProgress as any[] | undefined;
+      const status = progress && progress.length > 0 ? progress[0].status : 'no progress';
+      console.log(`📋 [API] Node ${node.order}: ${node.title} - Status: ${status}, Prerequisites: ${node.prerequisites?.join(', ') || 'none'}`);
+    }
+    
+    console.log(`🔍 [API] Checking unlockable nodes...`);
+    const unlockableNodes = await this.skillTreeService.getNextUnlockableNodes(
+      req.user.id,
+      skillTree.id,
+    );
+
+    console.log(`📊 [API] Found ${unlockableNodes.length} unlockable nodes: ${unlockableNodes.map(n => `${n.title} (order: ${n.order})`).join(', ')}`);
+    return {
+      nodes: unlockableNodes.map((n) => ({
+        id: n.id,
+        title: n.title,
+        order: n.order,
+      })),
+      hasNext: unlockableNodes.length > 0,
+    };
+  }
+
   @Post(':nodeId/complete')
   async completeNode(
     @Request() req,

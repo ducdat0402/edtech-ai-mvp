@@ -63,6 +63,8 @@ class ApiConstants {
   static const String getSkillTree = '/skill-tree';
   static String unlockNode(String nodeId) => '/skill-tree/$nodeId/unlock';
   static String completeNode(String nodeId) => '/skill-tree/$nodeId/complete';
+  static const String unlockNextNode = '/skill-tree/unlock-next';
+  static const String getNextUnlockableNodes = '/skill-tree/next-unlockable';
 
   // Onboarding
   static const String onboardingChat = '/onboarding/chat';

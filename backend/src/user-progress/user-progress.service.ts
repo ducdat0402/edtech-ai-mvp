@@ -24,6 +24,19 @@ export class UserProgressService {
     private skillTreeService: SkillTreeService,
   ) {}
 
+  /**
+   * Map itemType from API to completedItems key
+   */
+  private mapItemTypeToKey(itemType: string): 'concepts' | 'examples' | 'hiddenRewards' | 'bossQuiz' {
+    const mapping: Record<string, 'concepts' | 'examples' | 'hiddenRewards' | 'bossQuiz'> = {
+      'concept': 'concepts',
+      'example': 'examples',
+      'hidden_reward': 'hiddenRewards',
+      'boss_quiz': 'bossQuiz',
+    };
+    return mapping[itemType] || 'concepts';
+  }
+
   async getOrCreate(userId: string, nodeId: string): Promise<UserProgress> {
     let progress = await this.progressRepository.findOne({
       where: { userId, nodeId },
@@ -51,6 +64,81 @@ export class UserProgressService {
         isCompleted: false,
       });
       progress = await this.progressRepository.save(progress);
+    } else {
+      // ✅ Fix old data: migrate from old keys to new keys
+      if (!progress.completedItems) {
+        progress.completedItems = {
+          concepts: [],
+          examples: [],
+          hiddenRewards: [],
+          bossQuiz: [],
+        };
+        await this.progressRepository.save(progress);
+      } else {
+        // ✅ Migrate old keys to new keys
+        const oldToNewMapping: Record<string, 'concepts' | 'examples' | 'hiddenRewards' | 'bossQuiz'> = {
+          'concept': 'concepts',
+          'example': 'examples',
+          'hidden_reward': 'hiddenRewards',
+          'boss_quiz': 'bossQuiz',
+        };
+        
+        let needsUpdate = false;
+        const migratedItems: any = {
+          concepts: [],
+          examples: [],
+          hiddenRewards: [],
+          bossQuiz: [],
+        };
+        
+        // Migrate old keys
+        for (const [oldKey, newKey] of Object.entries(oldToNewMapping)) {
+          if (progress.completedItems[oldKey] && Array.isArray(progress.completedItems[oldKey])) {
+            // Merge old data into new key
+            migratedItems[newKey] = [
+              ...(migratedItems[newKey] || []),
+              ...(progress.completedItems[oldKey] as string[]),
+            ];
+            needsUpdate = true;
+          }
+        }
+        
+        // Keep existing new keys
+        for (const key of ['concepts', 'examples', 'hiddenRewards', 'bossQuiz']) {
+          if (progress.completedItems[key] && Array.isArray(progress.completedItems[key])) {
+            // Merge with migrated data, avoiding duplicates
+            const existing = progress.completedItems[key] as string[];
+            const migrated = migratedItems[key] || [];
+            migratedItems[key] = [...new Set([...existing, ...migrated])];
+          } else if (!migratedItems[key] || migratedItems[key].length === 0) {
+            migratedItems[key] = [];
+          }
+        }
+        
+        if (needsUpdate) {
+          progress.completedItems = migratedItems;
+          await this.progressRepository.save(progress);
+        } else {
+          // ✅ Ensure all arrays exist even if no migration needed
+          const defaultItems = {
+            concepts: [],
+            examples: [],
+            hiddenRewards: [],
+            bossQuiz: [],
+          };
+          
+          for (const key of Object.keys(defaultItems)) {
+            if (!progress.completedItems[key] || !Array.isArray(progress.completedItems[key])) {
+              progress.completedItems[key] = [];
+              needsUpdate = true;
+            }
+          }
+          
+          if (needsUpdate) {
+            await this.progressRepository.save(progress);
+          }
+        }
+      }
     }
 
     return progress;
@@ -80,8 +168,26 @@ export class UserProgressService {
       throw new NotFoundException(`Node not found: ${nodeId}`);
     }
 
+    // ✅ Ensure completedItems structure exists
+    if (!progress.completedItems) {
+      progress.completedItems = {
+        concepts: [],
+        examples: [],
+        hiddenRewards: [],
+        bossQuiz: [],
+      };
+    }
+
+    // ✅ Map itemType to correct key (e.g., 'concept' -> 'concepts')
+    const completedItemsKey = this.mapItemTypeToKey(itemType);
+
+    // ✅ Ensure the specific array exists
+    if (!progress.completedItems[completedItemsKey]) {
+      progress.completedItems[completedItemsKey] = [];
+    }
+
     // Check if already completed
-    const alreadyCompleted = progress.completedItems[itemType].includes(
+    const alreadyCompleted = progress.completedItems[completedItemsKey].includes(
       contentItemId,
     );
 
@@ -101,10 +207,10 @@ export class UserProgressService {
     // Add to completed items if not already completed
     if (!alreadyCompleted) {
       // Ensure the array exists
-      if (!progress.completedItems[itemType]) {
-        progress.completedItems[itemType] = [];
+      if (!progress.completedItems[completedItemsKey]) {
+        progress.completedItems[completedItemsKey] = [];
       }
-      progress.completedItems[itemType].push(contentItemId);
+      progress.completedItems[completedItemsKey].push(contentItemId);
 
       // Apply rewards only if not already completed
       const rewards = contentItem.rewards || {};
@@ -166,9 +272,13 @@ export class UserProgressService {
         (progress.completedItems.bossQuiz.length > 0 ? 1 : 0);
 
       progress.progressPercentage = (completed / total) * 100;
+      
+      console.log(`📊 [completeContentItem] Learning node ${nodeId}: ${completed}/${total} items completed (${progress.progressPercentage.toFixed(1)}%)`);
+      console.log(`📊 [completeContentItem] Completed items: concepts=${progress.completedItems.concepts.length}, examples=${progress.completedItems.examples.length}, hiddenRewards=${progress.completedItems.hiddenRewards.length}, bossQuiz=${progress.completedItems.bossQuiz.length > 0 ? 1 : 0}`);
 
       // Check if completed
       if (progress.progressPercentage >= 100 && !progress.isCompleted) {
+        console.log(`✅ Learning node ${nodeId} completed! Progress: ${progress.progressPercentage}%`);
         progress.isCompleted = true;
         progress.completedAt = new Date();
         // Bonus rewards for completing node
@@ -177,17 +287,25 @@ export class UserProgressService {
 
         // ✅ Auto-complete corresponding skill node
         try {
-          await this.skillTreeService.completeSkillNodeFromLearningNode(
+          console.log(`🔄 Attempting to complete skill node for learning node ${nodeId}...`);
+          const skillProgress = await this.skillTreeService.completeSkillNodeFromLearningNode(
             userId,
             nodeId,
           );
+          if (skillProgress) {
+            console.log(`✅ Skill node completed successfully! Status: ${skillProgress.status}`);
+          } else {
+            console.log(`⚠️  No skill node found or already completed for learning node ${nodeId}`);
+          }
         } catch (error) {
           // Log but don't fail - skill tree might not exist yet
           console.error(
-            `Error completing skill node for learning node ${nodeId}:`,
+            `❌ Error completing skill node for learning node ${nodeId}:`,
             error,
           );
         }
+      } else {
+        console.log(`📊 Learning node ${nodeId} progress: ${progress.progressPercentage}% (not completed yet)`);
       }
 
       const savedProgress = await this.progressRepository.save(progress);
@@ -225,6 +343,39 @@ export class UserProgressService {
 
     if (!node) {
       throw new NotFoundException(`Node not found: ${nodeId}`);
+    }
+
+    // ✅ Recalculate progress percentage to ensure accuracy after migration
+    const total =
+      node.contentStructure.concepts +
+      node.contentStructure.examples +
+      node.contentStructure.hiddenRewards +
+      node.contentStructure.bossQuiz;
+
+    const completed =
+      progress.completedItems.concepts.length +
+      progress.completedItems.examples.length +
+      progress.completedItems.hiddenRewards.length +
+      (progress.completedItems.bossQuiz.length > 0 ? 1 : 0);
+
+    const calculatedPercentage = total > 0 ? (completed / total) * 100 : 0;
+    
+    // Update progress percentage if it's different (e.g., after migration)
+    if (Math.abs(progress.progressPercentage - calculatedPercentage) > 0.01) {
+      progress.progressPercentage = calculatedPercentage;
+      
+      // Check if should be marked as completed
+      if (calculatedPercentage >= 100 && !progress.isCompleted) {
+        progress.isCompleted = true;
+        if (!progress.completedAt) {
+          progress.completedAt = new Date();
+        }
+      } else if (calculatedPercentage < 100 && progress.isCompleted) {
+        progress.isCompleted = false;
+      }
+      
+      // Save updated progress
+      await this.progressRepository.save(progress);
     }
 
     return {

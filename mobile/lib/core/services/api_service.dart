@@ -331,4 +331,20 @@ class ApiService {
     );
     return response.data;
   }
+
+  Future<Map<String, dynamic>> unlockNextSkillNode(String subjectId) async {
+    final response = await _apiClient.post(
+      ApiConstants.unlockNextNode,
+      data: {'subjectId': subjectId},
+    );
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> getNextUnlockableNodes(String subjectId) async {
+    final response = await _apiClient.get(
+      ApiConstants.getNextUnlockableNodes,
+      queryParameters: {'subjectId': subjectId},
+    );
+    return response.data;
+  }
 }
