@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:edtech_mobile/features/auth/screens/login_screen.dart';
 import 'package:edtech_mobile/features/auth/screens/register_screen.dart';
@@ -14,6 +15,7 @@ import 'package:edtech_mobile/features/skill_tree/screens/skill_tree_screen.dart
 import 'package:edtech_mobile/features/quests/screens/daily_quests_screen.dart';
 import 'package:edtech_mobile/features/leaderboard/screens/leaderboard_screen.dart';
 import 'package:edtech_mobile/features/profile/screens/profile_screen.dart';
+import 'package:edtech_mobile/features/admin/screens/admin_panel_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/login',
@@ -70,7 +72,11 @@ final GoRouter appRouter = GoRouter(
       path: '/content/:id',
       builder: (context, state) {
         final contentId = state.pathParameters['id']!;
-        return ContentViewerScreen(contentId: contentId);
+        // Use key to force widget rebuild when contentId changes
+        return ContentViewerScreen(
+          key: ValueKey(contentId),
+          contentId: contentId,
+        );
       },
     ),
     GoRoute(
@@ -101,6 +107,10 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/profile',
       builder: (context, state) => const ProfileScreen(),
+    ),
+    GoRoute(
+      path: '/admin/panel',
+      builder: (context, state) => const AdminPanelScreen(),
     ),
   ],
 );

@@ -77,5 +77,18 @@ class ApiConstants {
 
   // Health
   static const String health = '/health';
+
+  // Content Edits (Wiki-style Community Edit)
+  static String submitContentEdit(String contentItemId) => '/content-edits/content/$contentItemId/submit';
+  static String getContentEdits(String contentItemId) => '/content-edits/content/$contentItemId';
+  static String getContentEdit(String id) => '/content-edits/$id';
+  static String approveContentEdit(String id) => '/content-edits/$id/approve';
+  static String rejectContentEdit(String id) => '/content-edits/$id/reject';
+  static String voteOnContentEdit(String id) => '/content-edits/$id/vote';
+  static const String uploadImage = '/content-edits/upload-image';
+  static const String uploadVideo = '/content-edits/upload-video';
+  static const String pendingContentEdits = '/content-edits/pending/list';
+  static const String allContentWithEdits = '/content-edits/admin/all-content-with-edits';
+  static String removeContentEdit(String id) => '/content-edits/$id';
 }
 

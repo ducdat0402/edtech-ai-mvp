@@ -347,4 +347,90 @@ class ApiService {
     );
     return response.data;
   }
+
+  // Content Edits (Wiki-style Community Edit)
+  Future<Map<String, dynamic>> submitContentEdit({
+    required String contentItemId,
+    required String type, // 'add_video', 'add_image', 'add_text', 'update_content'
+    String? videoUrl,
+    String? imageUrl,
+    String? textContent,
+    String? description,
+    String? caption,
+  }) async {
+    final response = await _apiClient.post(
+      ApiConstants.submitContentEdit(contentItemId),
+      data: {
+        'type': type,
+        if (videoUrl != null) 'videoUrl': videoUrl,
+        if (imageUrl != null) 'imageUrl': imageUrl,
+        if (textContent != null) 'textContent': textContent,
+        if (description != null) 'description': description,
+        if (caption != null) 'caption': caption,
+      },
+    );
+    return response.data;
+  }
+
+  Future<List<dynamic>> getContentEdits(String contentItemId) async {
+    final response = await _apiClient.get(
+      ApiConstants.getContentEdits(contentItemId),
+    );
+    return List<Map<String, dynamic>>.from(response.data);
+  }
+
+  Future<Map<String, dynamic>> uploadImageForEdit(String imagePath) async {
+    final response = await _apiClient.postFile(
+      ApiConstants.uploadImage,
+      fileKey: 'image',
+      filePath: imagePath,
+    );
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> uploadVideoForEdit(String videoPath) async {
+    final response = await _apiClient.postFile(
+      ApiConstants.uploadVideo,
+      fileKey: 'video',
+      filePath: videoPath,
+    );
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> voteOnContentEdit(
+    String editId, {
+    required bool isUpvote,
+  }) async {
+    final response = await _apiClient.post(
+      ApiConstants.voteOnContentEdit(editId),
+      data: {'isUpvote': isUpvote},
+    );
+    return response.data;
+  }
+
+  // Admin endpoints
+  Future<List<dynamic>> getPendingContentEdits() async {
+    final response = await _apiClient.get(ApiConstants.pendingContentEdits);
+    return List<Map<String, dynamic>>.from(response.data);
+  }
+
+  Future<Map<String, dynamic>> approveContentEdit(String editId) async {
+    final response = await _apiClient.put(ApiConstants.approveContentEdit(editId));
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> rejectContentEdit(String editId) async {
+    final response = await _apiClient.put(ApiConstants.rejectContentEdit(editId));
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> removeContentEdit(String editId) async {
+    final response = await _apiClient.delete(ApiConstants.removeContentEdit(editId));
+    return response.data;
+  }
+
+  Future<List<dynamic>> getAllContentItemsWithEdits() async {
+    final response = await _apiClient.get(ApiConstants.allContentWithEdits);
+    return List<Map<String, dynamic>>.from(response.data);
+  }
 }

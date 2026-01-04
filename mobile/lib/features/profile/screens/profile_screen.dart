@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
+import 'package:edtech_mobile/core/services/auth_service.dart';
 import 'package:edtech_mobile/core/widgets/streak_display.dart';
 import 'package:edtech_mobile/core/widgets/bottom_nav_bar.dart';
 import 'package:edtech_mobile/core/widgets/error_widget.dart';
@@ -52,6 +54,52 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  Future<void> _handleLogout() async {
+    // Show confirmation dialog
+    final shouldLogout = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Đăng xuất'),
+        content: const Text('Bạn có chắc chắn muốn đăng xuất?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Hủy'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.red,
+            ),
+            child: const Text('Đăng xuất'),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldLogout == true) {
+      try {
+        // Clear token
+        final authService = Provider.of<AuthService>(context, listen: false);
+        await authService.logout();
+
+        // Navigate to login screen
+        if (context.mounted) {
+          context.go('/login');
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Lỗi khi đăng xuất: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -65,6 +113,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 _showDetailed = !_showDetailed;
               });
             },
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: 'Đăng xuất',
+            onPressed: () => _handleLogout(),
           ),
         ],
       ),
@@ -147,6 +200,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
           ],
+          
+          // Admin Panel Button (only for admin)
+          if (_profileData!['role'] == 'admin') ...[
+            const SizedBox(height: 24),
+            Card(
+              color: Colors.blue.shade50,
+              child: ListTile(
+                leading: const Icon(Icons.admin_panel_settings, color: Colors.blue),
+                title: const Text(
+                  'Admin Panel',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue,
+                  ),
+                ),
+                subtitle: const Text('Duyệt đóng góp từ cộng đồng'),
+                trailing: const Icon(Icons.chevron_right, color: Colors.blue),
+                onTap: () {
+                  context.push('/admin/panel');
+                },
+              ),
+            ),
+          ],
           const SizedBox(height: 24),
 
           // Streak Display
@@ -161,6 +237,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           // Mini Dashboard Stats
           _buildMiniStats(),
+          const SizedBox(height: 24),
+          
+          // Logout Button
+          _buildLogoutButton(),
         ],
       ),
     );
@@ -192,7 +272,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
           // Placement Test Info
           if (_profileData!['placementTestLevel'] != null)
             _buildPlacementTestInfo(),
+          const SizedBox(height: 24),
+          
+          // Logout Button
+          _buildLogoutButton(),
         ],
+      ),
+    );
+  }
+
+  Widget _buildLogoutButton() {
+    return Card(
+      color: Colors.red.shade50,
+      child: ListTile(
+        leading: const Icon(Icons.logout, color: Colors.red),
+        title: const Text(
+          'Đăng xuất',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.red,
+          ),
+        ),
+        trailing: const Icon(Icons.chevron_right, color: Colors.red),
+        onTap: () => _handleLogout(),
       ),
     );
   }

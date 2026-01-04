@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:video_player/video_player.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
+import 'package:edtech_mobile/core/config/api_config.dart';
+import 'dart:io';
 
 class ContentViewerScreen extends StatefulWidget {
   final String contentId;
@@ -25,42 +29,95 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
   bool _showQuizResult = false;
   bool _isCompleting = false;
   bool _isCompleted = false;
+  List<Map<String, dynamic>> _communityEdits = [];
+  bool _isLoadingEdits = false;
+  String? _userRole; // Store user role to check if admin
 
   @override
   void initState() {
     super.initState();
     _loadContent();
+    _loadCommunityEdits();
+    _loadUserRole();
+  }
+
+  Future<void> _loadUserRole() async {
+    try {
+      final apiService = Provider.of<ApiService>(context, listen: false);
+      final profile = await apiService.getUserProfile();
+      setState(() {
+        _userRole = profile['role'] as String?;
+      });
+    } catch (e) {
+      // Ignore error, user might not be logged in
+    }
+  }
+
+  @override
+  void didUpdateWidget(ContentViewerScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Reload content when contentId changes (e.g., when navigating with context.go())
+    if (oldWidget.contentId != widget.contentId) {
+      print(
+          '🔄 Content ID changed from ${oldWidget.contentId} to ${widget.contentId}, reloading...');
+      // Reset state before reloading
+      setState(() {
+        _isLoading = true;
+        _error = null;
+        _isCompleted = false;
+        _isCompleting = false;
+        _showQuizResult = false;
+        _selectedQuizAnswer = null;
+        _nextContentItem = null;
+        _prevContentItem = null;
+      });
+      _loadContent();
+    }
+  }
+
+  /// Helper function to convert relative path to full URL
+  String _buildFullUrl(String? url) {
+    if (url == null || url.isEmpty) return '';
+    // If already a full URL (starts with http:// or https://), return as is
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    // If it's a relative path (starts with /), prepend base URL
+    // Extract base URL from ApiConfig (remove /api/v1)
+    final baseUrl = ApiConfig.baseUrl.replaceAll('/api/v1', '');
+    return '$baseUrl$url';
   }
 
   Future<void> _loadContent() async {
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
       final data = await apiService.getContentDetail(widget.contentId);
-      
+
       // Load all content items from the same node
       final nodeId = data['nodeId'] as String?;
       if (nodeId != null) {
         try {
           final allItems = await apiService.getContentByNode(nodeId);
           // Sort by order
-          allItems.sort((a, b) => (a['order'] as int? ?? 0).compareTo(b['order'] as int? ?? 0));
-          
-          final currentIndex = allItems.indexWhere((item) => item['id'] == widget.contentId);
-          
+          allItems.sort((a, b) =>
+              (a['order'] as int? ?? 0).compareTo(b['order'] as int? ?? 0));
+
+          final currentIndex =
+              allItems.indexWhere((item) => item['id'] == widget.contentId);
+
           print('Loaded ${allItems.length} content items');
           print('Current content ID: ${widget.contentId}');
           print('Current index: $currentIndex');
-          
-          final nextItem = currentIndex >= 0 && currentIndex < allItems.length - 1
-              ? allItems[currentIndex + 1]
-              : null;
-          final prevItem = currentIndex > 0
-              ? allItems[currentIndex - 1]
-              : null;
-          
+
+          final nextItem =
+              currentIndex >= 0 && currentIndex < allItems.length - 1
+                  ? allItems[currentIndex + 1]
+                  : null;
+          final prevItem = currentIndex > 0 ? allItems[currentIndex - 1] : null;
+
           print('Next item: ${nextItem?['id']} - ${nextItem?['title']}');
           print('Prev item: ${prevItem?['id']} - ${prevItem?['title']}');
-          
+
           setState(() {
             _contentData = data;
             _nextContentItem = nextItem;
@@ -84,6 +141,26 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
       setState(() {
         _error = e.toString();
         _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _loadCommunityEdits() async {
+    setState(() {
+      _isLoadingEdits = true;
+    });
+    try {
+      final apiService = Provider.of<ApiService>(context, listen: false);
+      final edits = await apiService.getContentEdits(widget.contentId);
+      setState(() {
+        _communityEdits =
+            edits.map((e) => Map<String, dynamic>.from(e)).toList();
+        _isLoadingEdits = false;
+      });
+    } catch (e) {
+      print('Error loading community edits: $e');
+      setState(() {
+        _isLoadingEdits = false;
       });
     }
   }
@@ -113,10 +190,10 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
         setState(() {
           _isCompleted = true;
         });
-        
+
         // Reload content items to ensure navigation buttons are available
         await _loadContentItems();
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Đã hoàn thành! 🎉'),
@@ -171,24 +248,24 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
       final apiService = Provider.of<ApiService>(context, listen: false);
       final allItems = await apiService.getContentByNode(nodeId);
       // Sort by order
-      allItems.sort((a, b) => (a['order'] as int? ?? 0).compareTo(b['order'] as int? ?? 0));
-      
-      final currentIndex = allItems.indexWhere((item) => item['id'] == widget.contentId);
-      
+      allItems.sort((a, b) =>
+          (a['order'] as int? ?? 0).compareTo(b['order'] as int? ?? 0));
+
+      final currentIndex =
+          allItems.indexWhere((item) => item['id'] == widget.contentId);
+
       print('Reloaded ${allItems.length} content items');
       print('Current content ID: ${widget.contentId}');
       print('Current index: $currentIndex');
-      
+
       final nextItem = currentIndex >= 0 && currentIndex < allItems.length - 1
           ? allItems[currentIndex + 1]
           : null;
-      final prevItem = currentIndex > 0
-          ? allItems[currentIndex - 1]
-          : null;
-      
+      final prevItem = currentIndex > 0 ? allItems[currentIndex - 1] : null;
+
       print('Next item: ${nextItem?['id']} - ${nextItem?['title']}');
       print('Prev item: ${prevItem?['id']} - ${prevItem?['title']}');
-      
+
       if (mounted) {
         setState(() {
           _nextContentItem = nextItem;
@@ -208,16 +285,12 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
+            // Simply pop back to previous screen (maintains navigation stack)
             if (context.canPop()) {
               context.pop();
             } else {
               // Fallback: navigate to dashboard if can't pop
-              final nodeId = _contentData?['nodeId'] as String?;
-              if (nodeId != null) {
-                context.go('/nodes/$nodeId');
-              } else {
-                context.go('/dashboard');
-              }
+              context.go('/dashboard');
             }
           },
         ),
@@ -229,7 +302,8 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                      const Icon(Icons.error_outline,
+                          size: 64, color: Colors.red),
                       const SizedBox(height: 16),
                       Text('Error: $_error'),
                       const SizedBox(height: 16),
@@ -279,7 +353,7 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
           const SizedBox(height: 16),
           if (_contentData!['media']?['imageUrl'] != null)
             Image.network(
-              _contentData!['media']['imageUrl'],
+              _buildFullUrl(_contentData!['media']['imageUrl']),
               fit: BoxFit.cover,
             ),
           const SizedBox(height: 16),
@@ -288,6 +362,8 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
               _contentData!['content'],
               style: const TextStyle(fontSize: 16, height: 1.5),
             ),
+          const SizedBox(height: 24),
+          _buildCommunityEditsSection(),
           const SizedBox(height: 24),
           _buildCompleteButton(),
         ],
@@ -329,9 +405,11 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
           const SizedBox(height: 16),
           if (_contentData!['media']?['imageUrl'] != null)
             Image.network(
-              _contentData!['media']['imageUrl'],
+              _buildFullUrl(_contentData!['media']['imageUrl']),
               fit: BoxFit.cover,
             ),
+          const SizedBox(height: 24),
+          _buildCommunityEditsSection(),
           const SizedBox(height: 24),
           _buildCompleteButton(),
         ],
@@ -374,9 +452,8 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
           ...List.generate(options.length, (index) {
             final isSelected = _selectedQuizAnswer == index;
             final isCorrect = _showQuizResult && index == correctAnswer;
-            final isWrong = _showQuizResult &&
-                isSelected &&
-                index != correctAnswer;
+            final isWrong =
+                _showQuizResult && isSelected && index != correctAnswer;
 
             return Padding(
               padding: const EdgeInsets.only(bottom: 12),
@@ -436,11 +513,14 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
                           ),
                         ),
                         child: isCorrect
-                            ? const Icon(Icons.check, size: 16, color: Colors.white)
+                            ? const Icon(Icons.check,
+                                size: 16, color: Colors.white)
                             : isWrong
-                                ? const Icon(Icons.close, size: 16, color: Colors.white)
+                                ? const Icon(Icons.close,
+                                    size: 16, color: Colors.white)
                                 : isSelected
-                                    ? const Icon(Icons.check, size: 16, color: Colors.white)
+                                    ? const Icon(Icons.check,
+                                        size: 16, color: Colors.white)
                                     : null,
                       ),
                       const SizedBox(width: 12),
@@ -449,7 +529,9 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
                           options[index].toString(),
                           style: TextStyle(
                             fontSize: 16,
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.normal,
                           ),
                         ),
                       ),
@@ -488,7 +570,8 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: _selectedQuizAnswer != null ? _submitQuizAnswer : null,
+                onPressed:
+                    _selectedQuizAnswer != null ? _submitQuizAnswer : null,
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
@@ -509,11 +592,14 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
                         print('Quiz: _prevContentItem: $_prevContentItem');
                         if (_prevContentItem != null) {
                           final prevId = _prevContentItem!['id'] as String?;
-                          print('Quiz: Navigating to previous content: $prevId');
+                          print(
+                              'Quiz: Navigating to previous content: $prevId');
                           if (prevId != null && prevId.isNotEmpty) {
-                            context.push('/content/$prevId');
+                            // Use go() to replace current route instead of pushing new one
+                            context.go('/content/$prevId');
                           } else {
-                            print('Quiz: Error: prevContentItem id is null or empty');
+                            print(
+                                'Quiz: Error: prevContentItem id is null or empty');
                           }
                         } else {
                           print('Quiz: Error: _prevContentItem is null');
@@ -530,7 +616,8 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
                   // Show info message if this is the first item
                   Expanded(
                     child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 12, horizontal: 8),
                       decoration: BoxDecoration(
                         color: Colors.grey.shade100,
                         borderRadius: BorderRadius.circular(8),
@@ -539,7 +626,8 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.info_outline, color: Colors.grey.shade600, size: 18),
+                          Icon(Icons.info_outline,
+                              color: Colors.grey.shade600, size: 18),
                           const SizedBox(width: 6),
                           Flexible(
                             child: Text(
@@ -568,9 +656,11 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
                           final nextId = _nextContentItem!['id'] as String?;
                           print('Quiz: Navigating to next content: $nextId');
                           if (nextId != null && nextId.isNotEmpty) {
-                            context.push('/content/$nextId');
+                            // Use go() to replace current route instead of pushing new one
+                            context.go('/content/$nextId');
                           } else {
-                            print('Quiz: Error: nextContentItem id is null or empty');
+                            print(
+                                'Quiz: Error: nextContentItem id is null or empty');
                           }
                         } else {
                           print('Quiz: Error: _nextContentItem is null');
@@ -588,7 +678,8 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
                   // Show info message if this is the last item
                   Expanded(
                     child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 12, horizontal: 8),
                       decoration: BoxDecoration(
                         color: Colors.grey.shade100,
                         borderRadius: BorderRadius.circular(8),
@@ -597,7 +688,8 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.info_outline, color: Colors.grey.shade600, size: 18),
+                          Icon(Icons.info_outline,
+                              color: Colors.grey.shade600, size: 18),
                           const SizedBox(width: 6),
                           Flexible(
                             child: Text(
@@ -621,12 +713,16 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
               width: double.infinity,
               child: OutlinedButton(
                 onPressed: () {
+                  // Always navigate directly to node detail screen
                   final nodeId = _contentData?['nodeId'] as String?;
                   if (nodeId != null) {
                     context.go('/nodes/$nodeId');
                   } else {
+                    // Fallback: try to pop or go to dashboard
                     if (context.canPop()) {
                       context.pop();
+                    } else {
+                      context.go('/dashboard');
                     }
                   }
                 },
@@ -708,8 +804,7 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          if (_contentData!['content'] != null)
-            Text(_contentData!['content']),
+          if (_contentData!['content'] != null) Text(_contentData!['content']),
           const SizedBox(height: 24),
           _buildCompleteButton(),
         ],
@@ -717,8 +812,301 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
     );
   }
 
+  Widget _buildCommunityEditsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Đóng góp từ cộng đồng',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            TextButton.icon(
+              onPressed: () => _showAddEditDialog(),
+              icon: const Icon(Icons.add, size: 20),
+              label: const Text('Thêm'),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        if (_isLoadingEdits)
+          const Center(child: CircularProgressIndicator())
+        else if (_communityEdits.isEmpty)
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Text(
+              'Chưa có đóng góp nào từ cộng đồng. Hãy là người đầu tiên!',
+              style: TextStyle(color: Colors.grey),
+            ),
+          )
+        else
+          ..._communityEdits.map((edit) => _buildEditCard(edit)),
+      ],
+    );
+  }
+
+  Widget _buildEditCard(Map<String, dynamic> edit) {
+    final type = edit['type'] as String? ?? '';
+    final media = edit['media'] as Map<String, dynamic>?;
+    final description = edit['description'] as String?;
+    final upvotes = edit['upvotes'] as int? ?? 0;
+    final downvotes = edit['downvotes'] as int? ?? 0;
+    final user = edit['user'] as Map<String, dynamic>?;
+    final userName = user?['fullName'] as String? ??
+        user?['email'] as String? ??
+        'Người dùng';
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 16,
+                  child: Text(userName[0].toUpperCase()),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        userName,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        type == 'add_video'
+                            ? 'Đã thêm video'
+                            : type == 'add_image'
+                                ? 'Đã thêm hình ảnh'
+                                : 'Đã đóng góp',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.thumb_up_outlined, size: 18),
+                      onPressed: () => _voteOnEdit(edit['id'], true),
+                      tooltip: 'Upvote',
+                    ),
+                    Text('$upvotes'),
+                    const SizedBox(width: 8),
+                    IconButton(
+                      icon: const Icon(Icons.thumb_down_outlined, size: 18),
+                      onPressed: () => _voteOnEdit(edit['id'], false),
+                      tooltip: 'Downvote',
+                    ),
+                    Text('$downvotes'),
+                    if (_userRole == 'admin') ...[
+                      const SizedBox(width: 8),
+                      IconButton(
+                        icon: const Icon(Icons.delete_outline,
+                            size: 18, color: Colors.red),
+                        onPressed: () => _removeEdit(edit['id']),
+                        tooltip: 'Gỡ bài',
+                      ),
+                    ],
+                  ],
+                ),
+              ],
+            ),
+            if (description != null && description.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(description),
+            ],
+            if (media != null) ...[
+              const SizedBox(height: 12),
+              if (media['imageUrl'] != null)
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(
+                    _buildFullUrl(media['imageUrl']),
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: 200,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        height: 200,
+                        color: Colors.grey.shade200,
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.broken_image,
+                                  color: Colors.grey.shade400),
+                              SizedBox(height: 8),
+                              Text(
+                                'Không thể tải hình ảnh',
+                                style: TextStyle(color: Colors.grey.shade600),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              if (media['videoUrl'] != null)
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: _VideoPlayerWidget(
+                      videoUrl: _buildFullUrl(media['videoUrl'])),
+                ),
+              if (media['caption'] != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(
+                    media['caption'],
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade600,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _voteOnEdit(String editId, bool isUpvote) async {
+    try {
+      final apiService = Provider.of<ApiService>(context, listen: false);
+      await apiService.voteOnContentEdit(editId, isUpvote: isUpvote);
+      _loadCommunityEdits(); // Reload to update votes
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi khi vote: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _removeEdit(String editId) async {
+    // Show confirmation dialog
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Gỡ bài đóng góp'),
+        content: const Text(
+            'Bạn có chắc chắn muốn gỡ bài đóng góp này? Hành động này không thể hoàn tác.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Hủy'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Gỡ bài'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      final apiService = Provider.of<ApiService>(context, listen: false);
+      await apiService.removeContentEdit(editId);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Đã gỡ bài đóng góp thành công')),
+        );
+        _loadCommunityEdits(); // Reload to remove deleted edit
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi khi gỡ bài: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _showAddEditDialog() async {
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (context) => _AddEditDialog(),
+    );
+
+    if (result != null && mounted) {
+      await _submitEdit(result);
+    }
+  }
+
+  Future<void> _submitEdit(Map<String, dynamic> data) async {
+    try {
+      final apiService = Provider.of<ApiService>(context, listen: false);
+      String? imageUrl = data['imageUrl'] as String?;
+      String? videoUrl = data['videoUrl'] as String?;
+
+      // Upload file if needed
+      if (data['imageFile'] != null) {
+        final uploadResult = await apiService.uploadImageForEdit(
+          (data['imageFile'] as File).path,
+        );
+        imageUrl = uploadResult['imageUrl'] as String?;
+      }
+
+      if (data['videoFile'] != null) {
+        final uploadResult = await apiService.uploadVideoForEdit(
+          (data['videoFile'] as File).path,
+        );
+        videoUrl = uploadResult['videoUrl'] as String?;
+      }
+
+      // Submit edit
+      await apiService.submitContentEdit(
+        contentItemId: widget.contentId,
+        type: data['type'] as String,
+        imageUrl: imageUrl,
+        videoUrl: videoUrl,
+        description: data['description'] as String?,
+        caption: data['caption'] as String?,
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Đã gửi đóng góp! Cảm ơn bạn đã đóng góp.'),
+          ),
+        );
+        _loadCommunityEdits();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi khi gửi đóng góp: $e')),
+        );
+      }
+    }
+  }
+
   Widget _buildCompleteButton() {
-          if (_isCompleted) {
+    if (_isCompleted) {
       // Show navigation buttons after completion
       return Column(
         children: [
@@ -760,8 +1148,8 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
                         final prevId = _prevContentItem!['id'] as String?;
                         print('Navigating to previous content: $prevId');
                         if (prevId != null && prevId.isNotEmpty) {
-                          // Use push to navigate to previous content
-                          context.push('/content/$prevId');
+                          // Use go() to replace current route instead of pushing new one
+                          context.go('/content/$prevId');
                         } else {
                           print('Error: prevContentItem id is null or empty');
                         }
@@ -780,7 +1168,8 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
                 // Show info message if this is the first item
                 Expanded(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 16, horizontal: 12),
                     decoration: BoxDecoration(
                       color: Colors.grey.shade100,
                       borderRadius: BorderRadius.circular(8),
@@ -789,7 +1178,8 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.info_outline, color: Colors.grey.shade600, size: 20),
+                        Icon(Icons.info_outline,
+                            color: Colors.grey.shade600, size: 20),
                         const SizedBox(width: 8),
                         Flexible(
                           child: Text(
@@ -818,8 +1208,8 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
                         final nextId = _nextContentItem!['id'] as String?;
                         print('Navigating to next content: $nextId');
                         if (nextId != null && nextId.isNotEmpty) {
-                          // Use push to navigate to next content
-                          context.push('/content/$nextId');
+                          // Use go() to replace current route instead of pushing new one
+                          context.go('/content/$nextId');
                         } else {
                           print('Error: nextContentItem id is null or empty');
                         }
@@ -839,7 +1229,8 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
                 // Show info message if this is the last item
                 Expanded(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 16, horizontal: 12),
                     decoration: BoxDecoration(
                       color: Colors.grey.shade100,
                       borderRadius: BorderRadius.circular(8),
@@ -848,7 +1239,8 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.info_outline, color: Colors.grey.shade600, size: 20),
+                        Icon(Icons.info_outline,
+                            color: Colors.grey.shade600, size: 20),
                         const SizedBox(width: 8),
                         Flexible(
                           child: Text(
@@ -872,14 +1264,16 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
             width: double.infinity,
             child: OutlinedButton(
               onPressed: () {
+                // Always navigate directly to node detail screen
                 final nodeId = _contentData?['nodeId'] as String?;
                 if (nodeId != null) {
-                  // Navigate to node detail
                   context.go('/nodes/$nodeId');
                 } else {
-                  // Fallback: try to pop if possible
+                  // Fallback: try to pop or go to dashboard
                   if (context.canPop()) {
                     context.pop();
+                  } else {
+                    context.go('/dashboard');
                   }
                 }
               },
@@ -919,6 +1313,465 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
                 ),
               ),
       ),
+    );
+  }
+}
+
+class _AddEditDialog extends StatefulWidget {
+  @override
+  State<_AddEditDialog> createState() => _AddEditDialogState();
+}
+
+class _AddEditDialogState extends State<_AddEditDialog> {
+  final _formKey = GlobalKey<FormState>();
+  final _descriptionController = TextEditingController();
+  final _captionController = TextEditingController();
+  String? _selectedType = 'add_image';
+  File? _selectedImage;
+  File? _selectedVideo;
+  final ImagePicker _picker = ImagePicker();
+
+  @override
+  void dispose() {
+    _descriptionController.dispose();
+    _captionController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickImage() async {
+    try {
+      final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+      if (image != null) {
+        setState(() {
+          _selectedImage = File(image.path);
+          _selectedType = 'add_image';
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Lỗi khi chọn hình ảnh: $e')),
+      );
+    }
+  }
+
+  Future<void> _pickVideo() async {
+    try {
+      final XFile? video = await _picker.pickVideo(source: ImageSource.gallery);
+      if (video != null) {
+        // Validate video file
+        final file = File(video.path);
+        final fileSize = await file.length();
+        const maxSize = 100 * 1024 * 1024; // 100MB
+
+        // Check file size
+        if (fileSize > maxSize) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                  'Video quá lớn. Kích thước tối đa: 100MB. Video của bạn: ${(fileSize / 1024 / 1024).toStringAsFixed(2)}MB'),
+              duration: const Duration(seconds: 5),
+            ),
+          );
+          return;
+        }
+
+        // Check file extension
+        final extension = video.path.toLowerCase().split('.').last;
+        const allowedExtensions = ['mp4', 'webm', 'mov', 'quicktime'];
+        if (!allowedExtensions.contains(extension)) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                  'Định dạng video không được hỗ trợ. Chỉ chấp nhận: MP4, WebM, MOV'),
+              duration: const Duration(seconds: 5),
+            ),
+          );
+          return;
+        }
+
+        setState(() {
+          _selectedVideo = file;
+          _selectedType = 'add_video';
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Lỗi khi chọn video: $e')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Thêm đóng góp'),
+      content: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Loại đóng góp:'),
+              const SizedBox(height: 8),
+              DropdownButtonFormField<String>(
+                value: _selectedType,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                ),
+                items: const [
+                  DropdownMenuItem(
+                    value: 'add_image',
+                    child: Text('Thêm hình ảnh'),
+                  ),
+                  DropdownMenuItem(
+                    value: 'add_video',
+                    child: Text('Thêm video'),
+                  ),
+                ],
+                onChanged: (value) {
+                  setState(() {
+                    _selectedType = value;
+                  });
+                },
+              ),
+              const SizedBox(height: 16),
+              if (_selectedType == 'add_image')
+                ElevatedButton.icon(
+                  onPressed: _pickImage,
+                  icon: const Icon(Icons.image),
+                  label: const Text('Chọn hình ảnh'),
+                ),
+              if (_selectedType == 'add_video') ...[
+                ElevatedButton.icon(
+                  onPressed: _pickVideo,
+                  icon: const Icon(Icons.video_library),
+                  label: const Text('Chọn video'),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.blue.shade200),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.info_outline,
+                              size: 16, color: Colors.blue.shade700),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Yêu cầu video:',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                              color: Colors.blue.shade700,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '• Định dạng: MP4, WebM, MOV\n• Kích thước tối đa: 100MB',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.blue.shade900,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+              if (_selectedImage != null) ...[
+                const SizedBox(height: 12),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.file(
+                    _selectedImage!,
+                    height: 150,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ],
+              if (_selectedVideo != null) ...[
+                const SizedBox(height: 12),
+                FutureBuilder<int>(
+                  future: _selectedVideo!.length(),
+                  builder: (context, snapshot) {
+                    final fileSize = snapshot.data ?? 0;
+                    final fileSizeMB =
+                        (fileSize / 1024 / 1024).toStringAsFixed(2);
+                    final fileName =
+                        _selectedVideo!.path.split(Platform.pathSeparator).last;
+
+                    return Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.grey.shade300),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(Icons.video_file,
+                                  color: Colors.blue.shade700),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  fileName,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Kích thước: ${fileSizeMB}MB',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: SizedBox(
+                              height: 150,
+                              child: _VideoPlayerWidget(
+                                videoUrl: _selectedVideo!.path,
+                                isLocalFile: true,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ],
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _captionController,
+                decoration: const InputDecoration(
+                  labelText: 'Chú thích (tùy chọn)',
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 2,
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _descriptionController,
+                decoration: const InputDecoration(
+                  labelText: 'Mô tả về đóng góp này',
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 3,
+              ),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Hủy'),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            if (_formKey.currentState!.validate()) {
+              if (_selectedType == 'add_image' && _selectedImage == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Vui lòng chọn hình ảnh')),
+                );
+                return;
+              }
+              if (_selectedType == 'add_video' && _selectedVideo == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Vui lòng chọn video')),
+                );
+                return;
+              }
+              Navigator.of(context).pop({
+                'type': _selectedType,
+                'imageFile': _selectedImage,
+                'videoFile': _selectedVideo,
+                'description': _descriptionController.text,
+                'caption': _captionController.text,
+              });
+            }
+          },
+          child: const Text('Gửi'),
+        ),
+      ],
+    );
+  }
+}
+
+class _VideoPlayerWidget extends StatefulWidget {
+  final String videoUrl;
+  final bool isLocalFile;
+
+  const _VideoPlayerWidget({
+    required this.videoUrl,
+    this.isLocalFile = false,
+  });
+
+  @override
+  State<_VideoPlayerWidget> createState() => _VideoPlayerWidgetState();
+}
+
+class _VideoPlayerWidgetState extends State<_VideoPlayerWidget> {
+  VideoPlayerController? _controller;
+  bool _isInitialized = false;
+  bool _hasError = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeVideo();
+  }
+
+  Future<void> _initializeVideo() async {
+    try {
+      VideoPlayerController controller;
+      if (widget.isLocalFile) {
+        controller = VideoPlayerController.file(File(widget.videoUrl));
+      } else {
+        // Video URL should already be full URL from parent widget
+        controller =
+            VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
+      }
+
+      await controller.initialize();
+      if (mounted) {
+        setState(() {
+          _controller = controller;
+          _isInitialized = true;
+        });
+      }
+    } catch (e) {
+      print('Error initializing video: $e');
+      if (mounted) {
+        setState(() {
+          _hasError = true;
+        });
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_hasError) {
+      return Container(
+        height: widget.isLocalFile ? 150 : 200,
+        decoration: BoxDecoration(
+          color: Colors.black,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              widget.isLocalFile
+                  ? Icons.video_library_outlined
+                  : Icons.error_outline,
+              color: Colors.white70,
+              size: widget.isLocalFile ? 40 : 48,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              widget.isLocalFile
+                  ? 'Không thể preview video'
+                  : 'Không thể tải video',
+              style: const TextStyle(color: Colors.white70, fontSize: 12),
+            ),
+            if (widget.isLocalFile) ...[
+              const SizedBox(height: 4),
+              const Text(
+                'Video sẽ được tải lên khi bạn gửi',
+                style: TextStyle(color: Colors.white54, fontSize: 10),
+              ),
+            ],
+          ],
+        ),
+      );
+    }
+
+    if (!_isInitialized || _controller == null) {
+      return Container(
+        height: 200,
+        decoration: BoxDecoration(
+          color: Colors.black,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Center(
+          child: CircularProgressIndicator(color: Colors.white),
+        ),
+      );
+    }
+
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        AspectRatio(
+          aspectRatio: _controller!.value.aspectRatio,
+          child: VideoPlayer(_controller!),
+        ),
+        Positioned.fill(
+          child: GestureDetector(
+            onTap: () {
+              setState(() {
+                if (_controller!.value.isPlaying) {
+                  _controller!.pause();
+                } else {
+                  _controller!.play();
+                }
+              });
+            },
+            child: Container(
+              color: Colors.transparent,
+              child: Center(
+                child: Icon(
+                  _controller!.value.isPlaying
+                      ? Icons.pause_circle_outline
+                      : Icons.play_circle_outline,
+                  size: 64,
+                  color: Colors.white.withOpacity(0.8),
+                ),
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: 8,
+          left: 8,
+          right: 8,
+          child: VideoProgressIndicator(
+            _controller!,
+            allowScrubbing: true,
+            colors: const VideoProgressColors(
+              playedColor: Colors.blue,
+              bufferedColor: Colors.grey,
+              backgroundColor: Colors.white24,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -975,5 +1828,3 @@ class _RewardItem extends StatelessWidget {
     );
   }
 }
-
-

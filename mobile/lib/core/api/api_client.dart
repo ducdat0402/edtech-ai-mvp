@@ -146,4 +146,25 @@ class ApiClient {
       rethrow;
     }
   }
+
+  // POST request with file upload (multipart/form-data)
+  Future<Response> postFile(
+    String path, {
+    required String fileKey,
+    required String filePath,
+    Map<String, dynamic>? additionalData,
+  }) async {
+    try {
+      final formData = FormData.fromMap({
+        fileKey: await MultipartFile.fromFile(filePath),
+        ...?additionalData,
+      });
+      return await _dio.post(path, data: formData);
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[API] Post file error: $e');
+      }
+      rethrow;
+    }
+  }
 }

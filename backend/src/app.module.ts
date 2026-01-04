@@ -7,6 +7,7 @@ import { UserCurrencyModule } from './user-currency/user-currency.module';
 import { UserProgressModule } from './user-progress/user-progress.module';
 import { LearningNodesModule } from './learning-nodes/learning-nodes.module';
 import { ContentItemsModule } from './content-items/content-items.module';
+import { ContentEditsModule } from './content-edits/content-edits.module';
 import { SubjectsModule } from './subjects/subjects.module';
 import { UnlockTransactionsModule } from './unlock-transactions/unlock-transactions.module';
 import { SeedModule } from './seed/seed.module';
@@ -36,6 +37,7 @@ import { TypeOrmConfigService } from './config/typeorm.config';
     UserProgressModule,
     LearningNodesModule,
     ContentItemsModule,
+    ContentEditsModule,
     SubjectsModule,
     UnlockTransactionsModule,
     SeedModule,

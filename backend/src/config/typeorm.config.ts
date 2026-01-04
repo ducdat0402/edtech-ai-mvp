@@ -17,6 +17,7 @@ import { UserQuest } from '../quests/entities/user-quest.entity';
 import { SkillTree } from '../skill-tree/entities/skill-tree.entity';
 import { SkillNode } from '../skill-tree/entities/skill-node.entity';
 import { UserSkillProgress } from '../skill-tree/entities/user-skill-progress.entity';
+import { ContentEdit } from '../content-edits/entities/content-edit.entity';
 
 @Injectable()
 export class TypeOrmConfigService implements TypeOrmOptionsFactory {
@@ -43,6 +44,7 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
         SkillTree,
         SkillNode,
         UserSkillProgress,
+        ContentEdit,
       ],
       synchronize: this.configService.get<string>('NODE_ENV') === 'development',
       logging: this.configService.get<string>('NODE_ENV') === 'development',

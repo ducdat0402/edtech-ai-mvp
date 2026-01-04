@@ -21,6 +21,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
   List<dynamic>? _contentItems;
   bool _isLoading = true;
   String? _error;
+  String? _subjectId; // Store subjectId for navigation
 
   @override
   void initState() {
@@ -38,7 +39,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
   Future<void> _loadData() async {
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
-      
+
       // Load node detail, progress, and content items in parallel
       final results = await Future.wait([
         apiService.getNodeDetail(widget.nodeId),
@@ -46,18 +47,24 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
         apiService.getContentByNode(widget.nodeId),
       ]);
 
+      final nodeData = results[0] as Map<String, dynamic>;
+
       setState(() {
-        _nodeData = results[0] as Map<String, dynamic>;
+        _nodeData = nodeData;
         _progressData = results[1] as Map<String, dynamic>;
         _contentItems = results[2] as List<dynamic>;
         _isLoading = false;
+        // Extract subjectId from nodeData (could be subjectId or subject.id)
+        _subjectId = nodeData['subjectId'] as String? ??
+            (nodeData['subject'] as Map<String, dynamic>?)?['id'] as String?;
       });
-      
+
       // ✅ Debug: Print progress data structure
       print('🔍 Progress Data Structure:');
       print('  - Full progressData: $_progressData');
       if (_progressData != null) {
-        print('  - Has "progress" key: ${_progressData!.containsKey("progress")}');
+        print(
+            '  - Has "progress" key: ${_progressData!.containsKey("progress")}');
         print('  - Has "hud" key: ${_progressData!.containsKey("hud")}');
         if (_progressData!.containsKey('progress')) {
           final progress = _progressData!['progress'] as Map<String, dynamic>?;
@@ -108,13 +115,14 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
     final itemId = item['id'] as String;
     final nodeId = _nodeData?['id'] as String?;
     final itemType = item['type'] as String? ?? 'hidden_reward';
-    
+
     // Check if already completed
     final completedItemIds = <String>{};
     if (_progressData != null) {
       final progress = _progressData!['progress'] as Map<String, dynamic>?;
       if (progress != null) {
-        final completedItems = progress['completedItems'] as Map<String, dynamic>? ?? {};
+        final completedItems =
+            progress['completedItems'] as Map<String, dynamic>? ?? {};
         completedItems.forEach((type, ids) {
           if (ids is List) {
             completedItemIds.addAll(ids.cast<String>());
@@ -122,9 +130,9 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
         });
       }
     }
-    
+
     final isCompleted = completedItemIds.contains(itemId);
-    
+
     if (isCompleted) {
       // Already completed - just show info
       showDialog(
@@ -163,7 +171,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                     padding: const EdgeInsets.only(bottom: 4),
                     child: Row(
                       children: [
-                        const Icon(Icons.monetization_on, color: Colors.amber, size: 20),
+                        const Icon(Icons.monetization_on,
+                            color: Colors.amber, size: 20),
                         const SizedBox(width: 8),
                         Text('Coins: +${rewards['coin']}'),
                       ],
@@ -176,7 +185,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                       children: [
                         const Icon(Icons.diamond, color: Colors.blue, size: 20),
                         const SizedBox(width: 8),
-                        Text('Shard: ${rewards['shard']} x${rewards['shardAmount'] ?? 1}'),
+                        Text(
+                            'Shard: ${rewards['shard']} x${rewards['shardAmount'] ?? 1}'),
                       ],
                     ),
                   ),
@@ -193,7 +203,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
       );
       return;
     }
-    
+
     // Not completed - show claim dialog
     showDialog(
       context: context,
@@ -243,7 +253,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                           color: Colors.orange.shade100,
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Icon(Icons.star, color: Colors.orange, size: 24),
+                        child: const Icon(Icons.star,
+                            color: Colors.orange, size: 24),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -282,7 +293,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                           color: Colors.amber.shade100,
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Icon(Icons.monetization_on, color: Colors.amber, size: 24),
+                        child: const Icon(Icons.monetization_on,
+                            color: Colors.amber, size: 24),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -321,7 +333,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                           color: Colors.blue.shade100,
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Icon(Icons.diamond, color: Colors.blue, size: 24),
+                        child: const Icon(Icons.diamond,
+                            color: Colors.blue, size: 24),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -362,22 +375,23 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
             onPressed: nodeId != null
                 ? () async {
                     try {
-                      final apiService = Provider.of<ApiService>(context, listen: false);
-                      
+                      final apiService =
+                          Provider.of<ApiService>(context, listen: false);
+
                       // Mark as complete
                       await apiService.completeContentItem(
                         nodeId: nodeId,
                         contentItemId: itemId,
                         itemType: itemType,
                       );
-                      
+
                       // Close dialog
                       if (context.mounted) {
                         Navigator.pop(context);
-                        
+
                         // Refresh data
                         await _refreshData();
-                        
+
                         // Show success message
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
@@ -413,13 +427,22 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
   }
 
   void _handleBack() {
-    if (context.canPop()) {
-      context.pop();
-    } else {
-      // If cannot pop, navigate to skill tree or dashboard
-      final subjectId = _nodeData?['subject']?['id'] as String?;
-      if (subjectId != null) {
-        context.go('/skill-tree?subjectId=$subjectId');
+    try {
+      if (context.canPop()) {
+        context.pop();
+      } else {
+        // If cannot pop, navigate to skill tree or dashboard
+        if (_subjectId != null) {
+          context.go('/skill-tree?subjectId=$_subjectId');
+        } else {
+          context.go('/dashboard');
+        }
+      }
+    } catch (e) {
+      // If pop fails, navigate to skill tree or dashboard
+      print('⚠️ Error popping: $e');
+      if (_subjectId != null) {
+        context.go('/skill-tree?subjectId=$_subjectId');
       } else {
         context.go('/dashboard');
       }
@@ -444,7 +467,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                      const Icon(Icons.error_outline,
+                          size: 64, color: Colors.red),
                       const SizedBox(height: 16),
                       Text('Error: $_error'),
                       const SizedBox(height: 16),
@@ -484,68 +508,72 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
 
   Widget _buildProgressHUD() {
     final progress = _progressData!;
-    
+
     // ✅ Backend returns structure: { progress: UserProgress, node: LearningNode, hud: {...} }
     // Debug: Print structure
     print('📊 Building Progress HUD');
     print('  - progress keys: ${progress.keys.toList()}');
     print('  - has hud: ${progress.containsKey('hud')}');
     print('  - has progress: ${progress.containsKey('progress')}');
-    
+
     int completed = 0;
     int total = 0;
     double percentage = 0;
-    
+
     // Try to get from hud first (backend returns this)
     if (progress.containsKey('hud') && progress['hud'] != null) {
       print('  ✅ Using hud data');
       final hud = progress['hud'] as Map<String, dynamic>;
       percentage = (hud['progressPercentage'] as num?)?.toDouble() ?? 0;
-      
+
       // Calculate total and completed from hud
       final concepts = hud['concepts'] as Map<String, dynamic>? ?? {};
       final examples = hud['examples'] as Map<String, dynamic>? ?? {};
       final hiddenRewards = hud['hiddenRewards'] as Map<String, dynamic>? ?? {};
       final bossQuiz = hud['bossQuiz'] as Map<String, dynamic>? ?? {};
-      
+
       completed = (concepts['completed'] as int? ?? 0) +
           (examples['completed'] as int? ?? 0) +
           (hiddenRewards['completed'] as int? ?? 0) +
           ((bossQuiz['completed'] as int? ?? 0) > 0 ? 1 : 0);
-      
+
       total = (concepts['total'] as int? ?? 0) +
           (examples['total'] as int? ?? 0) +
           (hiddenRewards['total'] as int? ?? 0) +
           (bossQuiz['total'] as int? ?? 0);
-      
+
       print('  - hud.progressPercentage: $percentage');
       print('  - hud.completed: $completed');
       print('  - hud.total: $total');
-    } else if (progress.containsKey('progress') && progress['progress'] != null) {
+    } else if (progress.containsKey('progress') &&
+        progress['progress'] != null) {
       // Fallback: calculate from progress.completedItems
       print('  ⚠️ Using progress.completedItems (fallback)');
       final progressData = progress['progress'] as Map<String, dynamic>;
-      final completedItems = progressData['completedItems'] as Map<String, dynamic>? ?? {};
-      
+      final completedItems =
+          progressData['completedItems'] as Map<String, dynamic>? ?? {};
+
       print('  - completedItems: $completedItems');
-      
+
       final concepts = (completedItems['concepts'] as List?)?.length ?? 0;
       final examples = (completedItems['examples'] as List?)?.length ?? 0;
-      final hiddenRewards = (completedItems['hiddenRewards'] as List?)?.length ?? 0;
+      final hiddenRewards =
+          (completedItems['hiddenRewards'] as List?)?.length ?? 0;
       final bossQuiz = (completedItems['bossQuiz'] as List?)?.length ?? 0;
-      
+
       completed = concepts + examples + hiddenRewards + (bossQuiz > 0 ? 1 : 0);
-      
+
       // Get total from node data
       final nodeData = _nodeData;
       if (nodeData != null) {
-        final contentStructure = nodeData['contentStructure'] as Map<String, dynamic>? ?? {};
+        final contentStructure =
+            nodeData['contentStructure'] as Map<String, dynamic>? ?? {};
         total = (contentStructure['concepts'] as int? ?? 0) +
             (contentStructure['examples'] as int? ?? 0) +
             (contentStructure['hiddenRewards'] as int? ?? 0) +
             (contentStructure['bossQuiz'] as int? ?? 0);
       }
-      
+
       percentage = total > 0 ? (completed / total * 100) : 0;
       print('  - calculated completed: $completed');
       print('  - calculated total: $total');
@@ -553,31 +581,35 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
     } else {
       // Last resort: try to read directly from progress if it's the progress object itself
       print('  ⚠️ Trying direct progress reading');
-      final completedItems = progress['completedItems'] as Map<String, dynamic>?;
+      final completedItems =
+          progress['completedItems'] as Map<String, dynamic>?;
       if (completedItems != null) {
         final concepts = (completedItems['concepts'] as List?)?.length ?? 0;
         final examples = (completedItems['examples'] as List?)?.length ?? 0;
-        final hiddenRewards = (completedItems['hiddenRewards'] as List?)?.length ?? 0;
+        final hiddenRewards =
+            (completedItems['hiddenRewards'] as List?)?.length ?? 0;
         final bossQuiz = (completedItems['bossQuiz'] as List?)?.length ?? 0;
-        
-        completed = concepts + examples + hiddenRewards + (bossQuiz > 0 ? 1 : 0);
-        
+
+        completed =
+            concepts + examples + hiddenRewards + (bossQuiz > 0 ? 1 : 0);
+
         final nodeData = _nodeData;
         if (nodeData != null) {
-          final contentStructure = nodeData['contentStructure'] as Map<String, dynamic>? ?? {};
+          final contentStructure =
+              nodeData['contentStructure'] as Map<String, dynamic>? ?? {};
           total = (contentStructure['concepts'] as int? ?? 0) +
               (contentStructure['examples'] as int? ?? 0) +
               (contentStructure['hiddenRewards'] as int? ?? 0) +
               (contentStructure['bossQuiz'] as int? ?? 0);
         }
-        
+
         percentage = total > 0 ? (completed / total * 100) : 0;
         print('  - direct completed: $completed');
         print('  - direct total: $total');
         print('  - direct percentage: $percentage');
       }
     }
-    
+
     final percentageInt = percentage.round();
     print('  📈 Final: $completed/$total = $percentageInt%');
 
@@ -630,7 +662,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
   }
 
   Widget _buildNodeInfo() {
-    final contentStructure = _nodeData!['contentStructure'] as Map<String, dynamic>? ?? {};
+    final contentStructure =
+        _nodeData!['contentStructure'] as Map<String, dynamic>? ?? {};
 
     return Card(
       child: Padding(
@@ -695,8 +728,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
 
     // ✅ Sort all content items by order
     final sortedItems = List<Map<String, dynamic>>.from(
-      _contentItems!.map((item) => Map<String, dynamic>.from(item as Map))
-    );
+        _contentItems!.map((item) => Map<String, dynamic>.from(item as Map)));
     sortedItems.sort((a, b) {
       final orderA = a['order'] as int? ?? 0;
       final orderB = b['order'] as int? ?? 0;
@@ -707,16 +739,18 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
     final completedItemIds = <String>{};
     if (_progressData != null) {
       // Backend returns: { progress: UserProgress, node: LearningNode, hud: {...} }
-      final progressData = _progressData!['progress'] as Map<String, dynamic>? ?? _progressData;
-      final completedItems = progressData?['completedItems'] as Map<String, dynamic>? ?? {};
-      
+      final progressData =
+          _progressData!['progress'] as Map<String, dynamic>? ?? _progressData;
+      final completedItems =
+          progressData?['completedItems'] as Map<String, dynamic>? ?? {};
+
       // Extract all completed item IDs from all types
       completedItems.forEach((type, ids) {
         if (ids is List) {
           completedItemIds.addAll(ids.cast<String>());
         }
       });
-      
+
       // Debug: print completed items
       print('✅ Completed items: $completedItemIds');
       print('✅ Total completed: ${completedItemIds.length}');
@@ -767,14 +801,17 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                 final nodeSize = 70.0;
                 final nodeSpacing = 80.0;
                 final horizontalPadding = 16.0;
-                final totalWidth = horizontalPadding + 
-                    nodeSize + 
-                    (sortedItems.length > 1 ? (sortedItems.length - 1) * (nodeSpacing + nodeSize) : 0) +
+                final totalWidth = horizontalPadding +
+                    nodeSize +
+                    (sortedItems.length > 1
+                        ? (sortedItems.length - 1) * (nodeSpacing + nodeSize)
+                        : 0) +
                     horizontalPadding;
-                
+
                 return Container(
                   width: totalWidth,
-                  padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 8),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: horizontalPadding, vertical: 8),
                   child: Stack(
                     children: [
                       // ✅ Draw path behind nodes
@@ -797,24 +834,27 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                           final itemId = item['id'] as String;
                           final isCompleted = completedItemIds.contains(itemId);
                           final itemType = item['type'] as String? ?? 'concept';
-                          
+
                           // Check unlock status
                           bool isUnlocked = true;
                           if (index > 0) {
                             for (int i = 0; i < index; i++) {
-                              final prevItemId = sortedItems[i]['id'] as String?;
-                              if (prevItemId != null && !completedItemIds.contains(prevItemId)) {
+                              final prevItemId =
+                                  sortedItems[i]['id'] as String?;
+                              if (prevItemId != null &&
+                                  !completedItemIds.contains(prevItemId)) {
                                 isUnlocked = false;
                                 break;
                               }
                             }
                           }
-                          
+
                           return Padding(
                             padding: EdgeInsets.only(
                               left: index > 0 ? nodeSpacing : 0,
                             ),
-                            child: _buildPathContentItem(item, index + 1, isCompleted, itemType, isUnlocked),
+                            child: _buildPathContentItem(item, index + 1,
+                                isCompleted, itemType, isUnlocked),
                           );
                         }).toList(),
                       ),
@@ -833,30 +873,33 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
           final itemId = item['id'] as String;
           final isCompleted = completedItemIds.contains(itemId);
           final itemType = item['type'] as String? ?? 'concept';
-          
+
           // Check unlock status
           bool isUnlocked = true;
           if (index > 0) {
             for (int i = 0; i < index; i++) {
               final prevItemId = sortedItems[i]['id'] as String?;
-              if (prevItemId != null && !completedItemIds.contains(prevItemId)) {
+              if (prevItemId != null &&
+                  !completedItemIds.contains(prevItemId)) {
                 isUnlocked = false;
                 break;
               }
             }
           }
-          
-          return _buildPathContentItemCard(item, index + 1, isCompleted, itemType, isUnlocked);
+
+          return _buildPathContentItemCard(
+              item, index + 1, isCompleted, itemType, isUnlocked);
         }).toList(),
       ],
     );
   }
 
-  Widget _buildPathContentItem(Map<String, dynamic> item, int stepNumber, bool isCompleted, String itemType, bool isUnlocked) {
+  Widget _buildPathContentItem(Map<String, dynamic> item, int stepNumber,
+      bool isCompleted, String itemType, bool isUnlocked) {
     final title = item['title'] as String? ?? 'Content';
     final color = _getItemTypeColor(itemType);
     final icon = _getItemTypeIcon(itemType);
-    
+
     final canAccess = isCompleted || isUnlocked;
 
     return GestureDetector(
@@ -877,7 +920,9 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
           height: 70,
           decoration: BoxDecoration(
             // ✅ Locked: grey background
-            color: isCompleted ? null : (isUnlocked ? Colors.grey.shade200 : Colors.grey.shade300),
+            color: isCompleted
+                ? null
+                : (isUnlocked ? Colors.grey.shade200 : Colors.grey.shade300),
             // ✅ Completed: bright gradient with glow effect
             // ✅ Unlocked but not completed: lighter gradient
             gradient: isCompleted
@@ -901,8 +946,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                       )
                     : null,
             border: Border.all(
-              color: isCompleted 
-                  ? Colors.white 
+              color: isCompleted
+                  ? Colors.white
                   : isUnlocked
                       ? color.withOpacity(0.5)
                       : Colors.grey.shade400,
@@ -938,177 +983,182 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                       ]
                     : null,
           ),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            // Step number badge
-            Positioned(
-              top: -6,
-              right: -6,
-              child: Container(
-                width: 24,
-                height: 24,
-                decoration: BoxDecoration(
-                  color: isCompleted ? Colors.blue.shade600 : Colors.grey.shade400,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 2),
-                  boxShadow: isCompleted
-                      ? [
-                          BoxShadow(
-                            color: Colors.blue.withOpacity(0.5),
-                            blurRadius: 4,
-                            spreadRadius: 1,
-                          ),
-                        ]
-                      : null,
-                ),
-                child: Center(
-                  child: Text(
-                    '$stepNumber',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            // Icon with glow effect for completed items
-            Container(
-              padding: isCompleted ? const EdgeInsets.all(4) : EdgeInsets.zero,
-              decoration: isCompleted
-                  ? BoxDecoration(
-                      color: Colors.white.withOpacity(0.3),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.white.withOpacity(0.6),
-                          blurRadius: 6,
-                          spreadRadius: 2,
-                        ),
-                      ],
-                    )
-                  : null,
-              child: Icon(
-                icon,
-                color: isCompleted 
-                    ? Colors.white 
-                    : isUnlocked
-                        ? color
-                        : Colors.grey.shade600,
-                size: isCompleted ? 28 : 24, // Larger icon for completed
-              ),
-            ),
-            // Title
-            Positioned(
-              bottom: 8,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                decoration: isCompleted
-                    ? BoxDecoration(
-                        color: Colors.black.withOpacity(0.3),
-                        borderRadius: BorderRadius.circular(4),
-                      )
-                    : null,
-                child: Text(
-                  title.length > 6 ? '${title.substring(0, 6)}...' : title,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 9,
-                    fontWeight: FontWeight.bold,
-                    color: isCompleted ? Colors.white : Colors.grey.shade600,
-                    shadows: isCompleted
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // Step number badge
+              Positioned(
+                top: -6,
+                right: -6,
+                child: Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: isCompleted
+                        ? Colors.blue.shade600
+                        : Colors.grey.shade400,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 2),
+                    boxShadow: isCompleted
                         ? [
-                            Shadow(
-                              color: Colors.black.withOpacity(0.7),
-                              blurRadius: 3,
-                              offset: const Offset(1, 1),
+                            BoxShadow(
+                              color: Colors.blue.withOpacity(0.5),
+                              blurRadius: 4,
+                              spreadRadius: 1,
                             ),
                           ]
                         : null,
                   ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ),
-            // ✅ Completed checkmark badge (sáng và nổi bật)
-            if (isCompleted)
-              Positioned(
-                bottom: -6,
-                child: Container(
-                  padding: const EdgeInsets.all(3),
-                  decoration: BoxDecoration(
-                    color: Colors.green.shade600,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.green.withOpacity(0.8),
-                        blurRadius: 8,
-                        spreadRadius: 2,
+                  child: Center(
+                    child: Text(
+                      '$stepNumber',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
                       ),
-                      BoxShadow(
-                        color: Colors.white.withOpacity(0.5),
-                        blurRadius: 4,
-                        spreadRadius: 1,
-                      ),
-                    ],
-                  ),
-                  child: const Icon(
-                    Icons.check,
-                    color: Colors.white,
-                    size: 14,
+                    ),
                   ),
                 ),
               ),
-            // ✅ Lock icon for locked items
-            if (!isUnlocked && !isCompleted)
+              // Icon with glow effect for completed items
+              Container(
+                padding:
+                    isCompleted ? const EdgeInsets.all(4) : EdgeInsets.zero,
+                decoration: isCompleted
+                    ? BoxDecoration(
+                        color: Colors.white.withOpacity(0.3),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.white.withOpacity(0.6),
+                            blurRadius: 6,
+                            spreadRadius: 2,
+                          ),
+                        ],
+                      )
+                    : null,
+                child: Icon(
+                  icon,
+                  color: isCompleted
+                      ? Colors.white
+                      : isUnlocked
+                          ? color
+                          : Colors.grey.shade600,
+                  size: isCompleted ? 28 : 24, // Larger icon for completed
+                ),
+              ),
+              // Title
               Positioned(
-                bottom: -6,
+                bottom: 8,
                 child: Container(
-                  padding: const EdgeInsets.all(3),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade700,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 1.5),
-                  ),
-                  child: const Icon(
-                    Icons.lock,
-                    color: Colors.white,
-                    size: 14,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  decoration: isCompleted
+                      ? BoxDecoration(
+                          color: Colors.black.withOpacity(0.3),
+                          borderRadius: BorderRadius.circular(4),
+                        )
+                      : null,
+                  child: Text(
+                    title.length > 6 ? '${title.substring(0, 6)}...' : title,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                      color: isCompleted ? Colors.white : Colors.grey.shade600,
+                      shadows: isCompleted
+                          ? [
+                              Shadow(
+                                color: Colors.black.withOpacity(0.7),
+                                blurRadius: 3,
+                                offset: const Offset(1, 1),
+                              ),
+                            ]
+                          : null,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ),
-          ],
-        ),
+              // ✅ Completed checkmark badge (sáng và nổi bật)
+              if (isCompleted)
+                Positioned(
+                  bottom: -6,
+                  child: Container(
+                    padding: const EdgeInsets.all(3),
+                    decoration: BoxDecoration(
+                      color: Colors.green.shade600,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 2),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.green.withOpacity(0.8),
+                          blurRadius: 8,
+                          spreadRadius: 2,
+                        ),
+                        BoxShadow(
+                          color: Colors.white.withOpacity(0.5),
+                          blurRadius: 4,
+                          spreadRadius: 1,
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.check,
+                      color: Colors.white,
+                      size: 14,
+                    ),
+                  ),
+                ),
+              // ✅ Lock icon for locked items
+              if (!isUnlocked && !isCompleted)
+                Positioned(
+                  bottom: -6,
+                  child: Container(
+                    padding: const EdgeInsets.all(3),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade700,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 1.5),
+                    ),
+                    child: const Icon(
+                      Icons.lock,
+                      color: Colors.white,
+                      size: 14,
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildPathContentItemCard(Map<String, dynamic> item, int stepNumber, bool isCompleted, String itemType, bool isUnlocked) {
+  Widget _buildPathContentItemCard(Map<String, dynamic> item, int stepNumber,
+      bool isCompleted, String itemType, bool isUnlocked) {
     final title = item['title'] as String? ?? 'Content';
     final color = _getItemTypeColor(itemType);
     final icon = _getItemTypeIcon(itemType);
     final typeLabel = _getItemTypeLabel(itemType);
-    
+
     final canAccess = isCompleted || isUnlocked;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       // ✅ Completed items have bright background and glow
-      color: isCompleted 
-          ? color.withOpacity(0.15) 
-          : isUnlocked 
+      color: isCompleted
+          ? color.withOpacity(0.15)
+          : isUnlocked
               ? color.withOpacity(0.05)
               : Colors.grey.shade50,
       elevation: isCompleted ? 6 : (isUnlocked ? 2 : 1),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
-          color: isCompleted 
+          color: isCompleted
               ? color.withOpacity(0.5)
               : isUnlocked
                   ? color.withOpacity(0.3)
@@ -1124,7 +1174,11 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
             height: 50,
             decoration: BoxDecoration(
               // ✅ Completed: bright gradient, Unlocked: lighter, Locked: grey
-              color: isCompleted ? null : (isUnlocked ? color.withOpacity(0.1) : Colors.grey.shade200),
+              color: isCompleted
+                  ? null
+                  : (isUnlocked
+                      ? color.withOpacity(0.1)
+                      : Colors.grey.shade200),
               gradient: isCompleted
                   ? LinearGradient(
                       begin: Alignment.topLeft,
@@ -1137,8 +1191,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                   : null,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: isCompleted 
-                    ? Colors.white 
+                color: isCompleted
+                    ? Colors.white
                     : isUnlocked
                         ? color.withOpacity(0.5)
                         : Colors.grey.shade300,
@@ -1159,8 +1213,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
               children: [
                 Icon(
                   icon,
-                  color: isCompleted 
-                      ? Colors.white 
+                  color: isCompleted
+                      ? Colors.white
                       : isUnlocked
                           ? color
                           : Colors.grey.shade600,
@@ -1173,8 +1227,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                     width: 18,
                     height: 18,
                     decoration: BoxDecoration(
-                      color: isCompleted 
-                          ? Colors.blue.shade600 
+                      color: isCompleted
+                          ? Colors.blue.shade600
                           : isUnlocked
                               ? Colors.blue.shade400
                               : Colors.grey.shade400,
@@ -1220,7 +1274,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: isCompleted 
+                  color: isCompleted
                       ? color.withOpacity(0.3)
                       : color.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(8),
@@ -1236,7 +1290,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
               ),
               if (isCompleted) ...[
                 const SizedBox(width: 8),
-                Icon(Icons.check_circle, color: Colors.green.shade600, size: 16),
+                Icon(Icons.check_circle,
+                    color: Colors.green.shade600, size: 16),
                 const SizedBox(width: 4),
                 Text(
                   'Đã hoàn thành',
@@ -1270,7 +1325,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
               : () {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('Hoàn thành các bài trước để mở khóa bài này!'),
+                      content:
+                          Text('Hoàn thành các bài trước để mở khóa bài này!'),
                       backgroundColor: Colors.orange,
                     ),
                   );
@@ -1378,7 +1434,9 @@ class ContentPathPainter extends CustomPainter {
     // ✅ Calculate positions for all nodes matching the Row layout
     final positions = <Offset>[];
     for (int i = 0; i < items.length; i++) {
-      final x = horizontalPadding + (nodeSize / 2) + (i > 0 ? i * (nodeSpacing + nodeSize) : 0);
+      final x = horizontalPadding +
+          (nodeSize / 2) +
+          (i > 0 ? i * (nodeSpacing + nodeSize) : 0);
       positions.add(Offset(x, centerY));
     }
 
@@ -1404,17 +1462,17 @@ class ContentPathPainter extends CustomPainter {
     for (int i = 0; i < items.length - 1; i++) {
       final currentItemId = items[i]['id'] as String?;
       final nextItemId = items[i + 1]['id'] as String?;
-      
+
       if (currentItemId != null && nextItemId != null) {
         final currentCompleted = completedItemIds.contains(currentItemId);
         final nextCompleted = completedItemIds.contains(nextItemId);
-        
+
         if (currentCompleted && nextCompleted) {
           // ✅ Both items completed - draw bright glowing path segment
           final completedPath = Path();
           completedPath.moveTo(positions[i].dx, positions[i].dy);
           completedPath.lineTo(positions[i + 1].dx, positions[i + 1].dy);
-          
+
           // Outer glow
           final glowPaint = Paint()
             ..color = Colors.green.shade300.withOpacity(0.4)
@@ -1422,7 +1480,7 @@ class ContentPathPainter extends CustomPainter {
             ..style = PaintingStyle.stroke
             ..strokeCap = StrokeCap.round;
           canvas.drawPath(completedPath, glowPaint);
-          
+
           // Main bright path
           final completedPaint = Paint()
             ..color = Colors.green.shade500
@@ -1430,7 +1488,7 @@ class ContentPathPainter extends CustomPainter {
             ..style = PaintingStyle.stroke
             ..strokeCap = StrokeCap.round;
           canvas.drawPath(completedPath, completedPaint);
-          
+
           // Inner highlight
           final highlightPaint = Paint()
             ..color = Colors.green.shade200
@@ -1445,7 +1503,7 @@ class ContentPathPainter extends CustomPainter {
           final midX = (positions[i].dx + positions[i + 1].dx) / 2;
           final midY = (positions[i].dy + positions[i + 1].dy) / 2;
           halfPath.lineTo(midX, midY);
-          
+
           final halfPaint = Paint()
             ..color = Colors.green.shade400
             ..strokeWidth = 18
@@ -1497,5 +1555,3 @@ class _InfoChip extends StatelessWidget {
     );
   }
 }
-
-
