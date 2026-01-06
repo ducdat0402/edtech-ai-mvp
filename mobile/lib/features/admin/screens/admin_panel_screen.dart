@@ -4,6 +4,10 @@ import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/config/api_config.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:video_player/video_player.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:edtech_mobile/features/content/widgets/web_video_player.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'dart:io';
 
 class AdminPanelScreen extends StatefulWidget {
   const AdminPanelScreen({super.key});
@@ -628,15 +632,21 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> with SingleTickerPr
   }
 
   String _getFullUrl(String? url) {
-    if (url == null || url.isEmpty) return '';
+    if (url == null || url.isEmpty) {
+      print('Admin Panel: Empty URL provided');
+      return '';
+    }
     // If already a full URL (starts with http:// or https://), return as is
     if (url.startsWith('http://') || url.startsWith('https://')) {
+      print('Admin Panel: Full URL already: $url');
       return url;
     }
     // If it's a relative path (starts with /), prepend base URL
     // Extract base URL from ApiConfig (remove /api/v1)
     final baseUrl = ApiConfig.baseUrl.replaceAll('/api/v1', '');
-    return '$baseUrl$url';
+    final fullUrl = '$baseUrl$url';
+    print('Admin Panel: Converted URL from "$url" to "$fullUrl"');
+    return fullUrl;
   }
 
   String _formatDate(String dateString) {
@@ -664,6 +674,8 @@ class _VideoPlayerWidgetState extends State<_VideoPlayerWidget> {
   VideoPlayerController? _controller;
   bool _isInitialized = false;
   bool _hasError = false;
+  String? _errorMessage;
+  bool _useHtmlPlayer = false; // Flag to use WebVideoPlayer/MediaKit
 
   @override
   void initState() {
@@ -671,24 +683,117 @@ class _VideoPlayerWidgetState extends State<_VideoPlayerWidget> {
     _initializeVideo();
   }
 
+  @override
+  void didUpdateWidget(_VideoPlayerWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Reinitialize if video URL changed
+    if (oldWidget.videoUrl != widget.videoUrl) {
+      _controller?.dispose();
+      _isInitialized = false;
+      _hasError = false;
+      _errorMessage = null;
+      _useHtmlPlayer = false;
+      _initializeVideo();
+    }
+  }
+
   Future<void> _initializeVideo() async {
     try {
+      // Validate URL
+      if (widget.videoUrl.isEmpty || !widget.videoUrl.startsWith('http')) {
+        throw Exception('URL video không hợp lệ: ${widget.videoUrl}');
+      }
+
       final controller = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
-      await controller.initialize();
+      
+      // Set error handler
+      controller.addListener(() {
+        if (controller.value.hasError) {
+          if (mounted) {
+            setState(() {
+              _hasError = true;
+              _errorMessage = controller.value.errorDescription ?? 'Lỗi không xác định';
+            });
+          }
+        }
+      });
+
+      // Initialize with timeout
+      await controller.initialize().timeout(
+        const Duration(seconds: 15),
+        onTimeout: () {
+          throw Exception('Timeout khi tải video. Có thể video quá lớn hoặc server không phản hồi.');
+        },
+      );
+
       if (mounted) {
         setState(() {
           _controller = controller;
           _isInitialized = true;
+          _hasError = false;
+          _errorMessage = null;
         });
       }
     } catch (e) {
       print('Error initializing video: $e');
+      print('Error type: ${e.runtimeType}');
+      print('Video URL: ${widget.videoUrl}');
       if (mounted) {
-        setState(() {
-          _hasError = true;
-        });
+        final errorStr = e.toString();
+        final isUnimplementedError = errorStr.contains('UnimplementedError') || 
+                                     errorStr.contains('unimplemented');
+        
+        print('Is UnimplementedError: $isUnimplementedError');
+        
+        if (isUnimplementedError) {
+          // Network video UnimplementedError - check platform
+          print('UnimplementedError detected for network video');
+          try {
+            // Check if we're on a platform that supports video_player
+            final isMobile = !kIsWeb && (Platform.isAndroid || Platform.isIOS);
+            if (isMobile) {
+              // On mobile, try to retry with a delay or show error
+              print('Mobile platform detected, showing error with retry option');
+              setState(() {
+                _hasError = true;
+                _errorMessage = 'Không thể tải video. Vui lòng thử lại hoặc kiểm tra kết nối mạng.';
+              });
+            } else {
+              // On desktop/web, use fallback player
+              print('Desktop/Web platform detected, using fallback player');
+              setState(() {
+                _hasError = false;
+                _useHtmlPlayer = true; // This will trigger WebVideoPlayer or MediaKit player
+              });
+            }
+          } catch (e) {
+            // If Platform check fails, assume desktop and use fallback
+            print('Platform check failed, using fallback player: $e');
+            setState(() {
+              _hasError = false;
+              _useHtmlPlayer = true;
+            });
+          }
+        } else {
+          // Other errors
+          setState(() {
+            _hasError = true;
+            _errorMessage = errorStr.replaceAll('Exception: ', '').replaceAll('UnimplementedError: ', '');
+          });
+        }
       }
     }
+  }
+
+  Widget _buildHtmlVideoPlayer() {
+    // Use WebVideoPlayer widget for web/desktop platforms
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: WebVideoPlayer(
+        videoUrl: widget.videoUrl,
+        height: 200,
+      ),
+    );
   }
 
   @override
@@ -697,25 +802,149 @@ class _VideoPlayerWidgetState extends State<_VideoPlayerWidget> {
     super.dispose();
   }
 
+  Future<void> _openVideoInBrowser() async {
+    try {
+      final uri = Uri.parse(widget.videoUrl);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Không thể mở video trong trình duyệt')),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi: $e')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Use HTML5/MediaKit video player if video_player doesn't work
+    if (_useHtmlPlayer) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: _buildHtmlVideoPlayer(),
+      );
+    }
+
     if (_hasError) {
+      // Check if it's UnimplementedError (platform not supported)
+      final isUnimplementedError = _errorMessage != null && 
+          (_errorMessage!.toLowerCase().contains('unimplemented') ||
+           _errorMessage!.contains('UnimplementedError'));
+      
+      // Check if it's a mobile platform
+      final isMobile = !kIsWeb && (Platform.isAndroid || Platform.isIOS);
+      
       return Container(
         height: 200,
         decoration: BoxDecoration(
           color: Colors.black,
           borderRadius: BorderRadius.circular(8),
         ),
-        child: const Center(
+        child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.error_outline, color: Colors.white, size: 48),
-              SizedBox(height: 8),
-              Text(
-                'Không thể tải video',
-                style: TextStyle(color: Colors.white70, fontSize: 12),
+              Icon(
+                isUnimplementedError ? Icons.video_library_outlined : Icons.error_outline,
+                color: Colors.white70,
+                size: 48,
               ),
+              const SizedBox(height: 8),
+              Text(
+                isUnimplementedError 
+                    ? 'Không thể preview video trên platform này'
+                    : 'Không thể tải video',
+                style: const TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              if (_errorMessage != null && !isUnimplementedError) ...[
+                const SizedBox(height: 8),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Text(
+                    _errorMessage!.length > 60
+                        ? '${_errorMessage!.substring(0, 60)}...'
+                        : _errorMessage!,
+                    style: const TextStyle(color: Colors.white54, fontSize: 11),
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+              // Show video URL and open button for mobile errors or non-UnimplementedError
+              if (isUnimplementedError || !isMobile) ...[
+                const SizedBox(height: 12),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                widget.videoUrl,
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 10,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      ElevatedButton.icon(
+                        onPressed: _openVideoInBrowser,
+                        icon: const Icon(Icons.open_in_browser, size: 16),
+                        label: const Text('Mở trong trình duyệt'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue.shade700,
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                      if (!isUnimplementedError) ...[
+                        const SizedBox(height: 4),
+                        TextButton.icon(
+                          onPressed: _initializeVideo,
+                          icon: const Icon(Icons.refresh, color: Colors.white70, size: 16),
+                          label: const Text(
+                            'Thử lại',
+                            style: TextStyle(color: Colors.white70, fontSize: 12),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ] else ...[
+                // For mobile non-UnimplementedError, show retry button
+                const SizedBox(height: 12),
+                TextButton.icon(
+                  onPressed: _initializeVideo,
+                  icon: const Icon(Icons.refresh, color: Colors.white70, size: 16),
+                  label: const Text(
+                    'Thử lại',
+                    style: TextStyle(color: Colors.white70, fontSize: 12),
+                  ),
+                ),
+              ],
             ],
           ),
         ),
@@ -730,7 +959,17 @@ class _VideoPlayerWidgetState extends State<_VideoPlayerWidget> {
           borderRadius: BorderRadius.circular(8),
         ),
         child: const Center(
-          child: CircularProgressIndicator(color: Colors.white),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(color: Colors.white),
+              SizedBox(height: 8),
+              Text(
+                'Đang tải video...',
+                style: TextStyle(color: Colors.white70, fontSize: 12),
+              ),
+            ],
+          ),
         ),
       );
     }

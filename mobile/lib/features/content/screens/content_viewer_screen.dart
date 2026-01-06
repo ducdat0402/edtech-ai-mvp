@@ -5,6 +5,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:video_player/video_player.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/config/api_config.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:edtech_mobile/features/content/widgets/web_video_player.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:io';
 
 class ContentViewerScreen extends StatefulWidget {
@@ -1047,61 +1050,15 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
   }
 
   Future<void> _showAddEditDialog() async {
-    final result = await showDialog<Map<String, dynamic>>(
+    final success = await showDialog<bool>(
       context: context,
-      builder: (context) => _AddEditDialog(),
+      builder: (context) => _AddEditDialog(
+        contentId: widget.contentId,
+      ),
     );
 
-    if (result != null && mounted) {
-      await _submitEdit(result);
-    }
-  }
-
-  Future<void> _submitEdit(Map<String, dynamic> data) async {
-    try {
-      final apiService = Provider.of<ApiService>(context, listen: false);
-      String? imageUrl = data['imageUrl'] as String?;
-      String? videoUrl = data['videoUrl'] as String?;
-
-      // Upload file if needed
-      if (data['imageFile'] != null) {
-        final uploadResult = await apiService.uploadImageForEdit(
-          (data['imageFile'] as File).path,
-        );
-        imageUrl = uploadResult['imageUrl'] as String?;
-      }
-
-      if (data['videoFile'] != null) {
-        final uploadResult = await apiService.uploadVideoForEdit(
-          (data['videoFile'] as File).path,
-        );
-        videoUrl = uploadResult['videoUrl'] as String?;
-      }
-
-      // Submit edit
-      await apiService.submitContentEdit(
-        contentItemId: widget.contentId,
-        type: data['type'] as String,
-        imageUrl: imageUrl,
-        videoUrl: videoUrl,
-        description: data['description'] as String?,
-        caption: data['caption'] as String?,
-      );
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Đã gửi đóng góp! Cảm ơn bạn đã đóng góp.'),
-          ),
-        );
-        _loadCommunityEdits();
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi khi gửi đóng góp: $e')),
-        );
-      }
+    if (success == true && mounted) {
+      _loadCommunityEdits();
     }
   }
 
@@ -1318,6 +1275,12 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
 }
 
 class _AddEditDialog extends StatefulWidget {
+  final String contentId;
+
+  const _AddEditDialog({
+    required this.contentId,
+  });
+
   @override
   State<_AddEditDialog> createState() => _AddEditDialogState();
 }
@@ -1330,6 +1293,8 @@ class _AddEditDialogState extends State<_AddEditDialog> {
   File? _selectedImage;
   File? _selectedVideo;
   final ImagePicker _picker = ImagePicker();
+  bool _isSubmitting = false;
+  String? _uploadProgress;
 
   @override
   void dispose() {
@@ -1401,216 +1366,401 @@ class _AddEditDialogState extends State<_AddEditDialog> {
     }
   }
 
+  Future<void> _handleSubmit() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    if (_selectedType == 'add_image' && _selectedImage == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Vui lòng chọn hình ảnh')),
+      );
+      return;
+    }
+
+    if (_selectedType == 'add_video' && _selectedVideo == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Vui lòng chọn video')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+      _uploadProgress = 'Đang chuẩn bị...';
+    });
+
+    try {
+      final apiService = Provider.of<ApiService>(context, listen: false);
+      String? imageUrl;
+      String? videoUrl;
+
+      // Upload image if needed
+      if (_selectedImage != null) {
+        setState(() {
+          _uploadProgress = 'Đang tải lên hình ảnh...';
+        });
+        final uploadResult = await apiService.uploadImageForEdit(
+          _selectedImage!.path,
+        );
+        imageUrl = uploadResult['imageUrl'] as String?;
+      }
+
+      // Upload video if needed
+      if (_selectedVideo != null) {
+        setState(() {
+          _uploadProgress = 'Đang tải lên video... (có thể mất vài phút)';
+        });
+        final uploadResult = await apiService.uploadVideoForEdit(
+          _selectedVideo!.path,
+        );
+        videoUrl = uploadResult['videoUrl'] as String?;
+      }
+
+      // Submit edit
+      setState(() {
+        _uploadProgress = 'Đang gửi đóng góp...';
+      });
+
+      await apiService.submitContentEdit(
+        contentItemId: widget.contentId,
+        type: _selectedType!,
+        imageUrl: imageUrl,
+        videoUrl: videoUrl,
+        description: _descriptionController.text.isEmpty
+            ? null
+            : _descriptionController.text,
+        caption: _captionController.text.isEmpty
+            ? null
+            : _captionController.text,
+      );
+
+      // Close dialog first
+      if (mounted) {
+        Navigator.of(context).pop(true);
+        
+        // Show success dialog
+        await showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => AlertDialog(
+            title: Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.green.shade700, size: 28),
+                const SizedBox(width: 12),
+                const Text('Thành công!'),
+              ],
+            ),
+            content: const Text(
+              'Đã gửi đóng góp thành công! Cảm ơn bạn đã đóng góp. Đóng góp của bạn sẽ được admin xem xét và duyệt.',
+            ),
+            actions: [
+              ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('Đóng'),
+              ),
+            ],
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+          _uploadProgress = null;
+        });
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi khi gửi đóng góp: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Thêm đóng góp'),
-      content: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('Loại đóng góp:'),
-              const SizedBox(height: 8),
-              DropdownButtonFormField<String>(
-                value: _selectedType,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                ),
-                items: const [
-                  DropdownMenuItem(
-                    value: 'add_image',
-                    child: Text('Thêm hình ảnh'),
-                  ),
-                  DropdownMenuItem(
-                    value: 'add_video',
-                    child: Text('Thêm video'),
-                  ),
-                ],
-                onChanged: (value) {
-                  setState(() {
-                    _selectedType = value;
-                  });
-                },
-              ),
-              const SizedBox(height: 16),
-              if (_selectedType == 'add_image')
-                ElevatedButton.icon(
-                  onPressed: _pickImage,
-                  icon: const Icon(Icons.image),
-                  label: const Text('Chọn hình ảnh'),
-                ),
-              if (_selectedType == 'add_video') ...[
-                ElevatedButton.icon(
-                  onPressed: _pickVideo,
-                  icon: const Icon(Icons.video_library),
-                  label: const Text('Chọn video'),
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.shade50,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.blue.shade200),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(Icons.info_outline,
-                              size: 16, color: Colors.blue.shade700),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Yêu cầu video:',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                              color: Colors.blue.shade700,
-                            ),
-                          ),
-                        ],
+    return Stack(
+      children: [
+        AlertDialog(
+          title: const Text('Thêm đóng góp'),
+          content: SingleChildScrollView(
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Loại đóng góp:'),
+                  const SizedBox(height: 8),
+                  DropdownButtonFormField<String>(
+                    value: _selectedType,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                    ),
+                    items: const [
+                      DropdownMenuItem(
+                        value: 'add_image',
+                        child: Text('Thêm hình ảnh'),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '• Định dạng: MP4, WebM, MOV\n• Kích thước tối đa: 100MB',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.blue.shade900,
-                        ),
+                      DropdownMenuItem(
+                        value: 'add_video',
+                        child: Text('Thêm video'),
                       ),
                     ],
+                    onChanged: _isSubmitting
+                        ? null
+                        : (value) {
+                            setState(() {
+                              _selectedType = value;
+                            });
+                          },
                   ),
-                ),
-              ],
-              if (_selectedImage != null) ...[
-                const SizedBox(height: 12),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.file(
-                    _selectedImage!,
-                    height: 150,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ],
-              if (_selectedVideo != null) ...[
-                const SizedBox(height: 12),
-                FutureBuilder<int>(
-                  future: _selectedVideo!.length(),
-                  builder: (context, snapshot) {
-                    final fileSize = snapshot.data ?? 0;
-                    final fileSizeMB =
-                        (fileSize / 1024 / 1024).toStringAsFixed(2);
-                    final fileName =
-                        _selectedVideo!.path.split(Platform.pathSeparator).last;
-
-                    return Container(
+                  const SizedBox(height: 16),
+                  if (_selectedType == 'add_image')
+                    ElevatedButton.icon(
+                      onPressed: _isSubmitting ? null : _pickImage,
+                      icon: const Icon(Icons.image),
+                      label: const Text('Chọn hình ảnh'),
+                    ),
+                  if (_selectedType == 'add_video') ...[
+                    ElevatedButton.icon(
+                      onPressed: _isSubmitting ? null : _pickVideo,
+                      icon: const Icon(Icons.video_library),
+                      label: const Text('Chọn video'),
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
+                        color: Colors.blue.shade50,
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.grey.shade300),
+                        border: Border.all(color: Colors.blue.shade200),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
                             children: [
-                              Icon(Icons.video_file,
-                                  color: Colors.blue.shade700),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  fileName,
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold),
-                                  overflow: TextOverflow.ellipsis,
+                              Icon(Icons.info_outline,
+                                  size: 16, color: Colors.blue.shade700),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Yêu cầu video:',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                  color: Colors.blue.shade700,
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 4),
                           Text(
-                            'Kích thước: ${fileSizeMB}MB',
+                            '• Định dạng: MP4, WebM, MOV\n• Kích thước tối đa: 100MB',
                             style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey.shade600,
+                              fontSize: 11,
+                              color: Colors.blue.shade900,
                             ),
                           ),
-                          const SizedBox(height: 8),
-                          ClipRRect(
+                        ],
+                      ),
+                    ),
+                  ],
+                  if (_selectedImage != null) ...[
+                    const SizedBox(height: 12),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.file(
+                        _selectedImage!,
+                        height: 150,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ],
+                  if (_selectedVideo != null) ...[
+                    const SizedBox(height: 12),
+                    FutureBuilder<int>(
+                      future: _selectedVideo!.length(),
+                      builder: (context, snapshot) {
+                        final fileSize = snapshot.data ?? 0;
+                        final fileSizeMB =
+                            (fileSize / 1024 / 1024).toStringAsFixed(2);
+                        final fileName =
+                            _selectedVideo!.path.split(Platform.pathSeparator).last;
+
+                        return Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade100,
                             borderRadius: BorderRadius.circular(8),
-                            child: SizedBox(
-                              height: 150,
-                              child: _VideoPlayerWidget(
-                                videoUrl: _selectedVideo!.path,
-                                isLocalFile: true,
+                            border: Border.all(color: Colors.grey.shade300),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(Icons.video_file,
+                                      color: Colors.blue.shade700),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      fileName,
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Kích thước: ${fileSizeMB}MB',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey.shade600,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              // For local files, show a nice placeholder instead of trying to preview
+                              // Video preview for local files is not supported on all platforms
+                              Container(
+                                height: 150,
+                                decoration: BoxDecoration(
+                                  color: Colors.blue.shade50,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: Colors.blue.shade200, width: 2),
+                                ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.video_library,
+                                      size: 48,
+                                      color: Colors.blue.shade700,
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'Video đã được chọn',
+                                      style: TextStyle(
+                                        color: Colors.blue.shade900,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Video sẽ được tải lên khi bạn gửi',
+                                      style: TextStyle(
+                                        color: Colors.blue.shade700,
+                                        fontSize: 11,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _captionController,
+                    decoration: const InputDecoration(
+                      labelText: 'Chú thích (tùy chọn)',
+                      border: OutlineInputBorder(),
+                    ),
+                    maxLines: 2,
+                    enabled: !_isSubmitting,
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _descriptionController,
+                    decoration: const InputDecoration(
+                      labelText: 'Mô tả về đóng góp này',
+                      border: OutlineInputBorder(),
+                    ),
+                    maxLines: 3,
+                    enabled: !_isSubmitting,
+                  ),
+                  if (_isSubmitting && _uploadProgress != null) ...[
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.shade50,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.blue.shade200),
+                      ),
+                      child: Row(
+                        children: [
+                          SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.blue.shade700),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              _uploadProgress!,
+                              style: TextStyle(
+                                color: Colors.blue.shade900,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                           ),
                         ],
                       ),
-                    );
-                  },
-                ),
-              ],
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _captionController,
-                decoration: const InputDecoration(
-                  labelText: 'Chú thích (tùy chọn)',
-                  border: OutlineInputBorder(),
-                ),
-                maxLines: 2,
+                    ),
+                  ],
+                ],
               ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _descriptionController,
-                decoration: const InputDecoration(
-                  labelText: 'Mô tả về đóng góp này',
-                  border: OutlineInputBorder(),
-                ),
-                maxLines: 3,
-              ),
-            ],
+            ),
           ),
+          actions: [
+            TextButton(
+              onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(false),
+              child: const Text('Hủy'),
+            ),
+            ElevatedButton(
+              onPressed: _isSubmitting ? null : _handleSubmit,
+              child: _isSubmitting
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : const Text('Gửi'),
+            ),
+          ],
         ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Hủy'),
-        ),
-        ElevatedButton(
-          onPressed: () {
-            if (_formKey.currentState!.validate()) {
-              if (_selectedType == 'add_image' && _selectedImage == null) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Vui lòng chọn hình ảnh')),
-                );
-                return;
-              }
-              if (_selectedType == 'add_video' && _selectedVideo == null) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Vui lòng chọn video')),
-                );
-                return;
-              }
-              Navigator.of(context).pop({
-                'type': _selectedType,
-                'imageFile': _selectedImage,
-                'videoFile': _selectedVideo,
-                'description': _descriptionController.text,
-                'caption': _captionController.text,
-              });
-            }
-          },
-          child: const Text('Gửi'),
-        ),
+        // Loading overlay
+        if (_isSubmitting)
+          Positioned.fill(
+            child: Container(
+              color: Colors.black.withOpacity(0.3),
+              child: const Center(
+                child: CircularProgressIndicator(),
+              ),
+            ),
+          ),
       ],
     );
   }
@@ -1633,6 +1783,8 @@ class _VideoPlayerWidgetState extends State<_VideoPlayerWidget> {
   VideoPlayerController? _controller;
   bool _isInitialized = false;
   bool _hasError = false;
+  String? _errorMessage;
+  bool _useHtmlPlayer = false;
 
   @override
   void initState() {
@@ -1640,30 +1792,125 @@ class _VideoPlayerWidgetState extends State<_VideoPlayerWidget> {
     _initializeVideo();
   }
 
+  @override
+  void didUpdateWidget(_VideoPlayerWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Reinitialize if video URL changed
+    if (oldWidget.videoUrl != widget.videoUrl) {
+      _controller?.dispose();
+      _isInitialized = false;
+      _hasError = false;
+      _errorMessage = null;
+      _initializeVideo();
+    }
+  }
+
   Future<void> _initializeVideo() async {
     try {
       VideoPlayerController controller;
       if (widget.isLocalFile) {
-        controller = VideoPlayerController.file(File(widget.videoUrl));
+        // Check if file exists
+        final file = File(widget.videoUrl);
+        if (!await file.exists()) {
+          throw Exception('File không tồn tại: ${widget.videoUrl}');
+        }
+        
+        // Check file size to ensure it's readable
+        final fileSize = await file.length();
+        if (fileSize == 0) {
+          throw Exception('File rỗng hoặc không thể đọc được');
+        }
+        
+        controller = VideoPlayerController.file(file);
+        
+        // Set error handler
+        controller.addListener(() {
+          if (controller.value.hasError) {
+            if (mounted) {
+              setState(() {
+                _hasError = true;
+                _errorMessage = controller.value.errorDescription ?? 'Lỗi không xác định';
+              });
+            }
+          }
+        });
       } else {
         // Video URL should already be full URL from parent widget
         controller =
             VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
       }
 
-      await controller.initialize();
+      // Initialize with timeout
+      await controller.initialize().timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          throw Exception('Timeout khi khởi tạo video. Video có thể quá lớn hoặc không hỗ trợ định dạng này.');
+        },
+      );
+      
       if (mounted) {
         setState(() {
           _controller = controller;
           _isInitialized = true;
+          _hasError = false;
+          _errorMessage = null;
         });
       }
     } catch (e) {
       print('Error initializing video: $e');
+      print('Error type: ${e.runtimeType}');
+      print('Is local file: ${widget.isLocalFile}');
       if (mounted) {
-        setState(() {
-          _hasError = true;
-        });
+        final errorStr = e.toString();
+        final isUnimplementedError = errorStr.contains('UnimplementedError') || 
+                                     errorStr.contains('unimplemented');
+        
+        print('Is UnimplementedError: $isUnimplementedError');
+        
+        if (isUnimplementedError && widget.isLocalFile) {
+          // Local file UnimplementedError
+          setState(() {
+            _hasError = true;
+            _errorMessage = 'Preview video local không được hỗ trợ trên platform này. Video sẽ được tải lên khi bạn gửi.';
+          });
+        } else if (isUnimplementedError && !widget.isLocalFile) {
+          // Network video UnimplementedError - check platform
+          // On mobile (Android/iOS), video_player should work, so this might be a different issue
+          // On desktop, we'll use fallback player
+          print('UnimplementedError detected for network video');
+          try {
+            // Check if we're on a platform that supports video_player
+            final isMobile = !kIsWeb && (Platform.isAndroid || Platform.isIOS);
+            if (isMobile) {
+              // On mobile, try to retry with a delay or show error
+              print('Mobile platform detected, showing error with retry option');
+              setState(() {
+                _hasError = true;
+                _errorMessage = 'Không thể tải video. Vui lòng thử lại hoặc kiểm tra kết nối mạng.';
+              });
+            } else {
+              // On desktop/web, use fallback player
+              print('Desktop/Web platform detected, using fallback player');
+              setState(() {
+                _hasError = false;
+                _useHtmlPlayer = true;
+              });
+            }
+          } catch (e) {
+            // If Platform check fails, assume desktop and use fallback
+            print('Platform check failed, using fallback player: $e');
+            setState(() {
+              _hasError = false;
+              _useHtmlPlayer = true;
+            });
+          }
+        } else {
+          // Other errors
+          setState(() {
+            _hasError = true;
+            _errorMessage = errorStr.replaceAll('Exception: ', '').replaceAll('UnimplementedError: ', '');
+          });
+        }
       }
     }
   }
@@ -1674,37 +1921,176 @@ class _VideoPlayerWidgetState extends State<_VideoPlayerWidget> {
     super.dispose();
   }
 
+  Widget _buildHtmlVideoPlayer() {
+    // Use WebVideoPlayer widget for web platforms
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: WebVideoPlayer(
+        videoUrl: widget.videoUrl,
+        height: 200,
+      ),
+    );
+  }
+
+  Future<void> _openVideoInBrowser() async {
+    if (widget.isLocalFile) {
+      // Can't open local files in browser
+      return;
+    }
+    
+    try {
+      final uri = Uri.parse(widget.videoUrl);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Không thể mở video trong trình duyệt')),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi: $e')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_hasError) {
+      // Check for UnimplementedError - check both error message and error type
+      final isUnimplementedError = _errorMessage != null && 
+          (_errorMessage!.contains('Preview video local không được hỗ trợ') ||
+           _errorMessage!.toLowerCase().contains('unimplemented') ||
+           _errorMessage!.contains('UnimplementedError'));
+      
+      // Check if it's a network video error (not local file)
+      final isNetworkVideoError = !widget.isLocalFile && isUnimplementedError;
+      
+      print('Build: _hasError=$_hasError, isUnimplementedError=$isUnimplementedError, isNetworkVideoError=$isNetworkVideoError, isLocalFile=${widget.isLocalFile}');
+      print('Build: errorMessage=$_errorMessage');
+      
       return Container(
         height: widget.isLocalFile ? 150 : 200,
         decoration: BoxDecoration(
-          color: Colors.black,
+          color: isUnimplementedError && widget.isLocalFile 
+              ? Colors.blue.shade50 
+              : Colors.black,
           borderRadius: BorderRadius.circular(8),
+          border: isUnimplementedError && widget.isLocalFile
+              ? Border.all(color: Colors.blue.shade200, width: 2)
+              : null,
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              widget.isLocalFile
+              isUnimplementedError && widget.isLocalFile
                   ? Icons.video_library_outlined
-                  : Icons.error_outline,
-              color: Colors.white70,
-              size: widget.isLocalFile ? 40 : 48,
+                  : isNetworkVideoError
+                      ? Icons.video_library_outlined
+                      : Icons.error_outline,
+              color: isUnimplementedError && widget.isLocalFile
+                  ? Colors.blue.shade700
+                  : isNetworkVideoError
+                      ? Colors.white70
+                      : Colors.white70,
+              size: 48,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             Text(
-              widget.isLocalFile
-                  ? 'Không thể preview video'
-                  : 'Không thể tải video',
-              style: const TextStyle(color: Colors.white70, fontSize: 12),
+              isUnimplementedError && widget.isLocalFile
+                  ? 'Video đã được chọn'
+                  : isNetworkVideoError
+                      ? 'Không thể preview video trên platform này'
+                      : 'Không thể preview video',
+              style: TextStyle(
+                color: isUnimplementedError && widget.isLocalFile
+                    ? Colors.blue.shade900
+                    : Colors.white70,
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
             ),
-            if (widget.isLocalFile) ...[
-              const SizedBox(height: 4),
+            if (_errorMessage != null) ...[
+              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  _errorMessage!,
+                  style: TextStyle(
+                    color: isUnimplementedError && widget.isLocalFile
+                        ? Colors.blue.shade800
+                        : Colors.white54,
+                    fontSize: 11,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+            if (widget.isLocalFile && !isUnimplementedError) ...[
+              const SizedBox(height: 8),
               const Text(
                 'Video sẽ được tải lên khi bạn gửi',
                 style: TextStyle(color: Colors.white54, fontSize: 10),
+              ),
+            ],
+            // Show "Open in browser" button for network videos with UnimplementedError
+            if (isNetworkVideoError) ...[
+              const SizedBox(height: 12),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              widget.videoUrl,
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 10,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    ElevatedButton.icon(
+                      onPressed: _openVideoInBrowser,
+                      icon: const Icon(Icons.open_in_browser, size: 16),
+                      label: const Text('Mở trong trình duyệt'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue.shade700,
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    TextButton.icon(
+                      onPressed: _initializeVideo,
+                      icon: const Icon(Icons.refresh, color: Colors.white70, size: 16),
+                      label: const Text(
+                        'Thử lại',
+                        style: TextStyle(color: Colors.white70, fontSize: 12),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ],
@@ -1712,15 +2098,33 @@ class _VideoPlayerWidgetState extends State<_VideoPlayerWidget> {
       );
     }
 
+    // Use HTML5 video player if video_player doesn't work
+    if (_useHtmlPlayer) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: _buildHtmlVideoPlayer(),
+      );
+    }
+
     if (!_isInitialized || _controller == null) {
       return Container(
-        height: 200,
+        height: widget.isLocalFile ? 150 : 200,
         decoration: BoxDecoration(
           color: Colors.black,
           borderRadius: BorderRadius.circular(8),
         ),
         child: const Center(
-          child: CircularProgressIndicator(color: Colors.white),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(color: Colors.white),
+              SizedBox(height: 8),
+              Text(
+                'Đang tải video...',
+                style: TextStyle(color: Colors.white70, fontSize: 12),
+              ),
+            ],
+          ),
         ),
       );
     }

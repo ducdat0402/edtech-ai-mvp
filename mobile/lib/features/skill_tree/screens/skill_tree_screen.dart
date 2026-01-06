@@ -186,10 +186,10 @@ class _SkillTreeScreenState extends State<SkillTreeScreen> {
               '🔍 [Frontend] Resolved subjectId from skill tree data: $resolvedSubjectId');
         }
 
-        setState(() {
-          _skillTreeData = skillTree;
-          _isLoading = false;
-          _error = null;
+      setState(() {
+        _skillTreeData = skillTree;
+        _isLoading = false;
+        _error = null;
           _generatingMessage = generatingMessage;
           _resolvedSubjectId = resolvedSubjectId;
         });
@@ -797,8 +797,8 @@ class _SkillTreeScreenState extends State<SkillTreeScreen> {
               ),
               // ✅ Draw nodes along the path
               ...sortedNodes.asMap().entries.map((entry) {
-                final index = entry.key;
-                final node = entry.value;
+                      final index = entry.key;
+                      final node = entry.value;
 
                 // Calculate position along the winding path
                 final row = index ~/ segmentsPerRow;
@@ -817,13 +817,13 @@ class _SkillTreeScreenState extends State<SkillTreeScreen> {
                   left: x - (nodeSize / 2),
                   top: y - (nodeSize / 2),
                   child: _buildPathNode(node, index + 1),
-                );
-              }).toList(),
+                      );
+                    }).toList(),
             ],
           ),
         ),
-      ),
-    );
+                  ),
+                );
   }
 
   Widget _buildPathNode(Map<String, dynamic> node, int nodeNumber) {
@@ -1169,8 +1169,8 @@ class _SkillTreeScreenState extends State<SkillTreeScreen> {
                     )
                   : null,
               child: Icon(
-                _getIconData(icon),
-                size: isBoss ? 32 : 24,
+              _getIconData(icon),
+              size: isBoss ? 32 : 24,
                 color: isLocked
                     ? Colors.grey.shade600
                     : isCompleted
@@ -1244,7 +1244,7 @@ class _SkillTreeScreenState extends State<SkillTreeScreen> {
     }
   }
 
-  IconData _getIconData(String iconName) {
+      IconData _getIconData(String iconName) {
     switch (iconName.toLowerCase()) {
       case 'star':
         return Icons.star;
@@ -1464,11 +1464,11 @@ class SkillTreeConnectionsPainter extends CustomPainter {
         // Draw curved line (bezier curve for better visual)
         final path = Path();
         path.moveTo(parentX, parentY);
-
+        
         // Control points for smooth curve
         final controlPoint1 = Offset(parentX, parentY + (tierSpacing / 3));
         final controlPoint2 = Offset(childX, childY - (tierSpacing / 3));
-
+        
         path.cubicTo(
           controlPoint1.dx,
           controlPoint1.dy,

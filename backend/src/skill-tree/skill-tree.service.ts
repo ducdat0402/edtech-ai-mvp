@@ -563,12 +563,12 @@ export class SkillTreeService {
     let totalXP = 0;
 
     for (const progress of allProgressForTree) {
-      if (progress.status !== NodeStatus.LOCKED) {
-        unlockedCount++;
-      }
-      if (progress.status === NodeStatus.COMPLETED) {
-        completedCount++;
-      }
+        if (progress.status !== NodeStatus.LOCKED) {
+          unlockedCount++;
+        }
+        if (progress.status === NodeStatus.COMPLETED) {
+          completedCount++;
+        }
       totalXP += progress.xpEarned || 0;
     }
 
@@ -704,14 +704,14 @@ export class SkillTreeService {
   ): Promise<UserSkillProgress | null> {
     try {
       console.log(`🔍 Looking for skill node with learningNodeId: ${learningNodeId}`);
-      // Find skill node linked to this learning node
-      const skillNode = await this.skillNodeRepository.findOne({
-        where: { learningNodeId },
-        relations: ['skillTree'],
-      });
+    // Find skill node linked to this learning node
+    const skillNode = await this.skillNodeRepository.findOne({
+      where: { learningNodeId },
+      relations: ['skillTree'],
+    });
 
-      if (!skillNode) {
-        // No skill tree exists for this learning node yet
+    if (!skillNode) {
+      // No skill tree exists for this learning node yet
         console.log(`⚠️  No skill node found for learning node ${learningNodeId}`);
         // Try to find by searching all skill nodes (debug)
         const allNodes = await this.skillNodeRepository.find({
@@ -719,19 +719,19 @@ export class SkillTreeService {
         });
         console.log(`📋 Total skill nodes in system: ${allNodes.length}`);
         console.log(`📋 Learning node IDs in skill nodes: ${allNodes.map(n => n.learningNodeId).filter(Boolean).join(', ')}`);
-        return null;
-      }
+      return null;
+    }
       
       console.log(`✅ Found skill node ${skillNode.id} (${skillNode.title}) for learning node ${learningNodeId}`);
 
-      // Check if already completed
+    // Check if already completed
       let progress = await this.userProgressRepository.findOne({
-        where: { userId, skillNodeId: skillNode.id },
-      });
+      where: { userId, skillNodeId: skillNode.id },
+    });
 
-      if (progress && progress.status === NodeStatus.COMPLETED) {
-        return progress;
-      }
+    if (progress && progress.status === NodeStatus.COMPLETED) {
+      return progress;
+    }
 
       // ✅ Ensure node is unlocked before completing
       if (!progress || progress.status === NodeStatus.LOCKED) {
@@ -760,12 +760,12 @@ export class SkillTreeService {
         }
       }
 
-      // Complete the skill node
+    // Complete the skill node
       console.log(`🎯 Completing skill node ${skillNode.id}...`);
       const result = await this.completeNode(userId, skillNode.id, {
-        completedItems: [], // Will be populated from learning node progress
-        autoCompleted: true,
-      });
+      completedItems: [], // Will be populated from learning node progress
+      autoCompleted: true,
+    });
       console.log(`✅ Skill node ${skillNode.id} completed! Status: ${result.status}`);
       return result;
     } catch (error) {
@@ -784,42 +784,42 @@ export class SkillTreeService {
     progressData?: any,
   ): Promise<UserSkillProgress> {
     try {
-      const node = await this.skillNodeRepository.findOne({
-        where: { id: skillNodeId },
-        relations: ['skillTree'],
-      });
+    const node = await this.skillNodeRepository.findOne({
+      where: { id: skillNodeId },
+      relations: ['skillTree'],
+    });
 
-      if (!node) {
-        throw new NotFoundException('Skill node not found');
-      }
+    if (!node) {
+      throw new NotFoundException('Skill node not found');
+    }
 
-      let progress = await this.userProgressRepository.findOne({
-        where: { userId, skillNodeId },
-      });
+    let progress = await this.userProgressRepository.findOne({
+      where: { userId, skillNodeId },
+    });
 
-      if (!progress) {
-        throw new BadRequestException('Node not unlocked yet');
-      }
+    if (!progress) {
+      throw new BadRequestException('Node not unlocked yet');
+    }
 
-      // Update progress
-      progress.status = NodeStatus.COMPLETED;
-      progress.progress = 100;
-      progress.completedAt = new Date();
+    // Update progress
+    progress.status = NodeStatus.COMPLETED;
+    progress.progress = 100;
+    progress.completedAt = new Date();
       progress.xpEarned = node.rewardXP || 0;
       progress.coinsEarned = node.rewardCoins || 0;
-      if (progressData) {
-        progress.progressData = progressData;
-      }
+    if (progressData) {
+      progress.progressData = progressData;
+    }
 
-      await this.userProgressRepository.save(progress);
+    await this.userProgressRepository.save(progress);
 
       // Award XP and coins (with error handling)
       try {
         if (node.rewardXP && node.rewardXP > 0) {
-          await this.currencyService.addXP(userId, node.rewardXP);
+    await this.currencyService.addXP(userId, node.rewardXP);
         }
         if (node.rewardCoins && node.rewardCoins > 0) {
-          await this.currencyService.addCoins(userId, node.rewardCoins);
+    await this.currencyService.addCoins(userId, node.rewardCoins);
         }
       } catch (currencyError) {
         console.error(`❌ Error awarding currency for node ${skillNodeId}:`, currencyError);
@@ -828,7 +828,7 @@ export class SkillTreeService {
 
       // Update skill tree stats (with error handling)
       try {
-        const skillTree = node.skillTree;
+    const skillTree = node.skillTree;
         
         if (skillTree) {
           // ✅ Load nodes if not already loaded
@@ -839,27 +839,27 @@ export class SkillTreeService {
             skillTree.nodes = allNodes;
           }
           
-          const nodeIds = skillTree.nodes.map((n) => n.id);
+    const nodeIds = skillTree.nodes.map((n) => n.id);
           const completedCount = nodeIds.length > 0
-              ? await this.userProgressRepository.count({
-                  where: {
-                    userId,
-                    skillNodeId: In(nodeIds),
-                    status: NodeStatus.COMPLETED,
-                  },
-                })
-              : 0;
+        ? await this.userProgressRepository.count({
+            where: {
+              userId,
+              skillNodeId: In(nodeIds),
+              status: NodeStatus.COMPLETED,
+            },
+          })
+        : 0;
           skillTree.completedNodes = completedCount;
           skillTree.totalXP = (skillTree.totalXP || 0) + (node.rewardXP || 0);
           
           console.log(`📊 Updated skill tree stats: ${completedCount}/${skillTree.totalNodes} nodes completed`);
 
-          if (skillTree.metadata) {
-            skillTree.metadata.completionPercentage =
-              skillTree.totalNodes > 0
-                ? Math.round((skillTree.completedNodes / skillTree.totalNodes) * 100)
-                : 0;
-            skillTree.metadata.lastUnlockedAt = new Date();
+    if (skillTree.metadata) {
+      skillTree.metadata.completionPercentage =
+        skillTree.totalNodes > 0
+          ? Math.round((skillTree.completedNodes / skillTree.totalNodes) * 100)
+          : 0;
+      skillTree.metadata.lastUnlockedAt = new Date();
           } else {
             // Initialize metadata if not exists
             // Get placement test level from user or default to beginner
@@ -885,9 +885,9 @@ export class SkillTreeService {
                 lastUnlockedAt: new Date(),
               };
             }
-          }
+    }
 
-          await this.skillTreeRepository.save(skillTree);
+    await this.skillTreeRepository.save(skillTree);
         }
       } catch (skillTreeError) {
         console.error(`❌ Error updating skill tree stats:`, skillTreeError);

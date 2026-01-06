@@ -977,28 +977,28 @@ export class PlacementTestService {
           try {
             console.log(`🤖 [Batch] Generating question ${questionIndex + 1}/${count} for "${targetGoal}" (${difficulty})...`);
 
-            const aiQuestion = await this.aiService.generatePlacementQuestion(
-              targetGoal,
-              difficulty,
-            );
+          const aiQuestion = await this.aiService.generatePlacementQuestion(
+            targetGoal,
+            difficulty,
+          );
 
-            // Save to database without subjectId (null = general question for this subject)
-            const question = this.questionRepository.create({
-              question: aiQuestion.question,
-              options: aiQuestion.options,
-              correctAnswer: aiQuestion.correctAnswer,
-              difficulty: difficulty,
-              subjectId: null, // No subject, generated from subject name
-              explanation: aiQuestion.explanation || '',
-              metadata: {
-                isAIGenerated: true,
-                generatedAt: new Date().toISOString(),
-                subject: targetGoal, // Store subject name (ngành học) for reference
-                targetGoal: targetGoal, // Keep for backward compatibility
-              },
-            });
+          // Save to database without subjectId (null = general question for this subject)
+          const question = this.questionRepository.create({
+            question: aiQuestion.question,
+            options: aiQuestion.options,
+            correctAnswer: aiQuestion.correctAnswer,
+            difficulty: difficulty,
+            subjectId: null, // No subject, generated from subject name
+            explanation: aiQuestion.explanation || '',
+            metadata: {
+              isAIGenerated: true,
+              generatedAt: new Date().toISOString(),
+              subject: targetGoal, // Store subject name (ngành học) for reference
+              targetGoal: targetGoal, // Keep for backward compatibility
+            },
+          });
 
-            const saved = await this.questionRepository.save(question);
+          const saved = await this.questionRepository.save(question);
             console.log(`✅ Saved AI-generated question ${questionIndex + 1}/${count} from targetGoal: ${saved.id}`);
             return saved;
           } catch (error) {
@@ -1076,26 +1076,26 @@ export class PlacementTestService {
           try {
             console.log(`🤖 [Batch] Generating question ${questionIndex + 1}/${count} for ${subject.name} (${difficulty})...`);
 
-            const aiQuestion = await this.aiService.generatePlacementQuestion(
-              subject.name,
-              difficulty,
-            );
+          const aiQuestion = await this.aiService.generatePlacementQuestion(
+            subject.name,
+            difficulty,
+          );
 
-            // Save to database
-            const question = this.questionRepository.create({
-              question: aiQuestion.question,
-              options: aiQuestion.options,
-              correctAnswer: aiQuestion.correctAnswer,
-              difficulty: difficulty,
-              subjectId: subjectId,
-              explanation: aiQuestion.explanation || '',
-              metadata: {
-                isAIGenerated: true,
-                generatedAt: new Date().toISOString(),
-              },
-            });
+          // Save to database
+          const question = this.questionRepository.create({
+            question: aiQuestion.question,
+            options: aiQuestion.options,
+            correctAnswer: aiQuestion.correctAnswer,
+            difficulty: difficulty,
+            subjectId: subjectId,
+            explanation: aiQuestion.explanation || '',
+            metadata: {
+              isAIGenerated: true,
+              generatedAt: new Date().toISOString(),
+            },
+          });
 
-            const saved = await this.questionRepository.save(question);
+          const saved = await this.questionRepository.save(question);
             console.log(`✅ Saved AI-generated question ${questionIndex + 1}/${count}: ${saved.id}`);
             return saved;
           } catch (error) {
@@ -1121,7 +1121,7 @@ export class PlacementTestService {
         // Small delay between batches to avoid rate limiting (only if not last batch)
         if (batchEnd < count) {
           await new Promise(resolve => setTimeout(resolve, 200));
-        }
+          }
       }
 
       console.log(`✅ Completed generating ${questions.length}/${count} questions for ${subject.name}`);

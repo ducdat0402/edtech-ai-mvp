@@ -180,23 +180,23 @@ class _AnalysisCompleteScreenState extends State<AnalysisCompleteScreen> {
                               final subjectId = _analysisData!['subjectId'] as String?;
                               
                               return Row(
-                                children: [
-                                  Expanded(
-                                    child: OutlinedButton(
-                                      onPressed: () {
-                                        context.go('/dashboard');
-                                      },
-                                      style: OutlinedButton.styleFrom(
-                                        padding: const EdgeInsets.symmetric(vertical: 16),
-                                      ),
-                                      child: const Text('Dashboard'),
-                                    ),
+                            children: [
+                              Expanded(
+                                child: OutlinedButton(
+                                  onPressed: () {
+                                    context.go('/dashboard');
+                                  },
+                                  style: OutlinedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(vertical: 16),
                                   ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: ElevatedButton(
-                                      onPressed: () async {
-                                        if (mounted) {
+                                  child: const Text('Dashboard'),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: ElevatedButton(
+                                  onPressed: () async {
+                                    if (mounted) {
                                           if (subjectId != null && subjectId.isNotEmpty) {
                                             // Test đã có subjectId từ onboarding
                                             // Skill tree đã được tự động tạo ở backend
@@ -204,21 +204,21 @@ class _AnalysisCompleteScreenState extends State<AnalysisCompleteScreen> {
                                             context.go('/skill-tree?subjectId=$subjectId');
                                           } else {
                                             // Không có subjectId, cho user chọn môn học
-                                            context.go('/subjects');
+                                      context.go('/subjects');
                                           }
-                                        }
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        padding: const EdgeInsets.symmetric(vertical: 16),
-                                      ),
+                                    }
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(vertical: 16),
+                                  ),
                                       child: Text(
                                         subjectId != null && subjectId.isNotEmpty
                                             ? 'Xem Skill Tree'
                                             : 'Chọn môn học',
                                       ),
-                                    ),
-                                  ),
-                                ],
+                                ),
+                              ),
+                            ],
                               );
                             },
                           ),
