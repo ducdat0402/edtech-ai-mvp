@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { UserProgress } from './entities/user-progress.entity';
 import { LearningNode } from '../learning-nodes/entities/learning-node.entity';
 import { UserCurrencyService } from '../user-currency/user-currency.service';
+import { RewardSource } from '../user-currency/entities/reward-transaction.entity';
 import { ContentItemsService } from '../content-items/content-items.service';
 import { QuestsService } from '../quests/quests.service';
 import { QuestType } from '../quests/entities/quest.entity';
@@ -240,6 +241,26 @@ export class UserProgressService {
           rewards.shardAmount,
         );
         rewardsGiven.shards[rewards.shard] = rewards.shardAmount;
+      }
+
+      // Log reward transaction
+      if (rewardsGiven.xp > 0 || rewardsGiven.coins > 0 || Object.keys(rewardsGiven.shards).length > 0) {
+        try {
+          await this.currencyService.logReward(
+            userId,
+            RewardSource.CONTENT_ITEM,
+            {
+              xp: rewardsGiven.xp,
+              coins: rewardsGiven.coins,
+              shards: rewardsGiven.shards,
+            },
+            contentItemId,
+            contentItem.title,
+          );
+        } catch (error) {
+          // Log but don't fail the completion
+          console.error('Error logging reward transaction:', error);
+        }
       }
 
       // Update streak when completing items

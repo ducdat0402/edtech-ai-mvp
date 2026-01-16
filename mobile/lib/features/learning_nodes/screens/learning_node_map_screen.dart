@@ -85,7 +85,13 @@ class _LearningNodeMapScreenState extends State<LearningNodeMapScreen> {
                   ),
                   actions: [
                     TextButton(
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () {
+                        if (context.canPop()) {
+                          context.pop();
+                        } else {
+                          context.go('/dashboard');
+                        }
+                      },
                       child: const Text('Hiểu rồi'),
                     ),
                   ],

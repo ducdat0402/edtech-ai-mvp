@@ -15,11 +15,15 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { AiModule } from './ai/ai.module';
 import { OnboardingModule } from './onboarding/onboarding.module';
 import { PlacementTestModule } from './placement-test/placement-test.module';
-import { RoadmapModule } from './roadmap/roadmap.module';
 import { SkillTreeModule } from './skill-tree/skill-tree.module';
 import { QuestsModule } from './quests/quests.module';
 import { LeaderboardModule } from './leaderboard/leaderboard.module';
 import { HealthModule } from './health/health.module';
+import { DomainsModule } from './domains/domains.module';
+import { KnowledgeGraphModule } from './knowledge-graph/knowledge-graph.module';
+import { AiAgentsModule } from './ai-agents/ai-agents.module';
+import { AchievementsModule } from './achievements/achievements.module';
+import { PersonalMindMapModule } from './personal-mind-map/personal-mind-map.module';
 import { TypeOrmConfigService } from './config/typeorm.config';
 
 @Module({
@@ -45,11 +49,15 @@ import { TypeOrmConfigService } from './config/typeorm.config';
     AiModule,
     OnboardingModule,
     PlacementTestModule,
-    RoadmapModule,
     SkillTreeModule,
     QuestsModule,
     LeaderboardModule,
     HealthModule,
+    DomainsModule,
+    KnowledgeGraphModule,
+    AiAgentsModule,
+    AchievementsModule,
+    PersonalMindMapModule,
   ],
 })
 export class AppModule {}

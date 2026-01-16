@@ -23,6 +23,7 @@ class EdTechApp extends StatelessWidget {
       ],
       child: MaterialApp.router(
         title: 'EdTech AI MVP',
+        debugShowCheckedModeBanner: false, // Remove DEBUG banner
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
           useMaterial3: true,

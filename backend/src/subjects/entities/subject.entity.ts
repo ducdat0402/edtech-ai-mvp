@@ -7,6 +7,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { LearningNode } from '../../learning-nodes/entities/learning-node.entity';
+import { Domain } from '../../domains/entities/domain.entity';
 
 @Entity('subjects')
 export class Subject {
@@ -40,6 +41,9 @@ export class Subject {
 
   @OneToMany(() => LearningNode, (node) => node.subject)
   nodes: LearningNode[];
+
+  @OneToMany(() => Domain, (domain) => domain.subject)
+  domains: Domain[];
 
   @CreateDateColumn()
   createdAt: Date;

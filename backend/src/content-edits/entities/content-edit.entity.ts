@@ -58,15 +58,48 @@ export class ContentEdit {
   @Column({ type: 'jsonb', nullable: true })
   media: {
     videoUrl?: string;
-    imageUrl?: string;
+    imageUrl?: string; // Single image (legacy)
+    imageUrls?: string[]; // Multiple images (new)
     caption?: string;
   };
 
   @Column({ type: 'text', nullable: true })
-  textContent: string;
+  textContent: string; // Plain text (legacy)
+
+  @Column({ type: 'jsonb', nullable: true })
+  richContent: any; // Rich text content (JSON from flutter_quill)
+
+  @Column({ type: 'text', nullable: true })
+  title: string; // Lesson title (for community edit)
 
   @Column({ type: 'text', nullable: true })
   description: string; // Mô tả về chỉnh sửa này
+
+  @Column({ type: 'jsonb', nullable: true })
+  quizData: {
+    question?: string;
+    options?: string[];
+    correctAnswer?: number;
+    explanation?: string;
+  }; // Quiz data (for quiz content items)
+
+  @Column({ type: 'jsonb', nullable: true })
+  originalContentSnapshot: {
+    title?: string;
+    content?: string;
+    richContent?: any;
+    media?: {
+      videoUrl?: string;
+      imageUrl?: string;
+      imageUrls?: string[];
+    };
+    quizData?: {
+      question?: string;
+      options?: string[];
+      correctAnswer?: number;
+      explanation?: string;
+    };
+  }; // Snapshot of content item before this edit is applied
 
   @Column({ type: 'int', default: 0 })
   upvotes: number;

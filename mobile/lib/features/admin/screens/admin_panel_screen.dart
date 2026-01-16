@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/config/api_config.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:video_player/video_player.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:edtech_mobile/features/content/widgets/web_video_player.dart';
+import 'package:edtech_mobile/features/content/widgets/content_format_badge.dart';
+import 'package:edtech_mobile/features/content/widgets/difficulty_badge.dart';
+import 'package:edtech_mobile/features/admin/widgets/comparison_dialog.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:io';
 
@@ -19,17 +23,20 @@ class AdminPanelScreen extends StatefulWidget {
 class _AdminPanelScreenState extends State<AdminPanelScreen> with SingleTickerProviderStateMixin {
   List<Map<String, dynamic>> _pendingEdits = [];
   List<Map<String, dynamic>> _allContentItems = [];
+  List<Map<String, dynamic>> _editHistory = [];
   bool _isLoading = true;
   bool _isLoadingContent = false;
+  bool _isLoadingHistory = false;
   String? _error;
   late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
     _loadPendingEdits();
     _loadAllContentItems();
+    _loadEditHistory();
   }
 
   @override
@@ -74,6 +81,25 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> with SingleTickerPr
     } catch (e) {
       setState(() {
         _isLoadingContent = false;
+      });
+    }
+  }
+
+  Future<void> _loadEditHistory() async {
+    setState(() {
+      _isLoadingHistory = true;
+    });
+
+    try {
+      final apiService = Provider.of<ApiService>(context, listen: false);
+      final history = await apiService.getAllHistory();
+      setState(() {
+        _editHistory = history.map((e) => Map<String, dynamic>.from(e)).toList();
+        _isLoadingHistory = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoadingHistory = false;
       });
     }
   }
@@ -162,6 +188,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> with SingleTickerPr
           tabs: const [
             Tab(text: 'Duyệt đóng góp', icon: Icon(Icons.pending_actions)),
             Tab(text: 'Quản lý bài học', icon: Icon(Icons.article)),
+            Tab(text: 'Lịch sử', icon: Icon(Icons.history)),
           ],
         ),
         actions: [
@@ -170,8 +197,10 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> with SingleTickerPr
             onPressed: () {
               if (_tabController.index == 0) {
                 _loadPendingEdits();
-              } else {
+              } else if (_tabController.index == 1) {
                 _loadAllContentItems();
+              } else {
+                _loadEditHistory();
               }
             },
             tooltip: 'Làm mới',
@@ -183,6 +212,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> with SingleTickerPr
         children: [
           _buildPendingEditsTab(),
           _buildContentItemsTab(),
+          _buildHistoryTab(),
         ],
       ),
     );
@@ -275,7 +305,6 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> with SingleTickerPr
     final title = item['title'] as String? ?? 'N/A';
     final nodeTitle = item['nodeTitle'] as String? ?? 'N/A';
     final editsCount = item['editsCount'] as int? ?? 0;
-    final edits = item['edits'] as List<dynamic>? ?? [];
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
@@ -289,7 +318,27 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> with SingleTickerPr
           title,
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
-        subtitle: Text('Node: $nodeTitle'),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Node: $nodeTitle'),
+            const SizedBox(height: 4),
+            Wrap(
+              spacing: 4,
+              runSpacing: 4,
+              children: [
+                ContentFormatBadge(
+                  format: item['format'] as String?,
+                  compact: true,
+                ),
+                DifficultyBadge(
+                  difficulty: item['difficulty'] as String?,
+                  compact: true,
+                ),
+              ],
+            ),
+          ],
+        ),
         trailing: editsCount > 0
             ? Chip(
                 label: Text('$editsCount đóng góp'),
@@ -300,124 +349,47 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> with SingleTickerPr
                 backgroundColor: Colors.grey,
               ),
         children: [
-          if (edits.isEmpty)
-            const Padding(
-              padding: EdgeInsets.all(16.0),
-              child: Text(
-                'Chưa có đóng góp nào cho bài học này',
-                style: TextStyle(color: Colors.grey),
+          // Nút xem lịch sử phiên bản
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: ElevatedButton.icon(
+              onPressed: () {
+                final contentId = item['id'] as String?;
+                if (contentId != null) {
+                  context.push('/content/$contentId/versions?admin=true');
+                }
+              },
+              icon: const Icon(Icons.history),
+              label: const Text('Xem lịch sử phiên bản'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
               ),
-            )
-          else
-            ...edits.map((edit) => _buildEditCardForContent(edit as Map<String, dynamic>)),
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildEditCardForContent(Map<String, dynamic> edit) {
-    final type = edit['type'] as String? ?? '';
-    final media = edit['media'] as Map<String, dynamic>?;
-    final description = edit['description'] as String?;
-    final user = edit['user'] as Map<String, dynamic>?;
-    final userName = user?['fullName'] as String? ?? user?['email'] as String? ?? 'Người dùng';
-    final editId = edit['id'] as String;
-    final createdAt = edit['createdAt'] as String?;
-
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              CircleAvatar(
-                radius: 16,
-                child: Text(userName[0].toUpperCase()),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      userName,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      type == 'add_video'
-                          ? 'Đã thêm video'
-                          : type == 'add_image'
-                              ? 'Đã thêm hình ảnh'
-                              : 'Đã đóng góp',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
-                onPressed: () => _removeEdit(editId),
-                tooltip: 'Gỡ bài',
-              ),
-            ],
-          ),
-          if (description != null && description.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Text(description),
-          ],
-          if (media != null) ...[
-            const SizedBox(height: 12),
-            if (media['imageUrl'] != null)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: CachedNetworkImage(
-                  imageUrl: _getFullUrl(media['imageUrl']),
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  height: 150,
-                  placeholder: (context, url) => Container(
-                    height: 150,
-                    color: Colors.grey.shade200,
-                    child: const Center(child: CircularProgressIndicator()),
-                  ),
-                  errorWidget: (context, url, error) => Container(
-                    height: 150,
-                    color: Colors.grey.shade200,
-                    child: const Icon(Icons.error),
-                  ),
-                ),
-              ),
-            if (media['videoUrl'] != null)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: SizedBox(
-                  height: 200,
-                  child: _VideoPlayerWidget(
-                    videoUrl: _getFullUrl(media['videoUrl']),
-                  ),
-                ),
-              ),
-          ],
-          if (createdAt != null) ...[
-            const SizedBox(height: 8),
-            Text(
-              _formatDate(createdAt),
-              style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
-            ),
-          ],
-        ],
-      ),
-    );
+  Future<void> _showComparisonDialog(String editId) async {
+    try {
+      final apiService = Provider.of<ApiService>(context, listen: false);
+      final comparison = await apiService.getEditComparison(editId);
+      
+      if (!mounted) return;
+      
+      showDialog(
+        context: context,
+        builder: (context) => ComparisonDialog(comparison: comparison),
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi khi tải dữ liệu so sánh: $e')),
+        );
+      }
+    }
   }
 
   Future<void> _removeEdit(String editId) async {
@@ -598,30 +570,47 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> with SingleTickerPr
             ],
             
             // Action buttons
-            Row(
+            Column(
               children: [
-                Expanded(
+                SizedBox(
+                  width: double.infinity,
                   child: OutlinedButton.icon(
-                    onPressed: () => _rejectEdit(editId),
-                    icon: const Icon(Icons.close, size: 18),
-                    label: const Text('Từ chối'),
+                    onPressed: () => _showComparisonDialog(editId),
+                    icon: const Icon(Icons.compare_arrows, size: 18),
+                    label: const Text('Xem so sánh (Trước/Sau)'),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.red,
-                      side: const BorderSide(color: Colors.red),
+                      foregroundColor: Colors.blue,
+                      side: const BorderSide(color: Colors.blue),
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () => _approveEdit(editId),
-                    icon: const Icon(Icons.check, size: 18),
-                    label: const Text('Duyệt'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                      foregroundColor: Colors.white,
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () => _rejectEdit(editId),
+                        icon: const Icon(Icons.close, size: 18),
+                        label: const Text('Từ chối'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.red,
+                          side: const BorderSide(color: Colors.red),
+                        ),
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () => _approveEdit(editId),
+                        icon: const Icon(Icons.check, size: 18),
+                        label: const Text('Duyệt'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -655,6 +644,229 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> with SingleTickerPr
       return '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
     } catch (e) {
       return dateString;
+    }
+  }
+
+  Widget _buildHistoryTab() {
+    return _isLoadingHistory
+        ? const Center(child: CircularProgressIndicator())
+        : RefreshIndicator(
+            onRefresh: _loadEditHistory,
+            child: _editHistory.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.history, size: 64, color: Colors.grey.shade400),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Chưa có lịch sử',
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: _editHistory.length,
+                    itemBuilder: (context, index) {
+                      final history = _editHistory[index];
+                      return _buildHistoryCard(history, index == _editHistory.length - 1);
+                    },
+                  ),
+          );
+  }
+
+  Widget _buildHistoryCard(Map<String, dynamic> history, bool isLast) {
+    final action = history['action'] as String? ?? '';
+    final description = history['description'] as String? ?? '';
+    final user = history['user'] as Map<String, dynamic>?;
+    final userName = user?['fullName'] as String? ?? user?['email'] as String? ?? 'Người dùng';
+    final createdAt = history['createdAt'] as String?;
+    final contentItem = history['contentItem'] as Map<String, dynamic>?;
+    final contentTitle = contentItem?['title'] as String? ?? 'Bài học';
+
+    // Parse date
+    DateTime? dateTime;
+    if (createdAt != null) {
+      try {
+        dateTime = DateTime.parse(createdAt);
+      } catch (e) {
+        // Ignore parse error
+      }
+    }
+
+    // Get action icon and color
+    IconData actionIcon;
+    Color actionColor;
+    String actionText;
+
+    switch (action) {
+      case 'submit':
+        actionIcon = Icons.send;
+        actionColor = Colors.blue;
+        actionText = 'Gửi đóng góp';
+        break;
+      case 'approve':
+        actionIcon = Icons.check_circle;
+        actionColor = Colors.green;
+        actionText = 'Duyệt';
+        break;
+      case 'reject':
+        actionIcon = Icons.cancel;
+        actionColor = Colors.red;
+        actionText = 'Từ chối';
+        break;
+      case 'remove':
+        actionIcon = Icons.delete;
+        actionColor = Colors.orange;
+        actionText = 'Gỡ bài';
+        break;
+      case 'create':
+        actionIcon = Icons.add_circle;
+        actionColor = Colors.purple;
+        actionText = 'Tạo mới';
+        break;
+      case 'update':
+        actionIcon = Icons.edit;
+        actionColor = Colors.blue;
+        actionText = 'Cập nhật';
+        break;
+      default:
+        actionIcon = Icons.info;
+        actionColor = Colors.grey;
+        actionText = action;
+    }
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Timeline line
+        Column(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: actionColor.withOpacity(0.1),
+                border: Border.all(color: actionColor, width: 2),
+              ),
+              child: Icon(actionIcon, color: actionColor, size: 20),
+            ),
+            if (!isLast)
+              Container(
+                width: 2,
+                height: 60,
+                color: Colors.grey.shade300,
+                margin: const EdgeInsets.symmetric(vertical: 4),
+              ),
+          ],
+        ),
+        const SizedBox(width: 12),
+        // Content
+        Expanded(
+          child: Card(
+            margin: const EdgeInsets.only(bottom: 12),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              actionText,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: actionColor,
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              contentTitle,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (dateTime != null)
+                        Text(
+                          _formatDateTime(dateTime),
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 12,
+                        child: Text(userName[0].toUpperCase(), style: const TextStyle(fontSize: 10)),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          userName,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade700,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (description.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      description,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _formatDateTime(DateTime dateTime) {
+    final now = DateTime.now();
+    final difference = now.difference(dateTime);
+
+    if (difference.inDays == 0) {
+      if (difference.inHours == 0) {
+        if (difference.inMinutes == 0) {
+          return 'Vừa xong';
+        }
+        return '${difference.inMinutes} phút trước';
+      }
+      return '${difference.inHours} giờ trước';
+    } else if (difference.inDays == 1) {
+      return 'Hôm qua';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays} ngày trước';
+    } else {
+      return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
     }
   }
 }

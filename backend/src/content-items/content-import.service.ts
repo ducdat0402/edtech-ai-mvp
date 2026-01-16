@@ -1,10 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, forwardRef, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ContentItem } from './entities/content-item.entity';
 import { LearningNode } from '../learning-nodes/entities/learning-node.entity';
 import { AiService } from '../ai/ai.service';
 import { FileParserService } from './file-parser.service';
+import { ContentItemsService } from './content-items.service';
 
 @Injectable()
 export class ContentImportService {
@@ -15,6 +16,8 @@ export class ContentImportService {
     private contentItemRepository: Repository<ContentItem>,
     @InjectRepository(LearningNode)
     private nodeRepository: Repository<LearningNode>,
+    @Inject(forwardRef(() => ContentItemsService))
+    private contentItemsService: ContentItemsService,
   ) {}
 
   /**
@@ -54,7 +57,17 @@ export class ContentImportService {
         content: concepts[i].content,
         order: i + 1,
         rewards: concepts[i].rewards,
+        difficulty: 'medium', // Default difficulty
       });
+
+      // Auto-detect format
+      concept.format = this.contentItemsService.detectFormat(concept);
+      
+      // Auto-calculate rewards if not provided
+      if (!concept.rewards || (!concept.rewards.xp && !concept.rewards.coin)) {
+        const rewards = this.contentItemsService.calculateRewards(concept.difficulty);
+        concept.rewards = { ...rewards, ...(concept.rewards || {}) };
+      }
 
       const saved = await this.contentItemRepository.save(concept);
       savedConcepts.push(saved);
@@ -104,7 +117,17 @@ export class ContentImportService {
       content: concept.content,
       order: nextOrder,
       rewards: concept.rewards,
+      difficulty: difficulty === 'beginner' ? 'easy' : difficulty === 'intermediate' ? 'medium' : 'hard',
     });
+
+    // Auto-detect format
+    contentItem.format = this.contentItemsService.detectFormat(contentItem);
+    
+    // Auto-calculate rewards if not provided
+    if (!contentItem.rewards || (!contentItem.rewards.xp && !contentItem.rewards.coin)) {
+      const rewards = this.contentItemsService.calculateRewards(contentItem.difficulty);
+      contentItem.rewards = { ...rewards, ...(contentItem.rewards || {}) };
+    }
 
     const saved = await this.contentItemRepository.save(contentItem);
     console.log(`✅ Saved concept: ${saved.title}`);

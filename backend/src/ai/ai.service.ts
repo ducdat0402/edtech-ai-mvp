@@ -772,6 +772,9 @@ Trả về JSON format:
     order: number;
     prerequisites: string[]; // Sẽ được cập nhật sau khi tạo nodes
     icon: string;
+    domain: string; // Tên chương/domain mà bài học này thuộc về
+    type: 'theory' | 'video' | 'image'; // Phân loại: lý thuyết, video, hoặc hình ảnh
+    difficulty: 'easy' | 'medium' | 'hard'; // Độ khó: dễ, trung bình, khó
     concepts: Array<{ title: string; content: string }>;
     examples: Array<{ title: string; content: string }>;
     hiddenRewards: Array<{ title: string; content: string }>;
@@ -807,7 +810,7 @@ Yêu cầu:
    - examples: Mảng 5-8 ví dụ thực tế, mỗi example có:
      - title: Tên ví dụ ngắn gọn, hấp dẫn
      - content: Mô tả chi tiết ví dụ, có tình huống cụ thể và giải pháp
-   - hiddenRewards: Mảng 3-5 phần thưởng ẩn, mỗi reward có:
+   - hiddenRewards: CHỈ 1 phần thưởng ẩn (mảng với 1 phần tử duy nhất), mỗi reward có:
      - title: Tên phần thưởng (ví dụ: "Rương Coin", "Vật Phẩm Đặc Biệt")
      - content: Mô tả cách nhận phần thưởng
    - bossQuiz: 1 bài quiz cuối với:
@@ -904,6 +907,492 @@ Trả về JSON format (chỉ JSON, không có text khác):
     } catch (error) {
       console.error('Error generating learning nodes structure:', error);
       throw new Error(`Failed to generate learning nodes: ${error.message}`);
+    }
+  }
+
+  /**
+   * Generate a single learning node with detailed content
+   * This method generates one node at a time with a focused prompt for better quality
+   */
+  async generateSingleLearningNode(
+    topicName: string,
+    topicDescription: string,
+    subjectName: string,
+    subjectDescription?: string,
+    domainName?: string,
+    order: number = 1,
+  ): Promise<{
+    title: string;
+    description: string;
+    order: number;
+    prerequisites: string[];
+    icon: string;
+    domain: string;
+    type: 'theory' | 'video' | 'image';
+    difficulty: 'easy' | 'medium' | 'hard';
+    concepts: Array<{ title: string; content: string }>;
+    examples: Array<{ title: string; content: string }>;
+    hiddenRewards: Array<{ title: string; content: string }>;
+    bossQuiz: {
+      question: string;
+      options: string[];
+      correctAnswer: number;
+      explanation: string;
+    };
+  }> {
+    if (!this.openai) {
+      throw new Error('OpenAI API not configured');
+    }
+
+    const domainText = domainName ? `\n\nChương/Domain: ${domainName}` : '';
+    const subjectContext = subjectDescription 
+      ? `\n\nMôn học: ${subjectName}\nMô tả: ${subjectDescription}`
+      : `\n\nMôn học: ${subjectName}`;
+
+    const prompt = `Bạn là một chuyên gia giáo dục. Nhiệm vụ: Tạo MỘT bài học CHI TIẾT và TOÀN DIỆN về chủ đề "${topicName}".
+
+Chủ đề: ${topicName}
+Mô tả: ${topicDescription}${domainText}${subjectContext}
+
+YÊU CẦU NGHIÊM NGẶT:
+
+1. PHÂN LOẠI BÀI HỌC (type):
+   - "theory": Bài học lý thuyết, chủ yếu là văn bản, khái niệm, định nghĩa
+   - "video": Bài học cần video để minh họa, hướng dẫn thực hành, demo
+   - "image": Bài học cần hình ảnh để minh họa, diagram, infographic
+
+2. ĐÁNH NHÃN ĐỘ KHÓ (difficulty):
+   - "easy": Bài học cơ bản, dễ hiểu, phù hợp người mới bắt đầu
+   - "medium": Bài học trung bình, cần kiến thức nền tảng
+   - "hard": Bài học khó, nâng cao, yêu cầu kiến thức sâu
+
+3. NỘI DUNG BÀI HỌC PHẢI RẤT CHI TIẾT:
+   - title: Tên bài học ngắn gọn, hấp dẫn
+   - description: Mô tả ngắn gọn về bài học (1-2 câu)
+   - order: ${order}
+   - prerequisites: [] (để trống)
+   - icon: Emoji phù hợp
+   - domain: ${domainName || 'Chương chung'}
+   - type: "theory" | "video" | "image" (PHÂN LOẠI phù hợp)
+   - difficulty: "easy" | "medium" | "hard" (ĐÁNH NHÃN độ khó phù hợp)
+   
+   - concepts: Mảng 5-8 khái niệm CƠ BẢN và QUAN TRỌNG NHẤT về "${topicName}"
+     * Mỗi concept có: 
+       - title: Ngắn gọn, tối đa 50 ký tự
+       - content: Giải thích CỰC KỲ CHI TIẾT và ĐẦY ĐỦ (tối thiểu 1200-2000 từ), bao gồm:
+         + Giới thiệu khái niệm (100-200 từ)
+         + Giải thích chi tiết với các bước/điểm chính (400-800 từ)
+         + Nhiều ví dụ minh họa cụ thể và chi tiết (300-600 từ)
+         + Lưu ý quan trọng và tips (100-200 từ)
+         + Ứng dụng thực tế và case studies (200-400 từ)
+         + Tóm tắt và bài tập tự luyện (100-200 từ)
+         + Sử dụng markdown để format (headers, lists, code blocks, tables)
+   
+   - examples: Mảng 6-10 ví dụ THỰC TẾ và CHI TIẾT về "${topicName}"
+     * Mỗi example có:
+       - title: Tên ví dụ ngắn gọn, hấp dẫn
+       - content: Mô tả CỰC KỲ CHI TIẾT và ĐẦY ĐỦ (tối thiểu 800-1600 từ), bao gồm:
+         + Tình huống/thực tế cụ thể và chi tiết (200-400 từ)
+         + Vấn đề cần giải quyết và phân tích (150-300 từ)
+         + Giải pháp từng bước chi tiết với hướng dẫn cụ thể (300-600 từ)
+         + Kết quả và phân tích kết quả (100-200 từ)
+         + Bài học rút ra và ứng dụng (50-100 từ)
+         + Sử dụng markdown để format
+   
+   - hiddenRewards: CHỈ 1 phần thưởng ẩn thú vị và hấp dẫn (mảng với 1 phần tử duy nhất)
+     * Reward có:
+       - title: Tên phần thưởng ngắn gọn, hấp dẫn
+       - content: Mô tả phần thưởng và cách nhận được
+   
+   - bossQuiz: Câu hỏi kiểm tra kiến thức về "${topicName}"
+     * question: Câu hỏi rõ ràng, liên quan trực tiếp đến nội dung bài học
+     * options: 4 lựa chọn (A, B, C, D) - chỉ có 1 đáp án đúng
+     * correctAnswer: Index của đáp án đúng (0-3)
+     * explanation: Giải thích CHI TIẾT tại sao đáp án đúng (100-200 từ)
+
+**QUAN TRỌNG:**
+- Nội dung phải CỰC KỲ CHI TIẾT, không được sơ sài
+- Mỗi concept và example phải có đủ số từ yêu cầu
+- Sử dụng markdown để format đẹp (headers, lists, code blocks, tables)
+- Nội dung phải thực tế, dễ hiểu, phù hợp với level của bài học
+
+Trả về JSON format (chỉ JSON, không có text khác):
+{
+  "title": "Tên bài học",
+  "description": "Mô tả ngắn gọn",
+  "order": ${order},
+  "prerequisites": [],
+  "icon": "📚",
+  "domain": "${domainName || 'Chương chung'}",
+  "type": "theory" | "video" | "image",
+  "difficulty": "easy" | "medium" | "hard",
+  "concepts": [
+    {
+      "title": "Khái niệm 1",
+      "content": "Nội dung CỰC KỲ CHI TIẾT (tối thiểu 1200-2000 từ) với markdown..."
+    }
+  ],
+  "examples": [
+    {
+      "title": "Ví dụ 1",
+      "content": "Mô tả CỰC KỲ CHI TIẾT (tối thiểu 800-1600 từ) với markdown..."
+    }
+  ],
+  "hiddenRewards": [
+    {
+      "title": "Rương Coin",
+      "content": "Phát hiện rương coin khi hoàn thành bài học này!"
+    }
+  ],
+  "bossQuiz": {
+    "question": "Câu hỏi về ${topicName}?",
+    "options": ["A. Đáp án 1", "B. Đáp án 2", "C. Đáp án 3", "D. Đáp án 4"],
+    "correctAnswer": 0,
+    "explanation": "Giải thích CHI TIẾT tại sao đáp án đúng..."
+  }
+}`;
+
+    try {
+      const completion = await this.openai.chat.completions.create({
+        model: this.model,
+        messages: [
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+        response_format: { type: 'json_object' },
+        temperature: 0.7,
+        max_tokens: 16384,
+      });
+
+      const content = completion.choices[0]?.message?.content;
+      if (!content) {
+        throw new Error('No response from AI');
+      }
+
+      const result = JSON.parse(content);
+
+      // Validate and format
+      const node = {
+        title: result.title || `Bài học về ${topicName}`,
+        description: result.description || topicDescription,
+        order: result.order || order,
+        prerequisites: [],
+        icon: result.icon || '📚',
+        domain: result.domain || domainName || 'Chương chung',
+        type: result.type || 'theory',
+        difficulty: result.difficulty || 'medium',
+        concepts: result.concepts || [],
+        examples: result.examples || [],
+        hiddenRewards: result.hiddenRewards || [],
+        bossQuiz: result.bossQuiz || {
+          question: `Câu hỏi về ${topicName}?`,
+          options: ['A. Đáp án 1', 'B. Đáp án 2', 'C. Đáp án 3', 'D. Đáp án 4'],
+          correctAnswer: 0,
+          explanation: 'Giải thích đáp án đúng',
+        },
+      };
+
+      console.log(`✅ Generated single Learning Node: "${node.title}" for topic "${topicName}"`);
+      return node;
+    } catch (error) {
+      console.error('Error generating single learning node:', error);
+      throw new Error(`Failed to generate learning node: ${error.message}`);
+    }
+  }
+
+  /**
+   * Generate content for a specific difficulty level
+   * Used to create easy/medium/hard versions of concepts and examples
+   */
+  async generateContentByDifficulty(
+    nodeTitle: string,
+    nodeDescription: string,
+    subjectName: string,
+    difficulty: 'easy' | 'medium' | 'hard',
+    existingConceptTitles?: string[],
+    existingExampleTitles?: string[],
+  ): Promise<{
+    concepts: Array<{ title: string; content: string }>;
+    examples: Array<{ title: string; content: string }>;
+  }> {
+    if (!this.openai) {
+      throw new Error('OpenAI API not configured');
+    }
+
+    const difficultyConfig = {
+      easy: {
+        label: 'ĐƠN GIẢN',
+        description: 'Nội dung cơ bản, ngắn gọn, dễ hiểu, phù hợp người mới bắt đầu',
+        wordCount: '300-500 từ mỗi phần',
+        style: `
+- Sử dụng ngôn ngữ ĐƠN GIẢN, tránh thuật ngữ chuyên môn
+- Giải thích từng bước một, rõ ràng
+- Dùng nhiều ví von (analogies) từ đời thường
+- Tập trung vào ý chính, không đi sâu chi tiết
+- Có hình ảnh minh họa đơn giản (mô tả bằng text)`,
+        conceptCount: '2-3 khái niệm cơ bản',
+        exampleCount: '2-3 ví dụ đơn giản, thực tế',
+      },
+      medium: {
+        label: 'CHI TIẾT',
+        description: 'Nội dung cân bằng, đầy đủ thông tin, phù hợp đa số người học',
+        wordCount: '600-1000 từ mỗi phần',
+        style: `
+- Giải thích đầy đủ với thuật ngữ kèm giải nghĩa
+- Bao gồm các bước thực hiện chi tiết
+- Ví dụ thực tế đa dạng
+- Có tips và lưu ý quan trọng
+- Cân bằng giữa lý thuyết và thực hành`,
+        conceptCount: '3-4 khái niệm chi tiết',
+        exampleCount: '3-4 ví dụ thực tế, đa dạng',
+      },
+      hard: {
+        label: 'CHUYÊN SÂU',
+        description: 'Nội dung nâng cao, chuyên sâu, phù hợp người đã có nền tảng',
+        wordCount: '1000-2000 từ mỗi phần',
+        style: `
+- Đi sâu vào lý thuyết nền tảng và nguyên lý
+- Sử dụng thuật ngữ chuyên ngành (có giải thích ngắn)
+- Phân tích các edge cases, exceptions, anti-patterns
+- Liên hệ đến các khái niệm nâng cao
+- Bao gồm best practices, performance considerations
+- Case studies phức tạp từ thực tế`,
+        conceptCount: '3-5 khái niệm chuyên sâu',
+        exampleCount: '3-5 case studies và ví dụ nâng cao',
+      },
+    };
+
+    const config = difficultyConfig[difficulty];
+
+    const prompt = `Bạn là chuyên gia giáo dục. Nhiệm vụ: Tạo nội dung học tập ở mức độ ${config.label} cho bài học.
+
+THÔNG TIN BÀI HỌC:
+- Tiêu đề: ${nodeTitle}
+- Mô tả: ${nodeDescription}
+- Môn học: ${subjectName}
+
+${existingConceptTitles?.length ? `CÁC KHÁI NIỆM ĐÃ CÓ (tham khảo, tạo nội dung khác):\n${existingConceptTitles.join(', ')}` : ''}
+
+${existingExampleTitles?.length ? `CÁC VÍ DỤ ĐÃ CÓ (tham khảo, tạo ví dụ khác):\n${existingExampleTitles.join(', ')}` : ''}
+
+YÊU CẦU MỨC ĐỘ ${config.label}:
+${config.description}
+
+PHONG CÁCH VIẾT:
+${config.style}
+
+SỐ LƯỢNG:
+- Concepts: ${config.conceptCount}
+- Examples: ${config.exampleCount}
+
+ĐỘ DÀI: ${config.wordCount}
+
+FORMAT:
+- Sử dụng markdown (headers, lists, code blocks nếu cần)
+- Nội dung phải HOÀN TOÀN KHÁC với các khái niệm/ví dụ đã có
+- Đảm bảo phù hợp với mức độ ${config.label}
+
+Trả về JSON:
+{
+  "concepts": [
+    {
+      "title": "Tên khái niệm ngắn gọn",
+      "content": "Nội dung markdown chi tiết..."
+    }
+  ],
+  "examples": [
+    {
+      "title": "Tên ví dụ ngắn gọn",
+      "content": "Nội dung markdown chi tiết..."
+    }
+  ]
+}`;
+
+    try {
+      const completion = await this.openai.chat.completions.create({
+        model: this.model,
+        messages: [{ role: 'user', content: prompt }],
+        response_format: { type: 'json_object' },
+        temperature: 0.7,
+        max_tokens: 8192,
+      });
+
+      const content = completion.choices[0]?.message?.content;
+      if (!content) {
+        throw new Error('No response from AI');
+      }
+
+      const result = JSON.parse(content);
+
+      console.log(`✅ Generated ${difficulty} content: ${result.concepts?.length || 0} concepts, ${result.examples?.length || 0} examples`);
+
+      return {
+        concepts: result.concepts || [],
+        examples: result.examples || [],
+      };
+    } catch (error) {
+      console.error(`Error generating ${difficulty} content:`, error);
+      throw new Error(`Failed to generate ${difficulty} content: ${error.message}`);
+    }
+  }
+
+  /**
+   * Generate mind map (knowledge graph structure) for a subject
+   * Returns nodes and edges representing the knowledge structure
+   */
+  async generateMindMap(
+    subjectName: string,
+    subjectDescription?: string,
+  ): Promise<{
+    nodes: Array<{
+      name: string;
+      description: string;
+      type: 'subject' | 'domain' | 'concept' | 'topic';
+      metadata?: {
+        icon?: string;
+        level?: 'beginner' | 'intermediate' | 'advanced';
+        estimatedTime?: number;
+        prerequisites?: string[];
+      };
+    }>;
+    edges: Array<{
+      from: string;
+      to: string;
+      type: 'prerequisite' | 'related' | 'part_of';
+      metadata?: any;
+    }>;
+  }> {
+    if (!this.openai) {
+      throw new Error('OpenAI API not configured');
+    }
+
+    const prompt = `Bạn là một chuyên gia giáo dục và sư phạm. Nhiệm vụ: Tạo MIND MAP (sơ đồ tư duy) 3 LỚP CHI TIẾT và TOÀN DIỆN cho môn học "${subjectName}".
+
+${subjectDescription ? `Mô tả môn học: ${subjectDescription}` : ''}
+
+YÊU CẦU NGHIÊM NGẶT - MIND MAP 3 LỚP:
+
+**LỚP 1 - SUBJECT (Môn học chính):**
+- Chỉ có 1 node: Tên môn học "${subjectName}"
+- type: "subject"
+- description: Mô tả tổng quan về toàn bộ môn học (4-5 câu, rất chi tiết)
+- metadata.icon: Emoji đại diện cho môn học
+
+**LỚP 2 - DOMAINS (Các chương/lĩnh vực chính):**
+- Tạo từ 6-10 domains (chương học/lĩnh vực chính)
+- Mỗi domain phải:
+  * type: "domain"
+  * name: Tên domain rõ ràng, cụ thể (ví dụ: "Word - Soạn thảo văn bản", "Excel - Bảng tính", "PowerPoint - Trình chiếu")
+  * description: Mô tả CHI TIẾT về domain này (3-4 câu, giải thích domain bao gồm những gì, tại sao quan trọng)
+  * metadata.icon: Emoji phù hợp
+  * metadata.level: Xác định level của domain
+  * metadata.estimatedTime: Thời gian ước tính (giờ)
+- Mỗi domain phải kết nối với subject bằng edge type: "part_of"
+
+**LỚP 3 - TOPICS (Các chủ đề/concept trong mỗi domain):**
+- Mỗi domain phải có từ 5-8 topics (chủ đề cụ thể)
+- Tổng số topics: ít nhất 30-60 topics cho toàn bộ mind map
+- Mỗi topic phải:
+  * type: "topic"
+  * name: Tên topic rất cụ thể và rõ ràng (ví dụ: "Định dạng văn bản cơ bản", "Tạo bảng trong Word", "Sử dụng công thức SUM trong Excel")
+  * description: Mô tả CHI TIẾT về topic này (2-3 câu, giải thích người học sẽ học gì, học như thế nào)
+  * metadata.icon: Emoji phù hợp
+  * metadata.level: "beginner" | "intermediate" | "advanced"
+  * metadata.estimatedTime: Thời gian ước tính (giờ)
+  * metadata.prerequisites: Danh sách tên các topics cần học trước (nếu có)
+- Mỗi topic phải kết nối với domain cha bằng edge type: "part_of"
+- Tạo các edges "prerequisite" giữa các topics có quan hệ học tập tuần tự
+
+**EDGES (Quan hệ):**
+- part_of: Domain là phần của Subject, Topic là phần của Domain
+- prerequisite: Topic này cần học trước Topic kia (tạo nhiều prerequisite edges)
+- related: Các topics có liên quan nhưng không bắt buộc học trước
+
+**YÊU CẦU CHẤT LƯỢNG:**
+1. Mind map phải CHI TIẾT và TOÀN DIỆN, bao quát mọi khía cạnh của môn học
+2. Mỗi node phải có description RẤT CHI TIẾT, không phải chỉ là tên
+3. Phải có đủ topics (30-60 topics) để người học có lộ trình học tập rõ ràng
+4. Logic học tập phải rõ ràng với nhiều prerequisite relationships
+5. Phù hợp cho người mới bắt đầu đến nâng cao
+6. Các tên node phải rõ ràng, dễ hiểu, không quá trừu tượng
+
+Trả về JSON format (chỉ JSON, không có text khác):
+{
+  "nodes": [
+    {
+      "name": "Tên node",
+      "description": "Mô tả RẤT CHI TIẾT về node này (2-4 câu)",
+      "type": "subject" | "domain" | "topic",
+      "metadata": {
+        "icon": "📚",
+        "level": "beginner" | "intermediate" | "advanced",
+        "estimatedTime": 10,
+        "prerequisites": ["Tên node khác"]
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "Tên node nguồn",
+      "to": "Tên node đích",
+      "type": "prerequisite" | "related" | "part_of",
+      "metadata": {}
+    }
+  ]
+}`;
+
+    try {
+      const completion = await this.openai.chat.completions.create({
+        model: this.model,
+        messages: [
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+        response_format: { type: 'json_object' },
+        temperature: 0.7,
+        max_tokens: 16384,
+      });
+
+      const content = completion.choices[0]?.message?.content;
+      if (!content) {
+        throw new Error('No response from AI');
+      }
+
+      const result = JSON.parse(content);
+
+      if (!result.nodes || !Array.isArray(result.nodes)) {
+        throw new Error('Invalid AI response: missing nodes array');
+      }
+
+      if (!result.edges || !Array.isArray(result.edges)) {
+        throw new Error('Invalid AI response: missing edges array');
+      }
+
+      // Validate nodes
+      const nodes = result.nodes.map((node: any) => ({
+        name: node.name || 'Unnamed',
+        description: node.description || '',
+        type: node.type || 'topic',
+        metadata: node.metadata || {},
+      }));
+
+      // Validate edges
+      const edges = result.edges.map((edge: any) => ({
+        from: edge.from || '',
+        to: edge.to || '',
+        type: edge.type || 'related',
+        metadata: edge.metadata || {},
+      }));
+
+      console.log(`✅ Generated mind map with ${nodes.length} nodes and ${edges.length} edges for "${subjectName}"`);
+      return { nodes, edges };
+    } catch (error) {
+      console.error('Error generating mind map:', error);
+      throw new Error(`Failed to generate mind map: ${error.message}`);
     }
   }
 }

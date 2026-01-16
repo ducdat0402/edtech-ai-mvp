@@ -16,7 +16,7 @@ import { UserCurrencyModule } from '../user-currency/user-currency.module';
     TypeOrmModule.forFeature([SkillTree, SkillNode, UserSkillProgress, UserProgress]),
     UsersModule,
     forwardRef(() => SubjectsModule),
-    LearningNodesModule,
+    forwardRef(() => LearningNodesModule),
     UserCurrencyModule,
   ],
   controllers: [SkillTreeController],

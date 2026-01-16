@@ -98,17 +98,25 @@ export class FileStorageService {
 
     // Use Cloudinary if available (RECOMMENDED for production)
     if (this.useCloudStorage) {
+      this.logger.log(`Attempting to upload video to Cloudinary (size: ${(file.size / 1024 / 1024).toFixed(2)}MB, type: ${file.mimetype})`);
       try {
         const result: CloudinaryUploadResult = await this.cloudinaryService.uploadVideo(file);
-        this.logger.log(`Video uploaded to Cloudinary: ${result.publicId} (${(result.bytes / 1024 / 1024).toFixed(2)}MB)`);
+        this.logger.log(`✅ Video uploaded to Cloudinary successfully: ${result.publicId} (${(result.bytes / 1024 / 1024).toFixed(2)}MB)`);
+        this.logger.log(`   Cloudinary URL: ${result.url}`);
         return result.url; // Return Cloudinary CDN URL
       } catch (error) {
-        this.logger.warn(`Cloudinary upload failed, falling back to local storage: ${error.message}`);
+        this.logger.error(`❌ Cloudinary upload failed: ${error.message}`);
+        this.logger.error(`   Error details: ${JSON.stringify(error)}`);
+        this.logger.warn(`⚠️ Falling back to local storage`);
         // Fall through to local storage
       }
+    } else {
+      this.logger.warn(`⚠️ Cloudinary not configured, using local storage for video upload`);
     }
 
     // Fallback to local storage (NOT RECOMMENDED for production with many users)
+    this.logger.log(`💾 Saving video to local storage: ${file.originalname} (${(file.size / 1024 / 1024).toFixed(2)}MB)`);
+    
     // Validate video type
     const allowedMimeTypes = ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo'];
     if (!allowedMimeTypes.includes(file.mimetype)) {
@@ -132,6 +140,7 @@ export class FileStorageService {
 
     // Save file
     fs.writeFileSync(filePath, file.buffer);
+    this.logger.log(`✅ Video saved to local storage: /uploads/videos/${filename}`);
 
     // Return URL path (will be served as static file)
     return `/uploads/videos/${filename}`;

@@ -180,6 +180,8 @@ export class ContentItemsController {
       title?: string;
       content?: string;
       order?: number;
+      format?: 'video' | 'image' | 'mixed' | 'quiz' | 'text';
+      difficulty?: 'easy' | 'medium' | 'hard' | 'expert';
       rewards?: { xp?: number; coin?: number; shard?: string; shardAmount?: number };
       media?: { videoUrl?: string; imageUrl?: string; interactiveUrl?: string };
       quizData?: {
@@ -191,6 +193,46 @@ export class ContentItemsController {
     },
   ) {
     return this.contentService.update(id, body);
+  }
+
+  /**
+   * Get content items by format
+   */
+  @Get('format/:format')
+  async getContentByFormat(
+    @Param('format') format: 'video' | 'image' | 'mixed' | 'quiz' | 'text',
+  ) {
+    return this.contentService.findByFormat(format);
+  }
+
+  /**
+   * Get content items by difficulty
+   */
+  @Get('difficulty/:difficulty')
+  async getContentByDifficulty(
+    @Param('difficulty') difficulty: 'easy' | 'medium' | 'hard' | 'expert',
+  ) {
+    return this.contentService.findByDifficulty(difficulty);
+  }
+
+  /**
+   * Migrate existing content items - update formats and difficulties
+   * Admin only endpoint
+   */
+  @Post('migrate/formats')
+  @UseGuards(JwtAuthGuard)
+  async migrateFormats() {
+    return this.contentService.updateFormatsForAllItems();
+  }
+
+  /**
+   * Migrate existing content items - update difficulties and rewards
+   * Admin only endpoint
+   */
+  @Post('migrate/difficulties')
+  @UseGuards(JwtAuthGuard)
+  async migrateDifficulties() {
+    return this.contentService.updateDifficultyForAllItems();
   }
 
   /**
@@ -213,6 +255,33 @@ export class ContentItemsController {
     @Body() body: { itemIds: string[] },
   ) {
     return this.contentService.reorder(nodeId, body.itemIds);
+  }
+
+  /**
+   * Generate content at a specific difficulty level for a node
+   * Creates new concepts and examples tailored to the difficulty
+   */
+  @Post('node/:nodeId/generate-by-difficulty')
+  @UseGuards(JwtAuthGuard)
+  async generateByDifficulty(
+    @Param('nodeId') nodeId: string,
+    @Body() body: { difficulty: 'easy' | 'medium' | 'hard' },
+  ) {
+    return this.contentService.generateContentByDifficulty(
+      nodeId,
+      body.difficulty,
+    );
+  }
+
+  /**
+   * Get content items filtered by node and difficulty
+   */
+  @Get('node/:nodeId/difficulty/:difficulty')
+  async getContentByNodeAndDifficulty(
+    @Param('nodeId') nodeId: string,
+    @Param('difficulty') difficulty: 'easy' | 'medium' | 'hard' | 'expert',
+  ) {
+    return this.contentService.findByNodeAndDifficulty(nodeId, difficulty);
   }
 }
 

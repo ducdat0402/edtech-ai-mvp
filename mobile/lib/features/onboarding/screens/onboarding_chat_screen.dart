@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
+import 'package:edtech_mobile/core/widgets/typewriter_text.dart';
 
 class OnboardingChatScreen extends StatefulWidget {
   const OnboardingChatScreen({super.key});
@@ -14,6 +15,7 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final List<Map<String, dynamic>> _messages = [];
+  final Set<int> _animatedMessages = {}; // Track which messages have been animated
   bool _isLoading = false;
   String? _sessionId;
   bool _canProceed = false;
@@ -31,12 +33,18 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen> {
       final apiService = Provider.of<ApiService>(context, listen: false);
       final status = await apiService.getOnboardingStatus();
       
-      if (status['conversationHistory'] != null && 
+        if (status['conversationHistory'] != null && 
           (status['conversationHistory'] as List).isNotEmpty) {
+        final history = List<Map<String, dynamic>>.from(status['conversationHistory']);
         setState(() {
-          _messages.addAll(
-            List<Map<String, dynamic>>.from(status['conversationHistory']),
-          );
+          final startIndex = _messages.length;
+          _messages.addAll(history);
+          // Đánh dấu tất cả messages cũ đã được animated (không animate messages đã load từ history)
+          for (int i = 0; i < history.length; i++) {
+            if (history[i]['role'] == 'assistant') {
+              _animatedMessages.add(startIndex + i);
+            }
+          }
           _sessionId = status['sessionId'];
           _canProceed = status['canProceed'] ?? false;
           _isCompleted = status['completed'] ?? false;
@@ -84,11 +92,13 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen> {
         sessionId: _sessionId,
       );
 
+      final assistantMessage = response['response'] ?? 'Xin lỗi, tôi không hiểu. Bạn có thể nói lại được không?';
+      
       setState(() {
         _sessionId = response['sessionId'] ?? _sessionId;
         _messages.add({
           'role': 'assistant',
-          'content': response['response'] ?? 'Xin lỗi, tôi không hiểu. Bạn có thể nói lại được không?',
+          'content': assistantMessage,
         });
         _canProceed = response['canProceed'] ?? false;
         _isCompleted = response['completed'] ?? false;
@@ -167,6 +177,8 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen> {
 
                 final message = _messages[index];
                 final isUser = message['role'] == 'user';
+                final content = message['content'] ?? '';
+                final shouldAnimate = !isUser && !_animatedMessages.contains(index);
 
                 return Align(
                   alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
@@ -185,13 +197,28 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen> {
                     constraints: BoxConstraints(
                       maxWidth: MediaQuery.of(context).size.width * 0.75,
                     ),
-                    child: Text(
-                      message['content'] ?? '',
-                      style: TextStyle(
-                        color: isUser ? Colors.white : Colors.black87,
-                        fontSize: 16,
-                      ),
-                    ),
+                    child: shouldAnimate
+                        ? TypeWriterText(
+                            key: ValueKey('typewriter_$index'),
+                            text: content,
+                            style: TextStyle(
+                              color: Colors.black87,
+                              fontSize: 16,
+                            ),
+                            speed: const Duration(milliseconds: 30),
+                            onComplete: () {
+                              setState(() {
+                                _animatedMessages.add(index);
+                              });
+                            },
+                          )
+                        : Text(
+                            content,
+                            style: TextStyle(
+                              color: isUser ? Colors.white : Colors.black87,
+                              fontSize: 16,
+                            ),
+                          ),
                   ),
                 );
               },

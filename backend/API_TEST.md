@@ -200,6 +200,30 @@ curl http://localhost:3000/api/v1/currency \
   -H "Authorization: Bearer YOUR_TOKEN_HERE"
 ```
 
+### 15. Get Journey Log History (Requires Auth)
+```bash
+curl http://localhost:3000/api/v1/content-edits/history/user \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE"
+```
+
+### 16. Submit Content Edit (Test for History)
+```bash
+curl -X POST http://localhost:3000/api/v1/content-edits/content/CONTENT_ITEM_ID/submit \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "add_image",
+    "imageUrl": "https://example.com/image.jpg",
+    "description": "Test image contribution"
+  }'
+```
+
+### 17. Get All History (Admin Only)
+```bash
+curl http://localhost:3000/api/v1/content-edits/history/all \
+  -H "Authorization: Bearer ADMIN_TOKEN_HERE"
+```
+
 ## Expected Responses
 
 ### Register/Login Success

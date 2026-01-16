@@ -5,7 +5,6 @@ import { Quest, QuestType, QuestStatus } from './entities/quest.entity';
 import { UserQuest } from './entities/user-quest.entity';
 import { UserCurrencyService } from '../user-currency/user-currency.service';
 import { UserProgressService } from '../user-progress/user-progress.service';
-import { RoadmapService } from '../roadmap/roadmap.service';
 
 @Injectable()
 export class QuestsService {
@@ -17,7 +16,6 @@ export class QuestsService {
     private currencyService: UserCurrencyService,
     @Inject(forwardRef(() => UserProgressService))
     private progressService: UserProgressService,
-    private roadmapService: RoadmapService,
   ) {}
 
   async getDailyQuests(userId: string): Promise<any[]> {
@@ -132,12 +130,12 @@ export class QuestsService {
         isActive: true,
       },
       {
-        title: 'Hoàn thành bài học hôm nay',
-        description: 'Hoàn thành bài học trong roadmap hôm nay',
-        type: QuestType.COMPLETE_DAILY_LESSON,
+        title: 'Hoàn thành skill node hôm nay',
+        description: 'Hoàn thành một skill node trong skill tree',
+        type: QuestType.COMPLETE_NODE,
         requirements: { target: 1 },
         rewards: { xp: 25, coin: 5 },
-        metadata: { icon: '✅', category: 'roadmap', priority: 4 },
+        metadata: { icon: '✅', category: 'skill_tree', priority: 4 },
         isDaily: true,
         isActive: true,
       },
@@ -199,15 +197,8 @@ export class QuestsService {
         return 0;
 
       case QuestType.COMPLETE_DAILY_LESSON:
-        // Check if roadmap day completed today
-        const roadmap = await this.roadmapService.getRoadmap(userId);
-        if (roadmap) {
-          const todayLesson = await this.roadmapService.getTodayLesson(
-            userId,
-            roadmap.id,
-          );
-          return todayLesson.today?.status === 'completed' ? 1 : 0;
-        }
+        // Legacy quest type - now handled by COMPLETE_NODE
+        // Check if any skill node completed today
         return 0;
 
       default:

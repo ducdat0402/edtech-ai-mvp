@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, Inject, forwardRef } from '@nestjs/commo
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserCurrency } from './entities/user-currency.entity';
+import { RewardTransaction, RewardSource } from './entities/reward-transaction.entity';
 import { UsersService } from '../users/users.service';
 
 @Injectable()
@@ -9,6 +10,8 @@ export class UserCurrencyService {
   constructor(
     @InjectRepository(UserCurrency)
     private currencyRepository: Repository<UserCurrency>,
+    @InjectRepository(RewardTransaction)
+    private rewardTransactionRepository: Repository<RewardTransaction>,
     @Inject(forwardRef(() => UsersService))
     private usersService: UsersService,
   ) {}
@@ -114,6 +117,86 @@ export class UserCurrencyService {
   async hasEnoughCoins(userId: string, amount: number): Promise<boolean> {
     const currency = await this.getOrCreate(userId);
     return currency.coins >= amount;
+  }
+
+  /**
+   * Log a reward transaction
+   */
+  async logReward(
+    userId: string,
+    source: RewardSource,
+    rewards: {
+      xp?: number;
+      coins?: number;
+      shards?: Record<string, number>;
+    },
+    sourceId?: string,
+    sourceName?: string,
+  ): Promise<RewardTransaction> {
+    const transaction = this.rewardTransactionRepository.create({
+      userId,
+      source,
+      sourceId,
+      sourceName,
+      xp: rewards.xp || 0,
+      coins: rewards.coins || 0,
+      shards: rewards.shards || {},
+    });
+
+    return this.rewardTransactionRepository.save(transaction);
+  }
+
+  /**
+   * Get rewards history for a user
+   */
+  async getRewardsHistory(
+    userId: string,
+    options?: {
+      limit?: number;
+      offset?: number;
+      source?: RewardSource;
+      startDate?: Date;
+      endDate?: Date;
+    },
+  ): Promise<{
+    transactions: RewardTransaction[];
+    total: number;
+  }> {
+    const limit = options?.limit || 50;
+    const offset = options?.offset || 0;
+
+    const queryBuilder = this.rewardTransactionRepository
+      .createQueryBuilder('transaction')
+      .where('transaction.userId = :userId', { userId })
+      .orderBy('transaction.createdAt', 'DESC');
+
+    if (options?.source) {
+      queryBuilder.andWhere('transaction.source = :source', {
+        source: options.source,
+      });
+    }
+
+    if (options?.startDate) {
+      queryBuilder.andWhere('transaction.createdAt >= :startDate', {
+        startDate: options.startDate,
+      });
+    }
+
+    if (options?.endDate) {
+      queryBuilder.andWhere('transaction.createdAt <= :endDate', {
+        endDate: options.endDate,
+      });
+    }
+
+    const [transactions, total] = await queryBuilder
+      .skip(offset)
+      .take(limit)
+      .getManyAndCount();
+
+    return {
+      transactions,
+      total,
+    };
   }
 }
 

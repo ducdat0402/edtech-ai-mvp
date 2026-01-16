@@ -19,6 +19,16 @@ class ApiConstants {
   static String subjectDetail(String id) => '/subjects/$id';
   static String subjectNodes(String id) => '/subjects/$id/nodes';
   static String subjectIntro(String id) => '/subjects/$id/intro';
+  static String startLearningGoals(String subjectId) => '/subjects/$subjectId/learning-goals/start';
+  static String chatLearningGoals(String subjectId) => '/subjects/$subjectId/learning-goals/chat';
+  static String getLearningGoalsSession(String subjectId) => '/subjects/$subjectId/learning-goals/session';
+  static String generateSkillTreeWithGoals(String subjectId) => '/subjects/$subjectId/learning-goals/generate-skill-tree';
+  static String generateLearningNodesFromTopic(String subjectId, String topicNodeId) => '/subjects/$subjectId/mind-map/$topicNodeId/generate-learning-nodes';
+  static String getGenerationProgress(String subjectId, String taskId) => '/subjects/$subjectId/generation-progress/$taskId';
+  
+  // Domains
+  static String domainsBySubject(String subjectId) => '/domains/subject/$subjectId';
+  static String domainDetail(String id) => '/domains/$id';
 
   // Learning Nodes
   static String nodesBySubject(String subjectId) => '/nodes/subject/$subjectId';
@@ -27,6 +37,8 @@ class ApiConstants {
   // Content Items
   static String contentByNode(String nodeId) => '/content/node/$nodeId';
   static String contentDetail(String id) => '/content/$id';
+  static String contentByNodeAndDifficulty(String nodeId, String difficulty) => '/content/node/$nodeId/difficulty/$difficulty';
+  static String generateContentByDifficulty(String nodeId) => '/content/node/$nodeId/generate-by-difficulty';
 
   // Progress
   static String nodeProgress(String nodeId) => '/progress/node/$nodeId';
@@ -34,6 +46,19 @@ class ApiConstants {
 
   // Currency
   static const String currency = '/currency';
+  static String rewardsHistory({int? limit, int? offset, String? source}) {
+    final params = <String>[];
+    if (limit != null) params.add('limit=$limit');
+    if (offset != null) params.add('offset=$offset');
+    if (source != null) params.add('source=$source');
+    return '/currency/history${params.isNotEmpty ? '?${params.join('&')}' : ''}';
+  }
+
+  // Achievements
+  static const String achievements = '/achievements';
+  static const String userAchievements = '/achievements/user';
+  static const String checkAchievements = '/achievements/check';
+  static String claimAchievementRewards(String userAchievementId) => '/achievements/$userAchievementId/claim-rewards';
 
   // Quests
   static const String dailyQuests = '/quests/daily';
@@ -52,11 +77,6 @@ class ApiConstants {
   static const String submitAnswer = '/test/submit';
   static String testResult(String testId) => '/test/result/$testId';
 
-  // Roadmap (Legacy - có thể giữ lại hoặc xóa sau)
-  static const String generateRoadmap = '/roadmap/generate';
-  static const String getRoadmap = '/roadmap';
-  static String todayLesson(String roadmapId) => '/roadmap/$roadmapId/today';
-  static String completeDay(String roadmapId) => '/roadmap/$roadmapId/complete-day';
 
   // Skill Tree
   static const String generateSkillTree = '/skill-tree/generate';
@@ -80,8 +100,10 @@ class ApiConstants {
 
   // Content Edits (Wiki-style Community Edit)
   static String submitContentEdit(String contentItemId) => '/content-edits/content/$contentItemId/submit';
+  static String submitLessonEdit(String contentItemId) => '/content-edits/content/$contentItemId/lesson-edit';
   static String getContentEdits(String contentItemId) => '/content-edits/content/$contentItemId';
   static String getContentEdit(String id) => '/content-edits/$id';
+  static String getEditComparison(String id) => '/content-edits/$id/comparison';
   static String approveContentEdit(String id) => '/content-edits/$id/approve';
   static String rejectContentEdit(String id) => '/content-edits/$id/reject';
   static String voteOnContentEdit(String id) => '/content-edits/$id/vote';
@@ -90,5 +112,68 @@ class ApiConstants {
   static const String pendingContentEdits = '/content-edits/pending/list';
   static const String allContentWithEdits = '/content-edits/admin/all-content-with-edits';
   static String removeContentEdit(String id) => '/content-edits/$id';
+  static const String getMyContentEdits = '/content-edits/user/my-edits';
+  
+  // Edit History
+  static String getHistoryForContent(String contentItemId) => '/content-edits/history/content/$contentItemId';
+  static const String getHistoryForUser = '/content-edits/history/user';
+  static const String getAllHistory = '/content-edits/history/all';
+  
+  // Content Versions
+  static String getVersionsForContent(String contentItemId) => '/content-edits/content/$contentItemId/versions';
+  static const String getMyVersions = '/content-edits/versions/my-versions';
+  static String getMyVersionsForContent(String contentItemId) => '/content-edits/content/$contentItemId/my-versions';
+  static String revertToVersion(String versionId) => '/content-edits/versions/$versionId/revert';
+  static String getHistoryForEdit(String editId) => '/content-edits/history/edit/$editId';
+
+  // Knowledge Graph
+  static String getPrerequisites(String nodeId) => '/knowledge-graph/nodes/$nodeId/prerequisites';
+  static String findPath(String fromNodeId, String toNodeId) => '/knowledge-graph/path/$fromNodeId/$toNodeId';
+  static String recommendNext(String nodeId, {int? limit}) {
+    final limitParam = limit != null ? '?limit=$limit' : '';
+    return '/knowledge-graph/nodes/$nodeId/recommend-next$limitParam';
+  }
+  static String getRelatedNodes(String nodeId, {int? limit}) {
+    final limitParam = limit != null ? '?limit=$limit' : '';
+    return '/knowledge-graph/nodes/$nodeId/related$limitParam';
+  }
+  static String getNodeByEntity(String type, String entityId) => '/knowledge-graph/entity/$type/$entityId';
+  static String getNodesByType(String type) => '/knowledge-graph/nodes/type/$type';
+  
+  // RAG (Semantic Search)
+  static String semanticSearch(String query, {int? limit, String? types, double? minSimilarity}) {
+    final params = <String>[];
+    if (limit != null) params.add('limit=$limit');
+    if (types != null) params.add('types=$types');
+    if (minSimilarity != null) params.add('minSimilarity=$minSimilarity');
+    final queryParam = 'q=${Uri.encodeComponent(query)}';
+    return '/knowledge-graph/search?$queryParam${params.isNotEmpty ? '&${params.join('&')}' : ''}';
+  }
+  static String retrieveRelevantNodes(String query, {int? topK, String? types}) {
+    final params = <String>[];
+    if (topK != null) params.add('topK=$topK');
+    if (types != null) params.add('types=$types');
+    final queryParam = 'q=${Uri.encodeComponent(query)}';
+    return '/knowledge-graph/retrieve?$queryParam${params.isNotEmpty ? '&${params.join('&')}' : ''}';
+  }
+  static String generateRAGContext(String query, {int? topK}) {
+    final topKParam = topK != null ? '&topK=$topK' : '';
+    final queryParam = 'q=${Uri.encodeComponent(query)}';
+    return '/knowledge-graph/context?$queryParam$topKParam';
+  }
+
+  // Personal Mind Map
+  static String checkPersonalMindMap(String subjectId) => '/personal-mind-map/check/$subjectId';
+  static String getPersonalMindMap(String subjectId) => '/personal-mind-map/$subjectId';
+  static String createPersonalMindMap(String subjectId) => '/personal-mind-map/$subjectId';
+  static String updatePersonalMindMapNode(String subjectId, String nodeId) => '/personal-mind-map/$subjectId/nodes/$nodeId';
+  static String deletePersonalMindMap(String subjectId) => '/personal-mind-map/$subjectId';
+  
+  // Personal Mind Map - Chat riêng cho từng môn học
+  static String startPersonalMindMapChat(String subjectId) => '/personal-mind-map/$subjectId/chat/start';
+  static String personalMindMapChat(String subjectId) => '/personal-mind-map/$subjectId/chat';
+  static String getPersonalMindMapChatSession(String subjectId) => '/personal-mind-map/$subjectId/chat/session';
+  static String generatePersonalMindMapFromChat(String subjectId) => '/personal-mind-map/$subjectId/chat/generate';
+  static String resetPersonalMindMapChat(String subjectId) => '/personal-mind-map/$subjectId/chat/reset';
 }
 

@@ -24,6 +24,22 @@ export class ContentItem {
   @Column()
   type: 'concept' | 'example' | 'hidden_reward' | 'boss_quiz';
 
+  @Column({
+    type: 'varchar',
+    length: 20,
+    nullable: true,
+    default: null,
+  })
+  format: 'video' | 'image' | 'mixed' | 'quiz' | 'text' | null; // Content format classification
+
+  @Column({
+    type: 'varchar',
+    length: 20,
+    nullable: true,
+    default: 'medium',
+  })
+  difficulty: 'easy' | 'medium' | 'hard' | 'expert'; // Difficulty level
+
   @Column()
   title: string;
 
@@ -31,9 +47,13 @@ export class ContentItem {
   content: string; // JSON hoặc markdown
 
   @Column({ type: 'jsonb', nullable: true })
+  richContent: any; // Rich text content (JSON from flutter_quill)
+
+  @Column({ type: 'jsonb', nullable: true })
   media: {
     videoUrl?: string;
     imageUrl?: string;
+    imageUrls?: string[]; // Multiple images
     interactiveUrl?: string;
   };
 

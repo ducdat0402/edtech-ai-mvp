@@ -1,9 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { LearningNode } from './entities/learning-node.entity';
 import { AiService } from '../ai/ai.service';
 import { ContentItem } from '../content-items/entities/content-item.entity';
+import { DomainsService } from '../domains/domains.service';
+import { GenerationProgressService } from './generation-progress.service';
 
 @Injectable()
 export class LearningNodesService {
@@ -13,6 +15,9 @@ export class LearningNodesService {
     @InjectRepository(ContentItem)
     private contentItemRepository: Repository<ContentItem>,
     private aiService: AiService,
+    @Inject(forwardRef(() => DomainsService))
+    private domainsService: DomainsService,
+    private progressService: GenerationProgressService,
   ) {}
 
   async findBySubject(subjectId: string): Promise<LearningNode[]> {
@@ -22,11 +27,33 @@ export class LearningNodesService {
     });
   }
 
+  /**
+   * Lấy tất cả nodes của một domain
+   */
+  async findByDomain(domainId: string): Promise<LearningNode[]> {
+    return this.nodeRepository.find({
+      where: { domainId },
+      order: { order: 'ASC' },
+    });
+  }
+
   async findById(id: string): Promise<LearningNode | null> {
     return this.nodeRepository.findOne({
       where: { id },
       relations: ['subject', 'contentItems'],
     });
+  }
+
+  /**
+   * Tìm learning nodes theo topicNodeId (lưu trong metadata)
+   */
+  async findByTopicNodeId(topicNodeId: string): Promise<LearningNode[]> {
+    // Query learning nodes where metadata->topicNodeId = topicNodeId
+    return this.nodeRepository
+      .createQueryBuilder('node')
+      .where("node.metadata->>'topicNodeId' = :topicNodeId", { topicNodeId })
+      .orderBy('node.order', 'ASC')
+      .getMany();
   }
 
   async getAvailableNodes(
@@ -58,10 +85,27 @@ export class LearningNodesService {
     subjectDescription?: string,
     topicsOrChapters?: string[],
     numberOfNodes: number = 10,
+    topicNodeId?: string, // Optional: ID của topic node trong knowledge graph
+    taskId?: string, // Optional: Task ID để track progress
   ): Promise<LearningNode[]> {
     console.log(`🤖 Generating ${numberOfNodes} Learning Nodes for "${subjectName}" using AI...`);
+    
+    if (taskId) {
+      this.progressService.updateProgress(taskId, {
+        status: 'generating',
+        progress: 5,
+        currentStep: 'Đang khởi tạo...',
+      });
+    }
 
     // 1. AI generate structure
+    if (taskId) {
+      this.progressService.updateProgress(taskId, {
+        progress: 15,
+        currentStep: 'Đang tạo cấu trúc bài học với AI...',
+      });
+    }
+    
     const nodesStructure = await this.aiService.generateLearningNodesStructure(
       subjectName,
       subjectDescription,
@@ -69,26 +113,85 @@ export class LearningNodesService {
       numberOfNodes,
     );
 
+    if (taskId) {
+      this.progressService.updateProgress(taskId, {
+        progress: 30,
+        currentStep: `Đang tạo ${nodesStructure.length} bài học...`,
+      });
+    }
+
     // 2. Tạo Learning Nodes và Content Items
     const savedNodes: LearningNode[] = [];
+    const domainCache = new Map<string, string>(); // Cache domain name -> domainId
 
-    for (const nodeData of nodesStructure) {
+    for (let nodeIndex = 0; nodeIndex < nodesStructure.length; nodeIndex++) {
+      const nodeData = nodesStructure[nodeIndex];
+      
+      if (taskId) {
+        // Update progress: 30% + (nodeIndex / totalNodes) * 70%
+        const progress = 30 + Math.floor((nodeIndex / nodesStructure.length) * 70);
+        this.progressService.updateProgress(taskId, {
+          progress,
+          currentStep: `Đang tạo bài học ${nodeIndex + 1}/${nodesStructure.length}: ${nodeData.title}`,
+          completedNodes: nodeIndex,
+        });
+      }
+      // Tìm hoặc tạo domain cho node này
+      let domainId: string | null = null;
+      const domainName = nodeData.domain || 'Chương chung';
+      
+      if (domainCache.has(domainName)) {
+        // Sử dụng domain đã tạo trước đó
+        domainId = domainCache.get(domainName)!;
+      } else {
+        // Tìm domain theo tên trong subject này
+        const existingDomains = await this.domainsService.findBySubject(subjectId);
+        const existingDomain = existingDomains.find(
+          d => d.name.toLowerCase().trim() === domainName.toLowerCase().trim()
+        );
+
+        if (existingDomain) {
+          // Domain đã tồn tại
+          domainId = existingDomain.id;
+          domainCache.set(domainName, domainId);
+          console.log(`📚 Found existing domain: "${domainName}"`);
+        } else {
+          // Tạo domain mới
+          try {
+            const newDomain = await this.domainsService.create(subjectId, {
+              name: domainName,
+              description: `Chương học về ${domainName}`,
+            });
+            domainId = newDomain.id;
+            domainCache.set(domainName, domainId);
+            console.log(`✨ Created new domain: "${domainName}"`);
+          } catch (error) {
+            console.error(`⚠️ Failed to create domain "${domainName}":`, error);
+            // Tiếp tục tạo node mà không có domain
+          }
+        }
+      }
+
       // Tạo Learning Node
       const node = this.nodeRepository.create({
         subjectId,
+        domainId,
         title: nodeData.title,
         description: nodeData.description,
         order: nodeData.order,
         prerequisites: [], // Sẽ cập nhật sau
+        type: nodeData.type || 'theory', // Phân loại: theory, video, hoặc image
+        difficulty: nodeData.difficulty || 'medium', // Độ khó: easy, medium, hoặc hard
         contentStructure: {
           concepts: nodeData.concepts.length,
           examples: nodeData.examples?.length || 0,
-          hiddenRewards: nodeData.hiddenRewards?.length || 0,
+          hiddenRewards: nodeData.hiddenRewards && nodeData.hiddenRewards.length > 0 ? 1 : 0, // CHỈ 1 phần thưởng
           bossQuiz: 1,
         },
         metadata: {
           icon: nodeData.icon,
           position: { x: (nodeData.order - 1) * 100, y: 0 },
+          ...(topicNodeId && { topicNodeId }), // Lưu topicNodeId nếu có
         },
       });
 
@@ -130,19 +233,18 @@ export class LearningNodesService {
         }
       }
 
-      // Tạo Hidden Rewards (AI đã tạo sẵn)
+      // Tạo Hidden Reward (CHỈ 1 phần thưởng)
       if (nodeData.hiddenRewards && nodeData.hiddenRewards.length > 0) {
-        for (let i = 0; i < nodeData.hiddenRewards.length; i++) {
-          const reward = this.contentItemRepository.create({
-            nodeId: savedNode.id,
-            type: 'hidden_reward',
-            title: nodeData.hiddenRewards[i].title,
-            content: nodeData.hiddenRewards[i].content,
-            order: 50 + i, // Sau examples, trước boss quiz
-            rewards: { xp: 5, coin: 5 },
-          });
-          await this.contentItemRepository.save(reward);
-        }
+        // Chỉ lấy phần thưởng đầu tiên
+        const reward = this.contentItemRepository.create({
+          nodeId: savedNode.id,
+          type: 'hidden_reward',
+          title: nodeData.hiddenRewards[0].title,
+          content: nodeData.hiddenRewards[0].content,
+          order: 50, // Sau examples, trước boss quiz
+          rewards: { xp: 5, coin: 5 },
+        });
+        await this.contentItemRepository.save(reward);
       }
 
       // Tạo Boss Quiz (AI đã tạo sẵn với nội dung chất lượng)
@@ -166,11 +268,162 @@ export class LearningNodesService {
                         (nodeData.examples?.length || 0) + 
                         (nodeData.hiddenRewards?.length || 0) + 
                         1; // boss quiz
-      console.log(`✅ Created node: ${nodeData.title} (${nodeData.concepts.length} concepts, ${nodeData.examples?.length || 0} examples, ${nodeData.hiddenRewards?.length || 0} rewards, 1 quiz)`);
+      const domainInfo = domainId ? ` [Domain: ${domainName}]` : '';
+      const rewardCount = nodeData.hiddenRewards && nodeData.hiddenRewards.length > 0 ? 1 : 0; // CHỈ 1 phần thưởng
+      console.log(`✅ Created node: ${nodeData.title}${domainInfo} (${nodeData.concepts.length} concepts, ${nodeData.examples?.length || 0} examples, ${rewardCount} reward, 1 quiz)`);
     }
 
+    const domainsCreated = domainCache.size;
     console.log(`\n✅ Successfully generated ${savedNodes.length} Learning Nodes with AI!`);
+    console.log(`📚 Organized into ${domainsCreated} domain(s): ${Array.from(domainCache.keys()).join(', ')}`);
+    
+    if (taskId) {
+      this.progressService.updateProgress(taskId, {
+        status: 'completed',
+        progress: 100,
+        currentStep: 'Hoàn thành!',
+        completedNodes: savedNodes.length,
+      });
+    }
+    
     return savedNodes;
+  }
+
+  /**
+   * Generate a single learning node from a topic (one at a time for better quality)
+   */
+  async generateSingleLearningNodeFromTopic(
+    subjectId: string,
+    topicNodeId: string,
+    topicName: string,
+    topicDescription: string,
+    subjectName: string,
+    subjectDescription?: string,
+    domainName?: string,
+    order: number = 1,
+    taskId?: string,
+  ): Promise<LearningNode> {
+    // Generate single node with focused prompt
+    const nodeData = await this.aiService.generateSingleLearningNode(
+      topicName,
+      topicDescription,
+      subjectName,
+      subjectDescription,
+      domainName,
+      order,
+    );
+
+    // Find or create domain
+    let domainId: string | null = null;
+    const domainNameFinal = nodeData.domain || domainName || 'Chương chung';
+    
+    if (domainNameFinal !== 'Chương chung') {
+      const existingDomains = await this.domainsService.findBySubject(subjectId);
+      const existingDomain = existingDomains.find(
+        d => d.name.toLowerCase().trim() === domainNameFinal.toLowerCase().trim()
+      );
+
+      if (existingDomain) {
+        domainId = existingDomain.id;
+      } else {
+        try {
+          const newDomain = await this.domainsService.create(subjectId, {
+            name: domainNameFinal,
+            description: `Chương học về ${domainNameFinal}`,
+          });
+          domainId = newDomain.id;
+        } catch (error) {
+          console.error(`⚠️ Failed to create domain "${domainNameFinal}":`, error);
+        }
+      }
+    }
+
+    // Create Learning Node
+    const node = this.nodeRepository.create({
+      subjectId,
+      domainId,
+      title: nodeData.title,
+      description: nodeData.description,
+      order: nodeData.order,
+      prerequisites: [],
+      type: nodeData.type,
+      difficulty: nodeData.difficulty,
+      contentStructure: {
+        concepts: nodeData.concepts.length,
+        examples: nodeData.examples?.length || 0,
+        hiddenRewards: nodeData.hiddenRewards && nodeData.hiddenRewards.length > 0 ? 1 : 0, // CHỈ 1 phần thưởng
+        bossQuiz: 1,
+      },
+      metadata: {
+        icon: nodeData.icon,
+        position: { x: (nodeData.order - 1) * 100, y: 0 },
+        ...(topicNodeId && { topicNodeId }), // Lưu topicNodeId nếu có
+      },
+    });
+
+    const savedNode = await this.nodeRepository.save(node);
+
+    // Create Concepts
+    for (let i = 0; i < nodeData.concepts.length; i++) {
+      const concept = this.contentItemRepository.create({
+        nodeId: savedNode.id,
+        type: 'concept',
+        title: nodeData.concepts[i].title,
+        content: nodeData.concepts[i].content,
+        order: i + 1,
+        rewards: { xp: 10, coin: 1 },
+      });
+      await this.contentItemRepository.save(concept);
+    }
+
+    // Create Examples
+    if (nodeData.examples && nodeData.examples.length > 0) {
+      for (let i = 0; i < nodeData.examples.length; i++) {
+        const example = this.contentItemRepository.create({
+          nodeId: savedNode.id,
+          type: 'example',
+          title: nodeData.examples[i].title,
+          content: nodeData.examples[i].content,
+          order: i + 1,
+          rewards: { xp: 15, coin: 2 },
+        });
+        await this.contentItemRepository.save(example);
+      }
+    }
+
+    // Create Hidden Reward (CHỈ 1 phần thưởng)
+    if (nodeData.hiddenRewards && nodeData.hiddenRewards.length > 0) {
+      // Chỉ lấy phần thưởng đầu tiên
+      const reward = this.contentItemRepository.create({
+        nodeId: savedNode.id,
+        type: 'hidden_reward',
+        title: nodeData.hiddenRewards[0].title,
+        content: nodeData.hiddenRewards[0].content,
+        order: 50, // Sau examples, trước boss quiz
+        rewards: { xp: 5, coin: 5 },
+      });
+      await this.contentItemRepository.save(reward);
+    }
+
+    // Create Boss Quiz
+    const bossQuiz = this.contentItemRepository.create({
+      nodeId: savedNode.id,
+      type: 'boss_quiz',
+      title: `Boss Quiz: ${nodeData.title}`,
+      content: `Kiểm tra kiến thức về ${nodeData.title}`,
+      order: 100,
+      quizData: {
+        question: nodeData.bossQuiz.question,
+        options: nodeData.bossQuiz.options,
+        correctAnswer: nodeData.bossQuiz.correctAnswer,
+        explanation: nodeData.bossQuiz.explanation,
+      },
+      rewards: { xp: 50, coin: 10 },
+    });
+    await this.contentItemRepository.save(bossQuiz);
+
+    console.log(`✅ Created single node: ${nodeData.title} (${nodeData.concepts.length} concepts, ${nodeData.examples?.length || 0} examples)`);
+    return savedNode;
   }
 }
 

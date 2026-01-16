@@ -34,10 +34,16 @@ export class SkillTreeService {
 
   /**
    * Generate Skill Tree từ Learning Nodes của một subject
+   * @param learningGoalsData Optional learning goals data from AI chat
    */
   async generateSkillTree(
     userId: string,
     subjectId: string,
+    learningGoalsData?: {
+      currentLevel?: 'beginner' | 'intermediate' | 'advanced';
+      interestedTopics?: string[];
+      learningGoals?: string;
+    },
   ): Promise<SkillTree & { isNewSubject?: boolean; generatingMessage?: string }> {
     // Check if user already has a skill tree for this subject
     const existing = await this.skillTreeRepository.findOne({
@@ -46,10 +52,18 @@ export class SkillTreeService {
         subjectId,
         status: SkillTreeStatus.ACTIVE,
       },
+      relations: ['nodes'],
     });
 
+    // ✅ If skill tree exists but has no nodes (due to previous error), delete and recreate
     if (existing) {
-      return existing;
+      if (!existing.nodes || existing.nodes.length === 0) {
+        console.log(`⚠️  Skill tree ${existing.id} exists but has no nodes. Deleting and recreating...`);
+        await this.skillTreeRepository.remove(existing);
+        // Continue to create new skill tree below
+      } else {
+        return existing;
+      }
     }
 
     // Get user data
@@ -69,7 +83,8 @@ export class SkillTreeService {
       (new Date().getTime() - new Date(subject.createdAt).getTime()) < 5 * 60 * 1000;
 
     // Get placement test result
-    const placementTestLevel = user.placementTestLevel || 'beginner';
+    // Use learning goals level if provided, otherwise use placement test level
+    const placementTestLevel = learningGoalsData?.currentLevel || user.placementTestLevel || 'beginner';
     const onboardingData = user.onboardingData || {};
 
     // Get all learning nodes for this subject
@@ -91,16 +106,24 @@ export class SkillTreeService {
         const subjectName = subject.name;
         const subjectDescription = subject.description;
 
+        // Use learning goals topics if available
         let topics: string[] | undefined;
-        if (subject.metadata && (subject.metadata as any).topics) {
+        if (learningGoalsData?.interestedTopics && learningGoalsData.interestedTopics.length > 0) {
+          topics = learningGoalsData.interestedTopics;
+        } else if (subject.metadata && (subject.metadata as any).topics) {
           topics = (subject.metadata as any).topics;
         }
+
+        // Include learning goals in description for better AI generation
+        const enhancedDescription = learningGoalsData?.learningGoals
+          ? `${subjectDescription || ''}\n\nMục tiêu học tập: ${learningGoalsData.learningGoals}`
+          : subjectDescription;
 
         const generatedNodes =
           await this.nodesService.generateNodesFromRawData(
             subjectId,
             subjectName,
-            subjectDescription,
+            enhancedDescription,
             topics,
             numberOfNodes,
           );
@@ -238,7 +261,7 @@ export class SkillTreeService {
         learningNodeId: learningNode.id,
         title: learningNode.title,
         description: learningNode.description,
-        order: learningNode.order,
+        order: i + 1, // Use index + 1 to ensure unique order (learningNode.order may not be unique)
         prerequisites: prerequisites,
         children: [],
         type: nodeType,
@@ -341,25 +364,16 @@ export class SkillTreeService {
       return;
     }
 
-    // Find nodes with empty prerequisites (root nodes)
-    const rootNodes = allNodes.filter((n) => !n.prerequisites || n.prerequisites.length === 0);
-
-    // ✅ Always unlock at least the first node (order = 0 or minimum order)
-    // This ensures user can always start learning even if all nodes have prerequisites
-    const firstNode = allNodes[0]; // First node by order
+    // ✅ Only unlock the first node (order = 1) to start the learning journey
+    // Other nodes will be unlocked progressively as user completes prerequisites
+    const firstNode = allNodes.find((n) => n.order === 1) || allNodes[0]; // First node by order
     const nodesToUnlock = new Set<string>();
 
-    // Add root nodes
-    rootNodes.forEach(node => nodesToUnlock.add(node.id));
-
-    // If no root nodes, unlock first node anyway
-    if (rootNodes.length === 0 && firstNode) {
-      console.log(`⚠️  No root nodes found, unlocking first node (order: ${firstNode.order})`);
+    if (firstNode) {
       nodesToUnlock.add(firstNode.id);
-    } else if (firstNode && !nodesToUnlock.has(firstNode.id)) {
-      // Also unlock first node if it's not already a root node
-      console.log(`✅ Also unlocking first node (order: ${firstNode.order}) to ensure user can start`);
-      nodesToUnlock.add(firstNode.id);
+      console.log(`✅ Unlocking first node only (order: ${firstNode.order}, title: ${firstNode.title})`);
+    } else {
+      console.log('⚠️  No first node found to unlock');
     }
 
     // Unlock all selected nodes (bypass prerequisites check for root nodes)
@@ -440,6 +454,14 @@ export class SkillTreeService {
     });
 
     if (!skillTree) {
+      return null;
+    }
+
+    // ✅ If skill tree exists but has no nodes, mark it as invalid
+    // Frontend should call generateSkillTree to recreate it
+    if (!skillTree.nodes || skillTree.nodes.length === 0) {
+      console.log(`⚠️  Skill tree ${skillTree.id} has no nodes. Returning null to trigger regeneration.`);
+      // Don't delete here, let generateSkillTree handle it
       return null;
     }
 

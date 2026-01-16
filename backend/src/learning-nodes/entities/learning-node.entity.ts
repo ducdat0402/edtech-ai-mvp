@@ -11,6 +11,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { Subject } from '../../subjects/entities/subject.entity';
+import { Domain } from '../../domains/entities/domain.entity';
 import { ContentItem } from '../../content-items/entities/content-item.entity';
 
 @Entity('learning_nodes')
@@ -24,6 +25,13 @@ export class LearningNode {
 
   @Column()
   subjectId: string;
+
+  @ManyToOne(() => Domain, (domain) => domain.nodes, { nullable: true })
+  @JoinColumn({ name: 'domainId' })
+  domain: Domain | null;
+
+  @Column({ nullable: true })
+  domainId: string | null; // Nullable để backward compatible với data cũ
 
   @Column()
   title: string; // "Vệ Sĩ Mật Khẩu"
@@ -50,6 +58,22 @@ export class LearningNode {
     icon?: string;
     position?: { x: number; y: number }; // Vị trí trên bản đồ
   };
+
+  @Column({
+    type: 'varchar',
+    length: 20,
+    nullable: true,
+    default: 'theory',
+  })
+  type: 'theory' | 'video' | 'image'; // Phân loại bài học: lý thuyết, video, hoặc hình ảnh
+
+  @Column({
+    type: 'varchar',
+    length: 20,
+    nullable: true,
+    default: 'medium',
+  })
+  difficulty: 'easy' | 'medium' | 'hard'; // Độ khó: dễ, trung bình, khó
 
   @OneToMany(() => ContentItem, (item) => item.node)
   contentItems: ContentItem[];

@@ -223,6 +223,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
           ],
+          const SizedBox(height: 12),
+          
+          // Journey Log Button
+          Card(
+            color: Colors.purple.shade50,
+            child: ListTile(
+              leading: const Icon(Icons.history_edu, color: Colors.purple),
+              title: const Text(
+                'Nhật Ký Hành Trình',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.purple,
+                ),
+              ),
+              subtitle: const Text('Lịch sử đóng góp & chỉnh sửa'),
+              trailing: const Icon(Icons.chevron_right, color: Colors.purple),
+              onTap: () {
+                context.go('/profile/journey');
+              },
+            ),
+          ),
           const SizedBox(height: 24),
 
           // Streak Display
@@ -262,6 +283,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           // Stats Section
           _buildStatsSection(),
+
+          const SizedBox(height: 24),
+
+          // Journey Log Button
+          Card(
+            color: Colors.purple.shade50,
+            child: ListTile(
+              leading: const Icon(Icons.history_edu, color: Colors.purple),
+              title: const Text(
+                'Nhật Ký Hành Trình',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.purple,
+                ),
+              ),
+              subtitle: const Text('Lịch sử đóng góp & chỉnh sửa'),
+              trailing: const Icon(Icons.chevron_right, color: Colors.purple),
+              onTap: () {
+                context.go('/profile/journey');
+              },
+            ),
+          ),
           const SizedBox(height: 24),
 
           // Onboarding Data

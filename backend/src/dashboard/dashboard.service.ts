@@ -27,18 +27,21 @@ export class DashboardService {
     // Get currency stats
     const currency = await this.currencyService.getCurrency(userId);
 
-    // Get all subjects
-    const explorerSubjects = await this.subjectsService.findByTrack('explorer');
-    const scholarSubjects = await this.subjectsService.findByTrack('scholar');
-
     // Get user progress for all subjects
     const completedNodeIds =
       await this.progressService.getCompletedNodes(userId);
 
-    // Get available nodes for each explorer subject (Fog of War)
-    const explorerSubjectsWithNodes = await Promise.all(
-      explorerSubjects.map(async (subject) => {
+    // Get all subjects (no distinction between explorer and scholar)
+    const allSubjects = await this.subjectsService.findAll();
+
+    // Get all subjects with nodes and unlock status
+    const allSubjectsWithInfo = await Promise.all(
+      allSubjects.map(async (subject) => {
         const availableNodes = await this.subjectsService.getAvailableNodesForUser(
+          userId,
+          subject.id,
+        );
+        const status = await this.subjectsService.getSubjectForUser(
           userId,
           subject.id,
         );
@@ -47,19 +50,6 @@ export class DashboardService {
           availableNodesCount: availableNodes.length,
           totalNodesCount: (await this.nodesService.findBySubject(subject.id))
             .length,
-        };
-      }),
-    );
-
-    // Get scholar subjects with unlock status
-    const scholarSubjectsWithStatus = await Promise.all(
-      scholarSubjects.map(async (subject) => {
-        const status = await this.subjectsService.getSubjectForUser(
-          userId,
-          subject.id,
-        );
-        return {
-          ...subject,
           isUnlocked: status.isUnlocked,
           canUnlock: status.canUnlock,
           requiredCoins: status.requiredCoins,
@@ -70,7 +60,11 @@ export class DashboardService {
 
     // Get active learning (subjects with progress > 0 but < 100%)
     const activeLearning = [];
-    for (const subject of explorerSubjects) {
+    // Get current learning nodes (nodes with progress > 0 and < 100%)
+    const currentLearningNodes = [];
+    
+    // Use allSubjects already fetched above for progress calculation
+    for (const subject of allSubjects) {
       const nodes = await this.nodesService.findBySubject(subject.id);
       let totalProgress = 0;
       let completedNodes = 0;
@@ -85,6 +79,20 @@ export class DashboardService {
             totalProgress += progress.progressPercentage;
             if (progress.isCompleted) {
               completedNodes++;
+            }
+            
+            // Add to current learning nodes if in progress (0 < progress < 100)
+            if (progress.progressPercentage > 0 && progress.progressPercentage < 100 && !progress.isCompleted) {
+              currentLearningNodes.push({
+                id: node.id,
+                title: node.title,
+                description: node.description,
+                icon: node.metadata?.icon,
+                subjectId: subject.id,
+                subjectName: subject.name,
+                progress: Math.round(progress.progressPercentage),
+                domainId: node.domainId,
+              });
             }
           }
         } catch (e) {
@@ -126,19 +134,9 @@ export class DashboardService {
         shards: currency.shards,
       },
       activeLearning,
-      explorer: {
-        subjects: explorerSubjectsWithNodes,
-      },
-      scholar: {
-        subjects: scholarSubjectsWithStatus,
-      },
+      currentLearningNodes, // Nodes currently being learned (0 < progress < 100)
       dailyQuests,
-      explore: {
-        // Suggested subjects to explore
-        suggested: explorerSubjectsWithNodes
-          .filter((s) => s.availableNodesCount > 0)
-          .slice(0, 3),
-      },
+      subjects: allSubjectsWithInfo, // All subjects from database
     };
   }
 }

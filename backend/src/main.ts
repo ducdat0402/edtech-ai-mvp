@@ -58,7 +58,6 @@ async function bootstrap() {
     .addTag('quests', 'Daily quests system')
     .addTag('leaderboard', 'Leaderboard rankings')
     .addTag('test', 'Placement test')
-    .addTag('roadmap', 'Learning roadmap')
     .addTag('onboarding', 'AI onboarding chat')
     .build();
 

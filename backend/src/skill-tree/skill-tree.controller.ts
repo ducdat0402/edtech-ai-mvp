@@ -19,9 +19,20 @@ export class SkillTreeController {
   @Post('generate')
   async generateSkillTree(
     @Request() req,
-    @Body() body: { subjectId: string },
+    @Body() body: { 
+      subjectId: string;
+      learningGoalsData?: {
+        currentLevel?: 'beginner' | 'intermediate' | 'advanced';
+        interestedTopics?: string[];
+        learningGoals?: string;
+      };
+    },
   ) {
-    return this.skillTreeService.generateSkillTree(req.user.id, body.subjectId);
+    return this.skillTreeService.generateSkillTree(
+      req.user.id,
+      body.subjectId,
+      body.learningGoalsData,
+    );
   }
 
   @Get()

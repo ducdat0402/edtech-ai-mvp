@@ -322,7 +322,13 @@ class _SkillTreeScreenState extends State<SkillTreeScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/dashboard');
+            }
+          },
           tooltip: 'Quay lại',
         ),
         title: const Text('Skill Tree'),

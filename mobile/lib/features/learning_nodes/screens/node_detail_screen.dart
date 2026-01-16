@@ -5,10 +5,12 @@ import 'package:edtech_mobile/core/services/api_service.dart';
 
 class NodeDetailScreen extends StatefulWidget {
   final String nodeId;
+  final String? difficulty; // Độ khó được chọn: easy, medium, hard
 
   const NodeDetailScreen({
     super.key,
     required this.nodeId,
+    this.difficulty,
   });
 
   @override
@@ -19,13 +21,16 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
   Map<String, dynamic>? _nodeData;
   Map<String, dynamic>? _progressData;
   List<dynamic>? _contentItems;
+  List<dynamic>? _filteredContentItems; // Content đã lọc theo difficulty
   bool _isLoading = true;
   String? _error;
   String? _subjectId; // Store subjectId for navigation
+  String _selectedDifficulty = 'medium'; // Default difficulty
 
   @override
   void initState() {
     super.initState();
+    _selectedDifficulty = widget.difficulty ?? 'medium';
     _loadData();
   }
 
@@ -33,6 +38,192 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
   Future<void> _refreshData() async {
     if (mounted) {
       await _loadData();
+    }
+  }
+
+  /// Lọc content items theo độ khó được chọn
+  /// - Nếu không có content ở độ khó được chọn, sẽ fallback về tất cả content
+  List<dynamic> _filterContentByDifficulty(List<dynamic> items, String difficulty) {
+    // Lọc items có difficulty trùng khớp
+    final filtered = items.where((item) {
+      final itemDifficulty = (item as Map<String, dynamic>)['difficulty'] as String? ?? 'medium';
+      return itemDifficulty == difficulty;
+    }).toList();
+
+    // Nếu không có item nào ở độ khó này, trả về tất cả
+    if (filtered.isEmpty) {
+      print('⚠️ No content at difficulty "$difficulty", showing all content');
+      return items;
+    }
+
+    print('✅ Filtered ${filtered.length}/${items.length} items for difficulty: $difficulty');
+    return filtered;
+  }
+
+  /// Thay đổi độ khó và lọc lại content
+  Future<void> _changeDifficulty(String difficulty) async {
+    setState(() {
+      _selectedDifficulty = difficulty;
+      if (_contentItems != null) {
+        _filteredContentItems = _filterContentByDifficulty(_contentItems!, difficulty);
+      }
+    });
+
+    // Kiểm tra nếu không có content ở độ khó này
+    if (_filteredContentItems != null && 
+        _filteredContentItems!.length == _contentItems!.length &&
+        _contentItems!.isNotEmpty) {
+      // Content không thay đổi -> có thể chưa có content ở độ khó này
+      final difficultyContent = _contentItems!.where((item) {
+        final itemDiff = (item as Map<String, dynamic>)['difficulty'] as String?;
+        return itemDiff == difficulty;
+      }).toList();
+
+      if (difficultyContent.isEmpty) {
+        // Hiển thị dialog hỏi có muốn tạo content mới không
+        _showGenerateContentDialog(difficulty);
+      }
+    }
+  }
+
+  /// Hiển thị dialog hỏi có muốn tạo content mới theo độ khó không
+  void _showGenerateContentDialog(String difficulty) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.lightbulb, color: _getDifficultyColor(difficulty)),
+            const SizedBox(width: 8),
+            const Expanded(child: Text('Chưa có nội dung')),
+          ],
+        ),
+        content: Text(
+          'Chưa có nội dung ở mức "${_getDifficultyLabel(difficulty)}". Bạn có muốn AI tạo nội dung mới phù hợp với mức độ này không?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Để sau'),
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.pop(context);
+              _generateContentForDifficulty(difficulty);
+            },
+            icon: const Icon(Icons.auto_awesome),
+            label: const Text('Tạo nội dung'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _getDifficultyColor(difficulty),
+              foregroundColor: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Gọi API tạo content mới theo độ khó
+  Future<void> _generateContentForDifficulty(String difficulty) async {
+    // Show loading
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        content: Row(
+          children: [
+            const CircularProgressIndicator(),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text('Đang tạo nội dung ${_getDifficultyLabel(difficulty)}...'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    try {
+      final apiService = Provider.of<ApiService>(context, listen: false);
+      final result = await apiService.generateContentByDifficulty(
+        widget.nodeId,
+        difficulty,
+      );
+
+      // Close loading dialog
+      if (mounted) Navigator.pop(context);
+
+      final success = result['success'] as bool? ?? false;
+      final message = result['message'] as String? ?? '';
+
+      if (success) {
+        // Reload data
+        await _loadData();
+        // Change to new difficulty
+        setState(() {
+          _selectedDifficulty = difficulty;
+          if (_contentItems != null) {
+            _filteredContentItems = _filterContentByDifficulty(_contentItems!, difficulty);
+          }
+        });
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(message),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(message.isNotEmpty ? message : 'Không thể tạo nội dung'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      // Close loading dialog
+      if (mounted) Navigator.pop(context);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Lấy tên hiển thị cho độ khó
+  String _getDifficultyLabel(String difficulty) {
+    switch (difficulty) {
+      case 'easy':
+        return 'Đơn giản';
+      case 'medium':
+        return 'Chi tiết';
+      case 'hard':
+        return 'Chuyên sâu';
+      default:
+        return 'Chi tiết';
+    }
+  }
+
+  /// Lấy màu cho độ khó
+  Color _getDifficultyColor(String difficulty) {
+    switch (difficulty) {
+      case 'easy':
+        return Colors.green;
+      case 'medium':
+        return Colors.blue;
+      case 'hard':
+        return Colors.orange;
+      default:
+        return Colors.blue;
     }
   }
 
@@ -49,10 +240,14 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
 
       final nodeData = results[0] as Map<String, dynamic>;
 
+      final allContent = results[2] as List<dynamic>;
+      
       setState(() {
         _nodeData = nodeData;
         _progressData = results[1] as Map<String, dynamic>;
-        _contentItems = results[2] as List<dynamic>;
+        _contentItems = allContent;
+        // Lọc content theo difficulty được chọn
+        _filteredContentItems = _filterContentByDifficulty(allContent, _selectedDifficulty);
         _isLoading = false;
         // Extract subjectId from nodeData (could be subjectId or subject.id)
         _subjectId = nodeData['subjectId'] as String? ??
@@ -195,7 +390,13 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () {
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  context.go('/dashboard');
+                }
+              },
               child: const Text('Đóng'),
             ),
           ],
@@ -368,7 +569,13 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/dashboard');
+              }
+            },
             child: const Text('Hủy'),
           ),
           ElevatedButton.icon(
@@ -387,7 +594,11 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
 
                       // Close dialog
                       if (context.mounted) {
-                        Navigator.pop(context);
+                        if (context.canPop()) {
+                          context.pop();
+                        } else {
+                          context.go('/dashboard');
+                        }
 
                         // Refresh data
                         await _refreshData();
@@ -403,7 +614,11 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                       }
                     } catch (e) {
                       if (context.mounted) {
-                        Navigator.pop(context);
+                        if (context.canPop()) {
+                          context.pop();
+                        } else {
+                          context.go('/dashboard');
+                        }
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text('Lỗi: ${e.toString()}'),
@@ -430,22 +645,17 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
     try {
       if (context.canPop()) {
         context.pop();
-      } else {
-        // If cannot pop, navigate to skill tree or dashboard
-        if (_subjectId != null) {
-          context.go('/skill-tree?subjectId=$_subjectId');
-        } else {
-          context.go('/dashboard');
-        }
+        return; // Exit after successful pop
       }
     } catch (e) {
-      // If pop fails, navigate to skill tree or dashboard
       print('⚠️ Error popping: $e');
-      if (_subjectId != null) {
-        context.go('/skill-tree?subjectId=$_subjectId');
-      } else {
-        context.go('/dashboard');
-      }
+    }
+    
+    // If cannot pop or pop failed, navigate to skill tree or dashboard
+    if (_subjectId != null) {
+      context.go('/skill-tree?subjectId=$_subjectId');
+    } else {
+      context.go('/dashboard');
     }
   }
 
@@ -489,6 +699,10 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            // Difficulty Selector
+                            _buildDifficultySelector(),
+                            const SizedBox(height: 16),
+                            
                             // Progress HUD
                             if (_progressData != null) _buildProgressHUD(),
                             const SizedBox(height: 24),
@@ -503,6 +717,118 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                         ),
                       ),
                     ),
+    );
+  }
+
+  /// Widget chọn độ khó
+  Widget _buildDifficultySelector() {
+    return Card(
+      color: _getDifficultyColor(_selectedDifficulty).withOpacity(0.1),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: _getDifficultyColor(_selectedDifficulty).withOpacity(0.3),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.tune,
+                  color: _getDifficultyColor(_selectedDifficulty),
+                ),
+                const SizedBox(width: 8),
+                const Text(
+                  'Mức độ học',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const Spacer(),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: _getDifficultyColor(_selectedDifficulty),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    _getDifficultyLabel(_selectedDifficulty),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                _buildDifficultyChip('easy', 'Đơn giản', Icons.sentiment_satisfied, Colors.green),
+                const SizedBox(width: 8),
+                _buildDifficultyChip('medium', 'Chi tiết', Icons.auto_awesome, Colors.blue),
+                const SizedBox(width: 8),
+                _buildDifficultyChip('hard', 'Chuyên sâu', Icons.rocket_launch, Colors.orange),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDifficultyChip(String difficulty, String label, IconData icon, Color color) {
+    final isSelected = _selectedDifficulty == difficulty;
+    
+    return Expanded(
+      child: InkWell(
+        onTap: () => _changeDifficulty(difficulty),
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: isSelected ? color : Colors.grey.shade100,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isSelected ? color : Colors.grey.shade300,
+              width: isSelected ? 2 : 1,
+            ),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: color.withOpacity(0.3),
+                      blurRadius: 8,
+                      spreadRadius: 2,
+                    ),
+                  ]
+                : null,
+          ),
+          child: Column(
+            children: [
+              Icon(
+                icon,
+                color: isSelected ? Colors.white : Colors.grey.shade600,
+                size: 24,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  color: isSelected ? Colors.white : Colors.grey.shade600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -722,13 +1048,16 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
   }
 
   Widget _buildContentPath() {
-    if (_contentItems == null || _contentItems!.isEmpty) {
+    // Sử dụng filtered content nếu có, không thì dùng tất cả
+    final contentToShow = _filteredContentItems ?? _contentItems;
+    
+    if (contentToShow == null || contentToShow.isEmpty) {
       return const SizedBox.shrink();
     }
 
     // ✅ Sort all content items by order
     final sortedItems = List<Map<String, dynamic>>.from(
-        _contentItems!.map((item) => Map<String, dynamic>.from(item as Map)));
+        contentToShow.map((item) => Map<String, dynamic>.from(item as Map)));
     sortedItems.sort((a, b) {
       final orderA = a['order'] as int? ?? 0;
       final orderB = b['order'] as int? ?? 0;

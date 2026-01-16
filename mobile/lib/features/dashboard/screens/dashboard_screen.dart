@@ -140,21 +140,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             _buildQuickActions(),
                             const SizedBox(height: 24),
 
+                            // Current Learning (nodes in progress)
+                            _buildCurrentLearningSection(_dashboardData!['currentLearningNodes'] ?? []),
+                            const SizedBox(height: 24),
+
                             // Daily Quests
                             _buildQuestsSection(_dashboardData!['dailyQuests'] ?? []),
                             const SizedBox(height: 24),
 
-                            // Explorer Subjects
+                            // All Subjects
                             _buildSubjectsSection(
-                              'Explorer Subjects',
-                              _dashboardData!['explorerSubjects'] ?? [],
-                            ),
-                            const SizedBox(height: 24),
-
-                            // Scholar Subjects
-                            _buildSubjectsSection(
-                              'Scholar Subjects',
-                              _dashboardData!['scholarSubjects'] ?? [],
+                              'Môn học',
+                              _dashboardData!['subjects'] ?? [],
                             ),
                           ],
                         ),
@@ -213,6 +210,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 label: 'XP',
                 value: '${stats['totalXP'] ?? 0}',
                 color: Colors.amber,
+                onTap: () => context.push('/currency'),
               ),
             ),
             const SizedBox(width: 12),
@@ -222,6 +220,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 label: 'Coins',
                 value: '${stats['coins'] ?? 0}',
                 color: Colors.orange,
+                onTap: () => context.push('/currency'),
               ),
             ),
             const SizedBox(width: 12),
@@ -231,6 +230,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 label: 'Streak',
                 value: '${stats['streak'] ?? 0}',
                 color: Colors.red,
+                onTap: () => context.push('/currency'),
               ),
             ),
           ],
@@ -240,63 +240,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildOnboardingBanner() {
-    // Check if onboarding is complete
-    final onboardingData = _dashboardData!['onboardingData'] as Map<String, dynamic>?;
-    final isOnboardingComplete = onboardingData != null && 
-        (onboardingData['isComplete'] == true || onboardingData['completed'] == true);
-
-    if (isOnboardingComplete) {
-      return const SizedBox.shrink();
-    }
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.purple.shade400, Colors.blue.shade400],
-        ),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.chat_bubble_outline, color: Colors.white, size: 32),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Hoàn thành Onboarding',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Chat với AI để tạo profile học tập cá nhân',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.9),
-                    fontSize: 14,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 12),
-          ElevatedButton(
-            onPressed: () => context.push('/onboarding'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.purple,
-            ),
-            child: const Text('Bắt đầu'),
-          ),
-        ],
-      ),
-    );
+    // Onboarding đã được tích hợp vào Personal Mind Map screen
+    // Không hiển thị banner ở dashboard nữa
+    return const SizedBox.shrink();
   }
 
   Widget _buildQuickActions() {
@@ -334,6 +280,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 label: 'Skill Tree',
                 color: Colors.teal,
                 onTap: () => context.push('/skill-tree'),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _ActionCard(
+                icon: Icons.account_balance_wallet,
+                label: 'Currency',
+                color: Colors.amber,
+                onTap: () => context.push('/currency'),
               ),
             ),
           ],
@@ -381,6 +340,140 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  Widget _buildCurrentLearningSection(List<dynamic> nodes) {
+    if (nodes.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Topic đang học',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 16),
+        SizedBox(
+          height: 180,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: nodes.length,
+            itemBuilder: (context, index) {
+              final node = nodes[index];
+              final nodeId = node['id'] as String?;
+              final title = node['title'] as String? ?? 'Bài học';
+              final subjectName = node['subjectName'] as String? ?? '';
+              final progress = node['progress'] as int? ?? 0;
+              final icon = node['icon'] as String? ?? '📖';
+
+              return Container(
+                width: 280,
+                margin: const EdgeInsets.only(right: 12),
+                child: Card(
+                  elevation: 2,
+                  child: InkWell(
+                    onTap: () {
+                      if (nodeId != null) {
+                        context.push('/nodes/$nodeId');
+                      }
+                    },
+                    borderRadius: BorderRadius.circular(12),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                icon,
+                                style: const TextStyle(fontSize: 24),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      subjectName,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey.shade600,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      title,
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        height: 1.3,
+                                      ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const Spacer(),
+                          const SizedBox(height: 12),
+                          // Progress bar
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'Tiến độ',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey.shade600,
+                                    ),
+                                  ),
+                                  Text(
+                                    '$progress%',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.blue.shade700,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              LinearProgressIndicator(
+                                value: progress / 100,
+                                backgroundColor: Colors.grey.shade200,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.blue.shade400,
+                                ),
+                                minHeight: 6,
+                                borderRadius: BorderRadius.circular(3),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildSubjectsSection(String title, List<dynamic> subjects) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -391,78 +484,113 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
         const SizedBox(height: 16),
         if (subjects.isEmpty)
-          const Text('No subjects available')
+          Center(
+            child: Column(
+              children: [
+                Icon(Icons.school_outlined, size: 64, color: Colors.grey.shade400),
+                const SizedBox(height: 16),
+                Text(
+                  'Chưa có môn học nào',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+              ],
+            ),
+          )
         else
           SizedBox(
-            height: 120,
+            height: 160,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               itemCount: subjects.length,
               itemBuilder: (context, index) {
                 final subject = subjects[index];
                 final subjectId = subject['id'] as String?;
-                final track = subject['track'] as String? ?? 'explorer';
-                
-                return GestureDetector(
-                  onTap: () {
-                    if (subjectId != null) {
-                      // Navigate to subject intro
-                      context.push('/subjects/$subjectId/intro');
-                    }
-                  },
+                final name = subject['name'] as String? ?? 'Môn học';
+                final description = subject['description'] as String?;
+                final metadata = subject['metadata'] as Map<String, dynamic>?;
+                final icon = metadata?['icon'] as String? ?? '📚';
+                final totalNodesCount = subject['totalNodesCount'] as int? ?? 0;
+                final availableNodesCount = subject['availableNodesCount'] as int? ?? 0;
+
+                return Container(
+                  width: 280,
+                  margin: const EdgeInsets.only(right: 12),
                   child: Card(
-                    margin: const EdgeInsets.only(right: 12),
-                    child: Container(
-                      width: 200,
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: track == 'explorer' 
-                            ? Colors.green.shade50 
-                            : Colors.blue.shade50,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: track == 'explorer' 
-                                      ? Colors.green 
-                                      : Colors.blue,
-                                  borderRadius: BorderRadius.circular(8),
+                    elevation: 2,
+                    child: InkWell(
+                      onTap: () {
+                        if (subjectId != null) {
+                          context.push('/subjects/$subjectId/intro');
+                        }
+                      },
+                      borderRadius: BorderRadius.circular(12),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Icon
+                                Text(
+                                  icon,
+                                  style: const TextStyle(fontSize: 32),
                                 ),
-                                child: Text(
-                                  track.toUpperCase(),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        name,
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
                                   ),
                                 ),
+                              ],
+                            ),
+                            if (description != null && description.isNotEmpty) ...[
+                              const SizedBox(height: 8),
+                              Text(
+                                description,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey.shade600,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ],
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            subject['name'] ?? 'Subject',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Expanded(
-                            child: Text(
-                              subject['description'] ?? '',
-                              style: const TextStyle(fontSize: 12),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
+                            if (totalNodesCount > 0) ...[
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  Icon(Icons.book, size: 14, color: Colors.grey.shade600),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    '$availableNodesCount/$totalNodesCount bài học',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey.shade600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -480,36 +608,42 @@ class _StatCard extends StatelessWidget {
   final String label;
   final String value;
   final Color color;
+  final VoidCallback? onTap;
 
   const _StatCard({
     required this.icon,
     required this.label,
     required this.value,
     required this.color,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Icon(icon, color: color, size: 32),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: color,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              Icon(icon, color: color, size: 32),
+              const SizedBox(height: 8),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
               ),
-            ),
-            Text(
-              label,
-              style: const TextStyle(fontSize: 12, color: Colors.grey),
-            ),
-          ],
+              Text(
+                label,
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -1,0 +1,6 @@
+Analyzing journey_log_screen.dart...                            
+
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\profile\screens\journey_log_screen.dart:163:40 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\profile\screens\journey_log_screen.dart:165:59 - deprecated_member_use
+
+2 issues found. (ran in 1.1s)

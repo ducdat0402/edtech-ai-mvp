@@ -33,6 +33,120 @@ class ApiService {
     return List<Map<String, dynamic>>.from(response.data);
   }
 
+  // Subject Learning Goals
+  Future<Map<String, dynamic>> startLearningGoals(String subjectId) async {
+    final response = await _apiClient.post(ApiConstants.startLearningGoals(subjectId));
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> chatLearningGoals(String subjectId, String message) async {
+    final response = await _apiClient.post(
+      ApiConstants.chatLearningGoals(subjectId),
+      data: {'message': message},
+    );
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> getLearningGoalsSession(String subjectId) async {
+    final response = await _apiClient.get(ApiConstants.getLearningGoalsSession(subjectId));
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> generateSkillTreeWithGoals(String subjectId) async {
+    final response = await _apiClient.post(ApiConstants.generateSkillTreeWithGoals(subjectId));
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> generateLearningNodesFromTopic(String subjectId, String topicNodeId) async {
+    final response = await _apiClient.post(ApiConstants.generateLearningNodesFromTopic(subjectId, topicNodeId));
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> getGenerationProgress(String subjectId, String taskId) async {
+    final response = await _apiClient.get(ApiConstants.getGenerationProgress(subjectId, taskId));
+    return response.data;
+  }
+
+  // Domains
+  Future<List<dynamic>> getDomainsBySubject(String subjectId) async {
+    final response = await _apiClient.get(ApiConstants.domainsBySubject(subjectId));
+    return List<Map<String, dynamic>>.from(response.data);
+  }
+
+  Future<Map<String, dynamic>> getDomainDetail(String domainId) async {
+    final response = await _apiClient.get(ApiConstants.domainDetail(domainId));
+    return response.data;
+  }
+
+  // Knowledge Graph
+  Future<List<dynamic>> getPrerequisites(String nodeId) async {
+    final response = await _apiClient.get(ApiConstants.getPrerequisites(nodeId));
+    return List<Map<String, dynamic>>.from(response.data);
+  }
+
+  Future<List<dynamic>> findLearningPath(String fromNodeId, String toNodeId) async {
+    final response = await _apiClient.get(ApiConstants.findPath(fromNodeId, toNodeId));
+    return List<Map<String, dynamic>>.from(response.data);
+  }
+
+  Future<List<dynamic>> recommendNextTopics(String nodeId, {int limit = 5}) async {
+    final response = await _apiClient.get(ApiConstants.recommendNext(nodeId, limit: limit));
+    return List<Map<String, dynamic>>.from(response.data);
+  }
+
+  Future<List<dynamic>> getRelatedNodes(String nodeId, {int limit = 10}) async {
+    final response = await _apiClient.get(ApiConstants.getRelatedNodes(nodeId, limit: limit));
+    return List<Map<String, dynamic>>.from(response.data);
+  }
+
+  Future<Map<String, dynamic>?> getNodeByEntity(String type, String entityId) async {
+    try {
+      final response = await _apiClient.get(ApiConstants.getNodeByEntity(type, entityId));
+      return Map<String, dynamic>.from(response.data);
+    } catch (e) {
+      return null; // Node not found
+    }
+  }
+
+  Future<List<dynamic>> getNodesByType(String type) async {
+    final response = await _apiClient.get(ApiConstants.getNodesByType(type));
+    return List<Map<String, dynamic>>.from(response.data);
+  }
+
+  // RAG (Semantic Search)
+  Future<List<dynamic>> semanticSearch(
+    String query, {
+    int limit = 10,
+    String? types,
+    double minSimilarity = 0.7,
+  }) async {
+    final response = await _apiClient.get(
+      ApiConstants.semanticSearch(query, limit: limit, types: types, minSimilarity: minSimilarity),
+    );
+    return List<Map<String, dynamic>>.from(response.data);
+  }
+
+  Future<List<dynamic>> retrieveRelevantNodes(
+    String query, {
+    int topK = 5,
+    String? types,
+  }) async {
+    final response = await _apiClient.get(
+      ApiConstants.retrieveRelevantNodes(query, topK: topK, types: types),
+    );
+    return List<Map<String, dynamic>>.from(response.data);
+  }
+
+  Future<Map<String, dynamic>> generateRAGContext(
+    String query, {
+    int topK = 5,
+  }) async {
+    final response = await _apiClient.get(
+      ApiConstants.generateRAGContext(query, topK: topK),
+    );
+    return Map<String, dynamic>.from(response.data);
+  }
+
   Future<Map<String, dynamic>> getNodeDetail(String nodeId) async {
     final response = await _apiClient.get(ApiConstants.nodeDetail(nodeId));
     return response.data;
@@ -41,6 +155,26 @@ class ApiService {
   Future<List<dynamic>> getContentByNode(String nodeId) async {
     final response = await _apiClient.get(ApiConstants.contentByNode(nodeId));
     return List<Map<String, dynamic>>.from(response.data);
+  }
+
+  /// Lấy content theo node và độ khó
+  Future<List<dynamic>> getContentByNodeAndDifficulty(String nodeId, String difficulty) async {
+    final response = await _apiClient.get(
+      ApiConstants.contentByNodeAndDifficulty(nodeId, difficulty),
+    );
+    return List<Map<String, dynamic>>.from(response.data);
+  }
+
+  /// Tạo content mới theo độ khó
+  Future<Map<String, dynamic>> generateContentByDifficulty(
+    String nodeId,
+    String difficulty,
+  ) async {
+    final response = await _apiClient.post(
+      ApiConstants.generateContentByDifficulty(nodeId),
+      data: {'difficulty': difficulty},
+    );
+    return response.data;
   }
 
   Future<Map<String, dynamic>> getContentDetail(String contentId) async {
@@ -52,6 +186,44 @@ class ApiService {
   // Currency
   Future<Map<String, dynamic>> getCurrency() async {
     final response = await _apiClient.get(ApiConstants.currency);
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> getRewardsHistory({
+    int? limit,
+    int? offset,
+    String? source,
+  }) async {
+    final response = await _apiClient.get(
+      ApiConstants.rewardsHistory(
+        limit: limit,
+        offset: offset,
+        source: source,
+      ),
+    );
+    return response.data;
+  }
+
+  // Achievements
+  Future<List<dynamic>> getAchievements() async {
+    final response = await _apiClient.get(ApiConstants.achievements);
+    return List<Map<String, dynamic>>.from(response.data);
+  }
+
+  Future<List<dynamic>> getUserAchievements() async {
+    final response = await _apiClient.get(ApiConstants.userAchievements);
+    return List<Map<String, dynamic>>.from(response.data);
+  }
+
+  Future<Map<String, dynamic>> checkAchievements() async {
+    final response = await _apiClient.post(ApiConstants.checkAchievements);
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> claimAchievementRewards(String userAchievementId) async {
+    final response = await _apiClient.post(
+      ApiConstants.claimAchievementRewards(userAchievementId),
+    );
     return response.data;
   }
 
@@ -130,88 +302,6 @@ class ApiService {
     return response.data;
   }
 
-  // Roadmap
-  Future<Map<String, dynamic>> generateRoadmap(String subjectId) async {
-    final response = await _apiClient.post(
-      ApiConstants.generateRoadmap,
-      data: {'subjectId': subjectId},
-    );
-    return response.data;
-  }
-
-  Future<Map<String, dynamic>?> getRoadmap({String? subjectId}) async {
-    try {
-      final response = await _apiClient.get(
-        ApiConstants.getRoadmap,
-        queryParameters: subjectId != null ? {'subjectId': subjectId} : null,
-      );
-
-      // Handle null or empty response (no roadmap exists)
-      if (response.data == null ||
-          (response.data is String && (response.data as String).isEmpty)) {
-        return null;
-      }
-
-      // Handle empty string response
-      if (response.data is String) {
-        final dataStr = response.data as String;
-        if (dataStr.isEmpty || dataStr.trim().isEmpty) {
-          return null;
-        }
-        // If it's a non-empty string, might be error message
-        throw Exception(dataStr);
-      }
-
-      // Handle Map response
-      if (response.data is Map) {
-        return Map<String, dynamic>.from(response.data as Map);
-      }
-
-      // Unknown type
-      return null;
-    } catch (e) {
-      // If 404 or no roadmap, return null instead of throwing
-      final errorStr = e.toString().toLowerCase();
-      if (errorStr.contains('404') ||
-          errorStr.contains('not found') ||
-          errorStr.contains('null')) {
-        return null;
-      }
-      rethrow;
-    }
-  }
-
-  Future<Map<String, dynamic>?> getTodayLesson(String roadmapId) async {
-    try {
-      final response =
-          await _apiClient.get(ApiConstants.todayLesson(roadmapId));
-      // Handle null response
-      if (response.data == null) {
-        return null;
-      }
-      // Handle string response (error message)
-      if (response.data is String) {
-        throw Exception(response.data as String);
-      }
-      // Return Map
-      return Map<String, dynamic>.from(response.data as Map);
-    } catch (e) {
-      // If 404 or not found, return null instead of throwing
-      if (e.toString().contains('404') || e.toString().contains('not found')) {
-        return null;
-      }
-      rethrow;
-    }
-  }
-
-  Future<Map<String, dynamic>> completeDay(
-      String roadmapId, int dayNumber) async {
-    final response = await _apiClient.post(
-      ApiConstants.completeDay(roadmapId),
-      data: {'dayNumber': dayNumber},
-    );
-    return response.data;
-  }
 
   // Progress
   Future<Map<String, dynamic>> getNodeProgress(String nodeId) async {
@@ -388,6 +478,29 @@ class ApiService {
     return response.data;
   }
 
+  Future<Map<String, dynamic>> submitLessonEdit({
+    required String contentItemId,
+    required String title,
+    dynamic richContent, // Optional for quiz
+    List<String>? imageUrls,
+    String? videoUrl,
+    String? description,
+    Map<String, dynamic>? quizData, // Quiz data: {question, options, correctAnswer, explanation}
+  }) async {
+    final response = await _apiClient.post(
+      ApiConstants.submitLessonEdit(contentItemId),
+      data: {
+        'title': title,
+        if (richContent != null) 'richContent': richContent,
+        if (imageUrls != null) 'imageUrls': imageUrls,
+        if (videoUrl != null) 'videoUrl': videoUrl,
+        if (description != null) 'description': description,
+        if (quizData != null) 'quizData': quizData,
+      },
+    );
+    return response.data;
+  }
+
   Future<Map<String, dynamic>> uploadVideoForEdit(String videoPath) async {
     final response = await _apiClient.postFile(
       ApiConstants.uploadVideo,
@@ -429,8 +542,147 @@ class ApiService {
     return response.data;
   }
 
+  Future<Map<String, dynamic>> getEditComparison(String editId) async {
+    final response = await _apiClient.get(ApiConstants.getEditComparison(editId));
+    return response.data;
+  }
+
   Future<List<dynamic>> getAllContentItemsWithEdits() async {
     final response = await _apiClient.get(ApiConstants.allContentWithEdits);
     return List<Map<String, dynamic>>.from(response.data);
+  }
+
+  Future<List<dynamic>> getMyContentEdits() async {
+    final response = await _apiClient.get(ApiConstants.getMyContentEdits);
+    return List<Map<String, dynamic>>.from(response.data);
+  }
+
+  // Edit History
+  Future<List<dynamic>> getHistoryForContent(String contentItemId) async {
+    final response = await _apiClient.get(ApiConstants.getHistoryForContent(contentItemId));
+    return List<Map<String, dynamic>>.from(response.data);
+  }
+
+  Future<List<dynamic>> getHistoryForUser() async {
+    final response = await _apiClient.get(ApiConstants.getHistoryForUser);
+    return List<Map<String, dynamic>>.from(response.data);
+  }
+
+  Future<List<dynamic>> getAllHistory() async {
+    final response = await _apiClient.get(ApiConstants.getAllHistory);
+    return List<Map<String, dynamic>>.from(response.data);
+  }
+
+  Future<List<dynamic>> getHistoryForEdit(String editId) async {
+    final response = await _apiClient.get(ApiConstants.getHistoryForEdit(editId));
+    return List<Map<String, dynamic>>.from(response.data);
+  }
+
+  // Content Versions
+  Future<List<dynamic>> getVersionsForContent(String contentItemId) async {
+    final response = await _apiClient.get(ApiConstants.getVersionsForContent(contentItemId));
+    return List<Map<String, dynamic>>.from(response.data);
+  }
+
+  Future<List<dynamic>> getMyVersions({String? contentItemId}) async {
+    final response = await _apiClient.post(
+      ApiConstants.getMyVersions,
+      data: contentItemId != null ? {'contentItemId': contentItemId} : null,
+    );
+    return List<Map<String, dynamic>>.from(response.data);
+  }
+
+  Future<List<dynamic>> getMyVersionsForContent(String contentItemId) async {
+    final response = await _apiClient.get(ApiConstants.getMyVersionsForContent(contentItemId));
+    return List<Map<String, dynamic>>.from(response.data);
+  }
+
+  Future<Map<String, dynamic>> revertToVersion(String versionId) async {
+    final response = await _apiClient.post(ApiConstants.revertToVersion(versionId));
+    return Map<String, dynamic>.from(response.data);
+  }
+
+  // Personal Mind Map
+  Future<Map<String, dynamic>> checkPersonalMindMap(String subjectId) async {
+    final response = await _apiClient.get(ApiConstants.checkPersonalMindMap(subjectId));
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> getPersonalMindMap(String subjectId) async {
+    final response = await _apiClient.get(ApiConstants.getPersonalMindMap(subjectId));
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> createPersonalMindMap(String subjectId, String learningGoal) async {
+    final response = await _apiClient.post(
+      ApiConstants.createPersonalMindMap(subjectId),
+      data: {'learningGoal': learningGoal},
+    );
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> updatePersonalMindMapNode(
+    String subjectId,
+    String nodeId,
+    String status,
+  ) async {
+    final response = await _apiClient.patch(
+      ApiConstants.updatePersonalMindMapNode(subjectId, nodeId),
+      data: {'status': status},
+    );
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> deletePersonalMindMap(String subjectId) async {
+    final response = await _apiClient.delete(ApiConstants.deletePersonalMindMap(subjectId));
+    return response.data;
+  }
+
+  // Personal Mind Map - Chat riêng cho từng môn học
+  // AI sẽ hỏi dựa trên domains, topics, bài học có sẵn
+
+  /// Bắt đầu chat session để tạo lộ trình cá nhân
+  /// AI sẽ hỏi dựa trên nội dung môn học cụ thể
+  Future<Map<String, dynamic>> startPersonalMindMapChat(String subjectId) async {
+    final response = await _apiClient.post(
+      ApiConstants.startPersonalMindMapChat(subjectId),
+    );
+    return response.data;
+  }
+
+  /// Gửi tin nhắn trong chat session
+  Future<Map<String, dynamic>> personalMindMapChat(
+    String subjectId,
+    String message,
+  ) async {
+    final response = await _apiClient.post(
+      ApiConstants.personalMindMapChat(subjectId),
+      data: {'message': message},
+    );
+    return response.data;
+  }
+
+  /// Lấy thông tin chat session hiện tại
+  Future<Map<String, dynamic>> getPersonalMindMapChatSession(String subjectId) async {
+    final response = await _apiClient.get(
+      ApiConstants.getPersonalMindMapChatSession(subjectId),
+    );
+    return response.data;
+  }
+
+  /// Tạo lộ trình từ chat đã hoàn thành
+  Future<Map<String, dynamic>> generatePersonalMindMapFromChat(String subjectId) async {
+    final response = await _apiClient.post(
+      ApiConstants.generatePersonalMindMapFromChat(subjectId),
+    );
+    return response.data;
+  }
+
+  /// Reset chat session để bắt đầu lại
+  Future<Map<String, dynamic>> resetPersonalMindMapChat(String subjectId) async {
+    final response = await _apiClient.post(
+      ApiConstants.resetPersonalMindMapChat(subjectId),
+    );
+    return response.data;
   }
 }

@@ -8,9 +8,10 @@
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "kill:port": "node kill-port.js",
     "start": "nodemon",
     "start:safe": "node start.js",
-    "start:dev": "nest start --watch",
+    "start:dev": "npm run kill:port && nest start --watch",
     "start:nodemon": "nodemon",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
@@ -23,8 +24,14 @@
     "migration:run": "typeorm-ts-node-commonjs migration:run -d src/config/typeorm.config.ts",
     "migration:revert": "typeorm-ts-node-commonjs migration:revert -d src/config/typeorm.config.ts",
     "seed": "ts-node -r tsconfig-paths/register src/seed/seed.ts",
+    "seed:domains": "ts-node -r tsconfig-paths/register src/seed/seed-domains-standalone.ts",
+    "migrate:knowledge-graph": "ts-node -r tsconfig-paths/register src/knowledge-graph/knowledge-graph-migration-standalone.ts",
+    "test:knowledge-graph": "ts-node -r tsconfig-paths/register src/knowledge-graph/knowledge-graph-test-standalone.ts",
+    "generate:embeddings": "ts-node -r tsconfig-paths/register src/knowledge-graph/generate-embeddings-standalone.ts",
     "create-admin": "ts-node -r tsconfig-paths/register scripts/create-admin.ts",
-    "test:db": "node scripts/test-connection.js"
+    "test:db": "node scripts/test-connection.js",
+    "check-cloudinary": "ts-node -r tsconfig-paths/register scripts/check-cloudinary.ts",
+    "migrate:content-formats": "ts-node -r tsconfig-paths/register scripts/migrate-content-formats.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
