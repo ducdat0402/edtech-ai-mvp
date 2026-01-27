@@ -70,7 +70,11 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
         UserPremium,
         AdaptiveTest,
       ],
-      synchronize: this.configService.get<string>('NODE_ENV') === 'development',
+      // Allow synchronize in development OR when explicitly enabled via ENABLE_SYNC env var
+      // This is useful for initial table creation on production (set ENABLE_SYNC=true temporarily)
+      synchronize: 
+        this.configService.get<string>('NODE_ENV') === 'development' ||
+        this.configService.get<string>('ENABLE_SYNC') === 'true',
       logging: this.configService.get<string>('NODE_ENV') === 'development',
     };
   }
