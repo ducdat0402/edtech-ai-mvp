@@ -17,23 +17,35 @@ export class FileStorageService {
     private configService: ConfigService,
     private cloudinaryService: CloudinaryStorageService,
   ) {
-    // Ensure upload directories exist (for local fallback)
-    this.ensureDirectoryExists(this.uploadsDir);
-    this.ensureDirectoryExists(this.imagesDir);
-    this.ensureDirectoryExists(this.videosDir);
-
     // Check if cloud storage is enabled
     this.useCloudStorage = this.cloudinaryService.isEnabled();
-    if (this.useCloudStorage) {
-      this.logger.log('Using Cloudinary for file storage');
-    } else {
+    
+    // Only create local directories if:
+    // 1. Not running on serverless (Vercel) environment
+    // 2. Cloudinary is NOT configured (need local fallback)
+    const isServerless = !!process.env.VERCEL || !!process.env.AWS_LAMBDA_FUNCTION_NAME;
+    
+    if (!isServerless && !this.useCloudStorage) {
+      // Ensure upload directories exist (for local fallback only)
+      this.ensureDirectoryExists(this.uploadsDir);
+      this.ensureDirectoryExists(this.imagesDir);
+      this.ensureDirectoryExists(this.videosDir);
       this.logger.log('Using local file storage (Cloudinary not configured)');
+    } else if (this.useCloudStorage) {
+      this.logger.log('Using Cloudinary for file storage');
+    } else if (isServerless) {
+      this.logger.warn('⚠️ Running on serverless environment. Cloudinary must be configured for file uploads.');
     }
   }
 
   private ensureDirectoryExists(dirPath: string): void {
-    if (!fs.existsSync(dirPath)) {
-      fs.mkdirSync(dirPath, { recursive: true });
+    try {
+      if (!fs.existsSync(dirPath)) {
+        fs.mkdirSync(dirPath, { recursive: true });
+      }
+    } catch (error) {
+      // Silently fail if we can't create directory (e.g., on read-only filesystem)
+      this.logger.warn(`Could not create directory ${dirPath}: ${error.message}`);
     }
   }
 
@@ -44,6 +56,14 @@ export class FileStorageService {
   async saveImage(file: Express.Multer.File): Promise<string> {
     if (!file) {
       throw new BadRequestException('No file provided');
+    }
+
+    // Check if running on serverless without Cloudinary
+    const isServerless = !!process.env.VERCEL || !!process.env.AWS_LAMBDA_FUNCTION_NAME;
+    if (isServerless && !this.useCloudStorage) {
+      throw new BadRequestException(
+        'File uploads require Cloudinary configuration on serverless environments. Please configure CLOUDINARY_URL.'
+      );
     }
 
     // Use Cloudinary if available - NO silent fallback to local
@@ -99,6 +119,14 @@ export class FileStorageService {
   async saveVideo(file: Express.Multer.File): Promise<string> {
     if (!file) {
       throw new BadRequestException('No file provided');
+    }
+
+    // Check if running on serverless without Cloudinary
+    const isServerless = !!process.env.VERCEL || !!process.env.AWS_LAMBDA_FUNCTION_NAME;
+    if (isServerless && !this.useCloudStorage) {
+      throw new BadRequestException(
+        'File uploads require Cloudinary configuration on serverless environments. Please configure CLOUDINARY_URL.'
+      );
     }
 
     // Use Cloudinary if available - NO silent fallback to local
