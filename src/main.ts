@@ -34,6 +34,7 @@ export async function createApp(): Promise<NestExpressApplication> {
 
   // API prefix
   app.setGlobalPrefix('api/v1');
+  //
 
   // Swagger Documentation
   const config = new DocumentBuilder()
