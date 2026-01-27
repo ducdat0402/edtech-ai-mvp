@@ -18,6 +18,7 @@ export async function createApp(): Promise<NestExpressApplication> {
   app.useGlobalFilters(new AllExceptionsFilter());
 
   // Global validation pipe
+  console.log('Global validation pipe');
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
