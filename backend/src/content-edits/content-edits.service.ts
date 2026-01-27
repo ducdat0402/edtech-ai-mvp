@@ -295,16 +295,40 @@ export class ContentEditsService {
     // Apply the edit to content item
     if (edit.type === ContentEditType.ADD_VIDEO && edit.media?.videoUrl) {
       // Add video to existing media or create new media object
+      // ✅ Include description and caption from the edit
       contentItem.media = {
         ...(contentItem.media || {}),
         videoUrl: edit.media.videoUrl,
+        ...(edit.description ? { description: edit.description } : {}),
+        ...(edit.media.caption ? { caption: edit.media.caption } : {}),
       };
+      // ✅ Update status from placeholder to published
+      if ((contentItem as any).status === 'placeholder' || (contentItem as any).status === 'awaiting_review') {
+        (contentItem as any).status = 'published';
+        // Remove placeholder emoji from title if present
+        contentItem.title = contentItem.title?.replace(/^(🎬|🖼️)\s*/, '') || contentItem.title;
+      }
+      // Record contributor info
+      (contentItem as any).contributorId = edit.userId;
+      (contentItem as any).contributedAt = new Date();
     } else if (edit.type === ContentEditType.ADD_IMAGE && edit.media?.imageUrl) {
       // Add image to existing media or create new media object
+      // ✅ Include description and caption from the edit
       contentItem.media = {
         ...(contentItem.media || {}),
         imageUrl: edit.media.imageUrl,
+        ...(edit.description ? { description: edit.description } : {}),
+        ...(edit.media.caption ? { caption: edit.media.caption } : {}),
       };
+      // ✅ Update status from placeholder to published
+      if ((contentItem as any).status === 'placeholder' || (contentItem as any).status === 'awaiting_review') {
+        (contentItem as any).status = 'published';
+        // Remove placeholder emoji from title if present
+        contentItem.title = contentItem.title?.replace(/^(🎬|🖼️)\s*/, '') || contentItem.title;
+      }
+      // Record contributor info
+      (contentItem as any).contributorId = edit.userId;
+      (contentItem as any).contributedAt = new Date();
     } else if (
       edit.type === ContentEditType.UPDATE_CONTENT &&
       edit.textContent

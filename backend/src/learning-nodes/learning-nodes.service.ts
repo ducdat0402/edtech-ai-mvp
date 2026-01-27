@@ -6,6 +6,10 @@ import { AiService } from '../ai/ai.service';
 import { ContentItem } from '../content-items/entities/content-item.entity';
 import { DomainsService } from '../domains/domains.service';
 import { GenerationProgressService } from './generation-progress.service';
+import { UserPremium } from '../payment/entities/user-premium.entity';
+
+// Number of free nodes before requiring premium
+const FREE_NODES_LIMIT = 2;
 
 @Injectable()
 export class LearningNodesService {
@@ -14,6 +18,8 @@ export class LearningNodesService {
     private nodeRepository: Repository<LearningNode>,
     @InjectRepository(ContentItem)
     private contentItemRepository: Repository<ContentItem>,
+    @InjectRepository(UserPremium)
+    private userPremiumRepository: Repository<UserPremium>,
     private aiService: AiService,
     @Inject(forwardRef(() => DomainsService))
     private domainsService: DomainsService,
@@ -25,6 +31,97 @@ export class LearningNodesService {
       where: { subjectId },
       order: { order: 'ASC' },
     });
+  }
+
+  /**
+   * Check if user has active premium
+   */
+  private async checkUserPremium(userId: string): Promise<boolean> {
+    if (!userId) return false;
+    
+    const userPremium = await this.userPremiumRepository.findOne({
+      where: { userId },
+    });
+
+    if (!userPremium) return false;
+
+    const now = new Date();
+    return userPremium.isPremium && userPremium.premiumExpiresAt > now;
+  }
+
+  /**
+   * Get learning nodes with premium lock status
+   * First 2 nodes are free, rest require premium
+   */
+  async findBySubjectWithPremiumStatus(
+    subjectId: string,
+    userId?: string,
+  ): Promise<(LearningNode & { isLocked: boolean; requiresPremium: boolean })[]> {
+    const nodes = await this.nodeRepository.find({
+      where: { subjectId },
+      order: { order: 'ASC' },
+    });
+
+    const isPremium = userId ? await this.checkUserPremium(userId) : false;
+
+    return nodes.map((node, index) => ({
+      ...node,
+      isLocked: !isPremium && index >= FREE_NODES_LIMIT,
+      requiresPremium: index >= FREE_NODES_LIMIT,
+    }));
+  }
+
+  /**
+   * Get learning nodes by domain with premium lock status
+   */
+  async findByDomainWithPremiumStatus(
+    domainId: string,
+    userId?: string,
+  ): Promise<(LearningNode & { isLocked: boolean; requiresPremium: boolean })[]> {
+    const nodes = await this.nodeRepository.find({
+      where: { domainId },
+      order: { order: 'ASC' },
+    });
+
+    const isPremium = userId ? await this.checkUserPremium(userId) : false;
+
+    return nodes.map((node, index) => ({
+      ...node,
+      isLocked: !isPremium && index >= FREE_NODES_LIMIT,
+      requiresPremium: index >= FREE_NODES_LIMIT,
+    }));
+  }
+
+  /**
+   * Check if user can access a specific node
+   */
+  async canAccessNode(nodeId: string, userId?: string): Promise<{ canAccess: boolean; requiresPremium: boolean }> {
+    // Find the node and its position in the subject
+    const node = await this.nodeRepository.findOne({ where: { id: nodeId } });
+    if (!node) {
+      return { canAccess: false, requiresPremium: false };
+    }
+
+    // Get all nodes in the same subject to determine position
+    const allNodes = await this.nodeRepository.find({
+      where: { subjectId: node.subjectId },
+      order: { order: 'ASC' },
+    });
+
+    const nodeIndex = allNodes.findIndex(n => n.id === nodeId);
+    
+    // First 2 nodes are always accessible
+    if (nodeIndex < FREE_NODES_LIMIT) {
+      return { canAccess: true, requiresPremium: false };
+    }
+
+    // Check premium for other nodes
+    const isPremium = userId ? await this.checkUserPremium(userId) : false;
+    
+    return {
+      canAccess: isPremium,
+      requiresPremium: true,
+    };
   }
 
   /**
@@ -173,6 +270,9 @@ export class LearningNodesService {
       }
 
       // Tạo Learning Node
+      // Map type cũ sang type mới: video/image -> theory (vì logic mới không còn type riêng cho video/image)
+      const nodeType: 'theory' | 'practice' | 'assessment' = 'theory';
+      
       const node = this.nodeRepository.create({
         subjectId,
         domainId,
@@ -180,7 +280,7 @@ export class LearningNodesService {
         description: nodeData.description,
         order: nodeData.order,
         prerequisites: [], // Sẽ cập nhật sau
-        type: nodeData.type || 'theory', // Phân loại: theory, video, hoặc image
+        type: nodeType, // Phân loại: theory, practice, hoặc assessment
         difficulty: nodeData.difficulty || 'medium', // Độ khó: easy, medium, hoặc hard
         contentStructure: {
           concepts: nodeData.concepts.length,
@@ -339,6 +439,9 @@ export class LearningNodesService {
     }
 
     // Create Learning Node
+    // Map type cũ sang type mới
+    const nodeType: 'theory' | 'practice' | 'assessment' = 'theory';
+    
     const node = this.nodeRepository.create({
       subjectId,
       domainId,
@@ -346,7 +449,7 @@ export class LearningNodesService {
       description: nodeData.description,
       order: nodeData.order,
       prerequisites: [],
-      type: nodeData.type,
+      type: nodeType,
       difficulty: nodeData.difficulty,
       contentStructure: {
         concepts: nodeData.concepts.length,

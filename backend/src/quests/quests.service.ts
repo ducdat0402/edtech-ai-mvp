@@ -48,13 +48,22 @@ export class QuestsService {
           userQuest.quest,
         );
         userQuest.progress = progress;
+        
+        // Check if completed but status not updated yet
+        const target = userQuest.quest.requirements?.target || 0;
+        if (progress >= target && userQuest.status === QuestStatus.ACTIVE) {
+          userQuest.status = QuestStatus.COMPLETED;
+          userQuest.completedAt = new Date();
+          console.log(`✅ Quest "${userQuest.quest.title}" auto-completed: ${progress}/${target}`);
+        }
+        
         await this.userQuestRepository.save(userQuest);
 
         return {
           id: userQuest.id,
           quest: userQuest.quest,
           progress,
-          target: userQuest.quest.requirements?.target || 0,
+          target,
           status: userQuest.status,
           completedAt: userQuest.completedAt,
           claimedAt: userQuest.claimedAt,
@@ -161,45 +170,76 @@ export class QuestsService {
       return 0;
     }
     
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
     switch (quest.type) {
       case QuestType.COMPLETE_ITEMS:
-        // Count completed items today
-        // This would need to query user_progress for today's completions
-        // Simplified: return 0 for now, will be updated by event handlers
-        return 0;
+        // Count completed items today from user_progress
+        try {
+          const completedToday = await this.progressService.countCompletedItemsToday(userId, today);
+          return completedToday;
+        } catch (e) {
+          console.log('Error counting completed items:', e);
+          return 0;
+        }
 
       case QuestType.MAINTAIN_STREAK:
         // Check if user has activity today
-        const currency = await this.currencyService.getCurrency(userId);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const lastActive = currency.lastActiveDate
-          ? new Date(currency.lastActiveDate)
-          : null;
-        if (lastActive) {
-          lastActive.setHours(0, 0, 0, 0);
-          return lastActive.getTime() === today.getTime() ? 1 : 0;
+        try {
+          const currency = await this.currencyService.getCurrency(userId);
+          const lastActive = currency.lastActiveDate
+            ? new Date(currency.lastActiveDate)
+            : null;
+          if (lastActive) {
+            lastActive.setHours(0, 0, 0, 0);
+            return lastActive.getTime() >= today.getTime() ? 1 : 0;
+          }
+        } catch (e) {
+          console.log('Error checking streak:', e);
         }
         return 0;
 
       case QuestType.EARN_COINS:
-        // This would need to track coins earned today
-        // Simplified: return 0
-        return 0;
+        // Count coins earned today
+        try {
+          const coinsToday = await this.currencyService.getCoinsEarnedToday(userId, today);
+          return coinsToday;
+        } catch (e) {
+          console.log('Error counting coins:', e);
+          return 0;
+        }
 
       case QuestType.EARN_XP:
-        // This would need to track XP earned today
-        // Simplified: return 0
-        return 0;
+        // Count XP earned today
+        try {
+          const xpToday = await this.currencyService.getXPEarnedToday(userId, today);
+          return xpToday;
+        } catch (e) {
+          console.log('Error counting XP:', e);
+          return 0;
+        }
 
       case QuestType.COMPLETE_NODE:
         // Check if any node completed today
-        return 0;
+        try {
+          const nodesCompletedToday = await this.progressService.countNodesCompletedToday(userId, today);
+          return nodesCompletedToday;
+        } catch (e) {
+          console.log('Error counting completed nodes:', e);
+          return 0;
+        }
 
       case QuestType.COMPLETE_DAILY_LESSON:
-        // Legacy quest type - now handled by COMPLETE_NODE
-        // Check if any skill node completed today
-        return 0;
+        // Legacy - same as COMPLETE_ITEMS
+        try {
+          const completedToday = await this.progressService.countCompletedItemsToday(userId, today);
+          return completedToday;
+        } catch (e) {
+          return 0;
+        }
 
       default:
         return 0;

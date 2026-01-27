@@ -19,29 +19,23 @@ export class ContentItemsService {
 
   /**
    * Auto-detect content format based on media and quizData
+   * Logic mới: format chỉ có 'text', 'mixed', 'quiz'
+   * - text: chỉ có nội dung văn bản
+   * - mixed: có text + image và/hoặc video
+   * - quiz: có câu hỏi trắc nghiệm
    */
-  detectFormat(item: Partial<ContentItem>): 'video' | 'image' | 'mixed' | 'quiz' | 'text' {
+  detectFormat(item: Partial<ContentItem>): 'text' | 'mixed' | 'quiz' {
     const hasVideo = item.media?.videoUrl && item.media.videoUrl.trim() !== '';
     const hasImage = item.media?.imageUrl && item.media.imageUrl.trim() !== '';
     const hasQuiz = item.quizData && item.quizData.question;
-    const hasContent = item.content && item.content.trim() !== '';
 
     if (hasQuiz) {
       return 'quiz';
     }
-    if (hasVideo && hasImage) {
+    if (hasVideo || hasImage) {
       return 'mixed';
     }
-    if (hasVideo) {
-      return 'video';
-    }
-    if (hasImage) {
-      return 'image';
-    }
-    if (hasContent) {
-      return 'text';
-    }
-    // Default to text if nothing matches
+    // Default to text
     return 'text';
   }
 
@@ -61,11 +55,17 @@ export class ContentItemsService {
     return rewardsMap[difficulty];
   }
 
-  async findByNode(nodeId: string): Promise<ContentItem[]> {
-    return this.contentItemRepository.find({
+  async findByNode(nodeId: string, includeBossQuiz = false): Promise<ContentItem[]> {
+    const items = await this.contentItemRepository.find({
       where: { nodeId },
       order: { order: 'ASC' },
     });
+    
+    // Filter out boss_quiz by default (boss quiz is now separate)
+    if (!includeBossQuiz) {
+      return items.filter(item => item.type !== 'boss_quiz');
+    }
+    return items;
   }
 
   async findById(id: string): Promise<ContentItem | null> {
@@ -82,7 +82,7 @@ export class ContentItemsService {
     });
   }
 
-  async findByFormat(format: 'video' | 'image' | 'mixed' | 'quiz' | 'text'): Promise<ContentItem[]> {
+  async findByFormat(format: 'text' | 'mixed' | 'quiz'): Promise<ContentItem[]> {
     return this.contentItemRepository.find({
       where: { format },
       order: { createdAt: 'DESC' },
@@ -104,7 +104,7 @@ export class ContentItemsService {
       title: string;
       content: string;
       order: number;
-      format?: 'video' | 'image' | 'mixed' | 'quiz' | 'text';
+      format?: 'text' | 'mixed' | 'quiz';
       difficulty?: 'easy' | 'medium' | 'hard' | 'expert';
       rewards: { xp?: number; coin?: number; shard?: string; shardAmount?: number };
       media: { videoUrl?: string; imageUrl?: string; interactiveUrl?: string };
@@ -353,6 +353,313 @@ export class ContentItemsService {
       concepts: createdConcepts,
       examples: createdExamples,
       message: `Đã tạo ${createdConcepts.length} khái niệm và ${createdExamples.length} ví dụ ở mức ${difficulty}`,
+    };
+  }
+
+  /**
+   * @deprecated Logic mới: Mỗi bài học có 3 dạng (text + image + video) nên không cần tạo placeholders riêng
+   * Hàm này giữ lại để backward compatibility nhưng không còn sử dụng
+   */
+  async generateMediaPlaceholders(nodeId: string): Promise<{
+    success: boolean;
+    message: string;
+  }> {
+    return {
+      success: false,
+      message: 'Logic mới: Mỗi bài học có 3 dạng nội dung (text + image + video). Không cần tạo placeholders riêng biệt.',
+    };
+  }
+
+  /**
+   * Find placeholders awaiting contribution
+   */
+  async findPlaceholders(nodeId?: string): Promise<ContentItem[]> {
+    const where: any = { status: 'placeholder' };
+    if (nodeId) {
+      where.nodeId = nodeId;
+    }
+    return this.contentItemRepository.find({
+      where,
+      order: { createdAt: 'DESC' },
+      relations: ['node'],
+    });
+  }
+
+  /**
+   * Submit contribution for a content item (add media to existing content)
+   * Logic mới: Người dùng có thể đóng góp image hoặc video cho bất kỳ bài học nào
+   */
+  async submitContribution(
+    contentId: string,
+    contributorId: string,
+    mediaUrl: string,
+    mediaType: 'video' | 'image',
+  ): Promise<ContentItem> {
+    const content = await this.contentItemRepository.findOne({
+      where: { id: contentId },
+    });
+
+    if (!content) {
+      throw new NotFoundException(`Content ${contentId} not found`);
+    }
+
+    // Update content with contribution
+    content.contributorId = contributorId;
+    content.contributedAt = new Date();
+    content.format = 'mixed'; // Update format to mixed since we're adding media
+
+    if (mediaType === 'video') {
+      content.media = {
+        ...content.media,
+        videoUrl: mediaUrl,
+      };
+    } else {
+      content.media = {
+        ...content.media,
+        imageUrl: mediaUrl,
+      };
+    }
+
+    const saved = await this.contentItemRepository.save(content);
+    this.logger.log(`${mediaType} contribution submitted for content ${contentId} by user ${contributorId}`);
+
+    return saved;
+  }
+
+  /**
+   * Approve a contribution (admin only)
+   */
+  async approveContribution(contentId: string): Promise<ContentItem> {
+    const content = await this.contentItemRepository.findOne({
+      where: { id: contentId },
+    });
+
+    if (!content) {
+      throw new NotFoundException(`Content ${contentId} not found`);
+    }
+
+    if (content.status !== 'awaiting_review') {
+      throw new Error('This content is not awaiting review');
+    }
+
+    content.status = 'published' as any;
+    // Update title to remove placeholder emoji
+    content.title = content.title.replace(/^(🎬|🖼️)\s*/, '');
+
+    const saved = await this.contentItemRepository.save(content);
+    this.logger.log(`Contribution ${contentId} approved`);
+
+    return saved;
+  }
+
+  /**
+   * Reject a contribution (admin only)
+   */
+  async rejectContribution(contentId: string, reason?: string): Promise<ContentItem> {
+    const content = await this.contentItemRepository.findOne({
+      where: { id: contentId },
+    });
+
+    if (!content) {
+      throw new NotFoundException(`Content ${contentId} not found`);
+    }
+
+    if (content.status !== 'awaiting_review') {
+      throw new Error('This content is not awaiting review');
+    }
+
+    // Reset to placeholder status
+    content.status = 'placeholder' as any;
+    content.contributorId = null as any;
+    content.contributedAt = null as any;
+    content.media = null as any;
+
+    const saved = await this.contentItemRepository.save(content);
+    this.logger.log(`Contribution ${contentId} rejected${reason ? `: ${reason}` : ''}`);
+
+    return saved;
+  }
+
+  /**
+   * Create a new contribution for a node
+   * Logic mới: Tạo bài học mới với cả text, image và video
+   */
+  async createNewContribution(
+    nodeId: string,
+    userId: string,
+    data: {
+      title: string;
+      content: string;
+      imageUrl?: string;
+      videoUrl?: string;
+    },
+  ): Promise<ContentItem> {
+    // Verify node exists
+    const node = await this.learningNodeRepository.findOne({
+      where: { id: nodeId },
+    });
+
+    if (!node) {
+      throw new NotFoundException(`Learning node ${nodeId} not found`);
+    }
+
+    // Get the highest order for this node
+    const existingItems = await this.contentItemRepository.find({
+      where: { nodeId: nodeId },
+      order: { order: 'DESC' },
+      take: 1,
+    });
+    const nextOrder = existingItems.length > 0 ? (existingItems[0].order || 0) + 1 : 1;
+
+    // Detect format based on media
+    const hasMedia = data.imageUrl || data.videoUrl;
+    const format = hasMedia ? 'mixed' : 'text';
+
+    // Create new content item with awaiting_review status
+    const newContent = this.contentItemRepository.create({
+      nodeId: nodeId,
+      type: 'concept', // Default type for contributions
+      title: data.title,
+      content: data.content,
+      format: format,
+      order: nextOrder,
+      status: 'awaiting_review' as any,
+      media: {
+        imageUrl: data.imageUrl,
+        videoUrl: data.videoUrl,
+      },
+      rewards: {
+        xp: 10,
+        coin: 5,
+      },
+      contributorId: userId,
+      contributedAt: new Date(),
+    });
+
+    const saved = await this.contentItemRepository.save(newContent);
+    this.logger.log(`New contribution created for node ${nodeId} by user ${userId}`);
+
+    return saved;
+  }
+
+  /**
+   * Generate 3 text variants (simple, detailed, comprehensive) for a content item
+   * Only applicable for text-based content (concept, example)
+   */
+  async generateTextVariants(contentId: string): Promise<ContentItem> {
+    const content = await this.contentItemRepository.findOne({
+      where: { id: contentId },
+      relations: ['node', 'node.subject'],
+    });
+
+    if (!content) {
+      throw new NotFoundException(`Content ${contentId} not found`);
+    }
+
+    // Only generate for text-based content
+    if (content.type === 'boss_quiz' || content.type === 'hidden_reward') {
+      throw new Error('Text variants are only for concept and example content');
+    }
+
+    // Skip if already has variants
+    if (content.textVariants?.simple && content.textVariants?.comprehensive) {
+      this.logger.log(`Content ${contentId} already has text variants`);
+      return content;
+    }
+
+    const originalContent = content.content || '';
+    const subjectName = content.node?.subject?.name || 'Không xác định';
+
+    // Generate 3 variants using AI
+    const variants = await this.aiService.generateTextVariants(
+      content.title,
+      originalContent,
+      subjectName,
+      content.node?.title,
+    );
+
+    // Save variants
+    content.textVariants = {
+      simple: variants.simple,
+      detailed: variants.detailed || originalContent,
+      comprehensive: variants.comprehensive,
+    };
+
+    const saved = await this.contentItemRepository.save(content);
+    this.logger.log(`✅ Generated 3 text variants for content ${contentId}`);
+
+    return saved;
+  }
+
+  /**
+   * Get content with text variant based on user preference
+   */
+  async getContentWithVariant(
+    contentId: string,
+    variant: 'simple' | 'detailed' | 'comprehensive' = 'detailed',
+  ): Promise<ContentItem & { selectedContent: string }> {
+    let content = await this.contentItemRepository.findOne({
+      where: { id: contentId },
+      relations: ['node'],
+    });
+
+    if (!content) {
+      throw new NotFoundException(`Content ${contentId} not found`);
+    }
+
+    // Determine which content to return
+    let selectedContent = content.content || '';
+
+    if (content.textVariants) {
+      switch (variant) {
+        case 'simple':
+          selectedContent = content.textVariants.simple || content.content || '';
+          break;
+        case 'comprehensive':
+          selectedContent = content.textVariants.comprehensive || content.content || '';
+          break;
+        default:
+          selectedContent = content.textVariants.detailed || content.content || '';
+      }
+    }
+
+    return {
+      ...content,
+      selectedContent,
+    };
+  }
+
+  /**
+   * Batch generate text variants for all content in a node
+   */
+  async generateVariantsForNode(nodeId: string): Promise<{
+    success: boolean;
+    processed: number;
+    message: string;
+  }> {
+    const contents = await this.findByNode(nodeId);
+    const textContents = contents.filter(
+      c => c.type === 'concept' || c.type === 'example'
+    );
+
+    let processed = 0;
+    for (const content of textContents) {
+      try {
+        // Skip if already has variants
+        if (content.textVariants?.simple && content.textVariants?.comprehensive) {
+          continue;
+        }
+        await this.generateTextVariants(content.id);
+        processed++;
+      } catch (error) {
+        this.logger.error(`Failed to generate variants for ${content.id}:`, error);
+      }
+    }
+
+    return {
+      success: true,
+      processed,
+      message: `Đã tạo ${processed}/${textContents.length} phiên bản nội dung`,
     };
   }
 }

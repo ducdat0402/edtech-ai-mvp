@@ -9,6 +9,7 @@ import {
   UseGuards,
   UseInterceptors,
   UploadedFile,
+  Request,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ContentItemsService } from './content-items.service';
@@ -180,7 +181,7 @@ export class ContentItemsController {
       title?: string;
       content?: string;
       order?: number;
-      format?: 'video' | 'image' | 'mixed' | 'quiz' | 'text';
+      format?: 'text' | 'mixed' | 'quiz';
       difficulty?: 'easy' | 'medium' | 'hard' | 'expert';
       rewards?: { xp?: number; coin?: number; shard?: string; shardAmount?: number };
       media?: { videoUrl?: string; imageUrl?: string; interactiveUrl?: string };
@@ -200,7 +201,7 @@ export class ContentItemsController {
    */
   @Get('format/:format')
   async getContentByFormat(
-    @Param('format') format: 'video' | 'image' | 'mixed' | 'quiz' | 'text',
+    @Param('format') format: 'text' | 'mixed' | 'quiz',
   ) {
     return this.contentService.findByFormat(format);
   }
@@ -282,6 +283,122 @@ export class ContentItemsController {
     @Param('difficulty') difficulty: 'easy' | 'medium' | 'hard' | 'expert',
   ) {
     return this.contentService.findByNodeAndDifficulty(nodeId, difficulty);
+  }
+
+  /**
+   * Generate video/image placeholders for a node
+   * Creates placeholder content items for community contribution
+   */
+  @Post('node/:nodeId/generate-placeholders')
+  @UseGuards(JwtAuthGuard)
+  async generatePlaceholders(@Param('nodeId') nodeId: string) {
+    return this.contentService.generateMediaPlaceholders(nodeId);
+  }
+
+  /**
+   * Get all placeholders (optionally filtered by nodeId)
+   */
+  @Get('placeholders')
+  async getPlaceholders(@Param('nodeId') nodeId?: string) {
+    return this.contentService.findPlaceholders(nodeId);
+  }
+
+  /**
+   * Get placeholders for a specific node
+   */
+  @Get('node/:nodeId/placeholders')
+  async getNodePlaceholders(@Param('nodeId') nodeId: string) {
+    return this.contentService.findPlaceholders(nodeId);
+  }
+
+  /**
+   * Submit contribution (add media to existing content)
+   */
+  @Post(':id/contribute')
+  @UseGuards(JwtAuthGuard)
+  async submitContribution(
+    @Param('id') contentId: string,
+    @Body() body: { mediaUrl: string; mediaType: 'video' | 'image' },
+    @Request() req,
+  ) {
+    const userId = req.user.id;
+    return this.contentService.submitContribution(
+      contentId,
+      userId,
+      body.mediaUrl,
+      body.mediaType,
+    );
+  }
+
+  /**
+   * Approve a contribution (admin only)
+   */
+  @Post(':id/approve')
+  @UseGuards(JwtAuthGuard)
+  async approveContribution(@Param('id') contentId: string) {
+    return this.contentService.approveContribution(contentId);
+  }
+
+  /**
+   * Reject a contribution (admin only)
+   */
+  @Post(':id/reject')
+  @UseGuards(JwtAuthGuard)
+  async rejectContribution(
+    @Param('id') contentId: string,
+    @Body() body: { reason?: string },
+  ) {
+    return this.contentService.rejectContribution(contentId, body.reason);
+  }
+
+  /**
+   * Create a new contribution for a node
+   * Logic mới: Tạo bài học mới với cả text, image và video
+   */
+  @Post('node/:nodeId/contribute-new')
+  @UseGuards(JwtAuthGuard)
+  async createNewContribution(
+    @Param('nodeId') nodeId: string,
+    @Body() body: { title: string; content: string; imageUrl?: string; videoUrl?: string },
+    @Request() req,
+  ) {
+    const userId = req.user.id;
+    return this.contentService.createNewContribution(nodeId, userId, body);
+  }
+
+  // =====================================================
+  // TEXT VARIANTS - 3 complexity levels for text content
+  // =====================================================
+
+  /**
+   * Get content with specific text variant
+   * @param variant - 'simple' | 'detailed' | 'comprehensive'
+   */
+  @Get(':id/variant/:variant')
+  async getContentWithVariant(
+    @Param('id') contentId: string,
+    @Param('variant') variant: 'simple' | 'detailed' | 'comprehensive',
+  ) {
+    return this.contentService.getContentWithVariant(contentId, variant);
+  }
+
+  /**
+   * Generate 3 text variants for a content item
+   * Uses AI to create simple, detailed, and comprehensive versions
+   */
+  @Post(':id/generate-variants')
+  @UseGuards(JwtAuthGuard)
+  async generateTextVariants(@Param('id') contentId: string) {
+    return this.contentService.generateTextVariants(contentId);
+  }
+
+  /**
+   * Batch generate text variants for all content in a node
+   */
+  @Post('node/:nodeId/generate-all-variants')
+  @UseGuards(JwtAuthGuard)
+  async generateVariantsForNode(@Param('nodeId') nodeId: string) {
+    return this.contentService.generateVariantsForNode(nodeId);
   }
 }
 

@@ -24,6 +24,9 @@ import { KnowledgeGraphModule } from './knowledge-graph/knowledge-graph.module';
 import { AiAgentsModule } from './ai-agents/ai-agents.module';
 import { AchievementsModule } from './achievements/achievements.module';
 import { PersonalMindMapModule } from './personal-mind-map/personal-mind-map.module';
+import { QuizModule } from './quiz/quiz.module';
+import { PaymentModule } from './payment/payment.module';
+import { AdaptiveTestModule } from './adaptive-test/adaptive-test.module';
 import { TypeOrmConfigService } from './config/typeorm.config';
 
 @Module({
@@ -58,6 +61,9 @@ import { TypeOrmConfigService } from './config/typeorm.config';
     AiAgentsModule,
     AchievementsModule,
     PersonalMindMapModule,
+    QuizModule,
+    PaymentModule,
+    AdaptiveTestModule,
   ],
 })
 export class AppModule {}

@@ -311,5 +311,117 @@ export class CloudinaryStorageService {
   isCloudinaryUrl(url: string): boolean {
     return url.includes('cloudinary.com') || url.includes('res.cloudinary.com');
   }
+
+  /**
+   * Upload image from URL (e.g., from DALL-E generated image)
+   * Useful for uploading AI-generated images to Cloudinary
+   */
+  async uploadImageFromUrl(
+    imageUrl: string,
+    folder = 'content-edits/ai-generated',
+  ): Promise<CloudinaryUploadResult> {
+    if (!this.isConfigured) {
+      throw new Error('Cloudinary is not configured');
+    }
+
+    if (!imageUrl) {
+      throw new Error('No image URL provided');
+    }
+
+    try {
+      // Get normalization transformations if enabled
+      const normalizationEnabled = this.mediaNormalizationService.isEnabled();
+      const eagerTransformations = normalizationEnabled
+        ? this.mediaNormalizationService.getImageEagerTransformations()
+        : undefined;
+
+      const uploadOptions: any = {
+        folder,
+        resource_type: 'image',
+        quality: 'auto',
+        fetch_format: 'auto',
+      };
+
+      if (normalizationEnabled && eagerTransformations) {
+        uploadOptions.eager = eagerTransformations;
+        uploadOptions.eager_async = false;
+      }
+
+      const result = await cloudinary.uploader.upload(imageUrl, uploadOptions);
+
+      let finalUrl = result.secure_url;
+      if (normalizationEnabled && result.eager && result.eager.length > 0) {
+        finalUrl = result.eager[result.eager.length - 1].secure_url;
+      }
+
+      this.logger.log(`✅ Image uploaded from URL to Cloudinary: ${result.public_id}`);
+
+      return {
+        url: finalUrl,
+        publicId: result.public_id,
+        format: result.format,
+        width: result.width,
+        height: result.height,
+        bytes: result.bytes,
+      };
+    } catch (error: any) {
+      this.logger.error('Error uploading image from URL to Cloudinary:', error);
+      throw new Error(`Failed to upload image from URL: ${error.message}`);
+    }
+  }
+
+  /**
+   * Upload video from URL
+   */
+  async uploadVideoFromUrl(
+    videoUrl: string,
+    folder = 'content-edits/ai-generated',
+  ): Promise<CloudinaryUploadResult> {
+    if (!this.isConfigured) {
+      throw new Error('Cloudinary is not configured');
+    }
+
+    if (!videoUrl) {
+      throw new Error('No video URL provided');
+    }
+
+    try {
+      const normalizationEnabled = this.mediaNormalizationService.isEnabled();
+
+      const uploadOptions: any = {
+        folder,
+        resource_type: 'video',
+        format: 'mp4',
+        quality: 'auto',
+        eager: [{ width: 640, height: 360, crop: 'fill', format: 'jpg' }],
+        eager_async: false,
+      };
+
+      const result = await cloudinary.uploader.upload(videoUrl, uploadOptions);
+
+      const thumbnailUrl = result.eager?.[0]?.secure_url;
+      let finalUrl = result.secure_url;
+
+      if (normalizationEnabled) {
+        finalUrl = this.mediaNormalizationService.getNormalizedVideoUrl(result.public_id);
+      }
+
+      this.logger.log(`✅ Video uploaded from URL to Cloudinary: ${result.public_id}`);
+
+      return {
+        url: finalUrl,
+        publicId: result.public_id,
+        format: result.format,
+        width: result.width,
+        height: result.height,
+        duration: result.duration,
+        bytes: result.bytes,
+        thumbnailUrl,
+      };
+    } catch (error: any) {
+      this.logger.error('Error uploading video from URL to Cloudinary:', error);
+      throw new Error(`Failed to upload video from URL: ${error.message}`);
+    }
+  }
 }
 

@@ -39,26 +39,31 @@ export class FileStorageService {
 
   /**
    * Save uploaded image file
-   * Uses Cloudinary if configured, otherwise falls back to local storage
+   * Uses Cloudinary if configured, throws error if Cloudinary fails (no silent fallback)
    */
   async saveImage(file: Express.Multer.File): Promise<string> {
     if (!file) {
       throw new BadRequestException('No file provided');
     }
 
-    // Use Cloudinary if available
+    // Use Cloudinary if available - NO silent fallback to local
     if (this.useCloudStorage) {
+      this.logger.log(`📤 Uploading image to Cloudinary (size: ${(file.size / 1024).toFixed(1)}KB, type: ${file.mimetype})`);
       try {
         const result: CloudinaryUploadResult = await this.cloudinaryService.uploadImage(file);
-        this.logger.log(`Image uploaded to Cloudinary: ${result.publicId}`);
+        this.logger.log(`✅ Image uploaded to Cloudinary: ${result.publicId}`);
+        this.logger.log(`   URL: ${result.url}`);
         return result.url; // Return Cloudinary CDN URL
-      } catch (error) {
-        this.logger.warn(`Cloudinary upload failed, falling back to local storage: ${error.message}`);
-        // Fall through to local storage
+      } catch (error: any) {
+        this.logger.error(`❌ Cloudinary upload failed: ${error.message}`);
+        this.logger.error(`   Stack: ${error.stack}`);
+        // THROW error instead of falling back - user should know upload failed
+        throw new BadRequestException(`Failed to upload image to cloud: ${error.message}`);
       }
     }
 
-    // Fallback to local storage
+    // Only use local storage if Cloudinary is NOT configured
+    this.logger.warn('⚠️ Cloudinary not configured, using local storage');
     // Validate image type
     const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     if (!allowedMimeTypes.includes(file.mimetype)) {
@@ -89,32 +94,31 @@ export class FileStorageService {
 
   /**
    * Save uploaded video file
-   * Uses Cloudinary if configured (RECOMMENDED for production), otherwise falls back to local storage
+   * Uses Cloudinary if configured, throws error if Cloudinary fails (no silent fallback)
    */
   async saveVideo(file: Express.Multer.File): Promise<string> {
     if (!file) {
       throw new BadRequestException('No file provided');
     }
 
-    // Use Cloudinary if available (RECOMMENDED for production)
+    // Use Cloudinary if available - NO silent fallback to local
     if (this.useCloudStorage) {
-      this.logger.log(`Attempting to upload video to Cloudinary (size: ${(file.size / 1024 / 1024).toFixed(2)}MB, type: ${file.mimetype})`);
+      this.logger.log(`📤 Uploading video to Cloudinary (size: ${(file.size / 1024 / 1024).toFixed(2)}MB, type: ${file.mimetype})`);
       try {
         const result: CloudinaryUploadResult = await this.cloudinaryService.uploadVideo(file);
-        this.logger.log(`✅ Video uploaded to Cloudinary successfully: ${result.publicId} (${(result.bytes / 1024 / 1024).toFixed(2)}MB)`);
-        this.logger.log(`   Cloudinary URL: ${result.url}`);
+        this.logger.log(`✅ Video uploaded to Cloudinary: ${result.publicId} (${(result.bytes / 1024 / 1024).toFixed(2)}MB)`);
+        this.logger.log(`   URL: ${result.url}`);
         return result.url; // Return Cloudinary CDN URL
-      } catch (error) {
+      } catch (error: any) {
         this.logger.error(`❌ Cloudinary upload failed: ${error.message}`);
-        this.logger.error(`   Error details: ${JSON.stringify(error)}`);
-        this.logger.warn(`⚠️ Falling back to local storage`);
-        // Fall through to local storage
+        this.logger.error(`   Stack: ${error.stack}`);
+        // THROW error instead of falling back - user should know upload failed
+        throw new BadRequestException(`Failed to upload video to cloud: ${error.message}`);
       }
-    } else {
-      this.logger.warn(`⚠️ Cloudinary not configured, using local storage for video upload`);
     }
 
-    // Fallback to local storage (NOT RECOMMENDED for production with many users)
+    // Only use local storage if Cloudinary is NOT configured
+    this.logger.warn('⚠️ Cloudinary not configured, using local storage for video');
     this.logger.log(`💾 Saving video to local storage: ${file.originalname} (${(file.size / 1024 / 1024).toFixed(2)}MB)`);
     
     // Validate video type

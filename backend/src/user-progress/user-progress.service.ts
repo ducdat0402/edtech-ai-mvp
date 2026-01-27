@@ -455,5 +455,63 @@ export class UserProgressService {
 
     return (completed / total) * 100;
   }
+
+  /**
+   * Count content items completed today for quest progress
+   */
+  async countCompletedItemsToday(userId: string, today: Date): Promise<number> {
+    try {
+      // Query user progress records updated today
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      
+      // Get all progress records for user
+      const progresses = await this.progressRepository
+        .createQueryBuilder('progress')
+        .where('progress.userId = :userId', { userId })
+        .andWhere('progress.updatedAt >= :today', { today })
+        .andWhere('progress.updatedAt < :tomorrow', { tomorrow })
+        .getMany();
+      
+      // Count total completed items from today's progress updates
+      let totalCompleted = 0;
+      for (const progress of progresses) {
+        if (progress.completedItems) {
+          totalCompleted += (progress.completedItems.concepts?.length || 0);
+          totalCompleted += (progress.completedItems.examples?.length || 0);
+          totalCompleted += (progress.completedItems.hiddenRewards?.length || 0);
+          totalCompleted += (progress.completedItems.bossQuiz?.length > 0 ? 1 : 0);
+        }
+      }
+      
+      return totalCompleted;
+    } catch (e) {
+      console.error('Error counting completed items today:', e);
+      return 0;
+    }
+  }
+
+  /**
+   * Count learning nodes completed today for quest progress
+   */
+  async countNodesCompletedToday(userId: string, today: Date): Promise<number> {
+    try {
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      
+      const count = await this.progressRepository
+        .createQueryBuilder('progress')
+        .where('progress.userId = :userId', { userId })
+        .andWhere('progress.isCompleted = :isCompleted', { isCompleted: true })
+        .andWhere('progress.completedAt >= :today', { today })
+        .andWhere('progress.completedAt < :tomorrow', { tomorrow })
+        .getCount();
+      
+      return count;
+    } catch (e) {
+      console.error('Error counting nodes completed today:', e);
+      return 0;
+    }
+  }
 }
 

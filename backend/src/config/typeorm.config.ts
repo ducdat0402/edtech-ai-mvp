@@ -26,6 +26,10 @@ import { RewardTransaction } from '../user-currency/entities/reward-transaction.
 import { Achievement } from '../achievements/entities/achievement.entity';
 import { UserAchievement } from '../achievements/entities/user-achievement.entity';
 import { PersonalMindMap } from '../personal-mind-map/entities/personal-mind-map.entity';
+import { Quiz } from '../quiz/entities/quiz.entity';
+import { Payment } from '../payment/entities/payment.entity';
+import { UserPremium } from '../payment/entities/user-premium.entity';
+import { AdaptiveTest } from '../adaptive-test/entities/adaptive-test.entity';
 
 @Injectable()
 export class TypeOrmConfigService implements TypeOrmOptionsFactory {
@@ -61,6 +65,10 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
         Achievement,
         UserAchievement,
         PersonalMindMap,
+        Quiz,
+        Payment,
+        UserPremium,
+        AdaptiveTest,
       ],
       synchronize: this.configService.get<string>('NODE_ENV') === 'development',
       logging: this.configService.get<string>('NODE_ENV') === 'development',

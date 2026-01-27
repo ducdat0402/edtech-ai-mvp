@@ -1,19 +1,54 @@
-import { Controller, Get, Param, Post, Put, Body, UseGuards, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Param, Post, Put, Body, UseGuards, NotFoundException, Request, ForbiddenException } from '@nestjs/common';
 import { LearningNodesService } from './learning-nodes.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
 
 @Controller('nodes')
 export class LearningNodesController {
   constructor(private readonly nodesService: LearningNodesService) {}
 
+  /**
+   * Get nodes by subject with premium lock status
+   */
   @Get('subject/:subjectId')
-  async getNodesBySubject(@Param('subjectId') subjectId: string) {
-    return this.nodesService.findBySubject(subjectId);
+  @UseGuards(OptionalJwtAuthGuard)
+  async getNodesBySubject(
+    @Param('subjectId') subjectId: string,
+    @Request() req,
+  ) {
+    const userId = req.user?.id;
+    return this.nodesService.findBySubjectWithPremiumStatus(subjectId, userId);
   }
 
+  /**
+   * Get node by ID with access check
+   */
   @Get(':id')
-  async getNodeById(@Param('id') id: string) {
+  @UseGuards(OptionalJwtAuthGuard)
+  async getNodeById(@Param('id') id: string, @Request() req) {
+    const userId = req.user?.id;
+    
+    // Check if user can access this node
+    const accessCheck = await this.nodesService.canAccessNode(id, userId);
+    
+    if (!accessCheck.canAccess) {
+      throw new ForbiddenException({
+        message: 'Bạn cần nâng cấp Premium để truy cập bài học này',
+        requiresPremium: true,
+      });
+    }
+    
     return this.nodesService.findById(id);
+  }
+
+  /**
+   * Check if user can access a node
+   */
+  @Get(':id/access-check')
+  @UseGuards(OptionalJwtAuthGuard)
+  async checkNodeAccess(@Param('id') id: string, @Request() req) {
+    const userId = req.user?.id;
+    return this.nodesService.canAccessNode(id, userId);
   }
 
   /**

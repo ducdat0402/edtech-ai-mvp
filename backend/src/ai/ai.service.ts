@@ -42,6 +42,42 @@ export class AiService {
   }
 
   /**
+   * Chat with JSON mode enabled - guarantees valid JSON response
+   * Use this for structured data generation
+   */
+  async chatWithJsonMode(messages: Array<{ role: string; content: string }>): Promise<string> {
+    if (!this.openai) {
+      throw new Error('OpenAI API not configured. Please set OPENAI_API_KEY in .env');
+    }
+
+    try {
+      const openaiMessages: Array<{ role: 'user' | 'assistant' | 'system'; content: string }> = [
+        {
+          role: 'system',
+          content: 'You are a helpful assistant that responds in valid JSON format only. Always use double quotes for strings, escape special characters properly, and ensure the JSON is parseable.',
+        },
+        ...messages.map((msg) => ({
+          role: (msg.role === 'user' ? 'user' : 'assistant') as 'user' | 'assistant',
+          content: msg.content,
+        })),
+      ];
+
+      const completion = await this.openai.chat.completions.create({
+        model: this.model,
+        messages: openaiMessages,
+        response_format: { type: 'json_object' },
+        temperature: 0.7,
+        max_tokens: 16384,
+      });
+
+      return completion.choices[0]?.message?.content || '{}';
+    } catch (error) {
+      console.error('OpenAI API error (JSON mode):', error);
+      throw new Error('Failed to get AI JSON response');
+    }
+  }
+
+  /**
    * Stream chat response from OpenAI
    * Returns an async generator that yields chunks of text
    */
@@ -1239,6 +1275,208 @@ Trả về JSON:
   }
 
   /**
+   * Generate 3 text variants (simple, detailed, comprehensive) for a lesson content
+   * Used when user views a lesson - they can choose their preferred complexity level
+   */
+  async generateTextVariants(
+    title: string,
+    originalContent: string,
+    subjectName: string,
+    lessonContext?: string,
+  ): Promise<{
+    simple: string;
+    detailed: string;
+    comprehensive: string;
+  }> {
+    if (!this.openai) {
+      throw new Error('OpenAI API not configured');
+    }
+
+    const prompt = `Bạn là chuyên gia giáo dục. Nhiệm vụ: Tạo 3 phiên bản nội dung học tập từ nội dung gốc.
+
+THÔNG TIN BÀI HỌC:
+- Tiêu đề: ${title}
+- Môn học: ${subjectName}
+${lessonContext ? `- Ngữ cảnh: ${lessonContext}` : ''}
+
+NỘI DUNG GỐC:
+${originalContent}
+
+TẠO 3 PHIÊN BẢN:
+
+1. **SIMPLE (Đơn giản)** - 150-300 từ:
+   - Tóm tắt ngắn gọn, dễ hiểu
+   - Chỉ giữ ý chính quan trọng nhất
+   - Ngôn ngữ đơn giản, tránh thuật ngữ
+   - Dùng ví von từ đời thường
+   - Phù hợp người mới bắt đầu hoặc muốn ôn nhanh
+
+2. **DETAILED (Chi tiết)** - 400-800 từ:
+   - Giữ nguyên hoặc cải thiện nội dung gốc
+   - Giải thích đầy đủ các khái niệm
+   - Có ví dụ minh họa
+   - Có tips và lưu ý quan trọng
+   - Phù hợp đa số người học
+
+3. **COMPREHENSIVE (Chuyên sâu)** - 800-1500 từ:
+   - Mở rộng từ nội dung gốc
+   - Đi sâu vào nguyên lý, lý thuyết nền
+   - Liên hệ với các khái niệm liên quan
+   - Bao gồm edge cases, best practices
+   - Ví dụ thực tế phức tạp, case studies
+   - Phù hợp người muốn hiểu sâu
+
+FORMAT: Sử dụng markdown (headers ##, lists -, code blocks nếu cần)
+
+Trả về JSON:
+{
+  "simple": "Nội dung markdown phiên bản đơn giản...",
+  "detailed": "Nội dung markdown phiên bản chi tiết...",
+  "comprehensive": "Nội dung markdown phiên bản chuyên sâu..."
+}`;
+
+    try {
+      const completion = await this.openai.chat.completions.create({
+        model: this.model,
+        messages: [{ role: 'user', content: prompt }],
+        response_format: { type: 'json_object' },
+        temperature: 0.7,
+        max_tokens: 8192,
+      });
+
+      const content = completion.choices[0]?.message?.content;
+      if (!content) {
+        throw new Error('No response from AI');
+      }
+
+      const result = JSON.parse(content);
+
+      console.log(`✅ Generated 3 text variants for: ${title}`);
+
+      return {
+        simple: result.simple || originalContent,
+        detailed: result.detailed || originalContent,
+        comprehensive: result.comprehensive || originalContent,
+      };
+    } catch (error) {
+      console.error('Error generating text variants:', error);
+      // Fallback: return original content for all variants
+      return {
+        simple: originalContent,
+        detailed: originalContent,
+        comprehensive: originalContent,
+      };
+    }
+  }
+
+  /**
+   * Generate video/image placeholders for community contribution
+   * Creates detailed descriptions of what media content would be helpful
+   */
+  async generateMediaPlaceholders(
+    nodeTitle: string,
+    nodeDescription: string,
+    subjectName: string,
+    existingConcepts?: string[],
+  ): Promise<{
+    videoPlaceholders: Array<{
+      title: string;
+      description: string;
+      suggestedContent: string;
+      requirements: string[];
+      difficulty: 'easy' | 'medium' | 'hard';
+      estimatedTime: string;
+      tags: string[];
+    }>;
+    imagePlaceholders: Array<{
+      title: string;
+      description: string;
+      suggestedContent: string;
+      requirements: string[];
+      difficulty: 'easy' | 'medium' | 'hard';
+      estimatedTime: string;
+      tags: string[];
+    }>;
+  }> {
+    if (!this.openai) {
+      throw new Error('OpenAI API not configured');
+    }
+
+    const prompt = `Bạn là chuyên gia giáo dục và multimedia. Nhiệm vụ: Đề xuất các video và hình ảnh hữu ích cho bài học.
+
+THÔNG TIN BÀI HỌC:
+- Tiêu đề: ${nodeTitle}
+- Mô tả: ${nodeDescription}
+- Môn học: ${subjectName}
+
+${existingConcepts?.length ? `CÁC KHÁI NIỆM TRONG BÀI:\n${existingConcepts.join('\n')}` : ''}
+
+YÊU CẦU:
+Đề xuất NỘI DUNG MEDIA phù hợp để cộng đồng có thể đóng góp.
+
+1. VIDEO PLACEHOLDERS (1-3 video):
+   - Chỉ đề xuất video KHI CẦN THIẾT (hướng dẫn thực hành, demo, giải thích phức tạp)
+   - Mỗi video có:
+     * title: Tên ngắn gọn
+     * description: Mô tả ngắn về video
+     * suggestedContent: Mô tả CHI TIẾT nội dung video (kịch bản, góc quay, các phần cần có)
+     * requirements: Yêu cầu kỹ thuật (độ dài, chất lượng, âm thanh...)
+     * difficulty: "easy" | "medium" | "hard" (độ khó để tạo video này)
+     * estimatedTime: Thời gian ước tính để tạo
+     * tags: Tags phân loại
+
+2. IMAGE PLACEHOLDERS (2-4 hình ảnh):
+   - Đề xuất hình ảnh/infographic/diagram hữu ích
+   - Mỗi hình có:
+     * title: Tên ngắn gọn
+     * description: Mô tả ngắn
+     * suggestedContent: Mô tả CHI TIẾT nội dung hình (bố cục, các phần tử, màu sắc gợi ý)
+     * requirements: Yêu cầu kỹ thuật (kích thước, định dạng, font...)
+     * difficulty: "easy" | "medium" | "hard"
+     * estimatedTime: Thời gian ước tính
+     * tags: Tags phân loại
+
+LƯU Ý:
+- Chỉ đề xuất media THỰC SỰ HỮU ÍCH cho bài học
+- Nếu bài học là lý thuyết đơn giản, có thể không cần video
+- Ưu tiên hình ảnh/diagram cho khái niệm trừu tượng
+- Ưu tiên video cho hướng dẫn thực hành
+
+Trả về JSON:
+{
+  "videoPlaceholders": [...],
+  "imagePlaceholders": [...]
+}`;
+
+    try {
+      const completion = await this.openai.chat.completions.create({
+        model: this.model,
+        messages: [{ role: 'user', content: prompt }],
+        response_format: { type: 'json_object' },
+        temperature: 0.7,
+        max_tokens: 4096,
+      });
+
+      const content = completion.choices[0]?.message?.content;
+      if (!content) {
+        throw new Error('No response from AI');
+      }
+
+      const result = JSON.parse(content);
+
+      console.log(`✅ Generated media placeholders: ${result.videoPlaceholders?.length || 0} videos, ${result.imagePlaceholders?.length || 0} images`);
+
+      return {
+        videoPlaceholders: result.videoPlaceholders || [],
+        imagePlaceholders: result.imagePlaceholders || [],
+      };
+    } catch (error) {
+      console.error('Error generating media placeholders:', error);
+      throw new Error(`Failed to generate media placeholders: ${error.message}`);
+    }
+  }
+
+  /**
    * Generate mind map (knowledge graph structure) for a subject
    * Returns nodes and edges representing the knowledge structure
    */
@@ -1393,6 +1631,283 @@ Trả về JSON format (chỉ JSON, không có text khác):
     } catch (error) {
       console.error('Error generating mind map:', error);
       throw new Error(`Failed to generate mind map: ${error.message}`);
+    }
+  }
+
+  /**
+   * Generate image using DALL-E
+   * Returns the URL of the generated image
+   */
+  async generateImage(
+    prompt: string,
+    options?: {
+      size?: '1024x1024' | '1792x1024' | '1024x1792';
+      quality?: 'standard' | 'hd';
+      style?: 'vivid' | 'natural';
+    },
+  ): Promise<{
+    url: string;
+    revisedPrompt: string;
+  }> {
+    if (!this.openai) {
+      throw new Error('OpenAI API not configured. Please set OPENAI_API_KEY in .env');
+    }
+
+    try {
+      const response = await this.openai.images.generate({
+        model: 'dall-e-3',
+        prompt: prompt,
+        n: 1,
+        size: options?.size || '1024x1024',
+        quality: options?.quality || 'standard',
+        style: options?.style || 'natural',
+      });
+
+      const imageUrl = response.data[0]?.url;
+      const revisedPrompt = response.data[0]?.revised_prompt || prompt;
+
+      if (!imageUrl) {
+        throw new Error('No image URL returned from DALL-E');
+      }
+
+      return {
+        url: imageUrl,
+        revisedPrompt,
+      };
+    } catch (error: any) {
+      console.error('DALL-E API error:', error);
+      throw new Error(`Failed to generate image: ${error.message}`);
+    }
+  }
+
+  /**
+   * Generate multiple images for batch processing
+   * Uses parallel requests with rate limiting
+   */
+  async generateImagesInBatch(
+    prompts: string[],
+    options?: {
+      size?: '1024x1024' | '1792x1024' | '1024x1792';
+      quality?: 'standard' | 'hd';
+      style?: 'vivid' | 'natural';
+      delayMs?: number; // Delay between requests (default: 2000ms)
+    },
+  ): Promise<Array<{
+    prompt: string;
+    url?: string;
+    revisedPrompt?: string;
+    error?: string;
+  }>> {
+    const results: Array<{
+      prompt: string;
+      url?: string;
+      revisedPrompt?: string;
+      error?: string;
+    }> = [];
+
+    const delayMs = options?.delayMs || 2000;
+
+    for (const prompt of prompts) {
+      try {
+        const result = await this.generateImage(prompt, options);
+        results.push({
+          prompt,
+          url: result.url,
+          revisedPrompt: result.revisedPrompt,
+        });
+      } catch (error: any) {
+        results.push({
+          prompt,
+          error: error.message,
+        });
+      }
+
+      // Rate limiting delay
+      if (prompts.indexOf(prompt) < prompts.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+      }
+    }
+
+    return results;
+  }
+
+  /**
+   * Generate quiz questions based on content
+   * @param contentTitle - Title of the content item
+   * @param contentText - The actual content text
+   * @param contentType - 'concept' or 'example'
+   * @param quizType - 'lesson' (for individual content) or 'boss' (for topic/chapter)
+   */
+  async generateQuiz(
+    contentTitle: string,
+    contentText: string,
+    contentType: 'concept' | 'example',
+    quizType: 'lesson' | 'boss' = 'lesson',
+  ): Promise<{
+    questions: Array<{
+      id: string;
+      question: string;
+      options: { A: string; B: string; C: string; D: string };
+      correctAnswer: 'A' | 'B' | 'C' | 'D';
+      explanation: string;
+      category: string;
+    }>;
+    passingScore: number;
+    totalQuestions: number;
+  }> {
+    if (!this.openai) {
+      throw new Error('OpenAI API not configured');
+    }
+
+    let prompt: string;
+    let questionCount: number;
+    let passingScore: number;
+
+    if (quizType === 'boss') {
+      // Boss Quiz: 25 câu, yêu cầu 80%
+      questionCount = 25;
+      passingScore = 80;
+      prompt = `Bạn là người thiết kế bài kiểm tra kiến thức.
+
+Nội dung cần kiểm tra:
+Tiêu đề: ${contentTitle}
+Nội dung: ${contentText}
+
+Yêu cầu chung:
+– Câu hỏi trắc nghiệm 4 lựa chọn (A, B, C, D)
+– Chỉ có 1 đáp án đúng
+– Không dùng câu hỏi yêu cầu nhớ nguyên văn định nghĩa
+– Tránh câu quá dễ hoặc đánh đố vô lý
+
+Cấu trúc 25 câu:
+
+1. Khái niệm & bản chất (7-8 câu):
+   - Định nghĩa theo cách hiểu
+   - Phân biệt khái niệm gần nhau
+   - Nhận diện phát biểu đúng/sai
+
+2. Ví dụ & vận dụng (12-13 câu):
+   - Nhận diện ví dụ đúng
+   - Loại trừ ví dụ sai
+   - Áp dụng vào tình huống ngắn
+
+3. Liên hệ & tổng hợp (4-5 câu):
+   - Kết nối các phần trong chương
+   - Hiểu sai phổ biến
+   - Hệ quả nếu áp dụng sai
+
+Trả về JSON với format:
+{
+  "questions": [
+    {
+      "id": "q1",
+      "question": "Câu hỏi...",
+      "options": { "A": "...", "B": "...", "C": "...", "D": "..." },
+      "correctAnswer": "A",
+      "explanation": "Giải thích vì sao A đúng và các đáp án khác sai",
+      "category": "concept|example|synthesis"
+    }
+  ]
+}`;
+    } else {
+      // Lesson Quiz: ~12 câu, yêu cầu 70%
+      passingScore = 70;
+      
+      if (contentType === 'concept') {
+        questionCount = 5;
+        prompt = `Bạn là người thiết kế bài kiểm tra kiến thức.
+
+Kiến thức cần kiểm tra (KHÁI NIỆM):
+Tiêu đề: ${contentTitle}
+Nội dung: ${contentText}
+
+Yêu cầu chung:
+– Câu hỏi trắc nghiệm 4 lựa chọn (A, B, C, D)
+– Chỉ có 1 đáp án đúng
+– Không dùng câu hỏi yêu cầu nhớ nguyên văn định nghĩa
+– Tránh câu quá dễ hoặc đánh đố vô lý
+
+Mục tiêu: kiểm tra người học hiểu đúng bản chất, không học thuộc.
+
+Tạo 5 câu hỏi:
+- 2-3 câu: chọn định nghĩa đúng hoặc nhận diện mô tả đúng bản chất khái niệm
+- 2-3 câu: phân biệt khái niệm này với các khái niệm gần giống, dễ nhầm lẫn
+
+Trả về JSON với format:
+{
+  "questions": [
+    {
+      "id": "q1",
+      "question": "Câu hỏi...",
+      "options": { "A": "...", "B": "...", "C": "...", "D": "..." },
+      "correctAnswer": "A",
+      "explanation": "Giải thích vì sao A đúng và các đáp án khác sai",
+      "category": "definition|distinction"
+    }
+  ]
+}`;
+      } else {
+        questionCount = 7;
+        prompt = `Bạn là người thiết kế bài kiểm tra kiến thức.
+
+Kiến thức cần kiểm tra (VÍ DỤ / VẬN DỤNG):
+Tiêu đề: ${contentTitle}
+Nội dung: ${contentText}
+
+Yêu cầu chung:
+– Câu hỏi trắc nghiệm 4 lựa chọn (A, B, C, D)
+– Chỉ có 1 đáp án đúng
+– Không dùng câu hỏi yêu cầu nhớ nguyên văn định nghĩa
+– Tránh câu quá dễ hoặc đánh đố vô lý
+
+Mục tiêu: kiểm tra khả năng áp dụng và nhận diện đúng/sai.
+
+Tạo 7 câu hỏi:
+- 3-4 câu: chọn ví dụ đúng với khái niệm
+- 2-3 câu: chọn ví dụ sai / không phù hợp
+- 1-2 câu: tình huống ngắn (mini-case), yêu cầu xác định cách hiểu hoặc áp dụng đúng
+
+Trả về JSON với format:
+{
+  "questions": [
+    {
+      "id": "q1", 
+      "question": "Câu hỏi...",
+      "options": { "A": "...", "B": "...", "C": "...", "D": "..." },
+      "correctAnswer": "A",
+      "explanation": "Giải thích vì sao A đúng và các đáp án khác sai",
+      "category": "correct_example|wrong_example|mini_case"
+    }
+  ]
+}`;
+      }
+    }
+
+    try {
+      const response = await this.openai.chat.completions.create({
+        model: this.model,
+        messages: [
+          {
+            role: 'system',
+            content: 'Bạn là chuyên gia thiết kế bài kiểm tra. Luôn trả về JSON hợp lệ.',
+          },
+          { role: 'user', content: prompt },
+        ],
+        response_format: { type: 'json_object' },
+        temperature: 0.7,
+      });
+
+      const content = response.choices[0]?.message?.content || '{}';
+      const parsed = JSON.parse(content);
+
+      return {
+        questions: parsed.questions || [],
+        passingScore,
+        totalQuestions: parsed.questions?.length || questionCount,
+      };
+    } catch (error: any) {
+      console.error('Error generating quiz:', error);
+      throw new Error(`Failed to generate quiz: ${error.message}`);
     }
   }
 }

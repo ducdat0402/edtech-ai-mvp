@@ -34,17 +34,12 @@ async function migrateFormats() {
         const hasQuiz = item.quizData && item.quizData.question;
         const hasContent = item.content && item.content.trim() !== '';
 
-        let format: 'video' | 'image' | 'mixed' | 'quiz' | 'text' = 'text';
+        // Logic format mới: chỉ có text, mixed, quiz
+        let format: 'text' | 'mixed' | 'quiz' = 'text';
         if (hasQuiz) {
           format = 'quiz';
-        } else if (hasVideo && hasImage) {
+        } else if (hasVideo || hasImage) {
           format = 'mixed';
-        } else if (hasVideo) {
-          format = 'video';
-        } else if (hasImage) {
-          format = 'image';
-        } else if (hasContent) {
-          format = 'text';
         }
 
         // Set difficulty if not set

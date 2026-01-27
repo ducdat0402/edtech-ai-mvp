@@ -16,6 +16,10 @@ export class UserCurrencyService {
     private usersService: UsersService,
   ) {}
 
+  // Level system constants
+  private readonly BASE_XP_FOR_LEVEL_2 = 100; // XP cần để lên level 2
+  private readonly LEVEL_MULTIPLIER = 1.30; // Mỗi level cần thêm 30% XP
+
   async getOrCreate(userId: string): Promise<UserCurrency> {
     let currency = await this.currencyRepository.findOne({
       where: { userId },
@@ -26,13 +30,88 @@ export class UserCurrencyService {
         userId,
         coins: 0,
         xp: 0,
+        level: 1, // Mặc định level 1
         currentStreak: 0,
         shards: {},
       });
       currency = await this.currencyRepository.save(currency);
+    } else {
+      // Luôn tính lại level từ XP để đảm bảo chính xác
+      const calculatedLevel = this.calculateLevelFromXP(currency.xp);
+      if (currency.level !== calculatedLevel) {
+        console.log(`🔄 Syncing level for user ${userId}: ${currency.level} → ${calculatedLevel} (XP: ${currency.xp})`);
+        currency.level = calculatedLevel;
+        await this.currencyRepository.save(currency);
+      }
     }
 
     return currency;
+  }
+
+  /**
+   * Tính XP cần để đạt level tiếp theo
+   * Level 1→2: 100 XP
+   * Level 2→3: 130 XP (100 * 1.3)
+   * Level 3→4: 169 XP (130 * 1.3)
+   */
+  getXPRequiredForLevel(level: number): number {
+    if (level <= 1) return 0;
+    // XP cần cho level N = BASE_XP * (MULTIPLIER ^ (N-2))
+    return Math.round(this.BASE_XP_FOR_LEVEL_2 * Math.pow(this.LEVEL_MULTIPLIER, level - 2));
+  }
+
+  /**
+   * Tính tổng XP cần để đạt level cụ thể
+   */
+  getTotalXPForLevel(level: number): number {
+    let total = 0;
+    for (let i = 2; i <= level; i++) {
+      total += this.getXPRequiredForLevel(i);
+    }
+    return total;
+  }
+
+  /**
+   * Tính level từ tổng XP
+   */
+  calculateLevelFromXP(totalXP: number): number {
+    let level = 1;
+    let xpNeeded = 0;
+    
+    while (true) {
+      const nextLevelXP = this.getXPRequiredForLevel(level + 1);
+      if (xpNeeded + nextLevelXP > totalXP) {
+        break;
+      }
+      xpNeeded += nextLevelXP;
+      level++;
+    }
+    
+    return level;
+  }
+
+  /**
+   * Lấy thông tin level chi tiết
+   */
+  getLevelInfo(totalXP: number, currentLevel: number): {
+    level: number;
+    currentXP: number; // XP hiện tại trong level
+    xpForNextLevel: number; // XP cần để lên level tiếp
+    totalXPForCurrentLevel: number; // Tổng XP đã đạt đến level hiện tại
+    progress: number; // % tiến độ level hiện tại (0-100)
+  } {
+    const totalXPForCurrentLevel = this.getTotalXPForLevel(currentLevel);
+    const xpForNextLevel = this.getXPRequiredForLevel(currentLevel + 1);
+    const currentXP = totalXP - totalXPForCurrentLevel;
+    const progress = xpForNextLevel > 0 ? Math.min(100, (currentXP / xpForNextLevel) * 100) : 100;
+
+    return {
+      level: currentLevel,
+      currentXP,
+      xpForNextLevel,
+      totalXPForCurrentLevel,
+      progress: Math.round(progress * 10) / 10, // Round to 1 decimal
+    };
   }
 
   async getCurrency(userId: string): Promise<UserCurrency> {
@@ -45,9 +124,26 @@ export class UserCurrencyService {
     return this.currencyRepository.save(currency);
   }
 
-  async addXP(userId: string, amount: number): Promise<UserCurrency> {
+  async addXP(userId: string, amount: number): Promise<{
+    currency: UserCurrency;
+    leveledUp: boolean;
+    newLevel?: number;
+    oldLevel?: number;
+  }> {
     const currency = await this.getOrCreate(userId);
+    const oldLevel = currency.level || 1;
+    
     currency.xp += amount;
+    
+    // Tính level mới dựa trên tổng XP
+    const newLevel = this.calculateLevelFromXP(currency.xp);
+    const leveledUp = newLevel > oldLevel;
+    
+    if (leveledUp) {
+      currency.level = newLevel;
+      console.log(`🎉 User ${userId} leveled up! ${oldLevel} → ${newLevel}`);
+    }
+    
     const savedCurrency = await this.currencyRepository.save(currency);
     
     // Also update User.totalXP for leaderboard (async, don't wait)
@@ -56,7 +152,12 @@ export class UserCurrencyService {
       // Don't throw, just log
     });
     
-    return savedCurrency;
+    return {
+      currency: savedCurrency,
+      leveledUp,
+      newLevel: leveledUp ? newLevel : undefined,
+      oldLevel: leveledUp ? oldLevel : undefined,
+    };
   }
 
   async addShard(
@@ -197,6 +298,52 @@ export class UserCurrencyService {
       transactions,
       total,
     };
+  }
+
+  /**
+   * Get coins earned today from reward transactions
+   */
+  async getCoinsEarnedToday(userId: string, today: Date): Promise<number> {
+    try {
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      const result = await this.rewardTransactionRepository
+        .createQueryBuilder('transaction')
+        .select('SUM(transaction.coins)', 'totalCoins')
+        .where('transaction.userId = :userId', { userId })
+        .andWhere('transaction.createdAt >= :today', { today })
+        .andWhere('transaction.createdAt < :tomorrow', { tomorrow })
+        .getRawOne();
+
+      return parseInt(result?.totalCoins || '0', 10);
+    } catch (e) {
+      console.error('Error getting coins earned today:', e);
+      return 0;
+    }
+  }
+
+  /**
+   * Get XP earned today from reward transactions
+   */
+  async getXPEarnedToday(userId: string, today: Date): Promise<number> {
+    try {
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      const result = await this.rewardTransactionRepository
+        .createQueryBuilder('transaction')
+        .select('SUM(transaction.xp)', 'totalXP')
+        .where('transaction.userId = :userId', { userId })
+        .andWhere('transaction.createdAt >= :today', { today })
+        .andWhere('transaction.createdAt < :tomorrow', { tomorrow })
+        .getRawOne();
+
+      return parseInt(result?.totalXP || '0', 10);
+    } catch (e) {
+      console.error('Error getting XP earned today:', e);
+      return 0;
+    }
   }
 }
 

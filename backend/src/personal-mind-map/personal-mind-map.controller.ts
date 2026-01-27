@@ -84,7 +84,7 @@ export class PersonalMindMapController {
   }
 
   /**
-   * Lấy personal mind map của user cho subject
+   * Lấy personal mind map của user cho subject (with premium lock status)
    */
   @Get(':subjectId')
   async getPersonalMindMap(
@@ -92,16 +92,24 @@ export class PersonalMindMapController {
     @Param('subjectId') subjectId: string,
   ) {
     const userId = req.user.id;
-    const mindMap = await this.personalMindMapService.getPersonalMindMap(
+    const result = await this.personalMindMapService.getPersonalMindMapWithPremiumStatus(
       userId,
       subjectId,
     );
 
-    if (!mindMap) {
-      return { exists: false, mindMap: null };
+    if (!result.mindMap) {
+      return { exists: false, mindMap: null, isPremium: false };
     }
 
-    return { exists: true, mindMap };
+    // Return mindMap with nodes replaced by nodesWithLockStatus
+    return {
+      exists: true,
+      mindMap: {
+        ...result.mindMap,
+        nodes: result.nodesWithLockStatus,
+      },
+      isPremium: result.isPremium,
+    };
   }
 
   /**

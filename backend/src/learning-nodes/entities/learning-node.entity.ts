@@ -65,7 +65,7 @@ export class LearningNode {
     nullable: true,
     default: 'theory',
   })
-  type: 'theory' | 'video' | 'image'; // Phân loại bài học: lý thuyết, video, hoặc hình ảnh
+  type: 'theory' | 'practice' | 'assessment'; // Phân loại bài học: lý thuyết, thực hành, đánh giá
 
   @Column({
     type: 'varchar',

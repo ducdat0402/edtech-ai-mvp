@@ -28,7 +28,7 @@ export interface PersonalMindMapNode {
     linkedLearningNodeId?: string | null; // Link to learning node for actual learning content
     linkedLearningNodeTitle?: string | null; // Title of linked learning node
     hasLearningContent?: boolean; // Whether this topic has associated learning content
-    learningNodeType?: 'theory' | 'video' | 'image'; // Type of learning node
+    learningNodeType?: 'theory' | 'practice' | 'assessment'; // Type of learning node
   };
 }
 

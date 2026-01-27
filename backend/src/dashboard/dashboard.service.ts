@@ -121,6 +121,10 @@ export class DashboardService {
     const totalXP = currency.xp;
     const currentStreak = currency.currentStreak;
     const totalCoins = currency.coins;
+    const currentLevel = currency.level || 1;
+
+    // Get level info
+    const levelInfo = this.currencyService.getLevelInfo(totalXP, currentLevel);
 
     // Get real daily quests
     const dailyQuests = await this.questsService.getDailyQuests(userId);
@@ -132,6 +136,13 @@ export class DashboardService {
         totalCoins,
         totalNodesCompleted,
         shards: currency.shards,
+        // Level info
+        level: currentLevel,
+        levelInfo: {
+          currentXP: levelInfo.currentXP,
+          xpForNextLevel: levelInfo.xpForNextLevel,
+          progress: levelInfo.progress,
+        },
       },
       activeLearning,
       currentLearningNodes, // Nodes currently being learned (0 < progress < 100)

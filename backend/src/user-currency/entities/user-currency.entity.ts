@@ -25,7 +25,10 @@ export class UserCurrency {
   coins: number; // Tiền tệ học thuật
 
   @Column({ type: 'int', default: 0 })
-  xp: number; // Experience points
+  xp: number; // Total experience points
+
+  @Column({ type: 'int', default: 1 })
+  level: number; // Current level (starts at 1)
 
   @Column({ type: 'int', default: 0 })
   currentStreak: number;
