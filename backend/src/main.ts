@@ -6,14 +6,14 @@ import { join } from 'path';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 
-async function bootstrap() {
+export async function createApp(): Promise<NestExpressApplication> {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
-  
+
   // Serve static files from uploads directory
   app.useStaticAssets(join(process.cwd(), 'uploads'), {
     prefix: '/uploads',
   });
-  
+
   // Global exception filter
   app.useGlobalFilters(new AllExceptionsFilter());
 
@@ -68,6 +68,13 @@ async function bootstrap() {
     },
   });
 
+  await app.init();
+  return app;
+}
+
+export async function bootstrap() {
+  const app = await createApp();
+
   const port = process.env.PORT || 3000;
   // Listen on 0.0.0.0 to allow connections from emulator/network devices
   await app.listen(port, '0.0.0.0');
@@ -76,5 +83,7 @@ async function bootstrap() {
   console.log(`🌐 Accessible from network: http://YOUR_IP:${port}/api/v1`);
 }
 
-bootstrap();
+if (require.main === module) {
+  bootstrap();
+}
 
