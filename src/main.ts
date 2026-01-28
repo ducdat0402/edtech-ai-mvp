@@ -66,7 +66,9 @@ export async function createApp(): Promise<NestExpressApplication> {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/v1/docs', app, document, {
+  // IMPORTANT: useGlobalPrefix ensures assets resolve under /api/v1/docs on serverless too
+  SwaggerModule.setup('docs', app, document, {
+    useGlobalPrefix: true,
     swaggerOptions: {
       persistAuthorization: true,
     },
