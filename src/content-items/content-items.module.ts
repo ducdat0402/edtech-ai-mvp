@@ -8,12 +8,14 @@ import { AiModule } from '../ai/ai.module';
 import { ContentImportService } from './content-import.service';
 import { FileParserService } from './file-parser.service';
 import { LearningNode } from '../learning-nodes/entities/learning-node.entity';
+import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([ContentItem, LearningNode]),
     LearningNodesModule,
     AiModule,
+    UsersModule, // Required for AdminGuard
   ],
   controllers: [ContentItemsController],
   providers: [ContentItemsService, ContentImportService, FileParserService],

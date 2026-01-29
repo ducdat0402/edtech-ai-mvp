@@ -10,11 +10,13 @@ import {
   UseInterceptors,
   UploadedFile,
   Request,
+  BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ContentItemsService } from './content-items.service';
 import { ContentImportService } from './content-import.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { AdminGuard } from '../auth/guards/admin.guard';
 
 @Controller('content')
 export class ContentItemsController {
@@ -399,6 +401,61 @@ export class ContentItemsController {
   @UseGuards(JwtAuthGuard)
   async generateVariantsForNode(@Param('nodeId') nodeId: string) {
     return this.contentService.generateVariantsForNode(nodeId);
+  }
+
+  // ============ ADMIN ENDPOINTS ============
+
+  /**
+   * Create a new content item (Admin only)
+   */
+  @Post()
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  async createContentItem(
+    @Body() body: {
+      nodeId: string;
+      title: string;
+      content?: string;
+      type?: 'concept' | 'example' | 'hidden_reward' | 'boss_quiz';
+      format?: 'text' | 'mixed' | 'quiz';
+      difficulty?: 'easy' | 'medium' | 'hard' | 'expert';
+      order?: number;
+      rewards?: { xp?: number; coin?: number };
+      media?: {
+        videoUrl?: string;
+        imageUrl?: string;
+        imageUrls?: string[];
+        videoScript?: string;
+        videoDescription?: string;
+        videoDuration?: string;
+        imagePrompt?: string;
+        imageDescription?: string;
+      };
+      textVariants?: {
+        simple?: string;
+        detailed?: string;
+        comprehensive?: string;
+      };
+      quizData?: {
+        question?: string;
+        options?: string[];
+        correctAnswer?: number;
+        explanation?: string;
+      };
+    },
+  ) {
+    if (!body.nodeId || !body.title) {
+      throw new BadRequestException('nodeId and title are required');
+    }
+    return this.contentService.create(body);
+  }
+
+  /**
+   * Get all content items (Admin only) - for management
+   */
+  @Get('admin/all')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  async getAllContentItems() {
+    return this.contentService.findAll();
   }
 }
 

@@ -142,6 +142,63 @@ export class LearningNodesService {
   }
 
   /**
+   * Tạo Learning Node mới (Admin only)
+   */
+  async createNode(data: {
+    subjectId: string;
+    domainId?: string;
+    title: string;
+    description?: string;
+    order?: number;
+    type?: 'theory' | 'practice' | 'assessment';
+    difficulty?: 'easy' | 'medium' | 'hard';
+    prerequisites?: string[];
+    metadata?: { icon?: string; position?: { x: number; y: number } };
+  }): Promise<LearningNode> {
+    // Get the next order if not provided
+    let order = data.order;
+    if (order === undefined) {
+      const existingNodes = await this.nodeRepository.find({
+        where: { subjectId: data.subjectId },
+        order: { order: 'DESC' },
+        take: 1,
+      });
+      order = existingNodes.length > 0 ? (existingNodes[0].order || 0) + 1 : 1;
+    }
+
+    const node = this.nodeRepository.create({
+      subjectId: data.subjectId,
+      domainId: data.domainId || null,
+      title: data.title,
+      description: data.description || '',
+      order,
+      type: data.type || 'theory',
+      difficulty: data.difficulty || 'medium',
+      prerequisites: data.prerequisites || [],
+      metadata: data.metadata || {},
+      contentStructure: {
+        concepts: 0,
+        examples: 0,
+        hiddenRewards: 0,
+        bossQuiz: 0,
+      },
+    });
+
+    return this.nodeRepository.save(node);
+  }
+
+  /**
+   * Xóa Learning Node và tất cả content items thuộc node (Admin only)
+   */
+  async deleteNode(id: string): Promise<void> {
+    // First delete all content items belonging to this node
+    await this.contentItemRepository.delete({ nodeId: id });
+    
+    // Then delete the node
+    await this.nodeRepository.delete(id);
+  }
+
+  /**
    * Tìm learning nodes theo topicNodeId (lưu trong metadata)
    */
   async findByTopicNodeId(topicNodeId: string): Promise<LearningNode[]> {
