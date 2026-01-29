@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/widgets/error_widget.dart';
 import 'package:edtech_mobile/core/widgets/empty_state.dart';
 import 'package:edtech_mobile/core/widgets/skeleton_loader.dart';
+import 'package:edtech_mobile/theme/theme.dart';
 
 class SkillTreeScreen extends StatefulWidget {
   final String? subjectId;
@@ -319,9 +321,24 @@ class _SkillTreeScreenState extends State<SkillTreeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.bgPrimary,
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         leading: IconButton(
+<<<<<<< Updated upstream
           icon: const Icon(Icons.arrow_back),
+=======
+          icon: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppColors.bgSecondary,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: AppColors.borderPrimary),
+            ),
+            child: const Icon(Icons.arrow_back, color: AppColors.textPrimary, size: 20),
+          ),
+>>>>>>> Stashed changes
           onPressed: () {
             if (context.canPop()) {
               context.pop();
@@ -331,11 +348,24 @@ class _SkillTreeScreenState extends State<SkillTreeScreen> {
           },
           tooltip: 'Quay lại',
         ),
-        title: const Text('Skill Tree'),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                gradient: AppGradients.primary,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.account_tree_rounded, color: Colors.white, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Text('Skill Tree', style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
+          ],
+        ),
         automaticallyImplyLeading: false,
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh_rounded, color: AppColors.textSecondary),
             onPressed: _loadSkillTree,
           ),
         ],
@@ -351,6 +381,7 @@ class _SkillTreeScreenState extends State<SkillTreeScreen> {
                   ? _buildEmptyState()
                   : RefreshIndicator(
                       onRefresh: _loadSkillTree,
+                      color: AppColors.purpleNeon,
                       child: _buildSkillTree(),
                     ),
     );
@@ -374,40 +405,49 @@ class _SkillTreeScreenState extends State<SkillTreeScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const CircularProgressIndicator(),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: AppGradients.primary,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.purpleNeon.withOpacity(0.4),
+                  blurRadius: 20,
+                ),
+              ],
+            ),
+            child: const CircularProgressIndicator(color: Colors.white),
+          ),
           const SizedBox(height: 24),
           if (_generatingMessage != null) ...[
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 32),
-              child: Card(
-                color: Colors.blue.shade50,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      Icon(Icons.info_outline, color: Colors.blue.shade700),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          _generatingMessage!,
-                          style: TextStyle(
-                            color: Colors.blue.shade900,
-                            fontSize: 14,
-                          ),
-                        ),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.cyanNeon.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.cyanNeon.withOpacity(0.3)),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline_rounded, color: AppColors.cyanNeon),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        _generatingMessage!,
+                        style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),
           ] else ...[
-            const Text(
+            Text(
               'Đang tải Skill Tree...',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey,
-              ),
+              style: AppTextStyles.bodyLarge.copyWith(color: AppColors.textSecondary),
             ),
           ],
         ],
@@ -539,68 +579,53 @@ class _SkillTreeScreenState extends State<SkillTreeScreen> {
 
           // Unlock Next Node Button (if available)
           if (_hasNextUnlockable) ...[
-            Card(
-              color: Colors.amber.shade50,
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        Icon(Icons.lock_open, color: Colors.amber.shade700),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Bạn đã hoàn thành các node!',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Nhấn vào nút bên dưới để mở khóa node mới',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.grey.shade700,
-                                ),
-                              ),
-                            ],
-                          ),
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [AppColors.xpGold.withOpacity(0.15), AppColors.orangeNeon.withOpacity(0.1)],
+                ),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: AppColors.xpGold.withOpacity(0.3)),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: AppColors.xpGold.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: _isUnlocking ? null : _unlockNextNode,
-                        icon: _isUnlocking
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                      Colors.white),
-                                ),
-                              )
-                            : const Icon(Icons.lock_open),
-                        label: Text(_isUnlocking
-                            ? 'Đang mở khóa...'
-                            : 'Mở khóa node mới'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.amber.shade700,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                        child: Icon(Icons.lock_open_rounded, color: AppColors.xpGold, size: 24),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Bạn đã hoàn thành các node!', style: AppTextStyles.labelLarge.copyWith(color: AppColors.textPrimary)),
+                            const SizedBox(height: 4),
+                            Text('Nhấn vào nút bên dưới để mở khóa node mới', style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary)),
+                          ],
                         ),
                       ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: GamingButton(
+                      text: _isUnlocking ? 'Đang mở khóa...' : 'Mở khóa node mới',
+                      onPressed: _isUnlocking ? null : _unlockNextNode,
+                      isLoading: _isUnlocking,
+                      gradient: AppGradients.xpBar,
+                      glowColor: AppColors.xpGold,
+                      icon: Icons.lock_open_rounded,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 24),
@@ -614,126 +639,129 @@ class _SkillTreeScreenState extends State<SkillTreeScreen> {
   }
 
   Widget _buildHeader(Map<String, dynamic>? subject, int completionPercentage) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.account_tree, size: 32, color: Colors.blue),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        subject?['name'] ?? 'Skill Tree',
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        '${_skillTreeData!['completedNodes']}/${_skillTreeData!['totalNodes']} nodes completed',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey.shade600,
-                        ),
-                      ),
-                    ],
-                  ),
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [AppColors.purpleNeon.withOpacity(0.15), AppColors.pinkNeon.withOpacity(0.1)],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.purpleNeon.withOpacity(0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  gradient: AppGradients.primary,
+                  borderRadius: BorderRadius.circular(14),
                 ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            // Progress Bar
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                child: const Icon(Icons.account_tree_rounded, size: 28, color: Colors.white),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Tiến độ',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
                     Text(
-                      '$completionPercentage%',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blue,
-                      ),
+                      subject?['name'] ?? 'Skill Tree',
+                      style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${_skillTreeData!['completedNodes']}/${_skillTreeData!['totalNodes']} nodes completed',
+                      style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
-                LinearProgressIndicator(
-                  value: completionPercentage / 100,
-                  backgroundColor: Colors.grey.shade200,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
-                  minHeight: 8,
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            // Stats
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildStatItem(
-                  Icons.star,
-                  'XP',
-                  '${_skillTreeData!['totalXP'] ?? 0}',
-                  Colors.orange,
-                ),
-                _buildStatItem(
-                  Icons.lock_open,
-                  'Unlocked',
-                  '${_skillTreeData!['unlockedNodes'] ?? 0}',
-                  Colors.green,
-                ),
-                _buildStatItem(
-                  Icons.check_circle,
-                  'Completed',
-                  '${_skillTreeData!['completedNodes'] ?? 0}',
-                  Colors.blue,
-                ),
-              ],
-            ),
-          ],
-        ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          // Progress Bar
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Tiến độ', style: AppTextStyles.labelMedium.copyWith(color: AppColors.textSecondary)),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      gradient: AppGradients.primary,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      '$completionPercentage%',
+                      style: AppTextStyles.labelSmall.copyWith(color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Stack(
+                children: [
+                  Container(
+                    height: 10,
+                    decoration: BoxDecoration(
+                      color: AppColors.bgTertiary,
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                  ),
+                  AnimatedProgressBox(
+                    widthFactor: completionPercentage / 100,
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeOut,
+                    child: Container(
+                      height: 10,
+                      decoration: BoxDecoration(
+                        gradient: AppGradients.primary,
+                        borderRadius: BorderRadius.circular(5),
+                        boxShadow: [
+                          BoxShadow(color: AppColors.purpleNeon.withOpacity(0.5), blurRadius: 8),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          // Stats
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildStatItem(Icons.star_rounded, 'XP', '${_skillTreeData!['totalXP'] ?? 0}', AppColors.xpGold),
+              _buildStatItem(Icons.lock_open_rounded, 'Unlocked', '${_skillTreeData!['unlockedNodes'] ?? 0}', AppColors.successNeon),
+              _buildStatItem(Icons.check_circle_rounded, 'Completed', '${_skillTreeData!['completedNodes'] ?? 0}', AppColors.cyanNeon),
+            ],
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildStatItem(
-      IconData icon, String label, String value, Color color) {
-    return Column(
-      children: [
-        Icon(icon, color: color, size: 24),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: color,
-          ),
-        ),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey.shade600,
-          ),
-        ),
-      ],
+  Widget _buildStatItem(IconData icon, String label, String value, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: color.withOpacity(0.2)),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 24),
+          const SizedBox(height: 6),
+          Text(value, style: AppTextStyles.numberMedium.copyWith(color: color)),
+          Text(label, style: AppTextStyles.caption.copyWith(color: AppColors.textTertiary)),
+        ],
+      ),
     );
   }
 
@@ -854,6 +882,7 @@ class _SkillTreeScreenState extends State<SkillTreeScreen> {
 
     return GestureDetector(
       onTap: () {
+        HapticFeedback.lightImpact();
         if (isLocked) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -1072,6 +1101,7 @@ class _SkillTreeScreenState extends State<SkillTreeScreen> {
 
     return GestureDetector(
       onTap: () {
+        HapticFeedback.lightImpact();
         if (isLocked) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(

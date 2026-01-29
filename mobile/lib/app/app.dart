@@ -4,6 +4,7 @@ import 'package:edtech_mobile/core/api/api_client.dart';
 import 'package:edtech_mobile/core/services/auth_service.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/app/routes.dart';
+import 'package:edtech_mobile/theme/theme.dart';
 
 class EdTechApp extends StatelessWidget {
   const EdTechApp({super.key});
@@ -23,11 +24,16 @@ class EdTechApp extends StatelessWidget {
       ],
       child: MaterialApp.router(
         title: 'EdTech AI MVP',
+<<<<<<< Updated upstream
         debugShowCheckedModeBanner: false, // Remove DEBUG banner
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
           useMaterial3: true,
         ),
+=======
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.darkTheme, // Cyberpunk Dark Theme
+>>>>>>> Stashed changes
         routerConfig: appRouter,
       ),
     );

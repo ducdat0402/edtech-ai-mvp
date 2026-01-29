@@ -4,6 +4,7 @@ import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/widgets/bottom_nav_bar.dart';
 import 'package:edtech_mobile/core/widgets/error_widget.dart';
 import 'package:edtech_mobile/core/widgets/empty_state.dart';
+import 'package:edtech_mobile/theme/theme.dart';
 
 class LeaderboardScreen extends StatefulWidget {
   final String? subjectId;
@@ -26,7 +27,6 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
   bool _isLoading = true;
   String? _error;
   late TabController _tabController;
-  int _currentPage = 1;
   final int _pageSize = 50;
 
   @override
@@ -59,17 +59,15 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
       
-      // Load my rank
       try {
         final myRank = await apiService.getMyRank();
         setState(() {
           _myRank = myRank;
         });
       } catch (e) {
-        // My rank might fail if not authenticated, ignore
+        // Ignore
       }
 
-      // Load data for current tab
       await _loadDataForTab(_tabController.index);
 
       setState(() {
@@ -88,88 +86,66 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
       final apiService = Provider.of<ApiService>(context, listen: false);
 
       switch (tabIndex) {
-        case 0: // Global
-          final globalData = await apiService.getGlobalLeaderboard(
-            limit: _pageSize,
-            page: _currentPage,
-          );
-          setState(() {
-            _globalData = globalData;
-          });
+        case 0:
+          final globalData = await apiService.getGlobalLeaderboard(limit: _pageSize, page: 1);
+          setState(() => _globalData = globalData);
           break;
-        case 1: // Weekly
-          final weeklyData = await apiService.getWeeklyLeaderboard(
-            limit: _pageSize,
-            page: _currentPage,
-          );
-          setState(() {
-            _weeklyData = weeklyData;
-          });
+        case 1:
+          final weeklyData = await apiService.getWeeklyLeaderboard(limit: _pageSize, page: 1);
+          setState(() => _weeklyData = weeklyData);
           break;
-        case 2: // Subject
+        case 2:
           if (widget.subjectId != null) {
-            final subjectData = await apiService.getSubjectLeaderboard(
-              widget.subjectId!,
-              limit: _pageSize,
-              page: _currentPage,
-            );
-            setState(() {
-              _subjectData = subjectData;
-            });
+            final subjectData = await apiService.getSubjectLeaderboard(widget.subjectId!, limit: _pageSize, page: 1);
+            setState(() => _subjectData = subjectData);
           }
           break;
       }
     } catch (e) {
-      // Handle error per tab
-      setState(() {
-        _error = e.toString();
-      });
+      setState(() => _error = e.toString());
     }
-  }
-
-  String? _getCurrentUserId() {
-    // TODO: Get current user ID from auth service
-    return null;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.bgPrimary,
       appBar: AppBar(
-        title: const Text('Bảng xếp hạng'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Text('Bảng xếp hạng', style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary)),
         bottom: TabBar(
           controller: _tabController,
+          indicatorColor: AppColors.purpleNeon,
+          indicatorWeight: 3,
+          labelColor: AppColors.textPrimary,
+          unselectedLabelColor: AppColors.textTertiary,
+          labelStyle: AppTextStyles.labelMedium,
           tabs: widget.subjectId != null
               ? const [
-                  Tab(text: 'Toàn cầu', icon: Icon(Icons.public)),
-                  Tab(text: 'Tuần này', icon: Icon(Icons.calendar_view_week)),
-                  Tab(text: 'Môn học', icon: Icon(Icons.book)),
+                  Tab(text: 'Toàn cầu', icon: Icon(Icons.public_rounded, size: 20)),
+                  Tab(text: 'Tuần này', icon: Icon(Icons.calendar_view_week_rounded, size: 20)),
+                  Tab(text: 'Môn học', icon: Icon(Icons.book_rounded, size: 20)),
                 ]
               : const [
-                  Tab(text: 'Toàn cầu', icon: Icon(Icons.public)),
-                  Tab(text: 'Tuần này', icon: Icon(Icons.calendar_view_week)),
+                  Tab(text: 'Toàn cầu', icon: Icon(Icons.public_rounded, size: 20)),
+                  Tab(text: 'Tuần này', icon: Icon(Icons.calendar_view_week_rounded, size: 20)),
                 ],
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh_rounded, color: AppColors.textSecondary),
             onPressed: _loadData,
           ),
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? _buildLoadingState()
           : _error != null
-              ? AppErrorWidget(
-                  message: _error!,
-                  onRetry: _loadData,
-                )
+              ? AppErrorWidget(message: _error!, onRetry: _loadData)
               : Column(
                   children: [
-                    // My Rank Card
                     if (_myRank != null) _buildMyRankCard(),
-                    
-                    // Leaderboard List
                     Expanded(
                       child: TabBarView(
                         controller: _tabController,
@@ -187,6 +163,19 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
     );
   }
 
+  Widget _buildLoadingState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(color: AppColors.purpleNeon),
+          const SizedBox(height: 16),
+          Text('Đang tải...', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+        ],
+      ),
+    );
+  }
+
   Widget _buildMyRankCard() {
     final rank = _myRank?['rank'] as int?;
     final totalUsers = _myRank?['totalUsers'] as int?;
@@ -196,30 +185,38 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
 
     return Container(
       margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.blue.shade400, Colors.purple.shade400],
-        ),
-        borderRadius: BorderRadius.circular(12),
+        gradient: AppGradients.primary,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.purpleNeon.withOpacity(0.4),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Row(
         children: [
+          // Rank badge
           Container(
-            width: 60,
-            height: 60,
+            width: 70,
+            height: 70,
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.2),
               shape: BoxShape.circle,
+              border: Border.all(color: Colors.white.withOpacity(0.3), width: 2),
             ),
             child: Center(
-              child: Text(
-                '#$rank',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '#$rank',
+                    style: AppTextStyles.h3.copyWith(color: Colors.white),
+                  ),
+                ],
               ),
             ),
           ),
@@ -230,19 +227,12 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
               children: [
                 Text(
                   entry['fullName'] ?? 'You',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: AppTextStyles.h4.copyWith(color: Colors.white),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Hạng $rank / $totalUsers',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.9),
-                    fontSize: 14,
-                  ),
+                  'Hạng $rank / $totalUsers người chơi',
+                  style: AppTextStyles.bodySmall.copyWith(color: Colors.white70),
                 ),
               ],
             ),
@@ -252,29 +242,22 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
             children: [
               Row(
                 children: [
-                  const Icon(Icons.star, color: Colors.amber, size: 20),
+                  const Icon(Icons.star_rounded, color: AppColors.xpGold, size: 20),
                   const SizedBox(width: 4),
                   Text(
                     '${entry['totalXP'] ?? 0}',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: AppTextStyles.numberMedium.copyWith(color: Colors.white),
                   ),
                 ],
               ),
               const SizedBox(height: 4),
               Row(
                 children: [
-                  const Icon(Icons.local_fire_department, color: Colors.orange, size: 16),
+                  const Icon(Icons.local_fire_department_rounded, color: AppColors.streakOrange, size: 16),
                   const SizedBox(width: 4),
                   Text(
                     '${entry['currentStreak'] ?? 0}',
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.9),
-                      fontSize: 12,
-                    ),
+                    style: AppTextStyles.bodySmall.copyWith(color: Colors.white70),
                   ),
                 ],
               ),
@@ -287,27 +270,25 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
 
   Widget _buildLeaderboardList(Map<String, dynamic>? data) {
     if (data == null) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(child: CircularProgressIndicator(color: AppColors.purpleNeon));
     }
 
     final entries = data['entries'] as List<dynamic>? ?? [];
-    final currentUserId = _getCurrentUserId();
 
     if (entries.isEmpty) {
       return const EmptyLeaderboardWidget();
     }
 
     return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       itemCount: entries.length,
       itemBuilder: (context, index) {
         final entry = entries[index] as Map<String, dynamic>;
         final rank = entry['rank'] as int? ?? index + 1;
-        final isCurrentUser = entry['userId'] == currentUserId;
 
-        return _LeaderboardEntryCard(
-          rank: rank,
-          entry: entry,
-          isCurrentUser: isCurrentUser,
+        return StaggeredListItem(
+          index: index,
+          child: _LeaderboardEntryCard(rank: rank, entry: entry),
         );
       },
     );
@@ -317,106 +298,128 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
 class _LeaderboardEntryCard extends StatelessWidget {
   final int rank;
   final Map<String, dynamic> entry;
-  final bool isCurrentUser;
 
   const _LeaderboardEntryCard({
     required this.rank,
     required this.entry,
-    required this.isCurrentUser,
   });
 
   Color _getRankColor(int rank) {
-    if (rank == 1) return Colors.amber;
-    if (rank == 2) return Colors.grey.shade400;
-    if (rank == 3) return Colors.brown.shade400;
-    return Colors.blue;
+    if (rank == 1) return AppColors.rankGold;
+    if (rank == 2) return AppColors.rankSilver;
+    if (rank == 3) return AppColors.rankBronze;
+    return AppColors.textSecondary;
   }
 
   IconData _getRankIcon(int rank) {
-    if (rank == 1) return Icons.emoji_events;
-    if (rank == 2) return Icons.military_tech;
-    if (rank == 3) return Icons.workspace_premium;
-    return Icons.person;
+    if (rank == 1) return Icons.emoji_events_rounded;
+    if (rank == 2) return Icons.military_tech_rounded;
+    if (rank == 3) return Icons.workspace_premium_rounded;
+    return Icons.person_rounded;
   }
 
   @override
   Widget build(BuildContext context) {
     final rankColor = _getRankColor(rank);
     final rankIcon = _getRankIcon(rank);
+    final isTopThree = rank <= 3;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isCurrentUser ? rankColor.withOpacity(0.1) : null,
-        border: isCurrentUser
-            ? Border.all(color: rankColor, width: 2)
+        color: AppColors.bgSecondary,
+        borderRadius: BorderRadius.circular(16),
+        border: isTopThree
+            ? Border.all(color: rankColor.withOpacity(0.5), width: 2)
+            : Border.all(color: AppColors.borderPrimary),
+        boxShadow: isTopThree
+            ? [
+                BoxShadow(
+                  color: rankColor.withOpacity(0.2),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ]
             : null,
-        borderRadius: BorderRadius.circular(12),
       ),
-      child: ListTile(
-        leading: Container(
-          width: 50,
-          height: 50,
-          decoration: BoxDecoration(
-            color: rank <= 3 ? rankColor.withOpacity(0.2) : Colors.grey.shade200,
-            shape: BoxShape.circle,
-          ),
-          child: Center(
-            child: rank <= 3
-                ? Icon(rankIcon, color: rankColor, size: 24)
-                : Text(
-                    '#$rank',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: rankColor,
+      child: Row(
+        children: [
+          // Rank indicator
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: isTopThree ? rankColor.withOpacity(0.2) : AppColors.bgTertiary,
+              borderRadius: BorderRadius.circular(12),
+              border: isTopThree ? Border.all(color: rankColor.withOpacity(0.5)) : null,
+            ),
+            child: Center(
+              child: isTopThree
+                  ? Icon(rankIcon, color: rankColor, size: 24)
+                  : Text(
+                      '#$rank',
+                      style: AppTextStyles.labelLarge.copyWith(color: AppColors.textSecondary),
                     ),
-                  ),
+            ),
           ),
-        ),
-        title: Text(
-          entry['fullName'] ?? 'Anonymous',
-          style: TextStyle(
-            fontWeight: isCurrentUser ? FontWeight.bold : FontWeight.normal,
-          ),
-        ),
-        subtitle: Row(
-          children: [
-            if (entry['currentStreak'] != null && entry['currentStreak'] > 0) ...[
-              Icon(Icons.local_fire_department, size: 14, color: Colors.orange),
-              const SizedBox(width: 4),
-              Text('${entry['currentStreak']}'),
-              const SizedBox(width: 12),
-            ],
-            if (entry['coins'] != null) ...[
-              Icon(Icons.monetization_on, size: 14, color: Colors.amber),
-              const SizedBox(width: 4),
-              Text('${entry['coins']}'),
-            ],
-          ],
-        ),
-        trailing: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Row(
-              mainAxisSize: MainAxisSize.min,
+          const SizedBox(width: 12),
+          // User info
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.star, color: Colors.amber, size: 20),
-                const SizedBox(width: 4),
                 Text(
-                  '${entry['totalXP'] ?? entry['lPoints'] ?? 0}',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                  entry['fullName'] ?? 'Anonymous',
+                  style: AppTextStyles.labelLarge.copyWith(
+                    color: isTopThree ? rankColor : AppColors.textPrimary,
                   ),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    if (entry['currentStreak'] != null && entry['currentStreak'] > 0) ...[
+                      Icon(Icons.local_fire_department_rounded, size: 14, color: AppColors.streakOrange),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${entry['currentStreak']}',
+                        style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+                      ),
+                      const SizedBox(width: 12),
+                    ],
+                    if (entry['coins'] != null) ...[
+                      Icon(Icons.monetization_on_rounded, size: 14, color: AppColors.coinGold),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${entry['coins']}',
+                        style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+                      ),
+                    ],
+                  ],
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+          // XP
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: AppColors.xpGold.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.star_rounded, color: AppColors.xpGold, size: 18),
+                const SizedBox(width: 4),
+                Text(
+                  '${entry['totalXP'] ?? entry['lPoints'] ?? 0}',
+                  style: AppTextStyles.numberMedium.copyWith(color: AppColors.xpGold, fontSize: 16),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 }
-

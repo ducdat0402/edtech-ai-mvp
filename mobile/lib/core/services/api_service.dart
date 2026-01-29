@@ -33,6 +33,7 @@ class ApiService {
     return List<Map<String, dynamic>>.from(response.data);
   }
 
+<<<<<<< Updated upstream
   // Subject Learning Goals
   Future<Map<String, dynamic>> startLearningGoals(String subjectId) async {
     final response = await _apiClient.post(ApiConstants.startLearningGoals(subjectId));
@@ -40,6 +41,23 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>> chatLearningGoals(String subjectId, String message) async {
+=======
+  /// Get all learning nodes for a subject (includes all nodes, not just unlocked)
+  Future<List<dynamic>> getLearningNodesBySubject(String subjectId) async {
+    final response = await _apiClient.get(ApiConstants.nodesBySubject(subjectId));
+    return List<Map<String, dynamic>>.from(response.data);
+  }
+
+  // Subject Learning Goals
+  Future<Map<String, dynamic>> startLearningGoals(String subjectId) async {
+    final response =
+        await _apiClient.post(ApiConstants.startLearningGoals(subjectId));
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> chatLearningGoals(
+      String subjectId, String message) async {
+>>>>>>> Stashed changes
     final response = await _apiClient.post(
       ApiConstants.chatLearningGoals(subjectId),
       data: {'message': message},
@@ -48,6 +66,7 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>> getLearningGoalsSession(String subjectId) async {
+<<<<<<< Updated upstream
     final response = await _apiClient.get(ApiConstants.getLearningGoalsSession(subjectId));
     return response.data;
   }
@@ -64,12 +83,42 @@ class ApiService {
 
   Future<Map<String, dynamic>> getGenerationProgress(String subjectId, String taskId) async {
     final response = await _apiClient.get(ApiConstants.getGenerationProgress(subjectId, taskId));
+=======
+    final response =
+        await _apiClient.get(ApiConstants.getLearningGoalsSession(subjectId));
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> generateSkillTreeWithGoals(
+      String subjectId) async {
+    final response = await _apiClient
+        .post(ApiConstants.generateSkillTreeWithGoals(subjectId));
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> generateLearningNodesFromTopic(
+      String subjectId, String topicNodeId) async {
+    final response = await _apiClient.post(
+        ApiConstants.generateLearningNodesFromTopic(subjectId, topicNodeId));
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> getGenerationProgress(
+      String subjectId, String taskId) async {
+    final response = await _apiClient
+        .get(ApiConstants.getGenerationProgress(subjectId, taskId));
+>>>>>>> Stashed changes
     return response.data;
   }
 
   // Domains
   Future<List<dynamic>> getDomainsBySubject(String subjectId) async {
+<<<<<<< Updated upstream
     final response = await _apiClient.get(ApiConstants.domainsBySubject(subjectId));
+=======
+    final response =
+        await _apiClient.get(ApiConstants.domainsBySubject(subjectId));
+>>>>>>> Stashed changes
     return List<Map<String, dynamic>>.from(response.data);
   }
 
@@ -80,6 +129,7 @@ class ApiService {
 
   // Knowledge Graph
   Future<List<dynamic>> getPrerequisites(String nodeId) async {
+<<<<<<< Updated upstream
     final response = await _apiClient.get(ApiConstants.getPrerequisites(nodeId));
     return List<Map<String, dynamic>>.from(response.data);
   }
@@ -91,10 +141,29 @@ class ApiService {
 
   Future<List<dynamic>> recommendNextTopics(String nodeId, {int limit = 5}) async {
     final response = await _apiClient.get(ApiConstants.recommendNext(nodeId, limit: limit));
+=======
+    final response =
+        await _apiClient.get(ApiConstants.getPrerequisites(nodeId));
+    return List<Map<String, dynamic>>.from(response.data);
+  }
+
+  Future<List<dynamic>> findLearningPath(
+      String fromNodeId, String toNodeId) async {
+    final response =
+        await _apiClient.get(ApiConstants.findPath(fromNodeId, toNodeId));
+    return List<Map<String, dynamic>>.from(response.data);
+  }
+
+  Future<List<dynamic>> recommendNextTopics(String nodeId,
+      {int limit = 5}) async {
+    final response =
+        await _apiClient.get(ApiConstants.recommendNext(nodeId, limit: limit));
+>>>>>>> Stashed changes
     return List<Map<String, dynamic>>.from(response.data);
   }
 
   Future<List<dynamic>> getRelatedNodes(String nodeId, {int limit = 10}) async {
+<<<<<<< Updated upstream
     final response = await _apiClient.get(ApiConstants.getRelatedNodes(nodeId, limit: limit));
     return List<Map<String, dynamic>>.from(response.data);
   }
@@ -102,6 +171,18 @@ class ApiService {
   Future<Map<String, dynamic>?> getNodeByEntity(String type, String entityId) async {
     try {
       final response = await _apiClient.get(ApiConstants.getNodeByEntity(type, entityId));
+=======
+    final response = await _apiClient
+        .get(ApiConstants.getRelatedNodes(nodeId, limit: limit));
+    return List<Map<String, dynamic>>.from(response.data);
+  }
+
+  Future<Map<String, dynamic>?> getNodeByEntity(
+      String type, String entityId) async {
+    try {
+      final response =
+          await _apiClient.get(ApiConstants.getNodeByEntity(type, entityId));
+>>>>>>> Stashed changes
       return Map<String, dynamic>.from(response.data);
     } catch (e) {
       return null; // Node not found
@@ -121,7 +202,12 @@ class ApiService {
     double minSimilarity = 0.7,
   }) async {
     final response = await _apiClient.get(
+<<<<<<< Updated upstream
       ApiConstants.semanticSearch(query, limit: limit, types: types, minSimilarity: minSimilarity),
+=======
+      ApiConstants.semanticSearch(query,
+          limit: limit, types: types, minSimilarity: minSimilarity),
+>>>>>>> Stashed changes
     );
     return List<Map<String, dynamic>>.from(response.data);
   }
@@ -158,7 +244,12 @@ class ApiService {
   }
 
   /// Lấy content theo node và độ khó
+<<<<<<< Updated upstream
   Future<List<dynamic>> getContentByNodeAndDifficulty(String nodeId, String difficulty) async {
+=======
+  Future<List<dynamic>> getContentByNodeAndDifficulty(
+      String nodeId, String difficulty) async {
+>>>>>>> Stashed changes
     final response = await _apiClient.get(
       ApiConstants.contentByNodeAndDifficulty(nodeId, difficulty),
     );
@@ -177,6 +268,62 @@ class ApiService {
     return response.data;
   }
 
+<<<<<<< Updated upstream
+=======
+  /// Tạo video/image placeholders cho node
+  Future<Map<String, dynamic>> generatePlaceholders(String nodeId) async {
+    final response = await _apiClient.post(
+      ApiConstants.generatePlaceholders(nodeId),
+    );
+    return response.data;
+  }
+
+  /// Lấy tất cả placeholders
+  Future<List<dynamic>> getAllPlaceholders() async {
+    final response = await _apiClient.get(ApiConstants.allPlaceholders);
+    return List<Map<String, dynamic>>.from(response.data);
+  }
+
+  /// Lấy placeholders của một node
+  Future<List<dynamic>> getNodePlaceholders(String nodeId) async {
+    final response =
+        await _apiClient.get(ApiConstants.nodePlaceholders(nodeId));
+    return List<Map<String, dynamic>>.from(response.data);
+  }
+
+  /// Submit contribution cho một placeholder
+  Future<Map<String, dynamic>> submitContribution(
+    String contentId,
+    String mediaUrl,
+  ) async {
+    final response = await _apiClient.post(
+      ApiConstants.submitContribution(contentId),
+      data: {'mediaUrl': mediaUrl},
+    );
+    return response.data;
+  }
+
+  /// Approve contribution (admin only)
+  Future<Map<String, dynamic>> approveContribution(String contentId) async {
+    final response = await _apiClient.post(
+      ApiConstants.approveContribution(contentId),
+    );
+    return response.data;
+  }
+
+  /// Reject contribution (admin only)
+  Future<Map<String, dynamic>> rejectContribution(
+    String contentId, {
+    String? reason,
+  }) async {
+    final response = await _apiClient.post(
+      ApiConstants.rejectContribution(contentId),
+      data: {'reason': reason},
+    );
+    return response.data;
+  }
+
+>>>>>>> Stashed changes
   Future<Map<String, dynamic>> getContentDetail(String contentId) async {
     final response =
         await _apiClient.get(ApiConstants.contentDetail(contentId));
@@ -220,7 +367,12 @@ class ApiService {
     return response.data;
   }
 
+<<<<<<< Updated upstream
   Future<Map<String, dynamic>> claimAchievementRewards(String userAchievementId) async {
+=======
+  Future<Map<String, dynamic>> claimAchievementRewards(
+      String userAchievementId) async {
+>>>>>>> Stashed changes
     final response = await _apiClient.post(
       ApiConstants.claimAchievementRewards(userAchievementId),
     );
@@ -302,7 +454,10 @@ class ApiService {
     return response.data;
   }
 
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
   // Progress
   Future<Map<String, dynamic>> getNodeProgress(String nodeId) async {
     final response = await _apiClient.get(ApiConstants.nodeProgress(nodeId));
@@ -325,6 +480,17 @@ class ApiService {
       },
     );
     return response.data;
+  }
+
+  /// Get completed content item IDs for a subject
+  /// Used for "Lộ trình tổng quát" to determine unlocked lessons
+  Future<List<String>> getCompletedContentItemsBySubject(String subjectId) async {
+    final response = await _apiClient.get(
+      ApiConstants.completedContentItemsBySubject(subjectId),
+    );
+    final data = response.data as Map<String, dynamic>;
+    final completedIds = data['completedContentIds'] as List<dynamic>? ?? [];
+    return completedIds.map((e) => e.toString()).toList();
   }
 
   // Onboarding
@@ -362,6 +528,29 @@ class ApiService {
   Future<Map<String, dynamic>> getTestAnalysis(String testId) async {
     final response = await _apiClient.get(
       ApiConstants.testResult(testId),
+    );
+    return response.data;
+  }
+
+  // Adaptive Placement Test
+  Future<Map<String, dynamic>> startAdaptivePlacementTest(String subjectId) async {
+    final response = await _apiClient.post(
+      ApiConstants.startAdaptiveTest(subjectId),
+    );
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> submitAdaptiveAnswer(String testId, int answer) async {
+    final response = await _apiClient.post(
+      ApiConstants.submitAdaptiveAnswer(testId),
+      data: {'answer': answer},
+    );
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> getAdaptiveTestResult(String testId) async {
+    final response = await _apiClient.get(
+      ApiConstants.getAdaptiveTestResult(testId),
     );
     return response.data;
   }
@@ -441,7 +630,8 @@ class ApiService {
   // Content Edits (Wiki-style Community Edit)
   Future<Map<String, dynamic>> submitContentEdit({
     required String contentItemId,
-    required String type, // 'add_video', 'add_image', 'add_text', 'update_content'
+    required String
+        type, // 'add_video', 'add_image', 'add_text', 'update_content'
     String? videoUrl,
     String? imageUrl,
     String? textContent,
@@ -485,7 +675,14 @@ class ApiService {
     List<String>? imageUrls,
     String? videoUrl,
     String? description,
+<<<<<<< Updated upstream
     Map<String, dynamic>? quizData, // Quiz data: {question, options, correctAnswer, explanation}
+=======
+    Map<String, dynamic>?
+        quizData, // Quiz data: {question, options, correctAnswer, explanation}
+    Map<String, dynamic>?
+        textVariants, // Text variants: {simple, detailed, comprehensive}
+>>>>>>> Stashed changes
   }) async {
     final response = await _apiClient.post(
       ApiConstants.submitLessonEdit(contentItemId),
@@ -496,6 +693,10 @@ class ApiService {
         if (videoUrl != null) 'videoUrl': videoUrl,
         if (description != null) 'description': description,
         if (quizData != null) 'quizData': quizData,
+<<<<<<< Updated upstream
+=======
+        if (textVariants != null) 'textVariants': textVariants,
+>>>>>>> Stashed changes
       },
     );
     return response.data;
@@ -528,17 +729,26 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>> approveContentEdit(String editId) async {
-    final response = await _apiClient.put(ApiConstants.approveContentEdit(editId));
+    final response =
+        await _apiClient.put(ApiConstants.approveContentEdit(editId));
     return response.data;
   }
 
   Future<Map<String, dynamic>> rejectContentEdit(String editId) async {
-    final response = await _apiClient.put(ApiConstants.rejectContentEdit(editId));
+    final response =
+        await _apiClient.put(ApiConstants.rejectContentEdit(editId));
     return response.data;
   }
 
   Future<Map<String, dynamic>> removeContentEdit(String editId) async {
-    final response = await _apiClient.delete(ApiConstants.removeContentEdit(editId));
+    final response =
+        await _apiClient.delete(ApiConstants.removeContentEdit(editId));
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> getEditComparison(String editId) async {
+    final response =
+        await _apiClient.get(ApiConstants.getEditComparison(editId));
     return response.data;
   }
 
@@ -559,7 +769,12 @@ class ApiService {
 
   // Edit History
   Future<List<dynamic>> getHistoryForContent(String contentItemId) async {
+<<<<<<< Updated upstream
     final response = await _apiClient.get(ApiConstants.getHistoryForContent(contentItemId));
+=======
+    final response =
+        await _apiClient.get(ApiConstants.getHistoryForContent(contentItemId));
+>>>>>>> Stashed changes
     return List<Map<String, dynamic>>.from(response.data);
   }
 
@@ -574,13 +789,23 @@ class ApiService {
   }
 
   Future<List<dynamic>> getHistoryForEdit(String editId) async {
+<<<<<<< Updated upstream
     final response = await _apiClient.get(ApiConstants.getHistoryForEdit(editId));
+=======
+    final response =
+        await _apiClient.get(ApiConstants.getHistoryForEdit(editId));
+>>>>>>> Stashed changes
     return List<Map<String, dynamic>>.from(response.data);
   }
 
   // Content Versions
   Future<List<dynamic>> getVersionsForContent(String contentItemId) async {
+<<<<<<< Updated upstream
     final response = await _apiClient.get(ApiConstants.getVersionsForContent(contentItemId));
+=======
+    final response =
+        await _apiClient.get(ApiConstants.getVersionsForContent(contentItemId));
+>>>>>>> Stashed changes
     return List<Map<String, dynamic>>.from(response.data);
   }
 
@@ -593,27 +818,52 @@ class ApiService {
   }
 
   Future<List<dynamic>> getMyVersionsForContent(String contentItemId) async {
+<<<<<<< Updated upstream
     final response = await _apiClient.get(ApiConstants.getMyVersionsForContent(contentItemId));
+=======
+    final response = await _apiClient
+        .get(ApiConstants.getMyVersionsForContent(contentItemId));
+>>>>>>> Stashed changes
     return List<Map<String, dynamic>>.from(response.data);
   }
 
   Future<Map<String, dynamic>> revertToVersion(String versionId) async {
+<<<<<<< Updated upstream
     final response = await _apiClient.post(ApiConstants.revertToVersion(versionId));
+=======
+    final response =
+        await _apiClient.post(ApiConstants.revertToVersion(versionId));
+>>>>>>> Stashed changes
     return Map<String, dynamic>.from(response.data);
   }
 
   // Personal Mind Map
   Future<Map<String, dynamic>> checkPersonalMindMap(String subjectId) async {
+<<<<<<< Updated upstream
     final response = await _apiClient.get(ApiConstants.checkPersonalMindMap(subjectId));
+=======
+    final response =
+        await _apiClient.get(ApiConstants.checkPersonalMindMap(subjectId));
+>>>>>>> Stashed changes
     return response.data;
   }
 
   Future<Map<String, dynamic>> getPersonalMindMap(String subjectId) async {
+<<<<<<< Updated upstream
     final response = await _apiClient.get(ApiConstants.getPersonalMindMap(subjectId));
     return response.data;
   }
 
   Future<Map<String, dynamic>> createPersonalMindMap(String subjectId, String learningGoal) async {
+=======
+    final response =
+        await _apiClient.get(ApiConstants.getPersonalMindMap(subjectId));
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> createPersonalMindMap(
+      String subjectId, String learningGoal) async {
+>>>>>>> Stashed changes
     final response = await _apiClient.post(
       ApiConstants.createPersonalMindMap(subjectId),
       data: {'learningGoal': learningGoal},
@@ -634,7 +884,12 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>> deletePersonalMindMap(String subjectId) async {
+<<<<<<< Updated upstream
     final response = await _apiClient.delete(ApiConstants.deletePersonalMindMap(subjectId));
+=======
+    final response =
+        await _apiClient.delete(ApiConstants.deletePersonalMindMap(subjectId));
+>>>>>>> Stashed changes
     return response.data;
   }
 
@@ -643,7 +898,12 @@ class ApiService {
 
   /// Bắt đầu chat session để tạo lộ trình cá nhân
   /// AI sẽ hỏi dựa trên nội dung môn học cụ thể
+<<<<<<< Updated upstream
   Future<Map<String, dynamic>> startPersonalMindMapChat(String subjectId) async {
+=======
+  Future<Map<String, dynamic>> startPersonalMindMapChat(
+      String subjectId) async {
+>>>>>>> Stashed changes
     final response = await _apiClient.post(
       ApiConstants.startPersonalMindMapChat(subjectId),
     );
@@ -663,7 +923,12 @@ class ApiService {
   }
 
   /// Lấy thông tin chat session hiện tại
+<<<<<<< Updated upstream
   Future<Map<String, dynamic>> getPersonalMindMapChatSession(String subjectId) async {
+=======
+  Future<Map<String, dynamic>> getPersonalMindMapChatSession(
+      String subjectId) async {
+>>>>>>> Stashed changes
     final response = await _apiClient.get(
       ApiConstants.getPersonalMindMapChatSession(subjectId),
     );
@@ -671,7 +936,12 @@ class ApiService {
   }
 
   /// Tạo lộ trình từ chat đã hoàn thành
+<<<<<<< Updated upstream
   Future<Map<String, dynamic>> generatePersonalMindMapFromChat(String subjectId) async {
+=======
+  Future<Map<String, dynamic>> generatePersonalMindMapFromChat(
+      String subjectId) async {
+>>>>>>> Stashed changes
     final response = await _apiClient.post(
       ApiConstants.generatePersonalMindMapFromChat(subjectId),
     );
@@ -679,10 +949,236 @@ class ApiService {
   }
 
   /// Reset chat session để bắt đầu lại
+<<<<<<< Updated upstream
   Future<Map<String, dynamic>> resetPersonalMindMapChat(String subjectId) async {
+=======
+  Future<Map<String, dynamic>> resetPersonalMindMapChat(
+      String subjectId) async {
+>>>>>>> Stashed changes
     final response = await _apiClient.post(
       ApiConstants.resetPersonalMindMapChat(subjectId),
     );
     return response.data;
   }
+<<<<<<< Updated upstream
+=======
+
+  // === CONTRIBUTION HELPER METHODS ===
+  // Tất cả contribution đều sử dụng content-edits system để có:
+  // - Lịch sử đóng góp
+  // - Phiên bản
+  // - Voting
+  // - Preview & So sánh
+  // - Admin duyệt/từ chối
+
+  /// Upload và submit contribution cho video (dùng content-edits flow)
+  Future<Map<String, dynamic>> contributeVideo(
+      String contentId, String videoPath,
+      {String? description, String? caption}) async {
+    // 1. Upload video qua content-edits upload endpoint
+    final uploadResult = await uploadVideoForEdit(videoPath);
+    final videoUrl =
+        uploadResult['videoUrl'] as String? ?? uploadResult['url'] as String;
+
+    // 2. Submit contribution qua content-edits flow
+    return submitContentEdit(
+      contentItemId: contentId,
+      type: 'add_video',
+      videoUrl: videoUrl,
+      description: description,
+      caption: caption,
+    );
+  }
+
+  /// Upload và submit contribution cho image (dùng content-edits flow)
+  Future<Map<String, dynamic>> contributeImage(
+      String contentId, String imagePath,
+      {String? description, String? caption}) async {
+    // 1. Upload image qua content-edits upload endpoint
+    final uploadResult = await uploadImageForEdit(imagePath);
+    final imageUrl =
+        uploadResult['imageUrl'] as String? ?? uploadResult['url'] as String;
+
+    // 2. Submit contribution qua content-edits flow
+    return submitContentEdit(
+      contentItemId: contentId,
+      type: 'add_image',
+      imageUrl: imageUrl,
+      description: description,
+      caption: caption,
+    );
+  }
+
+  /// Tạo mới video contribution cho một node (dùng content-edits flow)
+  /// Trước tiên tạo placeholder content item, sau đó submit edit
+  Future<Map<String, dynamic>> createNewVideoContribution(
+      String nodeId, String videoPath,
+      {String? title, String? description}) async {
+    // 1. Tạo placeholder content item
+    final placeholderResponse = await _apiClient.post(
+      ApiConstants.createNewContribution(nodeId),
+      data: {
+        'format': 'video',
+        'title': title ?? 'Video đóng góp mới',
+      },
+    );
+    final contentItemId = placeholderResponse.data['id'] as String;
+
+    // 2. Upload video
+    final uploadResult = await uploadVideoForEdit(videoPath);
+    final videoUrl =
+        uploadResult['videoUrl'] as String? ?? uploadResult['url'] as String;
+
+    // 3. Submit contribution qua content-edits flow
+    return submitContentEdit(
+      contentItemId: contentItemId,
+      type: 'add_video',
+      videoUrl: videoUrl,
+      description: description ?? 'Video đóng góp mới cho bài học',
+    );
+  }
+
+  /// Tạo mới image contribution cho một node (dùng content-edits flow)
+  Future<Map<String, dynamic>> createNewImageContribution(
+      String nodeId, String imagePath,
+      {String? title, String? description}) async {
+    // 1. Tạo placeholder content item
+    final placeholderResponse = await _apiClient.post(
+      ApiConstants.createNewContribution(nodeId),
+      data: {
+        'format': 'image',
+        'title': title ?? 'Hình ảnh đóng góp mới',
+      },
+    );
+    final contentItemId = placeholderResponse.data['id'] as String;
+
+    // 2. Upload image
+    final uploadResult = await uploadImageForEdit(imagePath);
+    final imageUrl =
+        uploadResult['imageUrl'] as String? ?? uploadResult['url'] as String;
+
+    // 3. Submit contribution qua content-edits flow
+    return submitContentEdit(
+      contentItemId: contentItemId,
+      type: 'add_image',
+      imageUrl: imageUrl,
+      description: description ?? 'Hình ảnh đóng góp mới cho bài học',
+    );
+  }
+
+  /// Submit text contribution cho một content item (dùng content-edits flow)
+  Future<Map<String, dynamic>> contributeText(
+      String contentId, String textContent,
+      {String? description}) async {
+    return submitContentEdit(
+      contentItemId: contentId,
+      type: 'add_text',
+      textContent: textContent,
+      description: description,
+    );
+  }
+
+  /// Cập nhật nội dung bài học (full lesson edit với history)
+  Future<Map<String, dynamic>> updateLessonContent({
+    required String contentItemId,
+    required String title,
+    String? textContent,
+    String? videoUrl,
+    String? imageUrl,
+    List<String>? imageUrls,
+    String? description,
+    Map<String, dynamic>? quizData,
+    dynamic richContent,
+  }) async {
+    return submitLessonEdit(
+      contentItemId: contentItemId,
+      title: title,
+      richContent: richContent,
+      imageUrls: imageUrls,
+      videoUrl: videoUrl,
+      description: description,
+      quizData: quizData,
+    );
+  }
+
+  // =====================
+  // Quiz APIs
+  // =====================
+
+  /// Generate quiz for a content item (concept or example)
+  Future<Map<String, dynamic>> generateQuiz(String contentItemId) async {
+    final response = await _apiClient.post(
+      ApiConstants.generateQuiz,
+      data: {'contentItemId': contentItemId},
+    );
+    return response.data;
+  }
+
+  /// Generate boss quiz for a learning node
+  Future<Map<String, dynamic>> generateBossQuiz(String nodeId) async {
+    final response = await _apiClient.post(
+      ApiConstants.generateBossQuiz,
+      data: {'nodeId': nodeId},
+    );
+    return response.data;
+  }
+
+  /// Submit quiz answers
+  Future<Map<String, dynamic>> submitQuiz(
+    String sessionId,
+    Map<String, String> answers,
+  ) async {
+    final response = await _apiClient.post(
+      ApiConstants.submitQuiz,
+      data: {
+        'sessionId': sessionId,
+        'answers': answers,
+      },
+    );
+    return response.data;
+  }
+
+  // =====================
+  // Payment APIs
+  // =====================
+
+  /// Get available payment packages
+  Future<Map<String, dynamic>> getPaymentPackages() async {
+    final response = await _apiClient.get(ApiConstants.paymentPackages);
+    return response.data;
+  }
+
+  /// Create a payment order
+  Future<Map<String, dynamic>> createPayment(String packageId) async {
+    final response = await _apiClient.post(
+      ApiConstants.createPayment,
+      data: {'packageId': packageId},
+    );
+    return response.data;
+  }
+
+  /// Get payment details
+  Future<Map<String, dynamic>> getPayment(String paymentId) async {
+    final response = await _apiClient.get(ApiConstants.getPayment(paymentId));
+    return response.data;
+  }
+
+  /// Get payment history
+  Future<List<dynamic>> getPaymentHistory() async {
+    final response = await _apiClient.get(ApiConstants.paymentHistory);
+    return response.data['payments'] ?? [];
+  }
+
+  /// Get premium status
+  Future<Map<String, dynamic>> getPremiumStatus() async {
+    final response = await _apiClient.get(ApiConstants.premiumStatus);
+    return response.data;
+  }
+
+  /// Get pending payment
+  Future<Map<String, dynamic>> getPendingPayment() async {
+    final response = await _apiClient.get(ApiConstants.pendingPayment);
+    return response.data;
+  }
+>>>>>>> Stashed changes
 }

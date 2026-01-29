@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
@@ -349,7 +350,10 @@ class _LearningNodeMapScreenState extends State<LearningNodeMapScreen> {
                 trailing: isUnlocked
                     ? const Icon(Icons.arrow_forward_ios, size: 16)
                     : const Icon(Icons.lock, size: 20),
-                onTap: () => _onNodeTap(nodeId, isUnlocked),
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  _onNodeTap(nodeId, isUnlocked);
+                },
               ),
             );
           }).toList(),

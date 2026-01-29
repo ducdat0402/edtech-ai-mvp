@@ -39,10 +39,23 @@ class ApiConstants {
   static String contentDetail(String id) => '/content/$id';
   static String contentByNodeAndDifficulty(String nodeId, String difficulty) => '/content/node/$nodeId/difficulty/$difficulty';
   static String generateContentByDifficulty(String nodeId) => '/content/node/$nodeId/generate-by-difficulty';
+<<<<<<< Updated upstream
+=======
+  
+  // Media Placeholders & Contribution
+  static String generatePlaceholders(String nodeId) => '/content/node/$nodeId/generate-placeholders';
+  static const String allPlaceholders = '/content/placeholders';
+  static String nodePlaceholders(String nodeId) => '/content/node/$nodeId/placeholders';
+  static String submitContribution(String contentId) => '/content/$contentId/contribute';
+  static String approveContribution(String contentId) => '/content/$contentId/approve';
+  static String rejectContribution(String contentId) => '/content/$contentId/reject';
+  static String createNewContribution(String nodeId) => '/content/node/$nodeId/contribute-new';
+>>>>>>> Stashed changes
 
   // Progress
   static String nodeProgress(String nodeId) => '/progress/node/$nodeId';
   static const String completeItem = '/progress/complete-item';
+  static String completedContentItemsBySubject(String subjectId) => '/progress/subject/$subjectId/completed-items';
 
   // Currency
   static const String currency = '/currency';
@@ -62,7 +75,7 @@ class ApiConstants {
 
   // Quests
   static const String dailyQuests = '/quests/daily';
-  static String claimQuest(String userQuestId) => '/quests/$userQuestId/claim';
+  static String claimQuest(String userQuestId) => '/quests/claim/$userQuestId';
   static const String questHistory = '/quests/history';
 
   // Leaderboard
@@ -77,6 +90,14 @@ class ApiConstants {
   static const String submitAnswer = '/test/submit';
   static String testResult(String testId) => '/test/result/$testId';
 
+<<<<<<< Updated upstream
+=======
+  // Adaptive Placement Test
+  static String startAdaptiveTest(String subjectId) => '/adaptive-test/start/$subjectId';
+  static String submitAdaptiveAnswer(String testId) => '/adaptive-test/$testId/submit';
+  static String getAdaptiveTestResult(String testId) => '/adaptive-test/$testId/result';
+
+>>>>>>> Stashed changes
 
   // Skill Tree
   static const String generateSkillTree = '/skill-tree/generate';
@@ -175,5 +196,21 @@ class ApiConstants {
   static String getPersonalMindMapChatSession(String subjectId) => '/personal-mind-map/$subjectId/chat/session';
   static String generatePersonalMindMapFromChat(String subjectId) => '/personal-mind-map/$subjectId/chat/generate';
   static String resetPersonalMindMapChat(String subjectId) => '/personal-mind-map/$subjectId/chat/reset';
+<<<<<<< Updated upstream
+=======
+
+  // Quiz
+  static const String generateQuiz = '/quiz/generate';
+  static const String generateBossQuiz = '/quiz/boss/generate';
+  static const String submitQuiz = '/quiz/submit';
+
+  // Payment
+  static const String paymentPackages = '/payment/packages';
+  static const String createPayment = '/payment/create';
+  static String getPayment(String paymentId) => '/payment/order/$paymentId';
+  static const String paymentHistory = '/payment/history';
+  static const String premiumStatus = '/payment/premium/status';
+  static const String pendingPayment = '/payment/pending';
+>>>>>>> Stashed changes
 }
 

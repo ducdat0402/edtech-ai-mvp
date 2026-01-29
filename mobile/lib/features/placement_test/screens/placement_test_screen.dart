@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
+import 'package:edtech_mobile/theme/theme.dart';
 
 class PlacementTestScreen extends StatefulWidget {
   const PlacementTestScreen({super.key});
@@ -10,7 +12,8 @@ class PlacementTestScreen extends StatefulWidget {
   State<PlacementTestScreen> createState() => _PlacementTestScreenState();
 }
 
-class _PlacementTestScreenState extends State<PlacementTestScreen> {
+class _PlacementTestScreenState extends State<PlacementTestScreen>
+    with SingleTickerProviderStateMixin {
   Map<String, dynamic>? _currentQuestion;
   bool _isLoading = true;
   String? _error;
@@ -20,10 +23,32 @@ class _PlacementTestScreenState extends State<PlacementTestScreen> {
   int _totalQuestions = 10;
   bool _isLoadingNextQuestion = false;
 
+  late AnimationController _questionController;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+
   @override
   void initState() {
     super.initState();
+    _questionController = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    );
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _questionController, curve: Curves.easeOut),
+    );
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0.05, 0),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _questionController, curve: Curves.easeOut));
+
     _startTest();
+  }
+
+  @override
+  void dispose() {
+    _questionController.dispose();
+    super.dispose();
   }
 
   Future<void> _startTest() async {
@@ -37,15 +62,10 @@ class _PlacementTestScreenState extends State<PlacementTestScreen> {
       final apiService = Provider.of<ApiService>(context, listen: false);
       final response = await apiService.startPlacementTest();
       
-      // Parse response - get first question from questions array
       Map<String, dynamic>? question;
       
-      print('📦 Placement test response keys: ${response.keys}');
-      
       if (response['questions'] != null && (response['questions'] as List).isNotEmpty) {
-        // Get first question from questions array (from startTest response)
         final questions = response['questions'] as List;
-        print('✅ Found ${questions.length} questions in array');
         final firstQuestion = questions[0] as Map<String, dynamic>;
         question = {
           'id': firstQuestion['questionId'],
@@ -53,13 +73,9 @@ class _PlacementTestScreenState extends State<PlacementTestScreen> {
           'options': firstQuestion['options'],
           'difficulty': firstQuestion['difficulty'],
         };
-        print('✅ Parsed first question: ${question['question']}');
-        
-        // Set progress: first question, total 10
         _currentQuestionNumber = 1;
         _totalQuestions = 10;
       } else {
-        // Try to get current question from API
         try {
           final currentTestResponse = await apiService.getCurrentTest();
           if (currentTestResponse['question'] != null) {
@@ -68,7 +84,6 @@ class _PlacementTestScreenState extends State<PlacementTestScreen> {
               _currentQuestionNumber = currentTestResponse['progress']['current'] ?? 1;
               _totalQuestions = currentTestResponse['progress']['total'] ?? 10;
             }
-            print('✅ Got question from getCurrentTest');
           }
         } catch (e) {
           print('⚠️  Error getting current test: $e');
@@ -80,8 +95,9 @@ class _PlacementTestScreenState extends State<PlacementTestScreen> {
         _isLoading = false;
       });
       
+      _questionController.forward();
+      
       if (question == null) {
-        print('❌ No question available!');
         setState(() {
           _error = 'Không thể tải câu hỏi. Vui lòng thử lại.';
         });
@@ -97,6 +113,8 @@ class _PlacementTestScreenState extends State<PlacementTestScreen> {
   Future<void> _submitAnswer() async {
     if (_selectedAnswer == null || _isSubmitting) return;
 
+    HapticFeedback.lightImpact();
+    
     setState(() {
       _isSubmitting = true;
     });
@@ -105,7 +123,6 @@ class _PlacementTestScreenState extends State<PlacementTestScreen> {
       final apiService = Provider.of<ApiService>(context, listen: false);
       final response = await apiService.submitAnswer(_selectedAnswer!);
 
-      // Update progress
       if (response['progress'] != null) {
         _currentQuestionNumber = response['progress']['current'] ?? _currentQuestionNumber + 1;
         _totalQuestions = response['progress']['total'] ?? 10;
@@ -114,22 +131,20 @@ class _PlacementTestScreenState extends State<PlacementTestScreen> {
       }
 
       if (response['completed'] == true) {
-        // Navigate to analysis screen
         if (mounted) {
           context.go('/placement-test/analysis/${response['test']?['id']}');
         }
       } else {
-        // Check if next question is available
         if (response['nextQuestion'] != null) {
-          // Show next question immediately
+          _questionController.reset();
           setState(() {
             _currentQuestion = response['nextQuestion'];
             _selectedAnswer = null;
             _isSubmitting = false;
             _isLoadingNextQuestion = false;
           });
+          _questionController.forward();
         } else {
-          // Next question not ready, start polling
           setState(() {
             _isSubmitting = false;
             _isLoadingNextQuestion = true;
@@ -160,20 +175,20 @@ class _PlacementTestScreenState extends State<PlacementTestScreen> {
         final response = await apiService.getCurrentTest();
         
         if (response['question'] != null) {
-          // Question is ready
           if (response['progress'] != null) {
             final progress = response['progress'] as Map<String, dynamic>;
             _currentQuestionNumber = progress['current'] ?? _currentQuestionNumber;
             _totalQuestions = progress['total'] ?? 10;
           } else {
-            // If no progress in response, increment manually
             _currentQuestionNumber++;
           }
           
+          _questionController.reset();
           setState(() {
             _currentQuestion = response['question'];
             _isLoadingNextQuestion = false;
           });
+          _questionController.forward();
           return;
         }
       } catch (e) {
@@ -183,7 +198,6 @@ class _PlacementTestScreenState extends State<PlacementTestScreen> {
       retryCount++;
     }
     
-    // Max retries reached
     if (mounted) {
       setState(() {
         _isLoadingNextQuestion = false;
@@ -195,198 +209,367 @@ class _PlacementTestScreenState extends State<PlacementTestScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.bgPrimary,
       appBar: AppBar(
-        title: const Text('Placement Test'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                gradient: AppGradients.primary,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.quiz_rounded, color: Colors.white, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Text('Placement Test', style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
+          ],
+        ),
+        leading: IconButton(
+          icon: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppColors.bgSecondary,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: AppColors.borderPrimary),
+            ),
+            child: const Icon(Icons.arrow_back, color: AppColors.textPrimary, size: 20),
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? _buildLoadingState()
           : _error != null
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.error_outline, size: 64, color: Colors.red),
-                      const SizedBox(height: 16),
-                      Text('Error: $_error'),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: _startTest,
-                        child: const Text('Retry'),
+              ? _buildErrorState()
+              : _currentQuestion == null
+                  ? _buildNoQuestionState()
+                  : _buildQuestionContent(),
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: AppGradients.primary,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.purpleNeon.withOpacity(0.4),
+                  blurRadius: 20,
+                ),
+              ],
+            ),
+            child: const CircularProgressIndicator(color: Colors.white),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'Đang chuẩn bị bài test...',
+            style: AppTextStyles.bodyLarge.copyWith(color: AppColors.textSecondary),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: AppColors.errorNeon.withOpacity(0.15),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.error_outline_rounded, size: 48, color: AppColors.errorNeon),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Có lỗi xảy ra',
+              style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _error ?? '',
+              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            GamingButton(
+              text: 'Thử lại',
+              onPressed: _startTest,
+              icon: Icons.refresh_rounded,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNoQuestionState() {
+    return Center(
+      child: Text(
+        'Không có câu hỏi',
+        style: AppTextStyles.bodyLarge.copyWith(color: AppColors.textSecondary),
+      ),
+    );
+  }
+
+  Widget _buildQuestionContent() {
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: SlideTransition(
+        position: _slideAnimation,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Progress header
+              _buildProgressHeader(),
+              const SizedBox(height: 24),
+
+              // Loading next question indicator
+              if (_isLoadingNextQuestion) _buildLoadingNextQuestion(),
+
+              // Question card
+              _buildQuestionCard(),
+              const SizedBox(height: 24),
+
+              // Submit button
+              SizedBox(
+                width: double.infinity,
+                child: GamingButton(
+                  text: _isSubmitting ? 'Đang gửi...' : 'Tiếp theo',
+                  onPressed: _selectedAnswer != null && !_isSubmitting ? _submitAnswer : null,
+                  isLoading: _isSubmitting,
+                  icon: Icons.arrow_forward_rounded,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProgressHeader() {
+    final progress = _currentQuestionNumber / _totalQuestions;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [AppColors.purpleNeon.withOpacity(0.15), AppColors.pinkNeon.withOpacity(0.1)],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.purpleNeon.withOpacity(0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Câu $_currentQuestionNumber / $_totalQuestions',
+                style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  gradient: AppGradients.primary,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  '${(progress * 100).toInt()}%',
+                  style: AppTextStyles.labelSmall.copyWith(color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Stack(
+            children: [
+              Container(
+                height: 8,
+                decoration: BoxDecoration(
+                  color: AppColors.bgTertiary,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+              AnimatedProgressBox(
+                widthFactor: progress,
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOut,
+                child: Container(
+                  height: 8,
+                  decoration: BoxDecoration(
+                    gradient: AppGradients.primary,
+                    borderRadius: BorderRadius.circular(4),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.purpleNeon.withOpacity(0.5),
+                        blurRadius: 8,
                       ),
                     ],
                   ),
-                )
-              : _currentQuestion == null
-                  ? const Center(child: Text('No question available'))
-                  : SingleChildScrollView(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Progress indicator
-                          Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Colors.blue.shade50,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: Colors.blue.shade200),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Câu hỏi $_currentQuestionNumber / $_totalQuestions',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.blue.shade900,
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                LinearProgressIndicator(
-                                  value: _currentQuestionNumber / _totalQuestions,
-                                  backgroundColor: Colors.blue.shade100,
-                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
-                                  minHeight: 8,
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                          // Loading next question indicator
-                          if (_isLoadingNextQuestion)
-                            Container(
-                              padding: const EdgeInsets.all(16),
-                              margin: const EdgeInsets.only(bottom: 16),
-                              decoration: BoxDecoration(
-                                color: Colors.orange.shade50,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Colors.orange.shade200),
-                              ),
-                              child: Row(
-                                children: [
-                                  const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(strokeWidth: 2),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Text(
-                                    'Đang tải câu hỏi tiếp theo...',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.orange.shade900,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          // Question
-                          Text(
-                            _currentQuestion!['question'] ?? 'Question',
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                          ...List.generate(
-                            (_currentQuestion!['options'] as List?)?.length ?? 0,
-                            (index) {
-                              final option = (_currentQuestion!['options'] as List)[index];
-                              final isSelected = _selectedAnswer == index;
-                              
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 12),
-                                child: InkWell(
-                                  onTap: () {
-                                    setState(() {
-                                      _selectedAnswer = index;
-                                    });
-                                  },
-                                  child: Container(
-                                    padding: const EdgeInsets.all(16),
-                                    decoration: BoxDecoration(
-                                      color: isSelected
-                                          ? Colors.blue.shade100
-                                          : Colors.grey.shade100,
-                                      border: Border.all(
-                                        color: isSelected
-                                            ? Colors.blue
-                                            : Colors.grey.shade300,
-                                        width: 2,
-                                      ),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        Container(
-                                          width: 24,
-                                          height: 24,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: isSelected
-                                                ? Colors.blue
-                                                : Colors.transparent,
-                                            border: Border.all(
-                                              color: isSelected
-                                                  ? Colors.blue
-                                                  : Colors.grey,
-                                              width: 2,
-                                            ),
-                                          ),
-                                          child: isSelected
-                                              ? const Icon(
-                                                  Icons.check,
-                                                  size: 16,
-                                                  color: Colors.white,
-                                                )
-                                              : null,
-                                        ),
-                                        const SizedBox(width: 12),
-                                        Expanded(
-                                          child: Text(
-                                            option.toString(),
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: isSelected
-                                                  ? FontWeight.bold
-                                                  : FontWeight.normal,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                          const SizedBox(height: 24),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: _selectedAnswer != null && !_isSubmitting
-                                  ? _submitAnswer
-                                  : null,
-                              style: ElevatedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(vertical: 16),
-                              ),
-                              child: _isSubmitting
-                                  ? const SizedBox(
-                                      height: 20,
-                                      width: 20,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                      ),
-                                    )
-                                  : const Text('Submit Answer'),
-                            ),
-                          ),
-                        ],
-                      ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoadingNextQuestion() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: AppColors.warningNeon.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.warningNeon.withOpacity(0.3)),
+      ),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: AppColors.warningNeon,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Text(
+            'Đang tải câu hỏi tiếp theo...',
+            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.warningNeon),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuestionCard() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.bgSecondary,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.borderPrimary),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Question text
+          Text(
+            _currentQuestion!['question'] ?? 'Question',
+            style: AppTextStyles.bodyLarge.copyWith(
+              color: AppColors.textPrimary,
+              fontSize: 18,
+              height: 1.5,
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Options
+          ...List.generate(
+            (_currentQuestion!['options'] as List?)?.length ?? 0,
+            (index) => _buildOptionCard(index),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOptionCard(int index) {
+    final option = (_currentQuestion!['options'] as List)[index];
+    final isSelected = _selectedAnswer == index;
+    final optionLetters = ['A', 'B', 'C', 'D', 'E', 'F'];
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.selectionClick();
+          setState(() {
+            _selectedAnswer = index;
+          });
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            gradient: isSelected ? AppGradients.primary : null,
+            color: isSelected ? null : AppColors.bgTertiary,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isSelected ? Colors.transparent : AppColors.borderPrimary,
+              width: 2,
+            ),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: AppColors.purpleNeon.withOpacity(0.3),
+                      blurRadius: 12,
                     ),
+                  ]
+                : null,
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: isSelected ? Colors.white.withOpacity(0.2) : AppColors.bgSecondary,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Center(
+                  child: Text(
+                    optionLetters[index],
+                    style: AppTextStyles.labelLarge.copyWith(
+                      color: isSelected ? Colors.white : AppColors.textSecondary,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  option.toString(),
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: isSelected ? Colors.white : AppColors.textPrimary,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                  ),
+                ),
+              ),
+              if (isSelected)
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.check_rounded, size: 16, color: Colors.white),
+                ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
-

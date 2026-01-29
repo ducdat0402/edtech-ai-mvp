@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:video_player/video_player.dart';
@@ -9,9 +10,17 @@ import 'package:edtech_mobile/features/content/widgets/web_video_player.dart';
 import 'package:edtech_mobile/features/content/widgets/content_format_badge.dart';
 import 'package:edtech_mobile/features/content/widgets/difficulty_badge.dart';
 import 'package:edtech_mobile/features/content/widgets/rewards_display.dart';
+<<<<<<< Updated upstream
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:dart_quill_delta/dart_quill_delta.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+=======
+import 'package:edtech_mobile/features/quiz/screens/quiz_screen.dart';
+import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:dart_quill_delta/dart_quill_delta.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:edtech_mobile/theme/theme.dart';
+>>>>>>> Stashed changes
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:io';
 
@@ -27,6 +36,20 @@ class ContentViewerScreen extends StatefulWidget {
   State<ContentViewerScreen> createState() => _ContentViewerScreenState();
 }
 
+/// Enum for content display modes
+enum ContentDisplayMode {
+  text,
+  image,
+  video,
+}
+
+/// Enum for text complexity levels
+enum TextComplexityLevel {
+  simple,    // Đơn giản
+  detailed,  // Chi tiết
+  comprehensive, // Chuyên sâu
+}
+
 class _ContentViewerScreenState extends State<ContentViewerScreen> {
   Map<String, dynamic>? _contentData;
   Map<String, dynamic>? _nextContentItem;
@@ -38,6 +61,16 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
   bool _isCompleting = false;
   bool _isCompleted = false;
   String? _userRole; // Store user role to check if admin
+  
+  // Content display mode - user can switch between text, image, video
+  ContentDisplayMode _displayMode = ContentDisplayMode.text;
+  
+  // Text complexity level - simple, detailed, comprehensive
+  TextComplexityLevel _textComplexity = TextComplexityLevel.detailed;
+  
+  // Cached text variants
+  Map<String, String>? _textVariants;
+  bool _isLoadingVariants = false;
 
   @override
   void initState() {
@@ -75,6 +108,7 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
         _selectedQuizAnswer = null;
         _nextContentItem = null;
         _prevContentItem = null;
+        _displayMode = ContentDisplayMode.text; // Reset to text mode
       });
       _loadContent();
     }
@@ -122,6 +156,15 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
 
           print('Next item: ${nextItem?['id']} - ${nextItem?['title']}');
           print('Prev item: ${prevItem?['id']} - ${prevItem?['title']}');
+          
+          // Debug: Log textVariants
+          final textVariants = data['textVariants'];
+          print('📝 TextVariants loaded: ${textVariants != null}');
+          if (textVariants != null) {
+            print('  - simple: ${(textVariants['simple'] as String?)?.substring(0, (textVariants['simple'] as String?)?.length.clamp(0, 50) ?? 0) ?? "null"}...');
+            print('  - detailed: ${(textVariants['detailed'] as String?)?.substring(0, (textVariants['detailed'] as String?)?.length.clamp(0, 50) ?? 0) ?? "null"}...');
+            print('  - comprehensive: ${(textVariants['comprehensive'] as String?)?.substring(0, (textVariants['comprehensive'] as String?)?.length.clamp(0, 50) ?? 0) ?? "null"}...');
+          }
 
           setState(() {
             _contentData = data;
@@ -280,29 +323,49 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.bgPrimary,
       appBar: AppBar(
-        title: Text(_contentData?['title'] ?? 'Content'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Text(
+          _contentData?['title'] ?? 'Content',
+          style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppColors.bgSecondary,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: AppColors.borderPrimary),
+            ),
+            child: const Icon(Icons.arrow_back, color: AppColors.textPrimary, size: 20),
+          ),
           onPressed: () {
-            // Simply pop back to previous screen (maintains navigation stack)
             if (context.canPop()) {
               context.pop();
             } else {
-              // Fallback: navigate to dashboard if can't pop
               context.go('/dashboard');
             }
           },
         ),
         actions: [
+<<<<<<< Updated upstream
           // Nút "Lịch sử phiên bản"
           IconButton(
             icon: const Icon(Icons.history),
+=======
+          IconButton(
+            icon: Icon(Icons.history_rounded, color: AppColors.textSecondary),
+>>>>>>> Stashed changes
             onPressed: () {
               context.push('/content/${widget.contentId}/versions');
             },
             tooltip: 'Lịch sử phiên bản',
           ),
+<<<<<<< Updated upstream
           // Nút "Chỉnh sửa bài viết"
           TextButton.icon(
             onPressed: () => _navigateToEditLesson(),
@@ -311,30 +374,46 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
             style: TextButton.styleFrom(
               foregroundColor: Colors.blue,
             ),
+=======
+          TextButton.icon(
+            onPressed: () => _navigateToEditLesson(),
+            icon: Icon(Icons.edit_rounded, size: 18, color: AppColors.cyanNeon),
+            label: Text('Chỉnh sửa', style: AppTextStyles.labelSmall.copyWith(color: AppColors.cyanNeon)),
+>>>>>>> Stashed changes
           ),
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator(color: AppColors.purpleNeon))
           : _error != null
               ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.error_outline,
-                          size: 64, color: Colors.red),
-                      const SizedBox(height: 16),
-                      Text('Error: $_error'),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: _loadContent,
-                        child: const Text('Retry'),
-                      ),
-                    ],
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: AppColors.errorNeon.withOpacity(0.15),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.error_outline_rounded, size: 48, color: AppColors.errorNeon),
+                        ),
+                        const SizedBox(height: 16),
+                        Text('Error: $_error', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary), textAlign: TextAlign.center),
+                        const SizedBox(height: 16),
+                        GamingButton(
+                          text: 'Thử lại',
+                          onPressed: _loadContent,
+                          icon: Icons.refresh_rounded,
+                        ),
+                      ],
+                    ),
                   ),
                 )
               : _contentData == null
-                  ? const Center(child: Text('No data available'))
+                  ? Center(child: Text('No data available', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)))
                   : _buildContent(),
     );
   }
@@ -356,7 +435,809 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
     }
   }
 
+  /// Check if content has text
+  bool get _hasText {
+    return _contentData?['richContent'] != null || 
+           (_contentData?['content'] != null && _contentData!['content'].toString().isNotEmpty);
+  }
+
+  /// Check if content has image
+  bool get _hasImage {
+    final media = _contentData?['media'];
+    if (media == null) return false;
+    final imageUrl = media['imageUrl'];
+    final imageUrls = media['imageUrls'] as List?;
+    return (imageUrl != null && imageUrl.toString().isNotEmpty) ||
+           (imageUrls != null && imageUrls.isNotEmpty);
+  }
+
+  /// Check if content has video (either actual video or video format metadata)
+  bool get _hasVideo {
+    final media = _contentData?['media'];
+    if (media == null) return false;
+    
+    // Check for actual video file
+    final videoUrl = media['videoUrl'];
+    final hasVideoUrl = videoUrl != null && videoUrl.toString().isNotEmpty;
+    
+    // Check for video format metadata (script/description)
+    final videoScript = media['videoScript'];
+    final videoDescription = media['videoDescription'];
+    final hasVideoFormat = (videoScript != null && videoScript.toString().isNotEmpty) ||
+                           (videoDescription != null && videoDescription.toString().isNotEmpty);
+    
+    return hasVideoUrl || hasVideoFormat;
+  }
+
+  /// Get available display modes for current content
+  List<ContentDisplayMode> get _availableModes {
+    final modes = <ContentDisplayMode>[];
+    if (_hasText) modes.add(ContentDisplayMode.text);
+    if (_hasImage) modes.add(ContentDisplayMode.image);
+    if (_hasVideo) modes.add(ContentDisplayMode.video);
+    return modes;
+  }
+
+  /// Build the content format switcher widget
+  Widget _buildContentModeSwitcher() {
+    final modes = _availableModes;
+    
+    // If only one mode available, don't show switcher
+    if (modes.length <= 1) return const SizedBox.shrink();
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade200,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: modes.map((mode) {
+          final isSelected = _displayMode == mode;
+          return Expanded(
+            child: GestureDetector(
+              onTap: () => setState(() => _displayMode = mode),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                decoration: BoxDecoration(
+                  color: isSelected ? Colors.white : Colors.transparent,
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.1),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : null,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      _getModeIcon(mode),
+                      size: 18,
+                      color: isSelected ? Colors.blue : Colors.grey.shade600,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      _getModeLabel(mode),
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                        color: isSelected ? Colors.blue : Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  IconData _getModeIcon(ContentDisplayMode mode) {
+    switch (mode) {
+      case ContentDisplayMode.text:
+        return Icons.article_outlined;
+      case ContentDisplayMode.image:
+        return Icons.image_outlined;
+      case ContentDisplayMode.video:
+        return Icons.play_circle_outline;
+    }
+  }
+
+  String _getModeLabel(ContentDisplayMode mode) {
+    switch (mode) {
+      case ContentDisplayMode.text:
+        return 'Văn bản';
+      case ContentDisplayMode.image:
+        return 'Hình ảnh';
+      case ContentDisplayMode.video:
+        return 'Video';
+    }
+  }
+
+  /// Build text complexity level selector
+  Widget _buildComplexitySelector() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Label for the selector
+        Row(
+          children: [
+            Icon(Icons.tune_rounded, size: 16, color: AppColors.textSecondary),
+            const SizedBox(width: 6),
+            Text(
+              'Chọn mức độ văn bản:',
+              style: AppTextStyles.labelSmall.copyWith(color: AppColors.textSecondary),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        // Complexity selector - always full width
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: AppColors.bgSecondary,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.borderPrimary, width: 1.5),
+          ),
+          child: Row(
+            children: TextComplexityLevel.values.map((level) {
+              final isSelected = _textComplexity == level;
+              final levelColor = level == TextComplexityLevel.simple 
+                  ? AppColors.successNeon 
+                  : level == TextComplexityLevel.detailed 
+                      ? AppColors.cyanNeon 
+                      : AppColors.orangeNeon;
+              return Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    setState(() => _textComplexity = level);
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: isSelected ? levelColor.withOpacity(0.2) : Colors.transparent,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: isSelected ? levelColor : Colors.transparent,
+                        width: 2,
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        Icon(
+                          _getComplexityIcon(level),
+                          size: 20,
+                          color: isSelected ? levelColor : AppColors.textTertiary,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          _getComplexityLabel(level),
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            color: isSelected ? levelColor : AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
+  IconData _getComplexityIcon(TextComplexityLevel level) {
+    switch (level) {
+      case TextComplexityLevel.simple:
+        return Icons.flash_on_rounded;
+      case TextComplexityLevel.detailed:
+        return Icons.menu_book_rounded;
+      case TextComplexityLevel.comprehensive:
+        return Icons.school_rounded;
+    }
+  }
+
+  String _getComplexityLabel(TextComplexityLevel level) {
+    switch (level) {
+      case TextComplexityLevel.simple:
+        return 'Đơn giản';
+      case TextComplexityLevel.detailed:
+        return 'Chi tiết';
+      case TextComplexityLevel.comprehensive:
+        return 'Chuyên sâu';
+    }
+  }
+
+  /// Get text content based on selected complexity level
+  String? _getTextForComplexity() {
+    final textVariants = _contentData?['textVariants'] as Map<String, dynamic>?;
+    
+    print('🔍 _getTextForComplexity called, level: $_textComplexity');
+    print('   textVariants: $textVariants');
+    
+    if (textVariants != null) {
+      String? result;
+      switch (_textComplexity) {
+        case TextComplexityLevel.simple:
+          result = textVariants['simple'] as String?;
+          break;
+        case TextComplexityLevel.detailed:
+          result = textVariants['detailed'] as String?;
+          break;
+        case TextComplexityLevel.comprehensive:
+          result = textVariants['comprehensive'] as String?;
+          break;
+      }
+      
+      // If result is empty or null, fallback to content
+      if (result != null && result.trim().isNotEmpty) {
+        print('   Using textVariant: ${result.substring(0, result.length.clamp(0, 50))}...');
+        return result;
+      }
+      
+      print('   TextVariant is empty, falling back to content');
+    }
+    
+    // Fallback to original content
+    final content = _contentData?['content'] as String?;
+    print('   Fallback to content: ${content?.substring(0, (content?.length ?? 0).clamp(0, 50))}...');
+    return content;
+  }
+
+  /// Check if text variants are available
+  bool get _hasTextVariants {
+    final textVariants = _contentData?['textVariants'] as Map<String, dynamic>?;
+    return textVariants != null && 
+           (textVariants['simple'] != null || textVariants['comprehensive'] != null);
+  }
+
+  /// Build text content section
+  Widget _buildTextContent() {
+    final type = _contentData?['type'] as String?;
+    final isTextContent = type == 'concept' || type == 'example';
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Show complexity selector only for concept/example content
+        if (isTextContent) ...[
+          _buildComplexitySelector(),
+          if (!_hasTextVariants)
+            Container(
+              padding: const EdgeInsets.all(12),
+              margin: const EdgeInsets.only(bottom: 12),
+              decoration: BoxDecoration(
+                color: AppColors.infoNeon.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppColors.infoNeon.withOpacity(0.3)),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline, size: 16, color: AppColors.infoNeon),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Nội dung này chỉ có 1 phiên bản. Phiên bản khác sẽ được tạo tự động.',
+                      style: AppTextStyles.caption.copyWith(color: AppColors.infoNeon),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+        
+        // Content based on selected complexity (or original if no variants)
+        // Priority: textVariants > richContent > content
+        Builder(builder: (context) {
+          // Check if textVariants has content for selected level
+          final textVariants = _contentData!['textVariants'] as Map<String, dynamic>?;
+          String? variantText;
+          
+          if (textVariants != null) {
+            switch (_textComplexity) {
+              case TextComplexityLevel.simple:
+                variantText = textVariants['simple'] as String?;
+                break;
+              case TextComplexityLevel.detailed:
+                variantText = textVariants['detailed'] as String?;
+                break;
+              case TextComplexityLevel.comprehensive:
+                variantText = textVariants['comprehensive'] as String?;
+                break;
+            }
+          }
+          
+          // If textVariant has content, use it
+          if (variantText != null && variantText.trim().isNotEmpty) {
+            return Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.borderPrimary),
+              ),
+              child: Text(
+                variantText,
+                style: AppTextStyles.bodyMedium.copyWith(
+                  height: 1.6,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            );
+          }
+          
+          // Fallback to richContent
+          if (_contentData!['richContent'] != null) {
+            return _buildRichContent(_contentData!['richContent']);
+          }
+          
+          // Fallback to plain content
+          final content = _contentData!['content'] as String?;
+          if (content != null && content.isNotEmpty) {
+            return Text(
+              content,
+              style: AppTextStyles.bodyMedium.copyWith(
+                height: 1.6,
+                color: AppColors.textPrimary,
+              ),
+            );
+          }
+          
+          return const SizedBox.shrink();
+        }),
+      ],
+    );
+  }
+
+  /// Check if image is a placeholder
+  bool _isPlaceholderImage(String? url) {
+    if (url == null) return false;
+    return url.contains('placehold.co');
+  }
+
+  /// Check if video is a placeholder
+  bool _isPlaceholderVideo(String? url) {
+    if (url == null) return false;
+    return url.contains('BigBuckBunny') || url.contains('sample');
+  }
+
+  /// Build placeholder notice banner with contribution guide
+  Widget _buildPlaceholderNotice({required String type}) {
+    final isVideo = type == 'video';
+    final media = _contentData?['media'];
+    
+    // Get AI-generated prompts/scripts for contribution guide
+    final imagePrompt = media?['imagePrompt'] as String?;
+    final videoScript = media?['videoScript'] as String?;
+    final contributionGuide = isVideo ? videoScript : imagePrompt;
+    
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.orange.shade100,
+            Colors.amber.shade50,
+          ],
+        ),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.orange.shade300, width: 2),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.orange.shade400,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  isVideo ? Icons.videocam_off : Icons.image_not_supported,
+                  color: Colors.white,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      isVideo ? '📹 Video mặc định' : '🖼️ Hình ảnh mặc định',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.orange.shade800,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Nội dung này chưa có ${isVideo ? "video" : "hình ảnh"} thật.',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.orange.shade700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          
+          // CTA box
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.volunteer_activism, color: Colors.green.shade600, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Hãy đóng góp ${isVideo ? "video" : "hình ảnh"} để phát triển môn học trong cộng đồng!',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey.shade800,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          // Contribution Guide - show AI-generated prompt/script
+          if (contributionGuide != null && contributionGuide.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.blue.shade200),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        isVideo ? Icons.description : Icons.brush,
+                        size: 18,
+                        color: Colors.blue.shade700,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        isVideo ? '📝 Gợi ý kịch bản video:' : '🎨 Gợi ý nội dung hình ảnh:',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue.shade800,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    contributionGuide,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.blue.shade900,
+                      height: 1.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                context.push('/content/${widget.contentId}/contribute', extra: {
+                  'contentData': _contentData,
+                  'mediaType': type,
+                });
+              },
+              icon: Icon(isVideo ? Icons.video_call : Icons.add_photo_alternate),
+              label: Text('Đóng góp ${isVideo ? "video" : "hình ảnh"} ngay'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green.shade600,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Build contribution CTA button
+  Widget _buildContributionButton({required String type}) {
+    return Container(
+      margin: const EdgeInsets.only(top: 16),
+      child: ElevatedButton.icon(
+        onPressed: () {
+          // Navigate to contribution screen
+          context.push('/content/${widget.contentId}/contribute', extra: {
+            'contentData': _contentData,
+            'mediaType': type,
+          });
+        },
+        icon: const Icon(Icons.add_photo_alternate),
+        label: Text(type == 'image' ? 'Đóng góp hình ảnh' : 'Đóng góp video'),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.green.shade600,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Build zoomable image with tap to fullscreen
+  Widget _buildZoomableImage(String imageUrl) {
+    return GestureDetector(
+      onTap: () => _showFullScreenImage(imageUrl),
+      child: Stack(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: CachedNetworkImage(
+              imageUrl: imageUrl,
+              fit: BoxFit.cover,
+              width: double.infinity,
+              placeholder: (context, url) => Container(
+                height: 200,
+                color: Colors.grey.shade200,
+                child: const Center(child: CircularProgressIndicator()),
+              ),
+              errorWidget: (context, url, error) => Container(
+                height: 200,
+                color: Colors.grey.shade200,
+                child: const Center(
+                  child: Icon(Icons.broken_image, size: 48, color: Colors.grey),
+                ),
+              ),
+            ),
+          ),
+          // Zoom hint overlay
+          Positioned(
+            right: 8,
+            bottom: 8,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.6),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.zoom_in, color: Colors.white, size: 16),
+                  SizedBox(width: 4),
+                  Text(
+                    'Nhấn để phóng to',
+                    style: TextStyle(color: Colors.white, fontSize: 11),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Show fullscreen image with zoom and pan support
+  void _showFullScreenImage(String imageUrl) {
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        opaque: false,
+        barrierColor: Colors.black87,
+        barrierDismissible: true,
+        pageBuilder: (context, animation, secondaryAnimation) {
+          return FadeTransition(
+            opacity: animation,
+            child: _FullScreenImageViewer(imageUrl: imageUrl),
+          );
+        },
+      ),
+    );
+  }
+
+  /// Build image content section
+  Widget _buildImageContent() {
+    final media = _contentData!['media'];
+    if (media == null) return const SizedBox.shrink();
+
+    final imageUrls = media['imageUrls'] as List?;
+    final imageUrl = media['imageUrl'] as String?;
+    final imageDescription = media['imageDescription'] as String?;
+    final isPlaceholder = _isPlaceholderImage(imageUrl);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Show placeholder notice if this is default image
+        if (isPlaceholder) ...[
+          _buildPlaceholderNotice(type: 'image'),
+        ] else if (imageDescription != null && imageDescription.isNotEmpty) ...[
+          // Show normal description for real images
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.blue.shade50,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.blue.shade200),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.info_outline, size: 20, color: Colors.blue.shade600),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    imageDescription,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.blue.shade800,
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
+        // Image display (only show for real images, not placeholder)
+        if (!isPlaceholder) ...[
+          if (imageUrls != null && imageUrls.isNotEmpty)
+            _buildImageGallery(imageUrls)
+          else if (imageUrl != null)
+            _buildZoomableImage(_buildFullUrl(imageUrl)),
+        ],
+      ],
+    );
+  }
+
+  /// Build video content section
+  Widget _buildVideoContent() {
+    final media = _contentData!['media'];
+    if (media == null) return const SizedBox.shrink();
+
+    final videoUrl = media['videoUrl'] as String?;
+    final videoDescription = media['videoDescription'] as String?;
+    final videoScript = media['videoScript'] as String?;
+    final videoDuration = media['videoDuration'] as String?;
+    final isPlaceholder = _isPlaceholderVideo(videoUrl);
+    final hasVideoUrl = videoUrl != null && videoUrl.isNotEmpty;
+    final hasVideoFormat = (videoScript != null && videoScript.isNotEmpty) ||
+                           (videoDescription != null && videoDescription.isNotEmpty);
+
+    // If no video format at all, show nothing
+    if (!hasVideoUrl && !hasVideoFormat) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Case 1: No actual video, but has video format (script/description)
+        // Show contribution guide with the script
+        if (!hasVideoUrl && hasVideoFormat) ...[
+          _buildPlaceholderNotice(type: 'video'),
+        ]
+        // Case 2: Has placeholder video
+        else if (hasVideoUrl && isPlaceholder) ...[
+          _buildPlaceholderNotice(type: 'video'),
+        ]
+        // Case 3: Has real video
+        else if (hasVideoUrl && !isPlaceholder) ...[
+          // Show description for real videos
+          if (videoDescription != null && videoDescription.isNotEmpty) ...[
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.purple.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.purple.shade200),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.videocam_outlined, size: 20, color: Colors.purple.shade600),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          videoDescription,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.purple.shade800,
+                            height: 1.4,
+                          ),
+                        ),
+                        if (videoDuration != null) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            'Thời lượng: $videoDuration',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.purple.shade600,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+          // Video player for real videos
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.black,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: _VideoPlayerWidget(
+              videoUrl: _buildFullUrl(videoUrl),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
   Widget _buildConceptView() {
+    // Auto-select first available mode if current mode not available
+    if (!_availableModes.contains(_displayMode) && _availableModes.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        setState(() => _displayMode = _availableModes.first);
+      });
+    }
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -396,6 +1277,7 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
           ),
           const SizedBox(height: 16),
 
+<<<<<<< Updated upstream
           // Display rich content first (matching preview order)
           if (_contentData!['richContent'] != null)
             _buildRichContent(_contentData!['richContent'])
@@ -442,6 +1324,18 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
             ),
             const SizedBox(height: 16),
           ],
+=======
+          // ✅ Content Mode Switcher - Chuyển đổi giữa Văn bản, Hình ảnh, Video
+          _buildContentModeSwitcher(),
+
+          // ✅ Display content based on selected mode
+          if (_displayMode == ContentDisplayMode.text)
+            _buildTextContent()
+          else if (_displayMode == ContentDisplayMode.image)
+            _buildImageContent()
+          else if (_displayMode == ContentDisplayMode.video)
+            _buildVideoContent(),
+>>>>>>> Stashed changes
 
           const SizedBox(height: 24),
           _buildCompleteButton(),
@@ -451,6 +1345,13 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
   }
 
   Widget _buildExampleView() {
+    // Auto-select first available mode if current mode not available
+    if (!_availableModes.contains(_displayMode) && _availableModes.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        setState(() => _displayMode = _availableModes.first);
+      });
+    }
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -482,6 +1383,7 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
             coin: _contentData!['rewards']?['coin'] as int?,
           ),
           const SizedBox(height: 16),
+<<<<<<< Updated upstream
           if (_contentData!['content'] != null)
             Container(
               padding: const EdgeInsets.all(16),
@@ -505,11 +1407,50 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
               _buildFullUrl(_contentData!['media']['imageUrl']),
               fit: BoxFit.cover,
             ),
+=======
+          
+          // ✅ Content Mode Switcher - Chuyển đổi giữa Văn bản, Hình ảnh, Video
+          _buildContentModeSwitcher(),
+
+          // ✅ Display content based on selected mode
+          if (_displayMode == ContentDisplayMode.text)
+            _buildExampleTextContent()
+          else if (_displayMode == ContentDisplayMode.image)
+            _buildImageContent()
+          else if (_displayMode == ContentDisplayMode.video)
+            _buildVideoContent(),
+          
+>>>>>>> Stashed changes
           const SizedBox(height: 24),
           _buildCompleteButton(),
         ],
       ),
     );
+  }
+
+  /// Build text content for example view (with code styling)
+  Widget _buildExampleTextContent() {
+    if (_contentData!['richContent'] != null) {
+      return _buildRichContent(_contentData!['richContent']);
+    } else if (_contentData!['content'] != null) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade900,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(
+          _contentData!['content'],
+          style: const TextStyle(
+            fontSize: 14,
+            fontFamily: 'monospace',
+            color: Colors.white,
+            height: 1.5,
+          ),
+        ),
+      );
+    }
+    return const SizedBox.shrink();
   }
 
   Widget _buildQuizView() {
@@ -1126,6 +2067,34 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
       );
     }
 
+    // Check content type - concept/example requires quiz, others can mark complete directly
+    final contentType = _contentData?['type'] as String?;
+    final isQuizRequired = contentType == 'concept' || contentType == 'example';
+
+    if (isQuizRequired) {
+      // Show "Làm bài kiểm tra" button for concept/example
+      return SizedBox(
+        width: double.infinity,
+        child: ElevatedButton.icon(
+          onPressed: _openQuiz,
+          style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            backgroundColor: contentType == 'concept' ? Colors.blue : Colors.teal,
+          ),
+          icon: const Icon(Icons.quiz, color: Colors.white),
+          label: Text(
+            'Làm bài kiểm tra (${contentType == 'concept' ? '5 câu' : '7 câu'})',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      );
+    }
+
+    // For other content types (hidden_reward, boss_quiz), allow direct completion
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
@@ -1144,7 +2113,7 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
                 ),
               )
             : const Text(
-                'Mark Complete',
+                'Hoàn thành',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 16,
@@ -1155,6 +2124,42 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
     );
   }
 
+<<<<<<< Updated upstream
+=======
+  /// Open quiz screen for concept/example content
+  /// Quiz bài học bình thường KHÔNG cần kiểm tra tiến độ
+  /// Chỉ Boss Quiz mới cần hoàn thành ít nhất 1 mức độ
+  Future<void> _openQuiz() async {
+    final contentType = _contentData?['type'] as String?;
+    final contentTitle = _contentData?['title'] as String? ?? '';
+    final nodeId = _contentData?['nodeId'] as String? ?? '';
+
+    final result = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => QuizScreen(
+          contentItemId: widget.contentId,
+          contentTitle: contentTitle,
+          contentType: contentType ?? 'concept',
+          nodeId: nodeId,
+          onComplete: (passed) {
+            if (passed) {
+              // Auto mark complete when quiz is passed
+              _markComplete(score: 100);
+            }
+          },
+        ),
+      ),
+    );
+
+    // If quiz was passed (returned true), the onComplete callback already marked it complete
+    if (result == true) {
+      // Refresh to show completed state
+      _loadContent();
+    }
+  }
+
+>>>>>>> Stashed changes
   Widget _buildRichContent(dynamic richContent) {
     try {
       final quillController = quill.QuillController.basic();
@@ -1168,6 +2173,7 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
         quillController.document = quill.Document()
           ..insert(0, richContent.toString());
       }
+<<<<<<< Updated upstream
       return IgnorePointer(
         child: quill.QuillEditor.basic(
           configurations: quill.QuillEditorConfigurations(
@@ -1211,10 +2217,85 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
               child: const Icon(Icons.error),
             ),
           ),
+=======
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: IgnorePointer(
+          child: quill.QuillEditor.basic(
+            configurations: quill.QuillEditorConfigurations(
+              controller: quillController,
+              sharedConfigurations: const quill.QuillSharedConfigurations(),
+            ),
+          ),
+        ),
+      );
+    } catch (e) {
+      return Text(
+        richContent.toString(),
+        style: const TextStyle(fontSize: 16, height: 1.5),
+      );
+    }
+  }
+
+  Widget _buildImageGallery(List<dynamic> imageUrls) {
+    // Use GridView like in preview (2 columns)
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 8,
+        mainAxisSpacing: 8,
+        childAspectRatio: 4 / 3,
+      ),
+      itemCount: imageUrls.length,
+      itemBuilder: (context, index) {
+        final fullUrl = _buildFullUrl(imageUrls[index].toString());
+        return GestureDetector(
+          onTap: () => _showFullScreenImage(fullUrl),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: CachedNetworkImage(
+                  imageUrl: fullUrl,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => Container(
+                    color: Colors.grey.shade200,
+                    child: const Center(child: CircularProgressIndicator()),
+                  ),
+                  errorWidget: (context, url, error) => Container(
+                    color: Colors.grey.shade200,
+                    child: const Icon(Icons.error),
+                  ),
+                ),
+              ),
+              // Zoom icon overlay
+              Positioned(
+                right: 4,
+                bottom: 4,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.5),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: const Icon(Icons.zoom_in, color: Colors.white, size: 14),
+                ),
+              ),
+            ],
+          ),
+>>>>>>> Stashed changes
         );
       },
     );
   }
+
 }
 
 class _VideoPlayerWidget extends StatefulWidget {
@@ -1534,6 +2615,117 @@ class _RewardItem extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Full screen image viewer with zoom and pan support
+class _FullScreenImageViewer extends StatefulWidget {
+  final String imageUrl;
+
+  const _FullScreenImageViewer({required this.imageUrl});
+
+  @override
+  State<_FullScreenImageViewer> createState() => _FullScreenImageViewerState();
+}
+
+class _FullScreenImageViewerState extends State<_FullScreenImageViewer> {
+  final TransformationController _transformationController =
+      TransformationController();
+  bool _isZoomed = false;
+
+  @override
+  void dispose() {
+    _transformationController.dispose();
+    super.dispose();
+  }
+
+  void _handleDoubleTap() {
+    if (_isZoomed) {
+      // Reset zoom
+      _transformationController.value = Matrix4.identity();
+      _isZoomed = false;
+    } else {
+      // Zoom to 2x
+      _transformationController.value = Matrix4.identity()..scale(2.0);
+      _isZoomed = true;
+    }
+    setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Stack(
+        children: [
+          // Dismissible image
+          GestureDetector(
+            onTap: () => Navigator.of(context).pop(),
+            onDoubleTap: _handleDoubleTap,
+            child: Center(
+              child: InteractiveViewer(
+                transformationController: _transformationController,
+                minScale: 0.5,
+                maxScale: 4.0,
+                onInteractionEnd: (details) {
+                  _isZoomed =
+                      _transformationController.value.getMaxScaleOnAxis() > 1.1;
+                },
+                child: CachedNetworkImage(
+                  imageUrl: widget.imageUrl,
+                  fit: BoxFit.contain,
+                  placeholder: (context, url) => const Center(
+                    child: CircularProgressIndicator(color: Colors.white),
+                  ),
+                  errorWidget: (context, url, error) => const Center(
+                    child: Icon(Icons.broken_image, size: 64, color: Colors.white54),
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // Close button
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 8,
+            right: 16,
+            child: IconButton(
+              onPressed: () => Navigator.of(context).pop(),
+              icon: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.5),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.close, color: Colors.white, size: 24),
+              ),
+            ),
+          ),
+
+          // Zoom hint
+          Positioned(
+            bottom: MediaQuery.of(context).padding.bottom + 16,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  _isZoomed
+                      ? 'Nhấn đúp để thu nhỏ • Vuốt để di chuyển'
+                      : 'Nhấn đúp để phóng to • Chụm để zoom',
+                  style: const TextStyle(color: Colors.white70, fontSize: 12),
+                ),
+              ),
+            ),
           ),
         ],
       ),

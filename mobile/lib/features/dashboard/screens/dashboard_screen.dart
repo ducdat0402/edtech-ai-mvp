@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/services/auth_service.dart';
-import 'package:edtech_mobile/core/widgets/streak_display.dart';
 import 'package:edtech_mobile/core/widgets/bottom_nav_bar.dart';
 import 'package:edtech_mobile/core/widgets/error_widget.dart';
 import 'package:edtech_mobile/core/widgets/skeleton_loader.dart';
+import 'package:edtech_mobile/theme/theme.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -124,11 +125,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Streak Display
-                            _buildStreakSection(_dashboardData!['stats'] ?? {}),
-                            const SizedBox(height: 24),
-
-                            // Stats Cards
+                            // Stats Cards (includes Level and Stats)
                             _buildStatsSection(_dashboardData!['stats'] ?? {}),
                             const SizedBox(height: 24),
 
@@ -179,64 +176,287 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildStreakSection(Map<String, dynamic> stats) {
-    final streak = stats['streak'] ?? 0;
-    final consecutivePerfect = stats['consecutivePerfect'] ?? 0;
-    final weeklyProgress = stats['weeklyProgress'] as Map<String, dynamic>?;
-
-    return StreakDisplay(
-      streak: streak is int ? streak : int.tryParse(streak.toString()) ?? 0,
-      consecutivePerfect: consecutivePerfect is int
-          ? consecutivePerfect
-          : int.tryParse(consecutivePerfect.toString()) ?? 0,
-      weeklyProgress: weeklyProgress,
-    );
-  }
-
   Widget _buildStatsSection(Map<String, dynamic> stats) {
+    final level = stats['level'] as int? ?? 1;
+    final levelInfo = stats['levelInfo'] as Map<String, dynamic>?;
+    final currentXP = levelInfo?['currentXP'] as int? ?? 0;
+    final xpForNextLevel = levelInfo?['xpForNextLevel'] as int? ?? 100;
+    final totalXP = stats['totalXP'] as int? ?? 0;
+    final coins = stats['totalCoins'] ?? stats['coins'] ?? 0;
+    final streak = stats['currentStreak'] ?? stats['streak'] ?? 0;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Your Stats',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        // Level Card using new widget
+        GestureDetector(
+          onTap: () => _showLevelTitlesDialog(),
+          child: LevelCard(
+            level: level,
+            title: _getLevelTitle(level),
+            currentXP: currentXP,
+            xpForNextLevel: xpForNextLevel,
+            totalXP: totalXP,
+          ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 20),
+        
+        // Stats Row with new widgets
         Row(
           children: [
+            // XP Display
             Expanded(
-              child: _StatCard(
-                icon: Icons.star,
+              child: _buildStatCard(
+                icon: Icons.star_rounded,
                 label: 'XP',
+<<<<<<< Updated upstream
                 value: '${stats['totalXP'] ?? 0}',
                 color: Colors.amber,
+=======
+                value: totalXP,
+                color: AppColors.xpGold,
+>>>>>>> Stashed changes
                 onTap: () => context.push('/currency'),
               ),
             ),
             const SizedBox(width: 12),
+            // Coins Display
             Expanded(
-              child: _StatCard(
-                icon: Icons.monetization_on,
+              child: _buildStatCard(
+                icon: Icons.monetization_on_rounded,
                 label: 'Coins',
+<<<<<<< Updated upstream
                 value: '${stats['coins'] ?? 0}',
                 color: Colors.orange,
+=======
+                value: coins is int ? coins : 0,
+                color: AppColors.coinGold,
+>>>>>>> Stashed changes
                 onTap: () => context.push('/currency'),
               ),
             ),
             const SizedBox(width: 12),
+            // Streak Display
             Expanded(
-              child: _StatCard(
-                icon: Icons.local_fire_department,
+              child: _buildStatCard(
+                icon: Icons.local_fire_department_rounded,
                 label: 'Streak',
+<<<<<<< Updated upstream
                 value: '${stats['streak'] ?? 0}',
                 color: Colors.red,
                 onTap: () => context.push('/currency'),
+=======
+                value: streak is int ? streak : 0,
+                color: AppColors.streakOrange,
+                onTap: () => context.push('/currency'),
+                suffix: '🔥',
+>>>>>>> Stashed changes
               ),
             ),
           ],
         ),
       ],
     );
+  }
+
+<<<<<<< Updated upstream
+  Widget _buildOnboardingBanner() {
+    // Onboarding đã được tích hợp vào Personal Mind Map screen
+    // Không hiển thị banner ở dashboard nữa
+    return const SizedBox.shrink();
+=======
+  Widget _buildStatCard({
+    required IconData icon,
+    required String label,
+    required int value,
+    required Color color,
+    VoidCallback? onTap,
+    String? suffix,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+        decoration: BoxDecoration(
+          color: AppColors.bgSecondary,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.borderPrimary),
+          boxShadow: [
+            BoxShadow(
+              color: color.withOpacity(0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: color, size: 28),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  '$value',
+                  style: AppTextStyles.numberMedium.copyWith(color: color),
+                ),
+                if (suffix != null) ...[
+                  const SizedBox(width: 2),
+                  Text(suffix, style: const TextStyle(fontSize: 14)),
+                ],
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: AppTextStyles.labelSmall,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _getLevelTitle(int level) {
+    if (level <= 5) return 'Người mới';
+    if (level <= 10) return 'Học viên';
+    if (level <= 20) return 'Sinh viên';
+    if (level <= 35) return 'Chuyên gia';
+    if (level <= 50) return 'Bậc thầy';
+    if (level <= 75) return 'Huyền thoại';
+    return 'Thần đồng';
+  }
+
+  void _showLevelTitlesDialog() {
+    final currentLevel = (_dashboardData?['stats']?['level'] as int?) ?? 1;
+    
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.8,
+          ),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.military_tech, color: Colors.amber.shade700, size: 28),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'Danh hiệu',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Level hiện tại: $currentLevel',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _buildLevelTitleRow('Người mới', '1 - 5', Icons.emoji_people, Colors.green, currentLevel >= 1 && currentLevel <= 5),
+                _buildLevelTitleRow('Học viên', '6 - 10', Icons.school, Colors.blue, currentLevel >= 6 && currentLevel <= 10),
+                _buildLevelTitleRow('Sinh viên', '11 - 20', Icons.menu_book, Colors.indigo, currentLevel >= 11 && currentLevel <= 20),
+                _buildLevelTitleRow('Chuyên gia', '21 - 35', Icons.psychology, Colors.purple, currentLevel >= 21 && currentLevel <= 35),
+                _buildLevelTitleRow('Bậc thầy', '36 - 50', Icons.workspace_premium, Colors.orange, currentLevel >= 36 && currentLevel <= 50),
+                _buildLevelTitleRow('Huyền thoại', '51 - 75', Icons.auto_awesome, Colors.red, currentLevel >= 51 && currentLevel <= 75),
+                _buildLevelTitleRow('Thần đồng', '76+', Icons.diamond, Colors.amber, currentLevel >= 76),
+                const SizedBox(height: 12),
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Đóng'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLevelTitleRow(String title, String levelRange, IconData icon, Color color, bool isCurrent) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: isCurrent 
+            ? [color.withOpacity(0.2), color.withOpacity(0.1)]
+            : [color.withOpacity(0.08), color.withOpacity(0.03)],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+        ),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: isCurrent ? color : color.withOpacity(0.3),
+          width: isCurrent ? 2 : 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: color.withOpacity(isCurrent ? 0.3 : 0.15),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Icon(icon, color: color, size: 20),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: isCurrent ? FontWeight.bold : FontWeight.w500,
+                    color: color.withOpacity(isCurrent ? 1 : 0.8),
+                  ),
+                ),
+                Text(
+                  'Level $levelRange',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: color.withOpacity(0.6),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (isCurrent)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Text(
+                'Hiện tại',
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+>>>>>>> Stashed changes
   }
 
   Widget _buildOnboardingBanner() {
@@ -249,37 +469,37 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Quick Actions',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          style: AppTextStyles.h3,
         ),
         const SizedBox(height: 16),
         Row(
           children: [
             Expanded(
               child: _ActionCard(
-                icon: Icons.task_alt,
+                icon: Icons.task_alt_rounded,
                 label: 'Quests',
-                color: Colors.blue,
+                color: AppColors.cyanNeon,
                 onTap: () => context.push('/quests'),
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: _ActionCard(
-                icon: Icons.leaderboard,
+                icon: Icons.leaderboard_rounded,
                 label: 'Leaderboard',
-                color: Colors.purple,
+                color: AppColors.purpleNeon,
                 onTap: () => context.push('/leaderboard'),
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: _ActionCard(
-                icon: Icons.account_tree,
-                label: 'Skill Tree',
-                color: Colors.teal,
-                onTap: () => context.push('/skill-tree'),
+                icon: Icons.account_balance_wallet_rounded,
+                label: 'Currency',
+                color: AppColors.coinGold,
+                onTap: () => context.push('/currency'),
               ),
             ),
           ],
@@ -308,9 +528,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
+            Text(
               'Daily Quests',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: AppTextStyles.h3,
             ),
             TextButton(
               onPressed: () => context.push('/quests'),
@@ -348,9 +568,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+<<<<<<< Updated upstream
         const Text(
           'Topic đang học',
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+=======
+        Text(
+          'Topic đang học',
+          style: AppTextStyles.h3,
+>>>>>>> Stashed changes
         ),
         const SizedBox(height: 16),
         SizedBox(
@@ -366,6 +592,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               final progress = node['progress'] as int? ?? 0;
               final icon = node['icon'] as String? ?? '📖';
 
+<<<<<<< Updated upstream
               return Container(
                 width: 280,
                 margin: const EdgeInsets.only(right: 12),
@@ -377,6 +604,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         context.push('/nodes/$nodeId');
                       }
                     },
+=======
+              return SlideIn(
+                delay: Duration(milliseconds: 50 * index),
+                beginOffset: const Offset(30, 0),
+                child: Container(
+                  width: 280,
+                  margin: const EdgeInsets.only(right: 12),
+                  child: Card(
+                    elevation: 2,
+                    child: InkWell(
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        if (nodeId != null) {
+                          context.push('/nodes/$nodeId');
+                        }
+                      },
+>>>>>>> Stashed changes
                     borderRadius: BorderRadius.circular(12),
                     child: Padding(
                       padding: const EdgeInsets.all(16),
@@ -466,6 +710,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                   ),
                 ),
+<<<<<<< Updated upstream
+=======
+              ),
+>>>>>>> Stashed changes
               );
             },
           ),
@@ -480,7 +728,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       children: [
         Text(
           title,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          style: AppTextStyles.h3,
         ),
         const SizedBox(height: 16),
         if (subjects.isEmpty)
@@ -515,6 +763,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 final totalNodesCount = subject['totalNodesCount'] as int? ?? 0;
                 final availableNodesCount = subject['availableNodesCount'] as int? ?? 0;
 
+<<<<<<< Updated upstream
                 return Container(
                   width: 280,
                   margin: const EdgeInsets.only(right: 12),
@@ -526,6 +775,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           context.push('/subjects/$subjectId/intro');
                         }
                       },
+=======
+                return SlideIn(
+                  delay: Duration(milliseconds: 50 * index),
+                  beginOffset: const Offset(30, 0),
+                  child: Container(
+                    width: 280,
+                    margin: const EdgeInsets.only(right: 12),
+                    child: Card(
+                      elevation: 2,
+                      child: InkWell(
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          if (subjectId != null) {
+                            context.push('/subjects/$subjectId/intro');
+                          }
+                        },
+>>>>>>> Stashed changes
                       borderRadius: BorderRadius.circular(12),
                       child: Padding(
                         padding: const EdgeInsets.all(16),
@@ -594,6 +860,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                     ),
                   ),
+                ),
                 );
               },
             ),
@@ -603,6 +870,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 }
 
+<<<<<<< Updated upstream
 class _StatCard extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -650,6 +918,8 @@ class _StatCard extends StatelessWidget {
   }
 }
 
+=======
+>>>>>>> Stashed changes
 class _ActionCard extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -665,26 +935,51 @@ class _ActionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              Icon(icon, color: color, size: 32),
-              const SizedBox(height: 8),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: color,
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.bgSecondary,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.borderPrimary),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            HapticFeedback.lightImpact();
+            onTap();
+          },
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(icon, color: color, size: 28),
                 ),
-                textAlign: TextAlign.center,
-              ),
-            ],
+                const SizedBox(height: 12),
+                Text(
+                  label,
+                  style: AppTextStyles.labelMedium.copyWith(
+                    color: color,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
           ),
         ),
       ),

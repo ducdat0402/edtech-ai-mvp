@@ -10,6 +10,10 @@ import 'package:edtech_mobile/features/content/widgets/web_video_player.dart';
 import 'package:edtech_mobile/features/content/widgets/content_format_badge.dart';
 import 'package:edtech_mobile/features/content/widgets/difficulty_badge.dart';
 import 'package:edtech_mobile/features/admin/widgets/comparison_dialog.dart';
+<<<<<<< Updated upstream
+=======
+import 'package:edtech_mobile/theme/theme.dart';
+>>>>>>> Stashed changes
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:io';
 
@@ -181,19 +185,45 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> with SingleTickerPr
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.bgPrimary,
       appBar: AppBar(
-        title: const Text('Admin Panel'),
+        backgroundColor: AppColors.bgSecondary,
+        elevation: 0,
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                gradient: AppGradients.primary,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.admin_panel_settings_rounded, color: Colors.white, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Text('Admin Panel', style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
+          ],
+        ),
         bottom: TabBar(
           controller: _tabController,
+          indicatorColor: AppColors.purpleNeon,
+          labelColor: AppColors.purpleNeon,
+          unselectedLabelColor: AppColors.textSecondary,
+          labelStyle: AppTextStyles.labelMedium,
           tabs: const [
+<<<<<<< Updated upstream
             Tab(text: 'Duyệt đóng góp', icon: Icon(Icons.pending_actions)),
             Tab(text: 'Quản lý bài học', icon: Icon(Icons.article)),
             Tab(text: 'Lịch sử', icon: Icon(Icons.history)),
+=======
+            Tab(text: 'Duyệt đóng góp', icon: Icon(Icons.pending_actions_rounded)),
+            Tab(text: 'Quản lý bài học', icon: Icon(Icons.article_rounded)),
+            Tab(text: 'Lịch sử', icon: Icon(Icons.history_rounded)),
+>>>>>>> Stashed changes
           ],
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh_rounded, color: AppColors.textSecondary),
             onPressed: () {
               if (_tabController.index == 0) {
                 _loadPendingEdits();
@@ -220,20 +250,24 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> with SingleTickerPr
 
   Widget _buildPendingEditsTab() {
     return _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator(color: AppColors.purpleNeon))
           : _error != null
               ? Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.error_outline, size: 64, color: Colors.red),
-                      const SizedBox(height: 16),
-                      Text('Lỗi: $_error'),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: _loadPendingEdits,
-                        child: const Text('Thử lại'),
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: AppColors.errorNeon.withOpacity(0.15),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.error_outline_rounded, size: 48, color: AppColors.errorNeon),
                       ),
+                      const SizedBox(height: 16),
+                      Text('Lỗi: $_error', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+                      const SizedBox(height: 16),
+                      GamingButton(text: 'Thử lại', onPressed: _loadPendingEdits, icon: Icons.refresh_rounded),
                     ],
                   ),
                 )
@@ -242,27 +276,31 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> with SingleTickerPr
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.check_circle_outline,
-                              size: 64, color: Colors.grey.shade400),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Không có đóng góp nào cần duyệt',
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.grey.shade600,
+                          Container(
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: AppColors.successNeon.withOpacity(0.15),
+                              shape: BoxShape.circle,
                             ),
+                            child: const Icon(Icons.check_circle_outline_rounded, size: 48, color: AppColors.successNeon),
                           ),
+                          const SizedBox(height: 16),
+                          Text('Không có đóng góp nào cần duyệt', style: AppTextStyles.bodyLarge.copyWith(color: AppColors.textSecondary)),
                         ],
                       ),
                     )
                   : RefreshIndicator(
                       onRefresh: _loadPendingEdits,
+                      color: AppColors.purpleNeon,
                       child: ListView.builder(
                         padding: const EdgeInsets.all(16),
                         itemCount: _pendingEdits.length,
                         itemBuilder: (context, index) {
                           final edit = _pendingEdits[index];
-                          return _buildEditCard(edit);
+                          return StaggeredListItem(
+                            index: index,
+                            child: _buildEditCard(edit),
+                          );
                         },
                       ),
                     );
@@ -674,7 +712,14 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> with SingleTickerPr
                     itemCount: _editHistory.length,
                     itemBuilder: (context, index) {
                       final history = _editHistory[index];
+<<<<<<< Updated upstream
                       return _buildHistoryCard(history, index == _editHistory.length - 1);
+=======
+                      return StaggeredListItem(
+                        index: index,
+                        child: _buildHistoryCard(history, index == _editHistory.length - 1),
+                      );
+>>>>>>> Stashed changes
                     },
                   ),
           );

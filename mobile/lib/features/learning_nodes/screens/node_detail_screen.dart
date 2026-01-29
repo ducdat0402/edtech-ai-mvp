@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
+import 'package:edtech_mobile/theme/theme.dart';
 
 class NodeDetailScreen extends StatefulWidget {
   final String nodeId;
@@ -21,11 +23,20 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
   Map<String, dynamic>? _nodeData;
   Map<String, dynamic>? _progressData;
   List<dynamic>? _contentItems;
+<<<<<<< Updated upstream
   List<dynamic>? _filteredContentItems; // Content đã lọc theo difficulty
+=======
+  List<dynamic>? _filteredContentItems; // Content đã lọc theo difficulty và format
+>>>>>>> Stashed changes
   bool _isLoading = true;
   String? _error;
   String? _subjectId; // Store subjectId for navigation
   String _selectedDifficulty = 'medium'; // Default difficulty
+<<<<<<< Updated upstream
+=======
+  String _selectedFormat = 'all'; // Default format: all, text, video, image
+  bool _isPremiumLocked = false; // True if node requires premium
+>>>>>>> Stashed changes
 
   @override
   void initState() {
@@ -41,6 +52,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
     }
   }
 
+<<<<<<< Updated upstream
   /// Lọc content items theo độ khó được chọn
   /// - Nếu không có content ở độ khó được chọn, sẽ fallback về tất cả content
   List<dynamic> _filterContentByDifficulty(List<dynamic> items, String difficulty) {
@@ -84,6 +96,80 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
         _showGenerateContentDialog(difficulty);
       }
     }
+=======
+  /// Lọc content items theo format được chọn
+  /// Note: Không filter theo difficulty nữa vì mức độ văn bản được chọn trong content viewer
+  /// Note: Đã loại bỏ type 'example' - chỉ hiển thị concept, hidden_reward, boss_quiz
+  List<dynamic> _filterContent(List<dynamic> items, String difficulty, String format) {
+    // Lọc bỏ example - chỉ giữ concept, hidden_reward, boss_quiz
+    var filtered = items.where((item) {
+      final itemType = (item as Map<String, dynamic>)['type'] as String? ?? '';
+      return itemType != 'example';
+    }).toList();
+    
+    // Lọc theo format nếu không phải "all"
+    if (format != 'all') {
+      final byFormat = filtered.where((item) {
+        final itemFormat = (item as Map<String, dynamic>)['format'] as String? ?? 'text';
+        return itemFormat == format;
+      }).toList();
+      
+      if (byFormat.isNotEmpty) {
+        filtered = byFormat;
+      } else {
+        // Không có content ở format này, trả về empty để hiện placeholder
+        return [];
+      }
+    }
+
+    print('✅ Filtered ${filtered.length}/${items.length} items for format: $format (excluded examples)');
+    return filtered;
+  }
+
+  /// Lọc content items theo độ khó được chọn (legacy - giữ cho tương thích)
+  List<dynamic> _filterContentByDifficulty(List<dynamic> items, String difficulty) {
+    return _filterContent(items, difficulty, _selectedFormat);
+  }
+
+  /// Thay đổi format và lọc lại content
+  void _changeFormat(String format) {
+    setState(() {
+      _selectedFormat = format;
+      if (_contentItems != null) {
+        _filteredContentItems = _filterContent(_contentItems!, _selectedDifficulty, format);
+      }
+    });
+  }
+
+  /// Đếm số content items theo format
+  Map<String, int> _countContentByFormat() {
+    if (_contentItems == null) return {'all': 0, 'text': 0, 'video': 0, 'image': 0};
+    
+    int textCount = 0;
+    int videoCount = 0;
+    int imageCount = 0;
+    
+    for (final item in _contentItems!) {
+      final format = (item as Map<String, dynamic>)['format'] as String? ?? 'text';
+      switch (format) {
+        case 'video':
+          videoCount++;
+          break;
+        case 'image':
+          imageCount++;
+          break;
+        default:
+          textCount++;
+      }
+    }
+    
+    return {
+      'all': _contentItems!.length,
+      'text': textCount,
+      'video': videoCount,
+      'image': imageCount,
+    };
+>>>>>>> Stashed changes
   }
 
   /// Hiển thị dialog hỏi có muốn tạo content mới theo độ khó không
@@ -272,10 +358,19 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
         }
       }
     } catch (e) {
-      setState(() {
-        _error = e.toString();
-        _isLoading = false;
-      });
+      final errorStr = e.toString();
+      // Check if this is a premium lock error
+      if (errorStr.contains('requiresPremium') || errorStr.contains('Premium') || errorStr.contains('403')) {
+        setState(() {
+          _isPremiumLocked = true;
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _error = errorStr;
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -649,6 +744,16 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
       }
     } catch (e) {
       print('⚠️ Error popping: $e');
+<<<<<<< Updated upstream
+    }
+    
+    // If cannot pop or pop failed, navigate to skill tree or dashboard
+    if (_subjectId != null) {
+      context.go('/skill-tree?subjectId=$_subjectId');
+    } else {
+      context.go('/dashboard');
+=======
+>>>>>>> Stashed changes
     }
     
     // If cannot pop or pop failed, navigate to skill tree or dashboard
@@ -659,59 +764,216 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
     }
   }
 
+  /// Build Premium Locked UI
+  Widget _buildPremiumLockedUI() {
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Lock icon with gradient glow
+            Container(
+              padding: const EdgeInsets.all(32),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    AppColors.coinGold.withOpacity(0.2),
+                    AppColors.orangeNeon.withOpacity(0.1),
+                  ],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.coinGold.withOpacity(0.3),
+                    blurRadius: 30,
+                    spreadRadius: 5,
+                  ),
+                ],
+              ),
+              child: ShaderMask(
+                shaderCallback: (bounds) => LinearGradient(
+                  colors: [AppColors.coinGold, AppColors.orangeNeon],
+                ).createShader(bounds),
+                child: const Icon(
+                  Icons.lock_rounded,
+                  size: 64,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            const SizedBox(height: 32),
+            
+            // Title
+            ShaderMask(
+              shaderCallback: (bounds) => LinearGradient(
+                colors: [AppColors.coinGold, AppColors.orangeNeon],
+              ).createShader(bounds),
+              child: Text(
+                'Nội dung Premium',
+                style: AppTextStyles.h2.copyWith(color: Colors.white),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            const SizedBox(height: 12),
+            
+            // Description
+            Text(
+              'Bài học này yêu cầu nâng cấp Premium để mở khóa.\nHãy nâng cấp để truy cập toàn bộ nội dung học tập!',
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.textSecondary,
+                height: 1.5,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+            
+            // Features list
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: AppColors.bgSecondary,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.borderPrimary),
+              ),
+              child: Column(
+                children: [
+                  _buildFeatureRow(Icons.school, 'Truy cập tất cả bài học'),
+                  const SizedBox(height: 12),
+                  _buildFeatureRow(Icons.quiz, 'Không giới hạn quiz'),
+                  const SizedBox(height: 12),
+                  _buildFeatureRow(Icons.block, 'Không quảng cáo'),
+                  const SizedBox(height: 12),
+                  _buildFeatureRow(Icons.support_agent, 'Hỗ trợ ưu tiên'),
+                ],
+              ),
+            ),
+            const SizedBox(height: 32),
+            
+            // Upgrade button
+            GamingButton(
+              text: 'Nâng cấp Premium',
+              onPressed: () {
+                HapticFeedback.mediumImpact();
+                context.push('/payment');
+              },
+              icon: Icons.workspace_premium,
+            ),
+            const SizedBox(height: 16),
+            
+            // Back button
+            TextButton.icon(
+              onPressed: _handleBack,
+              icon: const Icon(Icons.arrow_back, size: 18),
+              label: const Text('Quay lại'),
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.textSecondary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFeatureRow(IconData icon, String text) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: AppColors.successNeon.withOpacity(0.15),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, size: 18, color: AppColors.successNeon),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(text, style: AppTextStyles.bodyMedium),
+        ),
+      ],
+    );
+  }
+
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.bgPrimary,
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppColors.bgSecondary,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: AppColors.borderPrimary),
+            ),
+            child: const Icon(Icons.arrow_back, color: AppColors.textPrimary, size: 20),
+          ),
           onPressed: _handleBack,
           tooltip: 'Quay lại',
         ),
-        title: Text(_nodeData?['title'] ?? 'Node Detail'),
+        title: Text(
+          _nodeData?['title'] ?? 'Node Detail',
+          style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
         automaticallyImplyLeading: false,
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _error != null
+          ? Center(child: CircularProgressIndicator(color: AppColors.purpleNeon))
+          : _isPremiumLocked
+              ? _buildPremiumLockedUI()
+              : _error != null
               ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.error_outline,
-                          size: 64, color: Colors.red),
-                      const SizedBox(height: 16),
-                      Text('Error: $_error'),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: _loadData,
-                        child: const Text('Retry'),
-                      ),
-                    ],
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: AppColors.errorNeon.withOpacity(0.15),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.error_outline_rounded, size: 48, color: AppColors.errorNeon),
+                        ),
+                        const SizedBox(height: 16),
+                        Text('Error: $_error', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary), textAlign: TextAlign.center),
+                        const SizedBox(height: 16),
+                        GamingButton(text: 'Retry', onPressed: _loadData, icon: Icons.refresh_rounded),
+                      ],
+                    ),
                   ),
                 )
               : _nodeData == null
-                  ? const Center(child: Text('No data available'))
+                  ? Center(child: Text('No data available', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)))
                   : RefreshIndicator(
                       onRefresh: _refreshData,
+                      color: AppColors.purpleNeon,
                       child: SingleChildScrollView(
                         physics: const AlwaysScrollableScrollPhysics(),
                         padding: const EdgeInsets.all(16),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+<<<<<<< Updated upstream
                             // Difficulty Selector
                             _buildDifficultySelector(),
                             const SizedBox(height: 16),
                             
                             // Progress HUD
+=======
+>>>>>>> Stashed changes
                             if (_progressData != null) _buildProgressHUD(),
                             const SizedBox(height: 24),
-
-                            // Node Info
                             _buildNodeInfo(),
                             const SizedBox(height: 24),
-
-                            // Content Items Path
                             _buildContentPath(),
                           ],
                         ),
@@ -720,6 +982,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
     );
   }
 
+<<<<<<< Updated upstream
   /// Widget chọn độ khó
   Widget _buildDifficultySelector() {
     return Card(
@@ -939,46 +1202,385 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
     final percentageInt = percentage.round();
     print('  📈 Final: $completed/$total = $percentageInt%');
 
+=======
+  /// Widget chọn dạng bài học (text/video/image)
+  Widget _buildFormatSelector() {
+    final formatCounts = _countContentByFormat();
+    
+>>>>>>> Stashed changes
     return Card(
-      color: Colors.blue.shade50,
+      color: _getFormatColor(_selectedFormat).withOpacity(0.1),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: _getFormatColor(_selectedFormat).withOpacity(0.3),
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
+                Icon(
+                  Icons.category,
+                  color: _getFormatColor(_selectedFormat),
+                ),
+                const SizedBox(width: 8),
                 const Text(
-                  'Tiến độ',
+                  'Dạng bài học',
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                Text(
-                  '$percentageInt%',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue.shade700,
+                const Spacer(),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: _getFormatColor(_selectedFormat),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    _getFormatLabel(_selectedFormat),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            LinearProgressIndicator(
-              value: total > 0 ? (completed / total).clamp(0.0, 1.0) : 0,
-              backgroundColor: Colors.grey.shade300,
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
-              minHeight: 8,
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                _buildFormatChip('all', 'Tất cả', Icons.apps, Colors.grey.shade700, formatCounts['all'] ?? 0),
+                const SizedBox(width: 6),
+                _buildFormatChip('text', 'Văn bản', Icons.article, Colors.blue, formatCounts['text'] ?? 0),
+                const SizedBox(width: 6),
+                _buildFormatChip('video', 'Video', Icons.videocam, Colors.purple, formatCounts['video'] ?? 0),
+                const SizedBox(width: 6),
+                _buildFormatChip('image', 'Hình ảnh', Icons.image, Colors.teal, formatCounts['image'] ?? 0),
+              ],
             ),
-            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFormatChip(String format, String label, IconData icon, Color color, int count) {
+    final isSelected = _selectedFormat == format;
+    final hasContent = count > 0 || format == 'all';
+    
+    return Expanded(
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.selectionClick();
+          _changeFormat(format);
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: isSelected ? color : (hasContent ? Colors.grey.shade100 : Colors.grey.shade50),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isSelected ? color : (hasContent ? Colors.grey.shade300 : Colors.grey.shade200),
+              width: isSelected ? 2 : 1,
+            ),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: color.withOpacity(0.3),
+                      blurRadius: 8,
+                      spreadRadius: 2,
+                    ),
+                  ]
+                : null,
+          ),
+          child: Column(
+            children: [
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Icon(
+                    icon,
+                    color: isSelected ? Colors.white : (hasContent ? Colors.grey.shade600 : Colors.grey.shade400),
+                    size: 22,
+                  ),
+                  if (count > 0)
+                    Positioned(
+                      right: -8,
+                      top: -4,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                        decoration: BoxDecoration(
+                          color: isSelected ? Colors.white : color,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          '$count',
+                          style: TextStyle(
+                            fontSize: 9,
+                            fontWeight: FontWeight.bold,
+                            color: isSelected ? color : Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  color: isSelected ? Colors.white : (hasContent ? Colors.grey.shade600 : Colors.grey.shade400),
+                ),
+              ),
+              if (!hasContent && format != 'all')
+                Padding(
+                  padding: const EdgeInsets.only(top: 2),
+                  child: Icon(
+                    Icons.add_circle_outline,
+                    size: 12,
+                    color: isSelected ? Colors.white70 : Colors.orange.shade400,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Color _getFormatColor(String format) {
+    switch (format) {
+      case 'text':
+        return Colors.blue;
+      case 'video':
+        return Colors.purple;
+      case 'image':
+        return Colors.teal;
+      default:
+        return Colors.grey.shade700;
+    }
+  }
+
+  String _getFormatLabel(String format) {
+    switch (format) {
+      case 'text':
+        return 'Văn bản';
+      case 'video':
+        return 'Video';
+      case 'image':
+        return 'Hình ảnh';
+      default:
+        return 'Tất cả';
+    }
+  }
+
+  /// Tính tiến độ theo từng mức độ (difficulty)
+  Map<String, Map<String, int>> _calculateProgressByDifficulty() {
+    final result = {
+      'easy': {'completed': 0, 'total': 0},
+      'medium': {'completed': 0, 'total': 0},
+      'hard': {'completed': 0, 'total': 0},
+    };
+
+    if (_contentItems == null) return result;
+
+    // Lấy danh sách ID đã hoàn thành
+    Set<String> completedIds = {};
+    if (_progressData != null) {
+      final progressData =
+          _progressData!['progress'] as Map<String, dynamic>? ?? _progressData;
+      final completedItems =
+          progressData?['completedItems'] as Map<String, dynamic>? ?? {};
+      
+      // Collect all completed IDs from concepts, hiddenRewards (examples removed)
+      for (final key in ['concepts', 'hiddenRewards']) {
+        final items = completedItems[key] as List?;
+        if (items != null) {
+          completedIds.addAll(items.map((e) => e.toString()));
+        }
+      }
+    }
+
+    // Đếm theo difficulty (chỉ tính concept, không tính example, boss_quiz và hidden_reward)
+    for (final item in _contentItems!) {
+      final itemData = item as Map<String, dynamic>;
+      final itemType = itemData['type'] as String? ?? '';
+      final itemDifficulty = itemData['difficulty'] as String? ?? 'medium';
+      final itemId = itemData['id'] as String? ?? '';
+
+      // Chỉ tính concept vào tiến độ học (đã loại bỏ example)
+      if (itemType == 'concept') {
+        if (result.containsKey(itemDifficulty)) {
+          result[itemDifficulty]!['total'] = result[itemDifficulty]!['total']! + 1;
+          if (completedIds.contains(itemId)) {
+            result[itemDifficulty]!['completed'] = result[itemDifficulty]!['completed']! + 1;
+          }
+        }
+      }
+    }
+
+    return result;
+  }
+
+  /// Kiểm tra xem có ít nhất 1 mức độ đã hoàn thành 100% không
+  bool _hasCompletedAnyDifficulty() {
+    final progressByDiff = _calculateProgressByDifficulty();
+    for (final diff in ['easy', 'medium', 'hard']) {
+      final completed = progressByDiff[diff]!['completed']!;
+      final total = progressByDiff[diff]!['total']!;
+      if (total > 0 && completed >= total) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /// Lấy tên mức độ đã hoàn thành (nếu có)
+  String? _getCompletedDifficultyName() {
+    final progressByDiff = _calculateProgressByDifficulty();
+    for (final entry in [
+      {'key': 'easy', 'name': 'Đơn giản'},
+      {'key': 'medium', 'name': 'Chi tiết'},
+      {'key': 'hard', 'name': 'Chuyên sâu'},
+    ]) {
+      final completed = progressByDiff[entry['key']]!['completed']!;
+      final total = progressByDiff[entry['key']]!['total']!;
+      if (total > 0 && completed >= total) {
+        return entry['name'];
+      }
+    }
+    return null;
+  }
+
+  Widget _buildProgressHUD() {
+    final progressByDiff = _calculateProgressByDifficulty();
+    
+    final selectedProgress = progressByDiff[_selectedDifficulty]!;
+    final completed = selectedProgress['completed']!;
+    final total = selectedProgress['total']!;
+    final percentage = total > 0 ? (completed / total * 100).round() : 0;
+    final diffColor = _getDifficultyColor(_selectedDifficulty);
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: diffColor.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: diffColor.withOpacity(0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Text('Tiến độ', style: AppTextStyles.labelLarge.copyWith(color: AppColors.textPrimary)),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: diffColor,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      _getDifficultyLabel(_selectedDifficulty),
+                      style: AppTextStyles.caption.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+              Text(
+                '$percentage%',
+                style: AppTextStyles.numberMedium.copyWith(color: diffColor),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Stack(
+            children: [
+              Container(
+                height: 10,
+                decoration: BoxDecoration(
+                  color: AppColors.bgTertiary,
+                  borderRadius: BorderRadius.circular(5),
+                ),
+              ),
+              FractionallySizedBox(
+                widthFactor: total > 0 ? (completed / total).clamp(0.0, 1.0) : 0,
+                child: Container(
+                  height: 10,
+                  decoration: BoxDecoration(
+                    color: diffColor,
+                    borderRadius: BorderRadius.circular(5),
+                    boxShadow: [BoxShadow(color: diffColor.withOpacity(0.5), blurRadius: 8)],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          // Removed difficulty breakdown (Đơn giản/Chi tiết/Chuyên sâu) - user selects complexity in content viewer
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDifficultyProgress(String difficulty, String label, Color color, Map<String, int> progress) {
+    final completed = progress['completed']!;
+    final total = progress['total']!;
+    final isCompleted = total > 0 && completed >= total;
+    final isSelected = _selectedDifficulty == difficulty;
+
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: isSelected ? color.withOpacity(0.2) : Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isCompleted ? color : (isSelected ? color : Colors.grey.shade300),
+            width: isCompleted ? 2 : 1,
+          ),
+        ),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (isCompleted)
+                  Icon(Icons.check_circle, color: color, size: 14),
+                if (isCompleted) const SizedBox(width: 4),
+                Flexible(
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      color: isCompleted ? color : Colors.grey.shade700,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
             Text(
-              '$completed / $total items completed',
+              '$completed/$total',
               style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey.shade600,
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: isCompleted ? color : Colors.grey.shade800,
               ),
             ),
           ],
@@ -987,62 +1589,94 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
     );
   }
 
-  Widget _buildNodeInfo() {
-    final contentStructure =
-        _nodeData!['contentStructure'] as Map<String, dynamic>? ?? {};
+  /// Tính số lượng content theo mức độ được chọn (từ danh sách đã filter)
+  Map<String, int> _getContentCountByDifficulty() {
+    final result = {
+      'concepts': 0,
+      'examples': 0,
+      'hiddenRewards': 0,
+      'bossQuiz': 0,
+    };
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+    // Sử dụng filtered content items (đã lọc theo difficulty)
+    final itemsToCount = _filteredContentItems ?? _contentItems;
+    if (itemsToCount == null) return result;
+
+    for (final item in itemsToCount) {
+      final itemData = item as Map<String, dynamic>;
+      final itemType = itemData['type'] as String? ?? '';
+
+      // Đếm theo type từ danh sách đã filter theo difficulty
+      switch (itemType) {
+        case 'concept':
+          result['concepts'] = result['concepts']! + 1;
+          break;
+        case 'example':
+          result['examples'] = result['examples']! + 1;
+          break;
+        case 'hidden_reward':
+          result['hiddenRewards'] = result['hiddenRewards']! + 1;
+          break;
+        case 'boss_quiz':
+          result['bossQuiz'] = result['bossQuiz']! + 1;
+          break;
+      }
+    }
+
+    return result;
+  }
+
+  Widget _buildNodeInfo() {
+    final contentByDifficulty = _getContentCountByDifficulty();
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.bgSecondary,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.borderPrimary),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            _nodeData!['title'] ?? 'Node',
+            style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary),
+          ),
+          if (_nodeData!['description'] != null) ...[
+            const SizedBox(height: 12),
             Text(
-              _nodeData!['title'] ?? 'Node',
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            if (_nodeData!['description'] != null) ...[
-              const SizedBox(height: 12),
-              Text(
-                _nodeData!['description'] ?? '',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey.shade700,
-                ),
-              ),
-            ],
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 16,
-              runSpacing: 8,
-              children: [
-                _InfoChip(
-                  icon: Icons.lightbulb,
-                  label: 'Khái niệm',
-                  value: '${contentStructure['concepts'] ?? 0}',
-                ),
-                _InfoChip(
-                  icon: Icons.code,
-                  label: 'Ví dụ',
-                  value: '${contentStructure['examples'] ?? 0}',
-                ),
-                _InfoChip(
-                  icon: Icons.star,
-                  label: 'Rewards',
-                  value: '${contentStructure['hiddenRewards'] ?? 0}',
-                ),
-                _InfoChip(
-                  icon: Icons.quiz,
-                  label: 'Boss Quiz',
-                  value: '${contentStructure['bossQuiz'] ?? 0}',
-                ),
-              ],
+              _nodeData!['description'] ?? '',
+              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
             ),
           ],
-        ),
+          const SizedBox(height: 16),
+          // Info chips - only show concepts count (examples removed)
+          Wrap(
+            spacing: 16,
+            runSpacing: 8,
+            children: [
+              _InfoChip(
+                icon: Icons.menu_book_rounded,
+                label: 'Bài học',
+                value: '${contentByDifficulty['concepts'] ?? 0}',
+                color: _getDifficultyColor(_selectedDifficulty),
+              ),
+              _InfoChip(
+                icon: Icons.star_rounded,
+                label: 'Rewards',
+                value: '${contentByDifficulty['hiddenRewards']}',
+                color: AppColors.xpGold,
+              ),
+              _InfoChip(
+                icon: Icons.quiz_rounded,
+                label: 'Boss Quiz',
+                value: '${contentByDifficulty['bossQuiz']}',
+                color: AppColors.pinkNeon,
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -1052,6 +1686,13 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
     final contentToShow = _filteredContentItems ?? _contentItems;
     
     if (contentToShow == null || contentToShow.isEmpty) {
+<<<<<<< Updated upstream
+=======
+      // Nếu đang lọc theo format cụ thể và không có content
+      if (_selectedFormat != 'all' && _contentItems != null && _contentItems!.isNotEmpty) {
+        return _buildEmptyFormatState();
+      }
+>>>>>>> Stashed changes
       return const SizedBox.shrink();
     }
 
@@ -1223,6 +1864,373 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
     );
   }
 
+  /// Hiển thị trạng thái trống khi không có content theo format đã chọn
+  Widget _buildEmptyFormatState() {
+    final formatColor = _getFormatColor(_selectedFormat);
+    final formatLabel = _getFormatLabel(_selectedFormat);
+    final formatIcon = _selectedFormat == 'video' ? Icons.videocam 
+        : _selectedFormat == 'image' ? Icons.image : Icons.article;
+    
+    return Card(
+      color: formatColor.withOpacity(0.05),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(color: formatColor.withOpacity(0.2), width: 2),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Icon container
+            Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                color: formatColor.withOpacity(0.1),
+                shape: BoxShape.circle,
+                border: Border.all(color: formatColor.withOpacity(0.3), width: 3),
+              ),
+              child: Icon(
+                formatIcon,
+                size: 50,
+                color: formatColor.withOpacity(0.6),
+              ),
+            ),
+            const SizedBox(height: 24),
+            
+            // Title
+            Text(
+              'Chưa có nội dung $formatLabel',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: formatColor,
+              ),
+            ),
+            const SizedBox(height: 12),
+            
+            // Description
+            Text(
+              'Bài học này chưa có nội dung dạng ${formatLabel.toLowerCase()}.\nBạn có thể đóng góp để giúp cộng đồng!',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade600,
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 24),
+            
+            // Rewards info
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.amber.shade50,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.amber.shade200),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.emoji_events, color: Colors.amber.shade700, size: 24),
+                  const SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Phần thưởng đóng góp',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.amber.shade800,
+                          fontSize: 13,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          Icon(Icons.star, size: 14, color: Colors.orange.shade600),
+                          Text(' +50 XP  ', style: TextStyle(fontSize: 12, color: Colors.grey.shade700)),
+                          Icon(Icons.monetization_on, size: 14, color: Colors.amber.shade600),
+                          Text(' +30 Coin', style: TextStyle(fontSize: 12, color: Colors.grey.shade700)),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            
+            // Contribute button
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton.icon(
+                onPressed: () => _showContributeFormatDialog(),
+                icon: Icon(_selectedFormat == 'video' ? Icons.upload : Icons.add_photo_alternate),
+                label: Text(
+                  'Đóng góp ${formatLabel}',
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: formatColor,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  elevation: 4,
+                ),
+              ),
+            ),
+            
+            const SizedBox(height: 16),
+            
+            // Switch format hint
+            TextButton.icon(
+              onPressed: () => _changeFormat('all'),
+              icon: Icon(Icons.apps, size: 18, color: Colors.grey.shade600),
+              label: Text(
+                'Xem tất cả dạng bài học',
+                style: TextStyle(color: Colors.grey.shade600),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Dialog để đóng góp nội dung theo format
+  void _showContributeFormatDialog() {
+    final formatColor = _getFormatColor(_selectedFormat);
+    final formatLabel = _getFormatLabel(_selectedFormat);
+    final nodeTitle = _nodeData?['title'] ?? 'Bài học';
+    
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.6,
+          minChildSize: 0.4,
+          maxChildSize: 0.9,
+          expand: false,
+          builder: (context, scrollController) {
+            return SingleChildScrollView(
+              controller: scrollController,
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header
+                  Row(
+                    children: [
+                      Container(
+                        width: 56,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          color: formatColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Icon(
+                          _selectedFormat == 'video' ? Icons.videocam : Icons.image,
+                          color: formatColor,
+                          size: 32,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Đóng góp $formatLabel',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              nodeTitle,
+                              style: TextStyle(
+                                color: Colors.grey.shade600,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  
+                  // Instructions
+                  const Text(
+                    'Hướng dẫn đóng góp',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  _buildContributionGuideItem(
+                    Icons.info_outline,
+                    'Nội dung liên quan đến "$nodeTitle"',
+                    Colors.blue,
+                  ),
+                  _buildContributionGuideItem(
+                    Icons.check_circle_outline,
+                    _selectedFormat == 'video' 
+                        ? 'Video rõ ràng, chất lượng tốt (720p trở lên)'
+                        : 'Hình ảnh rõ nét, có chú thích',
+                    Colors.green,
+                  ),
+                  _buildContributionGuideItem(
+                    Icons.translate,
+                    'Ưu tiên nội dung tiếng Việt',
+                    Colors.orange,
+                  ),
+                  _buildContributionGuideItem(
+                    Icons.timer,
+                    _selectedFormat == 'video'
+                        ? 'Độ dài: 2-10 phút'
+                        : 'Kích thước: tối đa 10MB',
+                    Colors.purple,
+                  ),
+                  
+                  const SizedBox(height: 24),
+                  
+                  // Rewards
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Colors.amber.shade100, Colors.orange.shade100],
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.emoji_events, color: Colors.amber, size: 32),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Phần thưởng khi được duyệt',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  Icon(Icons.star, color: Colors.orange.shade600, size: 16),
+                                  const Text(' +50 XP  '),
+                                  Icon(Icons.monetization_on, color: Colors.amber.shade600, size: 16),
+                                  const Text(' +30 Coin'),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  
+                  // Upload button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _navigateToContribute();
+                      },
+                      icon: Icon(_selectedFormat == 'video' ? Icons.upload : Icons.add_photo_alternate),
+                      label: Text(
+                        _selectedFormat == 'video' ? 'Tải lên Video' : 'Tải lên Hình ảnh',
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: formatColor,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildContributionGuideItem(IconData icon, String text, Color color) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          Icon(icon, color: color, size: 20),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                color: Colors.grey.shade700,
+                fontSize: 14,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Navigate đến màn hình upload contribution
+  void _navigateToContribute() {
+    // Tạo placeholder content ID dựa trên node và format
+    final nodeId = widget.nodeId;
+    final format = _selectedFormat;
+    final nodeTitle = _nodeData?['title'] ?? 'Bài học';
+    
+    context.push(
+      '/contribute/new-$nodeId-$format?format=$format',
+      extra: {
+        'title': '${format == 'video' ? '🎬' : '🖼️'} $nodeTitle',
+        'nodeId': nodeId,
+        'isNewContribution': true,
+        'contributionGuide': {
+          'suggestedContent': 'Tạo ${format == 'video' ? 'video' : 'hình ảnh'} giải thích về "$nodeTitle"',
+          'requirements': [
+            format == 'video' ? 'Video rõ ràng, chất lượng 720p trở lên' : 'Hình ảnh rõ nét',
+            'Nội dung liên quan đến bài học',
+            'Ưu tiên tiếng Việt',
+            format == 'video' ? 'Độ dài 2-10 phút' : 'Kích thước tối đa 10MB',
+          ],
+          'difficulty': _selectedDifficulty,
+          'estimatedTime': format == 'video' ? '30-60 phút' : '15-30 phút',
+        },
+      },
+    ).then((result) {
+      if (result == true) {
+        _refreshData();
+      }
+    });
+  }
+
   Widget _buildPathContentItem(Map<String, dynamic> item, int stepNumber,
       bool isCompleted, String itemType, bool isUnlocked) {
     final title = item['title'] as String? ?? 'Content';
@@ -1233,8 +2241,12 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
 
     return GestureDetector(
       onTap: canAccess
-          ? () => _onContentItemTap(item)
+          ? () {
+              HapticFeedback.lightImpact();
+              _onContentItemTap(item);
+            }
           : () {
+              HapticFeedback.lightImpact();
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text('Hoàn thành các bài trước để mở khóa bài này!'),
@@ -1469,11 +2481,21 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
   Widget _buildPathContentItemCard(Map<String, dynamic> item, int stepNumber,
       bool isCompleted, String itemType, bool isUnlocked) {
     final title = item['title'] as String? ?? 'Content';
-    final color = _getItemTypeColor(itemType);
-    final icon = _getItemTypeIcon(itemType);
-    final typeLabel = _getItemTypeLabel(itemType);
+    final format = item['format'] as String? ?? 'text';
+    final status = item['status'] as String? ?? 'published';
+    final isPlaceholder = status == 'placeholder';
+    final isAwaitingReview = status == 'awaiting_review';
+    
+    // Placeholder uses different color scheme
+    final color = isPlaceholder 
+        ? (format == 'video' ? Colors.purple : Colors.teal)
+        : _getItemTypeColor(itemType);
+    final icon = isPlaceholder
+        ? (format == 'video' ? Icons.videocam : Icons.image)
+        : _getItemTypeIcon(itemType);
+    // Removed typeLabel - not showing type badge anymore
 
-    final canAccess = isCompleted || isUnlocked;
+    final canAccess = isCompleted || isUnlocked || isPlaceholder;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -1600,25 +2622,35 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
           ),
           subtitle: Row(
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: isCompleted
-                      ? color.withOpacity(0.3)
-                      : color.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  typeLabel,
-                  style: TextStyle(
-                    color: isCompleted ? _getDarkerColor(color) : color,
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
+              // Status badge for content item
+              if (isPlaceholder) ...[
+                Icon(Icons.volunteer_activism, color: Colors.orange.shade600, size: 14),
+                const SizedBox(width: 4),
+                Flexible(
+                  child: Text(
+                    'Cần đóng góp',
+                    style: TextStyle(
+                      color: Colors.orange.shade700,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-              ),
-              if (isCompleted) ...[
-                const SizedBox(width: 8),
+              ] else if (isAwaitingReview) ...[
+                Icon(Icons.hourglass_empty, color: Colors.blue.shade600, size: 14),
+                const SizedBox(width: 4),
+                Flexible(
+                  child: Text(
+                    'Đang chờ duyệt',
+                    style: TextStyle(
+                      color: Colors.blue.shade700,
+                      fontSize: 12,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ] else if (isCompleted) ...[
                 Icon(Icons.check_circle,
                     color: Colors.green.shade600, size: 16),
                 const SizedBox(width: 4),
@@ -1631,7 +2663,6 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                   ),
                 ),
               ] else if (!isUnlocked) ...[
-                const SizedBox(width: 8),
                 Icon(Icons.lock, color: Colors.grey.shade600, size: 14),
                 const SizedBox(width: 4),
                 Text(
@@ -1641,16 +2672,51 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                     fontSize: 12,
                   ),
                 ),
+              ] else ...[
+                // Unlocked but not completed - show ready status
+                Icon(Icons.play_circle_outline, color: color, size: 14),
+                const SizedBox(width: 4),
+                Text(
+                  'Sẵn sàng học',
+                  style: TextStyle(
+                    color: color,
+                    fontSize: 12,
+                  ),
+                ),
               ],
             ],
           ),
-          trailing: isCompleted
-              ? Icon(Icons.check_circle, color: Colors.green.shade600, size: 28)
-              : isUnlocked
-                  ? Icon(Icons.arrow_forward_ios, size: 16, color: color)
-                  : Icon(Icons.lock, color: Colors.grey.shade400, size: 20),
+          trailing: isPlaceholder
+              ? Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.orange,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: const Text(
+                    'Đóng góp',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                )
+              : isAwaitingReview
+                  ? Icon(Icons.hourglass_empty, color: Colors.blue.shade400, size: 24)
+                  : isCompleted
+                      ? Icon(Icons.check_circle, color: Colors.green.shade600, size: 28)
+                      : isUnlocked
+                          ? Icon(Icons.arrow_forward_ios, size: 16, color: color)
+                          : Icon(Icons.lock, color: Colors.grey.shade400, size: 20),
           onTap: canAccess
-              ? () => _onContentItemTap(item)
+              ? () {
+                  if (isPlaceholder) {
+                    _showContributionDialog(item);
+                  } else {
+                    _onContentItemTap(item);
+                  }
+                }
               : () {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
@@ -1663,6 +2729,392 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
         ),
       ),
     );
+  }
+
+  /// Hiển thị dialog cho việc đóng góp nội dung (video/image)
+  void _showContributionDialog(Map<String, dynamic> item) {
+    final title = item['title'] as String? ?? 'Nội dung';
+    final content = item['content'] as String? ?? '';
+    final format = item['format'] as String? ?? 'text';
+    final contributionGuide = item['contributionGuide'] as Map<String, dynamic>?;
+    final rewards = item['rewards'] as Map<String, dynamic>?;
+    final itemId = item['id'] as String?;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.7,
+          minChildSize: 0.5,
+          maxChildSize: 0.95,
+          expand: false,
+          builder: (context, scrollController) {
+            return SingleChildScrollView(
+              controller: scrollController,
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header
+                  Row(
+                    children: [
+                      Container(
+                        width: 56,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          color: format == 'video'
+                              ? Colors.purple.shade100
+                              : Colors.teal.shade100,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Icon(
+                          format == 'video' ? Icons.videocam : Icons.image,
+                          color: format == 'video' ? Colors.purple : Colors.teal,
+                          size: 32,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              title.replaceAll(RegExp(r'^(🎬|🖼️)\s*'), ''),
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.orange.shade100,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                format == 'video' ? 'Video cần đóng góp' : 'Hình ảnh cần đóng góp',
+                                style: TextStyle(
+                                  color: Colors.orange.shade700,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Rewards
+                  if (rewards != null) ...[
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Colors.amber.shade100, Colors.orange.shade100],
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.emoji_events, color: Colors.amber, size: 32),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Phần thưởng khi được duyệt',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    if (rewards['xp'] != null) ...[
+                                      Icon(Icons.star, color: Colors.orange.shade600, size: 16),
+                                      const SizedBox(width: 4),
+                                      Text('+${rewards['xp']} XP'),
+                                      const SizedBox(width: 12),
+                                    ],
+                                    if (rewards['coin'] != null) ...[
+                                      Icon(Icons.monetization_on, color: Colors.amber.shade600, size: 16),
+                                      const SizedBox(width: 4),
+                                      Text('+${rewards['coin']} Coin'),
+                                    ],
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+
+                  // Description
+                  const Text(
+                    'Mô tả nội dung cần tạo',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade100,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      contributionGuide?['suggestedContent'] as String? ?? content,
+                      style: const TextStyle(fontSize: 14, height: 1.5),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Requirements
+                  if (contributionGuide?['requirements'] != null) ...[
+                    const Text(
+                      'Yêu cầu kỹ thuật',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    // Xử lý an toàn: requirements có thể là List hoặc String
+                    ...(() {
+                      final raw = contributionGuide!['requirements'];
+                      final reqs = raw is List 
+                          ? raw 
+                          : raw is String 
+                              ? [raw] 
+                              : <dynamic>[];
+                      return reqs.map((req) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Icon(Icons.check_circle, color: Colors.green.shade600, size: 20),
+                              const SizedBox(width: 8),
+                              Expanded(child: Text(req.toString())),
+                            ],
+                          ),
+                        );
+                      });
+                    })(),
+                    const SizedBox(height: 24),
+                  ],
+
+                  // Difficulty & Time
+                  if (contributionGuide != null) ...[
+                    Row(
+                      children: [
+                        if (contributionGuide['difficulty'] != null) ...[
+                          Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.blue.shade50,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.signal_cellular_alt, color: Colors.blue.shade600),
+                                  const SizedBox(width: 8),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'Độ khó',
+                                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                                      ),
+                                      Text(
+                                        _getDifficultyText(contributionGuide['difficulty'] as String),
+                                        style: const TextStyle(fontWeight: FontWeight.bold),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                        ],
+                        if (contributionGuide['estimatedTime'] != null)
+                          Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.green.shade50,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.schedule, color: Colors.green.shade600),
+                                  const SizedBox(width: 8),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'Thời gian',
+                                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                                      ),
+                                      Text(
+                                        contributionGuide['estimatedTime'] as String,
+                                        style: const TextStyle(fontWeight: FontWeight.bold),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+
+                  // Action button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _navigateToUpload(
+                          itemId, 
+                          format, 
+                          title: title,
+                          contributionGuide: contributionGuide,
+                        );
+                      },
+                      icon: Icon(format == 'video' ? Icons.upload : Icons.add_photo_alternate),
+                      label: Text(
+                        format == 'video' ? 'Tải lên Video' : 'Tải lên Hình ảnh',
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: format == 'video' ? Colors.purple : Colors.teal,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // History & Version buttons
+                  if (itemId != null) ...[
+                    Row(
+                      children: [
+                        // View edit history
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () {
+                              Navigator.pop(context);
+                              _showEditHistory(itemId);
+                            },
+                            icon: Icon(Icons.history, size: 18, color: Colors.grey.shade700),
+                            label: Text(
+                              'Lịch sử',
+                              style: TextStyle(color: Colors.grey.shade700),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              side: BorderSide(color: Colors.grey.shade300),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        // View versions
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () {
+                              Navigator.pop(context);
+                              _showVersions(itemId);
+                            },
+                            icon: Icon(Icons.folder_copy, size: 18, color: Colors.grey.shade700),
+                            label: Text(
+                              'Phiên bản',
+                              style: TextStyle(color: Colors.grey.shade700),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              side: BorderSide(color: Colors.grey.shade300),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                  const SizedBox(height: 16),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  String _getDifficultyText(String difficulty) {
+    switch (difficulty) {
+      case 'easy':
+        return 'Dễ';
+      case 'medium':
+        return 'Trung bình';
+      case 'hard':
+        return 'Khó';
+      default:
+        return difficulty;
+    }
+  }
+
+  void _navigateToUpload(String? itemId, String format, {String? title, Map<String, dynamic>? contributionGuide}) {
+    if (itemId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Không tìm thấy ID nội dung'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    context.push(
+      '/contribute/$itemId?format=$format',
+      extra: {
+        'title': title,
+        'contributionGuide': contributionGuide,
+      },
+    ).then((result) {
+      // Refresh data if contribution was successful
+      if (result == true) {
+        _refreshData();
+      }
+    });
   }
 
   Color _getItemTypeColor(String type) {
@@ -1718,6 +3170,625 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
       (color.blue * 0.7).round().clamp(0, 255),
       1.0,
     );
+  }
+
+  /// Hiển thị lịch sử đóng góp của content item
+  void _showEditHistory(String contentItemId) async {
+    // Show loading
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      final apiService = context.read<ApiService>();
+      final history = await apiService.getHistoryForContent(contentItemId);
+
+      if (!mounted) return;
+      Navigator.pop(context); // Close loading
+
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        builder: (context) {
+          return DraggableScrollableSheet(
+            initialChildSize: 0.6,
+            minChildSize: 0.4,
+            maxChildSize: 0.9,
+            expand: false,
+            builder: (context, scrollController) {
+              return SingleChildScrollView(
+                controller: scrollController,
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.blue.shade100,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(Icons.history, color: Colors.blue.shade700, size: 24),
+                        ),
+                        const SizedBox(width: 12),
+                        const Expanded(
+                          child: Text(
+                            'Lịch sử đóng góp',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    const Divider(),
+                    const SizedBox(height: 16),
+
+                    // History list
+                    if (history.isEmpty)
+                      Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(32),
+                          child: Column(
+                            children: [
+                              Icon(Icons.history_toggle_off, size: 64, color: Colors.grey.shade400),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Chưa có lịch sử đóng góp',
+                                style: TextStyle(
+                                  color: Colors.grey.shade600,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    else
+                      ...history.map((entry) => _buildHistoryItem(entry as Map<String, dynamic>)),
+                  ],
+                ),
+              );
+            },
+          );
+        },
+      );
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context); // Close loading
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi khi tải lịch sử: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Widget _buildHistoryItem(Map<String, dynamic> entry) {
+    final action = entry['action'] as String? ?? 'unknown';
+    final description = entry['description'] as String? ?? '';
+    final createdAt = entry['createdAt'] as String?;
+    
+    // Parse date
+    String formattedDate = '';
+    if (createdAt != null) {
+      try {
+        final date = DateTime.parse(createdAt);
+        formattedDate = '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
+      } catch (_) {
+        formattedDate = createdAt;
+      }
+    }
+
+    // Get action icon and color
+    IconData actionIcon;
+    Color actionColor;
+    switch (action) {
+      case 'submit':
+        actionIcon = Icons.upload;
+        actionColor = Colors.blue;
+        break;
+      case 'approve':
+        actionIcon = Icons.check_circle;
+        actionColor = Colors.green;
+        break;
+      case 'reject':
+        actionIcon = Icons.cancel;
+        actionColor = Colors.red;
+        break;
+      case 'remove':
+        actionIcon = Icons.delete;
+        actionColor = Colors.orange;
+        break;
+      default:
+        actionIcon = Icons.info;
+        actionColor = Colors.grey;
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 4,
+          ),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: actionColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(actionIcon, color: actionColor, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  description,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  formattedDate,
+                  style: TextStyle(
+                    color: Colors.grey.shade600,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Hiển thị các phiên bản của content item
+  void _showVersions(String contentItemId) async {
+    // Show loading
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      final apiService = context.read<ApiService>();
+      final versions = await apiService.getVersionsForContent(contentItemId);
+
+      if (!mounted) return;
+      Navigator.pop(context); // Close loading
+
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        builder: (context) {
+          return DraggableScrollableSheet(
+            initialChildSize: 0.6,
+            minChildSize: 0.4,
+            maxChildSize: 0.9,
+            expand: false,
+            builder: (context, scrollController) {
+              return SingleChildScrollView(
+                controller: scrollController,
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.purple.shade100,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(Icons.folder_copy, color: Colors.purple.shade700, size: 24),
+                        ),
+                        const SizedBox(width: 12),
+                        const Expanded(
+                          child: Text(
+                            'Các phiên bản',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    const Divider(),
+                    const SizedBox(height: 16),
+
+                    // Versions list
+                    if (versions.isEmpty)
+                      Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(32),
+                          child: Column(
+                            children: [
+                              Icon(Icons.folder_off, size: 64, color: Colors.grey.shade400),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Chưa có phiên bản nào',
+                                style: TextStyle(
+                                  color: Colors.grey.shade600,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    else
+                      ...versions.asMap().entries.map((entry) {
+                        final index = entry.key;
+                        final version = entry.value as Map<String, dynamic>;
+                        final isLatest = index == 0;
+                        return _buildVersionItem(version, isLatest, contentItemId);
+                      }),
+                  ],
+                ),
+              );
+            },
+          );
+        },
+      );
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context); // Close loading
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi khi tải phiên bản: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Widget _buildVersionItem(Map<String, dynamic> version, bool isLatest, String contentItemId) {
+    final versionId = version['id'] as String? ?? '';
+    final description = version['description'] as String? ?? 'Phiên bản';
+    final createdAt = version['createdAt'] as String?;
+    final versionNumber = version['versionNumber'] as int? ?? 1;
+    
+    // Parse date
+    String formattedDate = '';
+    if (createdAt != null) {
+      try {
+        final date = DateTime.parse(createdAt);
+        formattedDate = '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
+      } catch (_) {
+        formattedDate = createdAt;
+      }
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: isLatest ? Colors.green.shade50 : Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isLatest ? Colors.green.shade300 : Colors.grey.shade200,
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: isLatest ? Colors.green : Colors.grey.shade200,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Center(
+              child: Text(
+                'v$versionNumber',
+                style: TextStyle(
+                  color: isLatest ? Colors.white : Colors.grey.shade700,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        description,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    if (isLatest)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.green,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Text(
+                          'Hiện tại',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  formattedDate,
+                  style: TextStyle(
+                    color: Colors.grey.shade600,
+                    fontSize: 12,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    // View comparison
+                    TextButton.icon(
+                      onPressed: () => _showVersionComparison(versionId, version),
+                      icon: Icon(Icons.compare_arrows, size: 16, color: Colors.blue.shade600),
+                      label: Text(
+                        'So sánh',
+                        style: TextStyle(color: Colors.blue.shade600, fontSize: 12),
+                      ),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        minimumSize: Size.zero,
+                      ),
+                    ),
+                    // Revert (only for non-current versions)
+                    if (!isLatest) ...[
+                      const SizedBox(width: 8),
+                      TextButton.icon(
+                        onPressed: () => _revertToVersion(versionId, versionNumber),
+                        icon: Icon(Icons.restore, size: 16, color: Colors.orange.shade600),
+                        label: Text(
+                          'Khôi phục',
+                          style: TextStyle(color: Colors.orange.shade600, fontSize: 12),
+                        ),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          minimumSize: Size.zero,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Hiển thị so sánh phiên bản
+  void _showVersionComparison(String versionId, Map<String, dynamic> version) async {
+    // Show loading
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      final apiService = context.read<ApiService>();
+      // Get edit ID from version
+      final editId = version['editId'] as String?;
+      
+      if (editId == null) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Không tìm thấy thông tin so sánh')),
+        );
+        return;
+      }
+
+      final comparison = await apiService.getEditComparison(editId);
+
+      if (!mounted) return;
+      Navigator.pop(context); // Close loading
+
+      // Show comparison dialog
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Row(
+            children: [
+              Icon(Icons.compare_arrows, color: Colors.blue.shade600),
+              const SizedBox(width: 8),
+              const Text('So sánh phiên bản'),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Original
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.remove_circle, color: Colors.red.shade600, size: 16),
+                          const SizedBox(width: 4),
+                          const Text('Trước', style: TextStyle(fontWeight: FontWeight.bold)),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        comparison['original']?['title']?.toString() ?? 'N/A',
+                        style: const TextStyle(fontSize: 13),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                // Proposed
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.add_circle, color: Colors.green.shade600, size: 16),
+                          const SizedBox(width: 4),
+                          const Text('Sau', style: TextStyle(fontWeight: FontWeight.bold)),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        comparison['proposed']?['title']?.toString() ?? 'N/A',
+                        style: const TextStyle(fontSize: 13),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Đóng'),
+            ),
+          ],
+        ),
+      );
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  /// Khôi phục về phiên bản trước
+  void _revertToVersion(String versionId, int versionNumber) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Khôi phục phiên bản?'),
+        content: Text('Bạn có chắc muốn khôi phục về phiên bản v$versionNumber?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Hủy'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+            child: const Text('Khôi phục', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    // Show loading
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      final apiService = context.read<ApiService>();
+      await apiService.revertToVersion(versionId);
+
+      if (!mounted) return;
+      Navigator.pop(context); // Close loading
+      Navigator.pop(context); // Close versions sheet
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Đã khôi phục về v$versionNumber'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      // Refresh data
+      _refreshData();
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
   }
 }
 
@@ -1852,31 +3923,36 @@ class _InfoChip extends StatelessWidget {
   final IconData icon;
   final String label;
   final String value;
+  final Color? color;
 
   const _InfoChip({
     required this.icon,
     required this.label,
     required this.value,
+    this.color,
   });
 
   @override
   Widget build(BuildContext context) {
+    final chipColor = color ?? Colors.grey.shade700;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
+        color: color != null ? color!.withOpacity(0.1) : Colors.grey.shade100,
         borderRadius: BorderRadius.circular(20),
+        border: color != null ? Border.all(color: color!.withOpacity(0.3)) : null,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: Colors.grey.shade700),
+          Icon(icon, size: 16, color: chipColor),
           const SizedBox(width: 6),
           Text(
             '$value $label',
             style: TextStyle(
               fontSize: 12,
-              color: Colors.grey.shade700,
+              color: chipColor,
+              fontWeight: color != null ? FontWeight.bold : FontWeight.normal,
             ),
           ),
         ],
