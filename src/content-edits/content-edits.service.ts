@@ -123,7 +123,15 @@ export class ContentEditsService {
     userId: string,
     data: {
       title: string;
-      richContent?: any; // JSON from flutter_quill (optional for quiz)
+      richContent?: any; // JSON from flutter_quill (optional for quiz) - detailed version
+      textVariants?: {
+        simple?: string;
+        detailed?: string;
+        comprehensive?: string;
+        simpleRichContent?: any;
+        detailedRichContent?: any;
+        comprehensiveRichContent?: any;
+      };
       imageUrls?: string[]; // Multiple images (max 5)
       videoUrl?: string;
       description?: string;
@@ -172,6 +180,7 @@ export class ContentEditsService {
       title: contentItem.title,
       content: contentItem.content,
       richContent: (contentItem as any).richContent || null,
+      textVariants: (contentItem as any).textVariants || null,
       media: contentItem.media ? { ...contentItem.media } : null,
       quizData: contentItem.quizData ? { ...contentItem.quizData } : null,
     };
@@ -185,6 +194,7 @@ export class ContentEditsService {
         status: ContentEditStatus.PENDING,
         title: data.title,
         richContent: data.richContent,
+        textVariants: data.textVariants,
         media: {
           imageUrls: data.imageUrls || [],
           videoUrl: data.videoUrl,
@@ -286,6 +296,7 @@ export class ContentEditsService {
         title: contentItem.title,
         content: contentItem.content,
         richContent: (contentItem as any).richContent || null,
+        textVariants: (contentItem as any).textVariants || null,
         media: contentItem.media ? { ...contentItem.media } : null,
         quizData: contentItem.quizData ? { ...contentItem.quizData } : null,
       };
@@ -336,15 +347,22 @@ export class ContentEditsService {
       // Update content text (legacy)
       contentItem.content = edit.textContent;
     } else if (edit.type === ContentEditType.UPDATE_CONTENT && edit.title) {
-      // Handle full lesson edit (title, richContent, images, video, quizData)
+      // Handle full lesson edit (title, richContent, textVariants, images, video, quizData)
       if (edit.title) {
         contentItem.title = edit.title;
       }
       if (edit.richContent) {
-        // Store richContent in content item
+        // Store richContent in content item (detailed version)
         (contentItem as any).richContent = edit.richContent;
         // Also store as JSON string in content field for backward compatibility
         contentItem.content = JSON.stringify(edit.richContent);
+      }
+      // Apply text variants for 3 complexity levels (Đơn giản, Chi tiết, Chuyên sâu)
+      if ((edit as any).textVariants) {
+        (contentItem as any).textVariants = {
+          ...((contentItem as any).textVariants || {}),
+          ...(edit as any).textVariants,
+        };
       }
       if (edit.media) {
         // Merge media, prioritizing new values
@@ -702,6 +720,7 @@ export class ContentEditsService {
       title: contentItem.title,
       content: contentItem.content,
       richContent: (contentItem as any).richContent || null,
+      textVariants: (contentItem as any).textVariants || null,
       media: contentItem.media || null,
     };
 
@@ -710,6 +729,7 @@ export class ContentEditsService {
       title: edit.title || original.title,
       content: edit.textContent || original.content,
       richContent: edit.richContent || original.richContent,
+      textVariants: (edit as any).textVariants || original.textVariants,
       media: edit.media || original.media,
     };
 

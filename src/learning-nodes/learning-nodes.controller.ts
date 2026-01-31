@@ -1,8 +1,7 @@
-import { Controller, Get, Param, Post, Put, Delete, Body, UseGuards, NotFoundException, Request, ForbiddenException, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Param, Post, Put, Body, UseGuards, NotFoundException, Request, ForbiddenException } from '@nestjs/common';
 import { LearningNodesService } from './learning-nodes.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
-import { AdminGuard } from '../auth/guards/admin.guard';
 
 @Controller('nodes')
 export class LearningNodesController {
@@ -105,47 +104,6 @@ export class LearningNodesController {
     if (body.metadata) node.metadata = { ...node.metadata, ...body.metadata };
 
     return this.nodesService['nodeRepository'].save(node);
-  }
-
-  // ============ ADMIN ENDPOINTS ============
-
-  /**
-   * Tạo Learning Node mới (Admin only)
-   */
-  @Post()
-  @UseGuards(JwtAuthGuard, AdminGuard)
-  async createNode(
-    @Body() body: {
-      subjectId: string;
-      domainId?: string;
-      title: string;
-      description?: string;
-      order?: number;
-      type?: 'theory' | 'practice' | 'assessment';
-      difficulty?: 'easy' | 'medium' | 'hard';
-      prerequisites?: string[];
-      metadata?: { icon?: string; position?: { x: number; y: number } };
-    },
-  ) {
-    if (!body.subjectId || !body.title) {
-      throw new BadRequestException('subjectId and title are required');
-    }
-    return this.nodesService.createNode(body);
-  }
-
-  /**
-   * Xóa Learning Node (Admin only)
-   * Cũng xóa tất cả content items thuộc node này
-   */
-  @Delete(':id')
-  @UseGuards(JwtAuthGuard, AdminGuard)
-  async deleteNode(@Param('id') id: string) {
-    const node = await this.nodesService.findById(id);
-    if (!node) {
-      throw new NotFoundException('Learning node not found');
-    }
-    await this.nodesService.deleteNode(id);
-    return { success: true, message: 'Learning node deleted successfully' };
   }
 }
 

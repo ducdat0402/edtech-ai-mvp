@@ -8,14 +8,12 @@ import { UserPremium } from '../payment/entities/user-premium.entity';
 import { AiModule } from '../ai/ai.module';
 import { DomainsModule } from '../domains/domains.module';
 import { GenerationProgressService } from './generation-progress.service';
-import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([LearningNode, ContentItem, UserPremium]),
     AiModule,
     forwardRef(() => DomainsModule),
-    UsersModule, // Required for AdminGuard
   ],
   controllers: [LearningNodesController],
   providers: [LearningNodesService, GenerationProgressService],
