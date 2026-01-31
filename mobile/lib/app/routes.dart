@@ -9,11 +9,8 @@ import 'package:edtech_mobile/features/placement_test/screens/analysis_complete_
 import 'package:edtech_mobile/features/subjects/screens/subject_intro_screen.dart';
 import 'package:edtech_mobile/features/subjects/screens/subject_learning_goals_screen.dart';
 import 'package:edtech_mobile/features/subjects/screens/personal_mind_map_screen.dart';
-<<<<<<< Updated upstream
-=======
 import 'package:edtech_mobile/features/subjects/screens/learning_path_choice_screen.dart';
 import 'package:edtech_mobile/features/placement_test/screens/adaptive_placement_test_screen.dart';
->>>>>>> Stashed changes
 import 'package:edtech_mobile/features/domains/screens/domains_list_screen.dart';
 import 'package:edtech_mobile/features/domains/screens/domain_detail_screen.dart';
 import 'package:edtech_mobile/features/learning_nodes/screens/learning_node_map_screen.dart';
@@ -85,8 +82,6 @@ final GoRouter appRouter = GoRouter(
       },
     ),
     GoRoute(
-<<<<<<< Updated upstream
-=======
       path: '/subjects/:id/learning-path-choice',
       builder: (context, state) {
         final subjectId = state.pathParameters['id']!;
@@ -111,7 +106,6 @@ final GoRouter appRouter = GoRouter(
       },
     ),
     GoRoute(
->>>>>>> Stashed changes
       path: '/subjects/:id/domains',
       builder: (context, state) {
         final subjectId = state.pathParameters['id']!;
@@ -130,8 +124,6 @@ final GoRouter appRouter = GoRouter(
       },
     ),
     GoRoute(
-<<<<<<< Updated upstream
-=======
       path: '/subjects/:id/all-lessons',
       builder: (context, state) {
         final subjectId = state.pathParameters['id']!;
@@ -139,7 +131,6 @@ final GoRouter appRouter = GoRouter(
       },
     ),
     GoRoute(
->>>>>>> Stashed changes
       path: '/domains/:id',
       builder: (context, state) {
         final domainId = state.pathParameters['id']!;
@@ -152,8 +143,6 @@ final GoRouter appRouter = GoRouter(
         final nodeId = state.pathParameters['id']!;
         final difficulty = state.uri.queryParameters['difficulty'];
         return NodeDetailScreen(nodeId: nodeId, difficulty: difficulty);
-<<<<<<< Updated upstream
-=======
       },
     ),
     GoRoute(
@@ -170,7 +159,6 @@ final GoRouter appRouter = GoRouter(
           nodeId: extra?['nodeId'] as String?,
           isNewContribution: extra?['isNewContribution'] as bool? ?? false,
         );
->>>>>>> Stashed changes
       },
     ),
     GoRoute(
@@ -204,8 +192,6 @@ final GoRouter appRouter = GoRouter(
           contentItemId: contentId,
           isAdmin: isAdmin,
         );
-<<<<<<< Updated upstream
-=======
       },
     ),
     GoRoute(
@@ -223,7 +209,6 @@ final GoRouter appRouter = GoRouter(
           nodeId: contentData?['nodeId'] as String?,
           isNewContribution: false,
         );
->>>>>>> Stashed changes
       },
     ),
     GoRoute(
@@ -256,9 +241,6 @@ final GoRouter appRouter = GoRouter(
           path: 'journey',
           builder: (context, state) => const JourneyLogScreen(),
         ),
-<<<<<<< Updated upstream
-      ],
-=======
         GoRoute(
           path: 'contributions',
           builder: (context, state) => const MyContributionsScreen(),
@@ -269,7 +251,6 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/my-contributions',
       builder: (context, state) => const MyContributionsScreen(),
->>>>>>> Stashed changes
     ),
     GoRoute(
       path: '/admin/panel',

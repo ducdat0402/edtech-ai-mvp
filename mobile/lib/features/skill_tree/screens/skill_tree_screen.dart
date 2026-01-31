@@ -326,9 +326,6 @@ class _SkillTreeScreenState extends State<SkillTreeScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-<<<<<<< Updated upstream
-          icon: const Icon(Icons.arrow_back),
-=======
           icon: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
@@ -338,7 +335,6 @@ class _SkillTreeScreenState extends State<SkillTreeScreen> {
             ),
             child: const Icon(Icons.arrow_back, color: AppColors.textPrimary, size: 20),
           ),
->>>>>>> Stashed changes
           onPressed: () {
             if (context.canPop()) {
               context.pop();

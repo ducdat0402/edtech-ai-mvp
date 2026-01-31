@@ -16,6 +16,8 @@ class _ComparisonDialog extends StatefulWidget {
 
 class _ComparisonDialogState extends State<_ComparisonDialog> {
   bool _showOriginal = true; // Toggle between original and proposed
+  int _complexityIndex = 1; // 0=simple, 1=detailed, 2=comprehensive
+  final List<String> _complexityLabels = ['Đơn giản', 'Chi tiết', 'Chuyên sâu'];
 
   String _getFullUrl(String? url) {
     if (url == null || url.isEmpty) return '';
@@ -24,6 +26,40 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
     }
     final baseUrl = ApiConfig.baseUrl.replaceAll('/api/v1', '');
     return '$baseUrl$url';
+  }
+
+  /// Get content for the selected complexity level
+  dynamic _getContentForComplexity(Map<String, dynamic> data) {
+    final textVariants = data['textVariants'] as Map<String, dynamic>?;
+    
+    switch (_complexityIndex) {
+      case 0: // Simple
+        if (textVariants?['simpleRichContent'] != null) {
+          return textVariants!['simpleRichContent'];
+        }
+        if (textVariants?['simple'] != null) {
+          return textVariants!['simple'];
+        }
+        return data['richContent']; // Fallback to default
+        
+      case 2: // Comprehensive
+        if (textVariants?['comprehensiveRichContent'] != null) {
+          return textVariants!['comprehensiveRichContent'];
+        }
+        if (textVariants?['comprehensive'] != null) {
+          return textVariants!['comprehensive'];
+        }
+        return data['richContent']; // Fallback to default
+        
+      default: // Detailed (index 1)
+        if (textVariants?['detailedRichContent'] != null) {
+          return textVariants!['detailedRichContent'];
+        }
+        if (textVariants?['detailed'] != null) {
+          return textVariants!['detailed'];
+        }
+        return data['richContent'];
+    }
   }
 
   Widget _buildQuizPreview(Map<String, dynamic>? quizData) {
@@ -387,17 +423,54 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
                         _showOriginal ? original['quizData'] : proposed['quizData'],
                       ),
                     ] else ...[
-                      // Rich Content
+                      // Complexity tabs for text content
                       Text(
-                        'Nội dung:',
+                        'Nội dung (3 dạng):',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: _showOriginal ? Colors.blue : Colors.green,
                         ),
                       ),
                       const SizedBox(height: 8),
+                      // Complexity selector
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade200,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: const EdgeInsets.all(4),
+                        child: Row(
+                          children: List.generate(3, (index) {
+                            final isSelected = _complexityIndex == index;
+                            final colors = [Colors.green, Colors.blue, Colors.orange];
+                            return Expanded(
+                              child: GestureDetector(
+                                onTap: () => setState(() => _complexityIndex = index),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: isSelected ? colors[index] : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    _complexityLabels[index],
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: isSelected ? Colors.white : Colors.grey.shade700,
+                                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          }),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      // Rich Content based on selected complexity
                       _buildRichContentPreview(
-                        _showOriginal ? original['richContent'] : proposed['richContent'],
+                        _getContentForComplexity(_showOriginal ? original : proposed),
                       ),
                     ],
                     const SizedBox(height: 16),

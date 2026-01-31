@@ -209,13 +209,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: _buildStatCard(
                 icon: Icons.star_rounded,
                 label: 'XP',
-<<<<<<< Updated upstream
-                value: '${stats['totalXP'] ?? 0}',
-                color: Colors.amber,
-=======
                 value: totalXP,
                 color: AppColors.xpGold,
->>>>>>> Stashed changes
                 onTap: () => context.push('/currency'),
               ),
             ),
@@ -225,13 +220,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: _buildStatCard(
                 icon: Icons.monetization_on_rounded,
                 label: 'Coins',
-<<<<<<< Updated upstream
-                value: '${stats['coins'] ?? 0}',
-                color: Colors.orange,
-=======
                 value: coins is int ? coins : 0,
                 color: AppColors.coinGold,
->>>>>>> Stashed changes
                 onTap: () => context.push('/currency'),
               ),
             ),
@@ -241,16 +231,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: _buildStatCard(
                 icon: Icons.local_fire_department_rounded,
                 label: 'Streak',
-<<<<<<< Updated upstream
-                value: '${stats['streak'] ?? 0}',
-                color: Colors.red,
-                onTap: () => context.push('/currency'),
-=======
                 value: streak is int ? streak : 0,
                 color: AppColors.streakOrange,
                 onTap: () => context.push('/currency'),
                 suffix: '🔥',
->>>>>>> Stashed changes
               ),
             ),
           ],
@@ -259,12 +243,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-<<<<<<< Updated upstream
-  Widget _buildOnboardingBanner() {
-    // Onboarding đã được tích hợp vào Personal Mind Map screen
-    // Không hiển thị banner ở dashboard nữa
-    return const SizedBox.shrink();
-=======
+
   Widget _buildStatCard({
     required IconData icon,
     required String label,
@@ -456,7 +435,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ],
       ),
     );
->>>>>>> Stashed changes
   }
 
   Widget _buildOnboardingBanner() {
@@ -499,19 +477,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 icon: Icons.account_balance_wallet_rounded,
                 label: 'Currency',
                 color: AppColors.coinGold,
-                onTap: () => context.push('/currency'),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _ActionCard(
-                icon: Icons.account_balance_wallet,
-                label: 'Currency',
-                color: Colors.amber,
                 onTap: () => context.push('/currency'),
               ),
             ),
@@ -568,15 +533,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-<<<<<<< Updated upstream
-        const Text(
-          'Topic đang học',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-=======
         Text(
           'Topic đang học',
           style: AppTextStyles.h3,
->>>>>>> Stashed changes
         ),
         const SizedBox(height: 16),
         SizedBox(
@@ -592,19 +551,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
               final progress = node['progress'] as int? ?? 0;
               final icon = node['icon'] as String? ?? '📖';
 
-<<<<<<< Updated upstream
-              return Container(
-                width: 280,
-                margin: const EdgeInsets.only(right: 12),
-                child: Card(
-                  elevation: 2,
-                  child: InkWell(
-                    onTap: () {
-                      if (nodeId != null) {
-                        context.push('/nodes/$nodeId');
-                      }
-                    },
-=======
               return SlideIn(
                 delay: Duration(milliseconds: 50 * index),
                 beginOffset: const Offset(30, 0),
@@ -620,7 +566,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           context.push('/nodes/$nodeId');
                         }
                       },
->>>>>>> Stashed changes
                     borderRadius: BorderRadius.circular(12),
                     child: Padding(
                       padding: const EdgeInsets.all(16),
@@ -710,10 +655,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                   ),
                 ),
-<<<<<<< Updated upstream
-=======
               ),
->>>>>>> Stashed changes
               );
             },
           ),
@@ -763,19 +705,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 final totalNodesCount = subject['totalNodesCount'] as int? ?? 0;
                 final availableNodesCount = subject['availableNodesCount'] as int? ?? 0;
 
-<<<<<<< Updated upstream
-                return Container(
-                  width: 280,
-                  margin: const EdgeInsets.only(right: 12),
-                  child: Card(
-                    elevation: 2,
-                    child: InkWell(
-                      onTap: () {
-                        if (subjectId != null) {
-                          context.push('/subjects/$subjectId/intro');
-                        }
-                      },
-=======
                 return SlideIn(
                   delay: Duration(milliseconds: 50 * index),
                   beginOffset: const Offset(30, 0),
@@ -791,7 +720,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             context.push('/subjects/$subjectId/intro');
                           }
                         },
->>>>>>> Stashed changes
                       borderRadius: BorderRadius.circular(12),
                       child: Padding(
                         padding: const EdgeInsets.all(16),
@@ -870,56 +798,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 }
 
-<<<<<<< Updated upstream
-class _StatCard extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-  final Color color;
-  final VoidCallback? onTap;
-
-  const _StatCard({
-    required this.icon,
-    required this.label,
-    required this.value,
-    required this.color,
-    this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              Icon(icon, color: color, size: 32),
-              const SizedBox(height: 8),
-              Text(
-                value,
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: color,
-                ),
-              ),
-              Text(
-                label,
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-=======
->>>>>>> Stashed changes
 class _ActionCard extends StatelessWidget {
   final IconData icon;
   final String label;

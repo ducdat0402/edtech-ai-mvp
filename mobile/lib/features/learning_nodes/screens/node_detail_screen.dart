@@ -23,20 +23,13 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
   Map<String, dynamic>? _nodeData;
   Map<String, dynamic>? _progressData;
   List<dynamic>? _contentItems;
-<<<<<<< Updated upstream
-  List<dynamic>? _filteredContentItems; // Content đã lọc theo difficulty
-=======
   List<dynamic>? _filteredContentItems; // Content đã lọc theo difficulty và format
->>>>>>> Stashed changes
   bool _isLoading = true;
   String? _error;
   String? _subjectId; // Store subjectId for navigation
   String _selectedDifficulty = 'medium'; // Default difficulty
-<<<<<<< Updated upstream
-=======
   String _selectedFormat = 'all'; // Default format: all, text, video, image
   bool _isPremiumLocked = false; // True if node requires premium
->>>>>>> Stashed changes
 
   @override
   void initState() {
@@ -52,51 +45,6 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
     }
   }
 
-<<<<<<< Updated upstream
-  /// Lọc content items theo độ khó được chọn
-  /// - Nếu không có content ở độ khó được chọn, sẽ fallback về tất cả content
-  List<dynamic> _filterContentByDifficulty(List<dynamic> items, String difficulty) {
-    // Lọc items có difficulty trùng khớp
-    final filtered = items.where((item) {
-      final itemDifficulty = (item as Map<String, dynamic>)['difficulty'] as String? ?? 'medium';
-      return itemDifficulty == difficulty;
-    }).toList();
-
-    // Nếu không có item nào ở độ khó này, trả về tất cả
-    if (filtered.isEmpty) {
-      print('⚠️ No content at difficulty "$difficulty", showing all content');
-      return items;
-    }
-
-    print('✅ Filtered ${filtered.length}/${items.length} items for difficulty: $difficulty');
-    return filtered;
-  }
-
-  /// Thay đổi độ khó và lọc lại content
-  Future<void> _changeDifficulty(String difficulty) async {
-    setState(() {
-      _selectedDifficulty = difficulty;
-      if (_contentItems != null) {
-        _filteredContentItems = _filterContentByDifficulty(_contentItems!, difficulty);
-      }
-    });
-
-    // Kiểm tra nếu không có content ở độ khó này
-    if (_filteredContentItems != null && 
-        _filteredContentItems!.length == _contentItems!.length &&
-        _contentItems!.isNotEmpty) {
-      // Content không thay đổi -> có thể chưa có content ở độ khó này
-      final difficultyContent = _contentItems!.where((item) {
-        final itemDiff = (item as Map<String, dynamic>)['difficulty'] as String?;
-        return itemDiff == difficulty;
-      }).toList();
-
-      if (difficultyContent.isEmpty) {
-        // Hiển thị dialog hỏi có muốn tạo content mới không
-        _showGenerateContentDialog(difficulty);
-      }
-    }
-=======
   /// Lọc content items theo format được chọn
   /// Note: Không filter theo difficulty nữa vì mức độ văn bản được chọn trong content viewer
   /// Note: Đã loại bỏ type 'example' - chỉ hiển thị concept, hidden_reward, boss_quiz
@@ -169,7 +117,6 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
       'video': videoCount,
       'image': imageCount,
     };
->>>>>>> Stashed changes
   }
 
   /// Hiển thị dialog hỏi có muốn tạo content mới theo độ khó không
@@ -744,16 +691,6 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
       }
     } catch (e) {
       print('⚠️ Error popping: $e');
-<<<<<<< Updated upstream
-    }
-    
-    // If cannot pop or pop failed, navigate to skill tree or dashboard
-    if (_subjectId != null) {
-      context.go('/skill-tree?subjectId=$_subjectId');
-    } else {
-      context.go('/dashboard');
-=======
->>>>>>> Stashed changes
     }
     
     // If cannot pop or pop failed, navigate to skill tree or dashboard
@@ -962,14 +899,6 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-<<<<<<< Updated upstream
-                            // Difficulty Selector
-                            _buildDifficultySelector(),
-                            const SizedBox(height: 16),
-                            
-                            // Progress HUD
-=======
->>>>>>> Stashed changes
                             if (_progressData != null) _buildProgressHUD(),
                             const SizedBox(height: 24),
                             _buildNodeInfo(),
@@ -982,232 +911,10 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
     );
   }
 
-<<<<<<< Updated upstream
-  /// Widget chọn độ khó
-  Widget _buildDifficultySelector() {
-    return Card(
-      color: _getDifficultyColor(_selectedDifficulty).withOpacity(0.1),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(
-          color: _getDifficultyColor(_selectedDifficulty).withOpacity(0.3),
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(
-                  Icons.tune,
-                  color: _getDifficultyColor(_selectedDifficulty),
-                ),
-                const SizedBox(width: 8),
-                const Text(
-                  'Mức độ học',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const Spacer(),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: _getDifficultyColor(_selectedDifficulty),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    _getDifficultyLabel(_selectedDifficulty),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                _buildDifficultyChip('easy', 'Đơn giản', Icons.sentiment_satisfied, Colors.green),
-                const SizedBox(width: 8),
-                _buildDifficultyChip('medium', 'Chi tiết', Icons.auto_awesome, Colors.blue),
-                const SizedBox(width: 8),
-                _buildDifficultyChip('hard', 'Chuyên sâu', Icons.rocket_launch, Colors.orange),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDifficultyChip(String difficulty, String label, IconData icon, Color color) {
-    final isSelected = _selectedDifficulty == difficulty;
-    
-    return Expanded(
-      child: InkWell(
-        onTap: () => _changeDifficulty(difficulty),
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          decoration: BoxDecoration(
-            color: isSelected ? color : Colors.grey.shade100,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: isSelected ? color : Colors.grey.shade300,
-              width: isSelected ? 2 : 1,
-            ),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: color.withOpacity(0.3),
-                      blurRadius: 8,
-                      spreadRadius: 2,
-                    ),
-                  ]
-                : null,
-          ),
-          child: Column(
-            children: [
-              Icon(
-                icon,
-                color: isSelected ? Colors.white : Colors.grey.shade600,
-                size: 24,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  color: isSelected ? Colors.white : Colors.grey.shade600,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildProgressHUD() {
-    final progress = _progressData!;
-
-    // ✅ Backend returns structure: { progress: UserProgress, node: LearningNode, hud: {...} }
-    // Debug: Print structure
-    print('📊 Building Progress HUD');
-    print('  - progress keys: ${progress.keys.toList()}');
-    print('  - has hud: ${progress.containsKey('hud')}');
-    print('  - has progress: ${progress.containsKey('progress')}');
-
-    int completed = 0;
-    int total = 0;
-    double percentage = 0;
-
-    // Try to get from hud first (backend returns this)
-    if (progress.containsKey('hud') && progress['hud'] != null) {
-      print('  ✅ Using hud data');
-      final hud = progress['hud'] as Map<String, dynamic>;
-      percentage = (hud['progressPercentage'] as num?)?.toDouble() ?? 0;
-
-      // Calculate total and completed from hud
-      final concepts = hud['concepts'] as Map<String, dynamic>? ?? {};
-      final examples = hud['examples'] as Map<String, dynamic>? ?? {};
-      final hiddenRewards = hud['hiddenRewards'] as Map<String, dynamic>? ?? {};
-      final bossQuiz = hud['bossQuiz'] as Map<String, dynamic>? ?? {};
-
-      completed = (concepts['completed'] as int? ?? 0) +
-          (examples['completed'] as int? ?? 0) +
-          (hiddenRewards['completed'] as int? ?? 0) +
-          ((bossQuiz['completed'] as int? ?? 0) > 0 ? 1 : 0);
-
-      total = (concepts['total'] as int? ?? 0) +
-          (examples['total'] as int? ?? 0) +
-          (hiddenRewards['total'] as int? ?? 0) +
-          (bossQuiz['total'] as int? ?? 0);
-
-      print('  - hud.progressPercentage: $percentage');
-      print('  - hud.completed: $completed');
-      print('  - hud.total: $total');
-    } else if (progress.containsKey('progress') &&
-        progress['progress'] != null) {
-      // Fallback: calculate from progress.completedItems
-      print('  ⚠️ Using progress.completedItems (fallback)');
-      final progressData = progress['progress'] as Map<String, dynamic>;
-      final completedItems =
-          progressData['completedItems'] as Map<String, dynamic>? ?? {};
-
-      print('  - completedItems: $completedItems');
-
-      final concepts = (completedItems['concepts'] as List?)?.length ?? 0;
-      final examples = (completedItems['examples'] as List?)?.length ?? 0;
-      final hiddenRewards =
-          (completedItems['hiddenRewards'] as List?)?.length ?? 0;
-      final bossQuiz = (completedItems['bossQuiz'] as List?)?.length ?? 0;
-
-      completed = concepts + examples + hiddenRewards + (bossQuiz > 0 ? 1 : 0);
-
-      // Get total from node data
-      final nodeData = _nodeData;
-      if (nodeData != null) {
-        final contentStructure =
-            nodeData['contentStructure'] as Map<String, dynamic>? ?? {};
-        total = (contentStructure['concepts'] as int? ?? 0) +
-            (contentStructure['examples'] as int? ?? 0) +
-            (contentStructure['hiddenRewards'] as int? ?? 0) +
-            (contentStructure['bossQuiz'] as int? ?? 0);
-      }
-
-      percentage = total > 0 ? (completed / total * 100) : 0;
-      print('  - calculated completed: $completed');
-      print('  - calculated total: $total');
-      print('  - calculated percentage: $percentage');
-    } else {
-      // Last resort: try to read directly from progress if it's the progress object itself
-      print('  ⚠️ Trying direct progress reading');
-      final completedItems =
-          progress['completedItems'] as Map<String, dynamic>?;
-      if (completedItems != null) {
-        final concepts = (completedItems['concepts'] as List?)?.length ?? 0;
-        final examples = (completedItems['examples'] as List?)?.length ?? 0;
-        final hiddenRewards =
-            (completedItems['hiddenRewards'] as List?)?.length ?? 0;
-        final bossQuiz = (completedItems['bossQuiz'] as List?)?.length ?? 0;
-
-        completed =
-            concepts + examples + hiddenRewards + (bossQuiz > 0 ? 1 : 0);
-
-        final nodeData = _nodeData;
-        if (nodeData != null) {
-          final contentStructure =
-              nodeData['contentStructure'] as Map<String, dynamic>? ?? {};
-          total = (contentStructure['concepts'] as int? ?? 0) +
-              (contentStructure['examples'] as int? ?? 0) +
-              (contentStructure['hiddenRewards'] as int? ?? 0) +
-              (contentStructure['bossQuiz'] as int? ?? 0);
-        }
-
-        percentage = total > 0 ? (completed / total * 100) : 0;
-        print('  - direct completed: $completed');
-        print('  - direct total: $total');
-        print('  - direct percentage: $percentage');
-      }
-    }
-
-    final percentageInt = percentage.round();
-    print('  📈 Final: $completed/$total = $percentageInt%');
-
-=======
   /// Widget chọn dạng bài học (text/video/image)
   Widget _buildFormatSelector() {
     final formatCounts = _countContentByFormat();
     
->>>>>>> Stashed changes
     return Card(
       color: _getFormatColor(_selectedFormat).withOpacity(0.1),
       shape: RoundedRectangleBorder(
@@ -1686,13 +1393,10 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
     final contentToShow = _filteredContentItems ?? _contentItems;
     
     if (contentToShow == null || contentToShow.isEmpty) {
-<<<<<<< Updated upstream
-=======
       // Nếu đang lọc theo format cụ thể và không có content
       if (_selectedFormat != 'all' && _contentItems != null && _contentItems!.isNotEmpty) {
         return _buildEmptyFormatState();
       }
->>>>>>> Stashed changes
       return const SizedBox.shrink();
     }
 

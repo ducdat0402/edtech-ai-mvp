@@ -156,111 +156,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-<<<<<<< Updated upstream
-          // Avatar with frame
-          _buildAvatarSection(),
-          const SizedBox(height: 24),
-
-          // Username & Role
-          Text(
-            _profileData!['fullName'] ?? _profileData!['email'] ?? 'User',
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          if (_profileData!['role'] != null) ...[
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.blue.shade100,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                _profileData!['role'] ?? '',
-                style: TextStyle(
-                  color: Colors.blue.shade700,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
-          
-          // Admin Panel Button (only for admin)
-          if (_profileData!['role'] == 'admin') ...[
-            const SizedBox(height: 24),
-            Card(
-              color: Colors.blue.shade50,
-              child: ListTile(
-                leading: const Icon(Icons.admin_panel_settings, color: Colors.blue),
-                title: const Text(
-                  'Admin Panel',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue,
-                  ),
-                ),
-                subtitle: const Text('Duyệt đóng góp từ cộng đồng'),
-                trailing: const Icon(Icons.chevron_right, color: Colors.blue),
-                onTap: () {
-                  context.push('/admin/panel');
-                },
-              ),
-            ),
-          ],
-          const SizedBox(height: 12),
-          
-          // Journey Log Button
-          Card(
-            color: Colors.purple.shade50,
-            child: ListTile(
-              leading: const Icon(Icons.history_edu, color: Colors.purple),
-              title: const Text(
-                'Nhật Ký Hành Trình',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.purple,
-                ),
-              ),
-              subtitle: const Text('Lịch sử đóng góp & chỉnh sửa'),
-              trailing: const Icon(Icons.chevron_right, color: Colors.purple),
-              onTap: () {
-                context.go('/profile/journey');
-              },
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          // Streak Display
-          StreakDisplay(
-            streak: streak is int ? streak : int.tryParse(streak.toString()) ?? 0,
-            consecutivePerfect: consecutivePerfect is int
-                ? consecutivePerfect
-                : int.tryParse(consecutivePerfect.toString()) ?? 0,
-            weeklyProgress: weeklyProgress,
-          ),
-          const SizedBox(height: 24),
-
-          // Mini Dashboard Stats
-          _buildMiniStats(),
-          const SizedBox(height: 24),
-          
-          // Logout Button
-          _buildLogoutButton(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDetailedView() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-=======
->>>>>>> Stashed changes
           // Avatar Section
           _buildAvatarSection(),
           const SizedBox(height: 20),
@@ -301,33 +196,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _buildStatsRow(stats, currency),
           const SizedBox(height: 24),
 
-<<<<<<< Updated upstream
-          // Stats Section
-          _buildStatsSection(),
-
-          const SizedBox(height: 24),
-
-          // Journey Log Button
-          Card(
-            color: Colors.purple.shade50,
-            child: ListTile(
-              leading: const Icon(Icons.history_edu, color: Colors.purple),
-              title: const Text(
-                'Nhật Ký Hành Trình',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.purple,
-                ),
-              ),
-              subtitle: const Text('Lịch sử đóng góp & chỉnh sửa'),
-              trailing: const Icon(Icons.chevron_right, color: Colors.purple),
-              onTap: () {
-                context.go('/profile/journey');
-              },
-            ),
-          ),
-          const SizedBox(height: 24),
-=======
           // Admin Panel Button (only for admin)
           if (_profileData!['role'] == 'admin')
             _buildMenuCard(
@@ -359,7 +227,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           // Profile Info Card
           _buildProfileInfoCard(),
           const SizedBox(height: 16),
->>>>>>> Stashed changes
 
           // Onboarding Data
           if (_profileData!['onboardingData'] != null)

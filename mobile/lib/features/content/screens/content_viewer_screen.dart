@@ -10,17 +10,11 @@ import 'package:edtech_mobile/features/content/widgets/web_video_player.dart';
 import 'package:edtech_mobile/features/content/widgets/content_format_badge.dart';
 import 'package:edtech_mobile/features/content/widgets/difficulty_badge.dart';
 import 'package:edtech_mobile/features/content/widgets/rewards_display.dart';
-<<<<<<< Updated upstream
-import 'package:flutter_quill/flutter_quill.dart' as quill;
-import 'package:dart_quill_delta/dart_quill_delta.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-=======
 import 'package:edtech_mobile/features/quiz/screens/quiz_screen.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:dart_quill_delta/dart_quill_delta.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:edtech_mobile/theme/theme.dart';
->>>>>>> Stashed changes
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:io';
 
@@ -352,34 +346,17 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
           },
         ),
         actions: [
-<<<<<<< Updated upstream
-          // Nút "Lịch sử phiên bản"
-          IconButton(
-            icon: const Icon(Icons.history),
-=======
           IconButton(
             icon: Icon(Icons.history_rounded, color: AppColors.textSecondary),
->>>>>>> Stashed changes
             onPressed: () {
               context.push('/content/${widget.contentId}/versions');
             },
             tooltip: 'Lịch sử phiên bản',
           ),
-<<<<<<< Updated upstream
-          // Nút "Chỉnh sửa bài viết"
-          TextButton.icon(
-            onPressed: () => _navigateToEditLesson(),
-            icon: const Icon(Icons.edit, size: 20),
-            label: const Text('Chỉnh sửa bài viết'),
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.blue,
-            ),
-=======
           TextButton.icon(
             onPressed: () => _navigateToEditLesson(),
             icon: Icon(Icons.edit_rounded, size: 18, color: AppColors.cyanNeon),
             label: Text('Chỉnh sửa', style: AppTextStyles.labelSmall.copyWith(color: AppColors.cyanNeon)),
->>>>>>> Stashed changes
           ),
         ],
       ),
@@ -1277,54 +1254,6 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
           ),
           const SizedBox(height: 16),
 
-<<<<<<< Updated upstream
-          // Display rich content first (matching preview order)
-          if (_contentData!['richContent'] != null)
-            _buildRichContent(_contentData!['richContent'])
-          else if (_contentData!['content'] != null)
-            Text(
-              _contentData!['content'],
-              style: const TextStyle(fontSize: 16, height: 1.5),
-            ),
-          const SizedBox(height: 16),
-
-          // Display multiple images second (matching preview: grid with header)
-          if (_contentData!['media']?['imageUrls'] != null &&
-              (_contentData!['media']['imageUrls'] as List).isNotEmpty) ...[
-            const Text(
-              'Hình ảnh minh họa',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            _buildImageGallery(
-                _contentData!['media']['imageUrls'] as List<dynamic>),
-            const SizedBox(height: 16),
-          ] else if (_contentData!['media']?['imageUrl'] != null) ...[
-            const Text(
-              'Hình ảnh minh họa',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Image.network(
-              _buildFullUrl(_contentData!['media']['imageUrl']),
-              fit: BoxFit.cover,
-            ),
-            const SizedBox(height: 16),
-          ],
-
-          // Display Video last (matching preview order)
-          if (_contentData!['media']?['videoUrl'] != null) ...[
-            const Text(
-              'Video hướng dẫn',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            _VideoPlayerWidget(
-              videoUrl: _buildFullUrl(_contentData!['media']['videoUrl']),
-            ),
-            const SizedBox(height: 16),
-          ],
-=======
           // ✅ Content Mode Switcher - Chuyển đổi giữa Văn bản, Hình ảnh, Video
           _buildContentModeSwitcher(),
 
@@ -1335,7 +1264,6 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
             _buildImageContent()
           else if (_displayMode == ContentDisplayMode.video)
             _buildVideoContent(),
->>>>>>> Stashed changes
 
           const SizedBox(height: 24),
           _buildCompleteButton(),
@@ -1383,31 +1311,6 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
             coin: _contentData!['rewards']?['coin'] as int?,
           ),
           const SizedBox(height: 16),
-<<<<<<< Updated upstream
-          if (_contentData!['content'] != null)
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade900,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                _contentData!['content'],
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontFamily: 'monospace',
-                  color: Colors.white,
-                  height: 1.5,
-                ),
-              ),
-            ),
-          const SizedBox(height: 16),
-          if (_contentData!['media']?['imageUrl'] != null)
-            Image.network(
-              _buildFullUrl(_contentData!['media']['imageUrl']),
-              fit: BoxFit.cover,
-            ),
-=======
           
           // ✅ Content Mode Switcher - Chuyển đổi giữa Văn bản, Hình ảnh, Video
           _buildContentModeSwitcher(),
@@ -1420,7 +1323,6 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
           else if (_displayMode == ContentDisplayMode.video)
             _buildVideoContent(),
           
->>>>>>> Stashed changes
           const SizedBox(height: 24),
           _buildCompleteButton(),
         ],
@@ -2124,8 +2026,6 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
     );
   }
 
-<<<<<<< Updated upstream
-=======
   /// Open quiz screen for concept/example content
   /// Quiz bài học bình thường KHÔNG cần kiểm tra tiến độ
   /// Chỉ Boss Quiz mới cần hoàn thành ít nhất 1 mức độ
@@ -2159,7 +2059,6 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
     }
   }
 
->>>>>>> Stashed changes
   Widget _buildRichContent(dynamic richContent) {
     try {
       final quillController = quill.QuillController.basic();
@@ -2173,51 +2072,6 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
         quillController.document = quill.Document()
           ..insert(0, richContent.toString());
       }
-<<<<<<< Updated upstream
-      return IgnorePointer(
-        child: quill.QuillEditor.basic(
-          configurations: quill.QuillEditorConfigurations(
-            controller: quillController,
-            sharedConfigurations: const quill.QuillSharedConfigurations(),
-          ),
-        ),
-      );
-    } catch (e) {
-      return Text(
-        richContent.toString(),
-        style: const TextStyle(fontSize: 16, height: 1.5),
-      );
-    }
-  }
-
-  Widget _buildImageGallery(List<dynamic> imageUrls) {
-    // Use GridView like in preview (2 columns)
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 8,
-        mainAxisSpacing: 8,
-        childAspectRatio: 4 / 3,
-      ),
-      itemCount: imageUrls.length,
-      itemBuilder: (context, index) {
-        return ClipRRect(
-          borderRadius: BorderRadius.circular(8),
-          child: CachedNetworkImage(
-            imageUrl: _buildFullUrl(imageUrls[index].toString()),
-            fit: BoxFit.cover,
-            placeholder: (context, url) => Container(
-              color: Colors.grey.shade200,
-              child: const Center(child: CircularProgressIndicator()),
-            ),
-            errorWidget: (context, url, error) => Container(
-              color: Colors.grey.shade200,
-              child: const Icon(Icons.error),
-            ),
-          ),
-=======
       return Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
@@ -2290,7 +2144,6 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
               ),
             ],
           ),
->>>>>>> Stashed changes
         );
       },
     );

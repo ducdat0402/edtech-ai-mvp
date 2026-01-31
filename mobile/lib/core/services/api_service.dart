@@ -33,15 +33,6 @@ class ApiService {
     return List<Map<String, dynamic>>.from(response.data);
   }
 
-<<<<<<< Updated upstream
-  // Subject Learning Goals
-  Future<Map<String, dynamic>> startLearningGoals(String subjectId) async {
-    final response = await _apiClient.post(ApiConstants.startLearningGoals(subjectId));
-    return response.data;
-  }
-
-  Future<Map<String, dynamic>> chatLearningGoals(String subjectId, String message) async {
-=======
   /// Get all learning nodes for a subject (includes all nodes, not just unlocked)
   Future<List<dynamic>> getLearningNodesBySubject(String subjectId) async {
     final response = await _apiClient.get(ApiConstants.nodesBySubject(subjectId));
@@ -57,7 +48,6 @@ class ApiService {
 
   Future<Map<String, dynamic>> chatLearningGoals(
       String subjectId, String message) async {
->>>>>>> Stashed changes
     final response = await _apiClient.post(
       ApiConstants.chatLearningGoals(subjectId),
       data: {'message': message},
@@ -66,24 +56,6 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>> getLearningGoalsSession(String subjectId) async {
-<<<<<<< Updated upstream
-    final response = await _apiClient.get(ApiConstants.getLearningGoalsSession(subjectId));
-    return response.data;
-  }
-
-  Future<Map<String, dynamic>> generateSkillTreeWithGoals(String subjectId) async {
-    final response = await _apiClient.post(ApiConstants.generateSkillTreeWithGoals(subjectId));
-    return response.data;
-  }
-
-  Future<Map<String, dynamic>> generateLearningNodesFromTopic(String subjectId, String topicNodeId) async {
-    final response = await _apiClient.post(ApiConstants.generateLearningNodesFromTopic(subjectId, topicNodeId));
-    return response.data;
-  }
-
-  Future<Map<String, dynamic>> getGenerationProgress(String subjectId, String taskId) async {
-    final response = await _apiClient.get(ApiConstants.getGenerationProgress(subjectId, taskId));
-=======
     final response =
         await _apiClient.get(ApiConstants.getLearningGoalsSession(subjectId));
     return response.data;
@@ -107,18 +79,13 @@ class ApiService {
       String subjectId, String taskId) async {
     final response = await _apiClient
         .get(ApiConstants.getGenerationProgress(subjectId, taskId));
->>>>>>> Stashed changes
     return response.data;
   }
 
   // Domains
   Future<List<dynamic>> getDomainsBySubject(String subjectId) async {
-<<<<<<< Updated upstream
-    final response = await _apiClient.get(ApiConstants.domainsBySubject(subjectId));
-=======
     final response =
         await _apiClient.get(ApiConstants.domainsBySubject(subjectId));
->>>>>>> Stashed changes
     return List<Map<String, dynamic>>.from(response.data);
   }
 
@@ -129,19 +96,6 @@ class ApiService {
 
   // Knowledge Graph
   Future<List<dynamic>> getPrerequisites(String nodeId) async {
-<<<<<<< Updated upstream
-    final response = await _apiClient.get(ApiConstants.getPrerequisites(nodeId));
-    return List<Map<String, dynamic>>.from(response.data);
-  }
-
-  Future<List<dynamic>> findLearningPath(String fromNodeId, String toNodeId) async {
-    final response = await _apiClient.get(ApiConstants.findPath(fromNodeId, toNodeId));
-    return List<Map<String, dynamic>>.from(response.data);
-  }
-
-  Future<List<dynamic>> recommendNextTopics(String nodeId, {int limit = 5}) async {
-    final response = await _apiClient.get(ApiConstants.recommendNext(nodeId, limit: limit));
-=======
     final response =
         await _apiClient.get(ApiConstants.getPrerequisites(nodeId));
     return List<Map<String, dynamic>>.from(response.data);
@@ -158,20 +112,10 @@ class ApiService {
       {int limit = 5}) async {
     final response =
         await _apiClient.get(ApiConstants.recommendNext(nodeId, limit: limit));
->>>>>>> Stashed changes
     return List<Map<String, dynamic>>.from(response.data);
   }
 
   Future<List<dynamic>> getRelatedNodes(String nodeId, {int limit = 10}) async {
-<<<<<<< Updated upstream
-    final response = await _apiClient.get(ApiConstants.getRelatedNodes(nodeId, limit: limit));
-    return List<Map<String, dynamic>>.from(response.data);
-  }
-
-  Future<Map<String, dynamic>?> getNodeByEntity(String type, String entityId) async {
-    try {
-      final response = await _apiClient.get(ApiConstants.getNodeByEntity(type, entityId));
-=======
     final response = await _apiClient
         .get(ApiConstants.getRelatedNodes(nodeId, limit: limit));
     return List<Map<String, dynamic>>.from(response.data);
@@ -182,7 +126,6 @@ class ApiService {
     try {
       final response =
           await _apiClient.get(ApiConstants.getNodeByEntity(type, entityId));
->>>>>>> Stashed changes
       return Map<String, dynamic>.from(response.data);
     } catch (e) {
       return null; // Node not found
@@ -202,12 +145,8 @@ class ApiService {
     double minSimilarity = 0.7,
   }) async {
     final response = await _apiClient.get(
-<<<<<<< Updated upstream
-      ApiConstants.semanticSearch(query, limit: limit, types: types, minSimilarity: minSimilarity),
-=======
       ApiConstants.semanticSearch(query,
           limit: limit, types: types, minSimilarity: minSimilarity),
->>>>>>> Stashed changes
     );
     return List<Map<String, dynamic>>.from(response.data);
   }
@@ -244,12 +183,8 @@ class ApiService {
   }
 
   /// Lấy content theo node và độ khó
-<<<<<<< Updated upstream
-  Future<List<dynamic>> getContentByNodeAndDifficulty(String nodeId, String difficulty) async {
-=======
   Future<List<dynamic>> getContentByNodeAndDifficulty(
       String nodeId, String difficulty) async {
->>>>>>> Stashed changes
     final response = await _apiClient.get(
       ApiConstants.contentByNodeAndDifficulty(nodeId, difficulty),
     );
@@ -268,8 +203,6 @@ class ApiService {
     return response.data;
   }
 
-<<<<<<< Updated upstream
-=======
   /// Tạo video/image placeholders cho node
   Future<Map<String, dynamic>> generatePlaceholders(String nodeId) async {
     final response = await _apiClient.post(
@@ -323,7 +256,6 @@ class ApiService {
     return response.data;
   }
 
->>>>>>> Stashed changes
   Future<Map<String, dynamic>> getContentDetail(String contentId) async {
     final response =
         await _apiClient.get(ApiConstants.contentDetail(contentId));
@@ -367,12 +299,8 @@ class ApiService {
     return response.data;
   }
 
-<<<<<<< Updated upstream
-  Future<Map<String, dynamic>> claimAchievementRewards(String userAchievementId) async {
-=======
   Future<Map<String, dynamic>> claimAchievementRewards(
       String userAchievementId) async {
->>>>>>> Stashed changes
     final response = await _apiClient.post(
       ApiConstants.claimAchievementRewards(userAchievementId),
     );
@@ -454,10 +382,6 @@ class ApiService {
     return response.data;
   }
 
-<<<<<<< Updated upstream
-
-=======
->>>>>>> Stashed changes
   // Progress
   Future<Map<String, dynamic>> getNodeProgress(String nodeId) async {
     final response = await _apiClient.get(ApiConstants.nodeProgress(nodeId));
@@ -675,14 +599,10 @@ class ApiService {
     List<String>? imageUrls,
     String? videoUrl,
     String? description,
-<<<<<<< Updated upstream
-    Map<String, dynamic>? quizData, // Quiz data: {question, options, correctAnswer, explanation}
-=======
     Map<String, dynamic>?
         quizData, // Quiz data: {question, options, correctAnswer, explanation}
     Map<String, dynamic>?
         textVariants, // Text variants: {simple, detailed, comprehensive}
->>>>>>> Stashed changes
   }) async {
     final response = await _apiClient.post(
       ApiConstants.submitLessonEdit(contentItemId),
@@ -693,10 +613,7 @@ class ApiService {
         if (videoUrl != null) 'videoUrl': videoUrl,
         if (description != null) 'description': description,
         if (quizData != null) 'quizData': quizData,
-<<<<<<< Updated upstream
-=======
         if (textVariants != null) 'textVariants': textVariants,
->>>>>>> Stashed changes
       },
     );
     return response.data;
@@ -752,11 +669,6 @@ class ApiService {
     return response.data;
   }
 
-  Future<Map<String, dynamic>> getEditComparison(String editId) async {
-    final response = await _apiClient.get(ApiConstants.getEditComparison(editId));
-    return response.data;
-  }
-
   Future<List<dynamic>> getAllContentItemsWithEdits() async {
     final response = await _apiClient.get(ApiConstants.allContentWithEdits);
     return List<Map<String, dynamic>>.from(response.data);
@@ -769,12 +681,8 @@ class ApiService {
 
   // Edit History
   Future<List<dynamic>> getHistoryForContent(String contentItemId) async {
-<<<<<<< Updated upstream
-    final response = await _apiClient.get(ApiConstants.getHistoryForContent(contentItemId));
-=======
     final response =
         await _apiClient.get(ApiConstants.getHistoryForContent(contentItemId));
->>>>>>> Stashed changes
     return List<Map<String, dynamic>>.from(response.data);
   }
 
@@ -789,23 +697,15 @@ class ApiService {
   }
 
   Future<List<dynamic>> getHistoryForEdit(String editId) async {
-<<<<<<< Updated upstream
-    final response = await _apiClient.get(ApiConstants.getHistoryForEdit(editId));
-=======
     final response =
         await _apiClient.get(ApiConstants.getHistoryForEdit(editId));
->>>>>>> Stashed changes
     return List<Map<String, dynamic>>.from(response.data);
   }
 
   // Content Versions
   Future<List<dynamic>> getVersionsForContent(String contentItemId) async {
-<<<<<<< Updated upstream
-    final response = await _apiClient.get(ApiConstants.getVersionsForContent(contentItemId));
-=======
     final response =
         await _apiClient.get(ApiConstants.getVersionsForContent(contentItemId));
->>>>>>> Stashed changes
     return List<Map<String, dynamic>>.from(response.data);
   }
 
@@ -818,44 +718,25 @@ class ApiService {
   }
 
   Future<List<dynamic>> getMyVersionsForContent(String contentItemId) async {
-<<<<<<< Updated upstream
-    final response = await _apiClient.get(ApiConstants.getMyVersionsForContent(contentItemId));
-=======
     final response = await _apiClient
         .get(ApiConstants.getMyVersionsForContent(contentItemId));
->>>>>>> Stashed changes
     return List<Map<String, dynamic>>.from(response.data);
   }
 
   Future<Map<String, dynamic>> revertToVersion(String versionId) async {
-<<<<<<< Updated upstream
-    final response = await _apiClient.post(ApiConstants.revertToVersion(versionId));
-=======
     final response =
         await _apiClient.post(ApiConstants.revertToVersion(versionId));
->>>>>>> Stashed changes
     return Map<String, dynamic>.from(response.data);
   }
 
   // Personal Mind Map
   Future<Map<String, dynamic>> checkPersonalMindMap(String subjectId) async {
-<<<<<<< Updated upstream
-    final response = await _apiClient.get(ApiConstants.checkPersonalMindMap(subjectId));
-=======
     final response =
         await _apiClient.get(ApiConstants.checkPersonalMindMap(subjectId));
->>>>>>> Stashed changes
     return response.data;
   }
 
   Future<Map<String, dynamic>> getPersonalMindMap(String subjectId) async {
-<<<<<<< Updated upstream
-    final response = await _apiClient.get(ApiConstants.getPersonalMindMap(subjectId));
-    return response.data;
-  }
-
-  Future<Map<String, dynamic>> createPersonalMindMap(String subjectId, String learningGoal) async {
-=======
     final response =
         await _apiClient.get(ApiConstants.getPersonalMindMap(subjectId));
     return response.data;
@@ -863,7 +744,6 @@ class ApiService {
 
   Future<Map<String, dynamic>> createPersonalMindMap(
       String subjectId, String learningGoal) async {
->>>>>>> Stashed changes
     final response = await _apiClient.post(
       ApiConstants.createPersonalMindMap(subjectId),
       data: {'learningGoal': learningGoal},
@@ -884,12 +764,8 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>> deletePersonalMindMap(String subjectId) async {
-<<<<<<< Updated upstream
-    final response = await _apiClient.delete(ApiConstants.deletePersonalMindMap(subjectId));
-=======
     final response =
         await _apiClient.delete(ApiConstants.deletePersonalMindMap(subjectId));
->>>>>>> Stashed changes
     return response.data;
   }
 
@@ -898,12 +774,8 @@ class ApiService {
 
   /// Bắt đầu chat session để tạo lộ trình cá nhân
   /// AI sẽ hỏi dựa trên nội dung môn học cụ thể
-<<<<<<< Updated upstream
-  Future<Map<String, dynamic>> startPersonalMindMapChat(String subjectId) async {
-=======
   Future<Map<String, dynamic>> startPersonalMindMapChat(
       String subjectId) async {
->>>>>>> Stashed changes
     final response = await _apiClient.post(
       ApiConstants.startPersonalMindMapChat(subjectId),
     );
@@ -923,12 +795,8 @@ class ApiService {
   }
 
   /// Lấy thông tin chat session hiện tại
-<<<<<<< Updated upstream
-  Future<Map<String, dynamic>> getPersonalMindMapChatSession(String subjectId) async {
-=======
   Future<Map<String, dynamic>> getPersonalMindMapChatSession(
       String subjectId) async {
->>>>>>> Stashed changes
     final response = await _apiClient.get(
       ApiConstants.getPersonalMindMapChatSession(subjectId),
     );
@@ -936,12 +804,8 @@ class ApiService {
   }
 
   /// Tạo lộ trình từ chat đã hoàn thành
-<<<<<<< Updated upstream
-  Future<Map<String, dynamic>> generatePersonalMindMapFromChat(String subjectId) async {
-=======
   Future<Map<String, dynamic>> generatePersonalMindMapFromChat(
       String subjectId) async {
->>>>>>> Stashed changes
     final response = await _apiClient.post(
       ApiConstants.generatePersonalMindMapFromChat(subjectId),
     );
@@ -949,19 +813,13 @@ class ApiService {
   }
 
   /// Reset chat session để bắt đầu lại
-<<<<<<< Updated upstream
-  Future<Map<String, dynamic>> resetPersonalMindMapChat(String subjectId) async {
-=======
   Future<Map<String, dynamic>> resetPersonalMindMapChat(
       String subjectId) async {
->>>>>>> Stashed changes
     final response = await _apiClient.post(
       ApiConstants.resetPersonalMindMapChat(subjectId),
     );
     return response.data;
   }
-<<<<<<< Updated upstream
-=======
 
   // === CONTRIBUTION HELPER METHODS ===
   // Tất cả contribution đều sử dụng content-edits system để có:
@@ -1180,5 +1038,4 @@ class ApiService {
     final response = await _apiClient.get(ApiConstants.pendingPayment);
     return response.data;
   }
->>>>>>> Stashed changes
 }

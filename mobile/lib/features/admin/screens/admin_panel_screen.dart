@@ -10,10 +10,7 @@ import 'package:edtech_mobile/features/content/widgets/web_video_player.dart';
 import 'package:edtech_mobile/features/content/widgets/content_format_badge.dart';
 import 'package:edtech_mobile/features/content/widgets/difficulty_badge.dart';
 import 'package:edtech_mobile/features/admin/widgets/comparison_dialog.dart';
-<<<<<<< Updated upstream
-=======
 import 'package:edtech_mobile/theme/theme.dart';
->>>>>>> Stashed changes
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:io';
 
@@ -210,15 +207,9 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> with SingleTickerPr
           unselectedLabelColor: AppColors.textSecondary,
           labelStyle: AppTextStyles.labelMedium,
           tabs: const [
-<<<<<<< Updated upstream
-            Tab(text: 'Duyệt đóng góp', icon: Icon(Icons.pending_actions)),
-            Tab(text: 'Quản lý bài học', icon: Icon(Icons.article)),
-            Tab(text: 'Lịch sử', icon: Icon(Icons.history)),
-=======
             Tab(text: 'Duyệt đóng góp', icon: Icon(Icons.pending_actions_rounded)),
             Tab(text: 'Quản lý bài học', icon: Icon(Icons.article_rounded)),
             Tab(text: 'Lịch sử', icon: Icon(Icons.history_rounded)),
->>>>>>> Stashed changes
           ],
         ),
         actions: [
@@ -712,14 +703,10 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> with SingleTickerPr
                     itemCount: _editHistory.length,
                     itemBuilder: (context, index) {
                       final history = _editHistory[index];
-<<<<<<< Updated upstream
-                      return _buildHistoryCard(history, index == _editHistory.length - 1);
-=======
                       return StaggeredListItem(
                         index: index,
                         child: _buildHistoryCard(history, index == _editHistory.length - 1),
                       );
->>>>>>> Stashed changes
                     },
                   ),
           );
@@ -1105,85 +1092,92 @@ class _VideoPlayerWidgetState extends State<_VideoPlayerWidget> {
           color: Colors.black,
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                isUnimplementedError ? Icons.video_library_outlined : Icons.error_outline,
-                color: Colors.white70,
-                size: 48,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                isUnimplementedError 
-                    ? 'Không thể preview video trên platform này'
-                    : 'Không thể tải video',
-                style: const TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-              ),
-              if (_errorMessage != null && !isUnimplementedError) ...[
-                const SizedBox(height: 8),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Text(
-                    _errorMessage!.length > 60
-                        ? '${_errorMessage!.substring(0, 60)}...'
-                        : _errorMessage!,
-                    style: const TextStyle(color: Colors.white54, fontSize: 11),
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  isUnimplementedError ? Icons.video_library_outlined : Icons.error_outline,
+                  color: Colors.white70,
+                  size: 40,
                 ),
-              ],
-              // Show video URL and open button for mobile errors or non-UnimplementedError
-              if (isUnimplementedError || !isMobile) ...[
-                const SizedBox(height: 12),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Column(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                widget.videoUrl,
-                                style: const TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 10,
+                const SizedBox(height: 6),
+                Text(
+                  isUnimplementedError 
+                      ? 'Không thể tải video'
+                      : 'Không thể tải video',
+                  style: const TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+                if (_errorMessage != null && !isUnimplementedError) ...[
+                  const SizedBox(height: 4),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      'URL video không hợp lệ:',
+                      style: const TextStyle(color: Colors.white54, fontSize: 10),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ],
+                // Show video URL and open button for mobile errors or non-UnimplementedError
+                if (isUnimplementedError || !isMobile) ...[
+                  const SizedBox(height: 8),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  widget.videoUrl,
+                                  style: const TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 9,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
                                 ),
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
                               ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        SizedBox(
+                          height: 32,
+                          child: ElevatedButton.icon(
+                            onPressed: _openVideoInBrowser,
+                            icon: const Icon(Icons.open_in_browser, size: 14),
+                            label: const Text('Mở trong trình duyệt', style: TextStyle(fontSize: 12)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue.shade700,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
                             ),
-                          ],
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      ElevatedButton.icon(
-                        onPressed: _openVideoInBrowser,
-                        icon: const Icon(Icons.open_in_browser, size: 16),
-                        label: const Text('Mở trong trình duyệt'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue.shade700,
-                          foregroundColor: Colors.white,
-                        ),
-                      ),
                       if (!isUnimplementedError) ...[
-                        const SizedBox(height: 4),
-                        TextButton.icon(
-                          onPressed: _initializeVideo,
-                          icon: const Icon(Icons.refresh, color: Colors.white70, size: 16),
-                          label: const Text(
-                            'Thử lại',
-                            style: TextStyle(color: Colors.white70, fontSize: 12),
+                        const SizedBox(height: 2),
+                        SizedBox(
+                          height: 28,
+                          child: TextButton.icon(
+                            onPressed: _initializeVideo,
+                            icon: const Icon(Icons.refresh, color: Colors.white70, size: 14),
+                            label: const Text(
+                              'Thử lại',
+                              style: TextStyle(color: Colors.white70, fontSize: 11),
+                            ),
                           ),
                         ),
                       ],
@@ -1192,17 +1186,21 @@ class _VideoPlayerWidgetState extends State<_VideoPlayerWidget> {
                 ),
               ] else ...[
                 // For mobile non-UnimplementedError, show retry button
-                const SizedBox(height: 12),
-                TextButton.icon(
-                  onPressed: _initializeVideo,
-                  icon: const Icon(Icons.refresh, color: Colors.white70, size: 16),
-                  label: const Text(
-                    'Thử lại',
-                    style: TextStyle(color: Colors.white70, fontSize: 12),
+                const SizedBox(height: 8),
+                SizedBox(
+                  height: 28,
+                  child: TextButton.icon(
+                    onPressed: _initializeVideo,
+                    icon: const Icon(Icons.refresh, color: Colors.white70, size: 14),
+                    label: const Text(
+                      'Thử lại',
+                      style: TextStyle(color: Colors.white70, fontSize: 11),
+                    ),
                   ),
                 ),
               ],
             ],
+            ),
           ),
         ),
       );

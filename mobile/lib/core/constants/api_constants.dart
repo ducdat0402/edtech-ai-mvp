@@ -39,8 +39,6 @@ class ApiConstants {
   static String contentDetail(String id) => '/content/$id';
   static String contentByNodeAndDifficulty(String nodeId, String difficulty) => '/content/node/$nodeId/difficulty/$difficulty';
   static String generateContentByDifficulty(String nodeId) => '/content/node/$nodeId/generate-by-difficulty';
-<<<<<<< Updated upstream
-=======
   
   // Media Placeholders & Contribution
   static String generatePlaceholders(String nodeId) => '/content/node/$nodeId/generate-placeholders';
@@ -50,7 +48,6 @@ class ApiConstants {
   static String approveContribution(String contentId) => '/content/$contentId/approve';
   static String rejectContribution(String contentId) => '/content/$contentId/reject';
   static String createNewContribution(String nodeId) => '/content/node/$nodeId/contribute-new';
->>>>>>> Stashed changes
 
   // Progress
   static String nodeProgress(String nodeId) => '/progress/node/$nodeId';
@@ -90,14 +87,10 @@ class ApiConstants {
   static const String submitAnswer = '/test/submit';
   static String testResult(String testId) => '/test/result/$testId';
 
-<<<<<<< Updated upstream
-=======
   // Adaptive Placement Test
   static String startAdaptiveTest(String subjectId) => '/adaptive-test/start/$subjectId';
   static String submitAdaptiveAnswer(String testId) => '/adaptive-test/$testId/submit';
   static String getAdaptiveTestResult(String testId) => '/adaptive-test/$testId/result';
-
->>>>>>> Stashed changes
 
   // Skill Tree
   static const String generateSkillTree = '/skill-tree/generate';
@@ -196,8 +189,6 @@ class ApiConstants {
   static String getPersonalMindMapChatSession(String subjectId) => '/personal-mind-map/$subjectId/chat/session';
   static String generatePersonalMindMapFromChat(String subjectId) => '/personal-mind-map/$subjectId/chat/generate';
   static String resetPersonalMindMapChat(String subjectId) => '/personal-mind-map/$subjectId/chat/reset';
-<<<<<<< Updated upstream
-=======
 
   // Quiz
   static const String generateQuiz = '/quiz/generate';
@@ -211,6 +202,5 @@ class ApiConstants {
   static const String paymentHistory = '/payment/history';
   static const String premiumStatus = '/payment/premium/status';
   static const String pendingPayment = '/payment/pending';
->>>>>>> Stashed changes
 }
 

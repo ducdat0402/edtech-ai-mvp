@@ -30,8 +30,16 @@ class EditLessonScreen extends StatefulWidget {
 
 class _EditLessonScreenState extends State<EditLessonScreen> {
   final _titleController = TextEditingController();
-  final quill.QuillController _quillController = quill.QuillController.basic();
   final ImagePicker _picker = ImagePicker();
+  
+  // 3 QuillControllers for 3 complexity levels
+  final quill.QuillController _simpleController = quill.QuillController.basic();
+  final quill.QuillController _detailedController = quill.QuillController.basic();
+  final quill.QuillController _comprehensiveController = quill.QuillController.basic();
+  
+  // Current selected complexity level for editing
+  int _selectedComplexityIndex = 1; // 0=simple, 1=detailed, 2=comprehensive
+  final List<String> _complexityLabels = ['Đơn giản', 'Chi tiết', 'Chuyên sâu'];
   
   List<String> _imageUrls = [];
   String? _videoUrl;
@@ -87,29 +95,32 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
         _correctAnswerIndex = quizData['correctAnswer'] as int?;
         _explanationController.text = quizData['explanation'] ?? '';
       } else {
-        // Load rich content if available
-        if (data['richContent'] != null) {
-          try {
-            // richContent can be List (Delta format) or Map
-            final richContentData = data['richContent'];
-            if (richContentData is List) {
-              final delta = Delta.fromJson(richContentData);
-              _quillController.document = quill.Document.fromDelta(delta);
-            } else if (richContentData is Map) {
-              final delta = Delta.fromJson([richContentData]);
-              _quillController.document = quill.Document.fromDelta(delta);
-            } else {
-              // Fallback to plain text
-              _quillController.document = quill.Document()..insert(0, richContentData.toString());
-            }
-          } catch (e) {
-            // If richContent is string, convert to plain text
-            if (data['richContent'] is String) {
-              _quillController.document = quill.Document()..insert(0, data['richContent']);
-            }
-          }
+        // Load rich content for all 3 complexity levels
+        final textVariants = data['textVariants'] as Map<String, dynamic>?;
+        
+        // Load DETAILED content (default)
+        if (textVariants?['detailedRichContent'] != null) {
+          _loadRichContentToController(_detailedController, textVariants!['detailedRichContent']);
+        } else if (data['richContent'] != null) {
+          _loadRichContentToController(_detailedController, data['richContent']);
+        } else if (textVariants?['detailed'] != null) {
+          _detailedController.document = quill.Document()..insert(0, textVariants!['detailed']);
         } else if (data['content'] != null) {
-          _quillController.document = quill.Document()..insert(0, data['content']);
+          _detailedController.document = quill.Document()..insert(0, data['content']);
+        }
+        
+        // Load SIMPLE content
+        if (textVariants?['simpleRichContent'] != null) {
+          _loadRichContentToController(_simpleController, textVariants!['simpleRichContent']);
+        } else if (textVariants?['simple'] != null) {
+          _simpleController.document = quill.Document()..insert(0, textVariants!['simple']);
+        }
+        
+        // Load COMPREHENSIVE content
+        if (textVariants?['comprehensiveRichContent'] != null) {
+          _loadRichContentToController(_comprehensiveController, textVariants!['comprehensiveRichContent']);
+        } else if (textVariants?['comprehensive'] != null) {
+          _comprehensiveController.document = quill.Document()..insert(0, textVariants!['comprehensive']);
         }
       }
 
@@ -334,6 +345,8 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
       Map<String, dynamic>? quizData;
       dynamic richContent;
       
+      Map<String, dynamic>? textVariants;
+      
       if (_isQuiz) {
         // Build quiz data
         final validOptions = _optionControllers.where((c) => c.text.trim().isNotEmpty).map((c) => c.text.trim()).toList();
@@ -344,15 +357,30 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
           'explanation': _explanationController.text.trim(),
         };
       } else {
-        // Convert quill document to JSON (Delta format)
-        final delta = _quillController.document.toDelta();
-        richContent = delta.toJson(); // This returns List<Map<String, dynamic>>
+        // Convert all 3 quill documents to JSON (Delta format)
+        final simpleDelta = _simpleController.document.toDelta();
+        final detailedDelta = _detailedController.document.toDelta();
+        final comprehensiveDelta = _comprehensiveController.document.toDelta();
+        
+        // Use detailed as default richContent for backward compatibility
+        richContent = detailedDelta.toJson();
+        
+        // Build textVariants with all 3 formats
+        textVariants = {
+          'simple': _simpleController.document.toPlainText().trim(),
+          'detailed': _detailedController.document.toPlainText().trim(),
+          'comprehensive': _comprehensiveController.document.toPlainText().trim(),
+          'simpleRichContent': simpleDelta.toJson(),
+          'detailedRichContent': detailedDelta.toJson(),
+          'comprehensiveRichContent': comprehensiveDelta.toJson(),
+        };
       }
 
       await apiService.submitLessonEdit(
         contentItemId: widget.contentItemId,
         title: _titleController.text.trim(),
         richContent: richContent,
+        textVariants: textVariants,
         imageUrls: _imageUrls.isNotEmpty ? _imageUrls : null,
         videoUrl: _videoUrl,
         quizData: quizData,
@@ -439,10 +467,14 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
     }
 
     // Build comparison data from current form state
-    final delta = _quillController.document.toDelta();
-    final richContent = delta.toJson();
+    final simpleDelta = _simpleController.document.toDelta();
+    final detailedDelta = _detailedController.document.toDelta();
+    final comprehensiveDelta = _comprehensiveController.document.toDelta();
+    final richContent = detailedDelta.toJson();
     
     Map<String, dynamic>? quizData;
+    Map<String, dynamic>? textVariants;
+    
     if (_isQuiz) {
       final validOptions = _optionControllers.where((c) => c.text.trim().isNotEmpty).map((c) => c.text.trim()).toList();
       quizData = {
@@ -451,12 +483,22 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
         'correctAnswer': _correctAnswerIndex,
         'explanation': _explanationController.text.trim(),
       };
+    } else {
+      textVariants = {
+        'simple': _simpleController.document.toPlainText().trim(),
+        'detailed': _detailedController.document.toPlainText().trim(),
+        'comprehensive': _comprehensiveController.document.toPlainText().trim(),
+        'simpleRichContent': simpleDelta.toJson(),
+        'detailedRichContent': detailedDelta.toJson(),
+        'comprehensiveRichContent': comprehensiveDelta.toJson(),
+      };
     }
 
     final proposed = {
       'title': _titleController.text.trim(),
       'content': '', // Not used for rich content
       'richContent': _isQuiz ? null : richContent,
+      'textVariants': textVariants,
       'media': {
         'imageUrls': _imageUrls,
         'videoUrl': _videoUrl,
@@ -486,10 +528,41 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
     return '$baseUrl$url';
   }
 
+  void _loadRichContentToController(quill.QuillController controller, dynamic richContentData) {
+    try {
+      if (richContentData is List) {
+        final delta = Delta.fromJson(richContentData);
+        controller.document = quill.Document.fromDelta(delta);
+      } else if (richContentData is Map) {
+        final delta = Delta.fromJson([richContentData]);
+        controller.document = quill.Document.fromDelta(delta);
+      } else {
+        controller.document = quill.Document()..insert(0, richContentData.toString());
+      }
+    } catch (e) {
+      if (richContentData is String) {
+        controller.document = quill.Document()..insert(0, richContentData);
+      }
+    }
+  }
+  
+  quill.QuillController get _currentController {
+    switch (_selectedComplexityIndex) {
+      case 0:
+        return _simpleController;
+      case 2:
+        return _comprehensiveController;
+      default:
+        return _detailedController;
+    }
+  }
+
   @override
   void dispose() {
     _titleController.dispose();
-    _quillController.dispose();
+    _simpleController.dispose();
+    _detailedController.dispose();
+    _comprehensiveController.dispose();
     _questionController.dispose();
     _explanationController.dispose();
     for (var controller in _optionControllers) {
@@ -675,29 +748,95 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
             ),
             const SizedBox(height: 24),
           ] else ...[
-            // RICH CONTENT EDITOR
-            _buildSectionLabel('NỘI DUNG CHI TIẾT'),
+            // COMPLEXITY LEVEL TABS
+            _buildSectionLabel('NỘI DUNG (3 DẠNG)'),
             const SizedBox(height: 8),
+            // Segmented control for complexity levels
             Container(
               decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey.shade300),
+                color: Colors.grey.shade200,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              padding: const EdgeInsets.all(4),
+              child: Row(
+                children: List.generate(3, (index) {
+                  final isSelected = _selectedComplexityIndex == index;
+                  final colors = [Colors.green, Colors.blue, Colors.orange];
+                  return Expanded(
+                    child: GestureDetector(
+                      onTap: () => setState(() => _selectedComplexityIndex = index),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        decoration: BoxDecoration(
+                          color: isSelected ? colors[index] : Colors.transparent,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          _complexityLabels[index],
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: isSelected ? Colors.white : Colors.grey.shade700,
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+              ),
+            ),
+            const SizedBox(height: 12),
+            // RICH CONTENT EDITOR (shows based on selected complexity)
+            Container(
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: [Colors.green, Colors.blue, Colors.orange][_selectedComplexityIndex],
+                  width: 2,
+                ),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
                 children: [
+                  // Complexity indicator
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: [Colors.green, Colors.blue, Colors.orange][_selectedComplexityIndex].withOpacity(0.1),
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(10),
+                        topRight: Radius.circular(10),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          [Icons.sentiment_satisfied, Icons.auto_awesome, Icons.rocket_launch][_selectedComplexityIndex],
+                          color: [Colors.green, Colors.blue, Colors.orange][_selectedComplexityIndex],
+                          size: 18,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Đang chỉnh sửa: ${_complexityLabels[_selectedComplexityIndex]}',
+                          style: TextStyle(
+                            color: [Colors.green, Colors.blue, Colors.orange][_selectedComplexityIndex],
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                   // Rich text editor toolbar
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.grey.shade100,
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(12),
-                        topRight: Radius.circular(12),
-                      ),
                     ),
                     child: quill.QuillToolbar.simple(
                       configurations: quill.QuillSimpleToolbarConfigurations(
-                        controller: _quillController,
+                        controller: _currentController,
                         sharedConfigurations: const quill.QuillSharedConfigurations(),
                       ),
                     ),
@@ -708,8 +847,8 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
                     padding: const EdgeInsets.all(12),
                     child: quill.QuillEditor.basic(
                       configurations: quill.QuillEditorConfigurations(
-                        controller: _quillController,
-                        placeholder: 'Nhập nội dung chi tiết...',
+                        controller: _currentController,
+                        placeholder: 'Nhập nội dung ${_complexityLabels[_selectedComplexityIndex].toLowerCase()}...',
                         sharedConfigurations: const quill.QuillSharedConfigurations(),
                       ),
                     ),
@@ -1063,12 +1202,57 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
               ),
             ],
           ] else ...[
+            // Complexity tabs for preview
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.grey.shade200,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              padding: const EdgeInsets.all(4),
+              child: Row(
+                children: List.generate(3, (index) {
+                  final isSelected = _selectedComplexityIndex == index;
+                  final colors = [Colors.green, Colors.blue, Colors.orange];
+                  return Expanded(
+                    child: GestureDetector(
+                      onTap: () => setState(() => _selectedComplexityIndex = index),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        decoration: BoxDecoration(
+                          color: isSelected ? colors[index] : Colors.transparent,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          _complexityLabels[index],
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: isSelected ? Colors.white : Colors.grey.shade700,
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+              ),
+            ),
+            const SizedBox(height: 16),
             // Rich content preview - use IgnorePointer to prevent interaction
-            IgnorePointer(
-              child: quill.QuillEditor.basic(
-                configurations: quill.QuillEditorConfigurations(
-                  controller: _quillController,
-                  sharedConfigurations: const quill.QuillSharedConfigurations(),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: [Colors.green, Colors.blue, Colors.orange][_selectedComplexityIndex],
+                ),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: IgnorePointer(
+                child: quill.QuillEditor.basic(
+                  configurations: quill.QuillEditorConfigurations(
+                    controller: _currentController,
+                    sharedConfigurations: const quill.QuillSharedConfigurations(),
+                  ),
                 ),
               ),
             ),

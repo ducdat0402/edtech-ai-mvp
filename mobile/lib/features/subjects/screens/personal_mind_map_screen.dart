@@ -236,13 +236,12 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
       // Reset chat session
       await apiService.resetPersonalMindMapChat(widget.subjectId);
 
-      setState(() {
-        _exists = false;
-        _mindMapData = null;
-      });
-
-      // Bắt đầu chat mới
-      await _startSubjectChat();
+      if (mounted) {
+        // Chuyển sang màn hình chọn phương thức tạo lộ trình (2 options)
+        context.pushReplacement(
+          '/subjects/${widget.subjectId}/learning-path-choice?force=true',
+        );
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -1029,10 +1028,10 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
                 ListTile(
                   leading: const Icon(Icons.play_arrow, color: Colors.green),
                   title: const Text('Bắt đầu học'),
-                  subtitle: const Text('Chọn mức độ phù hợp với bạn'),
+                  subtitle: const Text('Xem nội dung bài học'),
                   onTap: () {
                     Navigator.pop(context);
-                    _showDifficultySelection(linkedLearningNodeId, title);
+                    context.push('/nodes/$linkedLearningNodeId');
                   },
                 ),
                 const Divider(),
@@ -1079,149 +1078,6 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
           ),
         );
       },
-    );
-  }
-
-  /// Hiển thị dialog chọn độ khó trước khi bắt đầu học
-  void _showDifficultySelection(String learningNodeId, String title) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Header
-                const Icon(
-                  Icons.school,
-                  size: 48,
-                  color: Colors.purple,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Chọn mức độ học phù hợp với bạn',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey.shade600,
-                  ),
-                ),
-                const SizedBox(height: 24),
-
-                // Difficulty options
-                _buildDifficultyOption(
-                  icon: Icons.sentiment_satisfied,
-                  title: 'Đơn giản',
-                  subtitle: 'Nội dung cơ bản, dễ hiểu',
-                  color: Colors.green,
-                  difficulty: 'easy',
-                  learningNodeId: learningNodeId,
-                ),
-                const SizedBox(height: 12),
-                _buildDifficultyOption(
-                  icon: Icons.auto_awesome,
-                  title: 'Chi tiết',
-                  subtitle: 'Nội dung đầy đủ, cân bằng',
-                  color: Colors.blue,
-                  difficulty: 'medium',
-                  learningNodeId: learningNodeId,
-                ),
-                const SizedBox(height: 12),
-                _buildDifficultyOption(
-                  icon: Icons.rocket_launch,
-                  title: 'Chuyên sâu',
-                  subtitle: 'Nội dung nâng cao, thử thách',
-                  color: Colors.orange,
-                  difficulty: 'hard',
-                  learningNodeId: learningNodeId,
-                ),
-
-                const SizedBox(height: 16),
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Hủy'),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildDifficultyOption({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required Color color,
-    required String difficulty,
-    required String learningNodeId,
-  }) {
-    return InkWell(
-      onTap: () {
-        Navigator.pop(context);
-        // Navigate với difficulty parameter
-        context.push('/nodes/$learningNodeId?difficulty=$difficulty');
-      },
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          border: Border.all(color: color.withOpacity(0.3)),
-          borderRadius: BorderRadius.circular(12),
-          color: color.withOpacity(0.05),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: color, size: 28),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: color,
-                    ),
-                  ),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Icon(Icons.arrow_forward_ios, size: 16, color: color),
-          ],
-        ),
-      ),
     );
   }
 

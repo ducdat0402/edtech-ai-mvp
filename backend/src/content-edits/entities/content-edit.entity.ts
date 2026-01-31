@@ -67,7 +67,18 @@ export class ContentEdit {
   textContent: string; // Plain text (legacy)
 
   @Column({ type: 'jsonb', nullable: true })
-  richContent: any; // Rich text content (JSON from flutter_quill)
+  richContent: any; // Rich text content (JSON from flutter_quill) - detailed version
+
+  // Text variants for 3 complexity levels (Đơn giản, Chi tiết, Chuyên sâu)
+  @Column({ type: 'jsonb', nullable: true })
+  textVariants: {
+    simple?: string; // Đơn giản - plain text
+    detailed?: string; // Chi tiết - plain text (default)
+    comprehensive?: string; // Chuyên sâu - plain text
+    simpleRichContent?: any; // Rich text version for simple
+    detailedRichContent?: any; // Rich text version for detailed (same as richContent)
+    comprehensiveRichContent?: any; // Rich text version for comprehensive
+  };
 
   @Column({ type: 'text', nullable: true })
   title: string; // Lesson title (for community edit)
@@ -88,6 +99,14 @@ export class ContentEdit {
     title?: string;
     content?: string;
     richContent?: any;
+    textVariants?: {
+      simple?: string;
+      detailed?: string;
+      comprehensive?: string;
+      simpleRichContent?: any;
+      detailedRichContent?: any;
+      comprehensiveRichContent?: any;
+    };
     media?: {
       videoUrl?: string;
       imageUrl?: string;

@@ -24,16 +24,8 @@ class EdTechApp extends StatelessWidget {
       ],
       child: MaterialApp.router(
         title: 'EdTech AI MVP',
-<<<<<<< Updated upstream
-        debugShowCheckedModeBanner: false, // Remove DEBUG banner
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-          useMaterial3: true,
-        ),
-=======
         debugShowCheckedModeBanner: false,
         theme: AppTheme.darkTheme, // Cyberpunk Dark Theme
->>>>>>> Stashed changes
         routerConfig: appRouter,
       ),
     );
