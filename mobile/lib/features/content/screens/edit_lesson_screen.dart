@@ -15,7 +15,8 @@ import 'dart:io';
 class EditLessonScreen extends StatefulWidget {
   final String contentItemId;
   final Map<String, dynamic>? initialData;
-  final Map<String, dynamic>? originalData; // Original/current version for comparison
+  final Map<String, dynamic>?
+      originalData; // Original/current version for comparison
 
   const EditLessonScreen({
     super.key,
@@ -31,23 +32,25 @@ class EditLessonScreen extends StatefulWidget {
 class _EditLessonScreenState extends State<EditLessonScreen> {
   final _titleController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
-  
+
   // 3 QuillControllers for 3 complexity levels
   final quill.QuillController _simpleController = quill.QuillController.basic();
-  final quill.QuillController _detailedController = quill.QuillController.basic();
-  final quill.QuillController _comprehensiveController = quill.QuillController.basic();
-  
+  final quill.QuillController _detailedController =
+      quill.QuillController.basic();
+  final quill.QuillController _comprehensiveController =
+      quill.QuillController.basic();
+
   // Current selected complexity level for editing
   int _selectedComplexityIndex = 1; // 0=simple, 1=detailed, 2=comprehensive
   final List<String> _complexityLabels = ['Đơn giản', 'Chi tiết', 'Chuyên sâu'];
-  
+
   List<String> _imageUrls = [];
   String? _videoUrl;
   String? _videoThumbnail;
   String? _videoDuration;
   bool _isPreviewMode = false;
   bool _isSubmitting = false;
-  
+
   // Quiz data
   bool _isQuiz = false;
   final _questionController = TextEditingController();
@@ -64,21 +67,22 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
   void _loadInitialData() {
     // Handle combined data from version history (contains both initialData and originalData)
     Map<String, dynamic>? data = widget.initialData;
-    
+
     // Check if initialData contains combined data structure from version history
-    if (widget.initialData != null && widget.initialData!.containsKey('initialData')) {
+    if (widget.initialData != null &&
+        widget.initialData!.containsKey('initialData')) {
       // Combined structure: {initialData: {...}, originalData: {...}}
       data = widget.initialData!['initialData'] as Map<String, dynamic>?;
     }
-    
+
     if (data != null) {
       _titleController.text = data['title'] ?? '';
-      
+
       // Check if this is a quiz
       final format = data['format'] as String?;
       final quizData = data['quizData'] as Map<String, dynamic>?;
       _isQuiz = format == 'quiz' || quizData != null;
-      
+
       if (_isQuiz && quizData != null) {
         // Load quiz data
         _questionController.text = quizData['question'] ?? '';
@@ -97,47 +101,45 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
       } else {
         // Load rich content for all 3 complexity levels
         final textVariants = data['textVariants'] as Map<String, dynamic>?;
-        
+
         // Load DETAILED content (default)
         if (textVariants?['detailedRichContent'] != null) {
-          _loadRichContentToController(_detailedController, textVariants!['detailedRichContent']);
+          _loadRichContentToController(
+              _detailedController, textVariants!['detailedRichContent']);
         } else if (data['richContent'] != null) {
-          _loadRichContentToController(_detailedController, data['richContent']);
+          _loadRichContentToController(
+              _detailedController, data['richContent']);
         } else if (textVariants?['detailed'] != null) {
-          _detailedController.document = quill.Document()..insert(0, textVariants!['detailed']);
+          _detailedController.document = quill.Document()
+            ..insert(0, textVariants!['detailed']);
         } else if (data['content'] != null) {
-          _detailedController.document = quill.Document()..insert(0, data['content']);
+          _detailedController.document = quill.Document()
+            ..insert(0, data['content']);
         }
-        
+
         // Load SIMPLE content
         if (textVariants?['simpleRichContent'] != null) {
-          _loadRichContentToController(_simpleController, textVariants!['simpleRichContent']);
+          _loadRichContentToController(
+              _simpleController, textVariants!['simpleRichContent']);
         } else if (textVariants?['simple'] != null) {
-          _simpleController.document = quill.Document()..insert(0, textVariants!['simple']);
+          _simpleController.document = quill.Document()
+            ..insert(0, textVariants!['simple']);
         }
-        
+
         // Load COMPREHENSIVE content
         if (textVariants?['comprehensiveRichContent'] != null) {
-          _loadRichContentToController(_comprehensiveController, textVariants!['comprehensiveRichContent']);
+          _loadRichContentToController(_comprehensiveController,
+              textVariants!['comprehensiveRichContent']);
         } else if (textVariants?['comprehensive'] != null) {
-          _comprehensiveController.document = quill.Document()..insert(0, textVariants!['comprehensive']);
+          _comprehensiveController.document = quill.Document()
+            ..insert(0, textVariants!['comprehensive']);
         }
       }
 
-      // Load images
-      if (data['media'] != null) {
-        final media = data['media'] as Map<String, dynamic>;
-        if (media['imageUrls'] != null) {
-          _imageUrls = List<String>.from(media['imageUrls']);
-        } else if (media['imageUrl'] != null) {
-          _imageUrls = [media['imageUrl']];
-        }
-        
-        if (media['videoUrl'] != null) {
-          _videoUrl = media['videoUrl'];
-          _loadVideoThumbnail(media['videoUrl']!);
-        }
-      }
+      // NOTE: Do NOT load images and videos from original content
+      // Users should add their own images/videos when contributing
+      // The original media is shown in the comparison dialog for reference
+      // _imageUrls and _videoUrl start empty
     }
   }
 
@@ -150,7 +152,7 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
         // For now, skip thumbnail generation for remote URLs
         return;
       }
-      
+
       final thumbnail = await VideoThumbnail.thumbnailFile(
         video: videoUrl,
         thumbnailPath: (await Directory.systemTemp).path,
@@ -158,7 +160,7 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
         maxWidth: 640,
         quality: 75,
       );
-      
+
       if (thumbnail != null) {
         setState(() {
           _videoThumbnail = thumbnail;
@@ -182,7 +184,7 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
       if (image == null) return;
 
       String imagePath = image.path;
-      
+
       // Only crop on mobile platforms (Android/iOS), skip on Windows/Web
       // image_cropper doesn't work well on Windows desktop
       if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
@@ -206,7 +208,7 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
               ),
             ],
           );
-          
+
           if (croppedFile != null) {
             imagePath = croppedFile.path;
           } else {
@@ -231,7 +233,7 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
       try {
         final apiService = Provider.of<ApiService>(context, listen: false);
         final result = await apiService.uploadImageForEdit(imagePath);
-        
+
         setState(() {
           _imageUrls.add(result['imageUrl'] as String);
           _isSubmitting = false;
@@ -260,7 +262,7 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
       final file = File(video.path);
       final fileSize = await file.length();
       const maxSize = 100 * 1024 * 1024;
-      
+
       if (fileSize > maxSize) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -279,12 +281,12 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
       try {
         final apiService = Provider.of<ApiService>(context, listen: false);
         final result = await apiService.uploadVideoForEdit(video.path);
-        
+
         setState(() {
           _videoUrl = result['videoUrl'] as String;
           _isSubmitting = false;
         });
-        
+
         // Generate thumbnail
         _loadVideoThumbnail(_videoUrl!);
       } catch (e) {
@@ -318,16 +320,19 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
         );
         return;
       }
-      
-      final validOptions = _optionControllers.where((c) => c.text.trim().isNotEmpty).toList();
+
+      final validOptions =
+          _optionControllers.where((c) => c.text.trim().isNotEmpty).toList();
       if (validOptions.length < 2) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Vui lòng nhập ít nhất 2 đáp án')),
         );
         return;
       }
-      
-      if (_correctAnswerIndex == null || _correctAnswerIndex! < 0 || _correctAnswerIndex! >= validOptions.length) {
+
+      if (_correctAnswerIndex == null ||
+          _correctAnswerIndex! < 0 ||
+          _correctAnswerIndex! >= validOptions.length) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Vui lòng chọn đáp án đúng')),
         );
@@ -341,15 +346,18 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
 
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
-      
+
       Map<String, dynamic>? quizData;
       dynamic richContent;
-      
+
       Map<String, dynamic>? textVariants;
-      
+
       if (_isQuiz) {
         // Build quiz data
-        final validOptions = _optionControllers.where((c) => c.text.trim().isNotEmpty).map((c) => c.text.trim()).toList();
+        final validOptions = _optionControllers
+            .where((c) => c.text.trim().isNotEmpty)
+            .map((c) => c.text.trim())
+            .toList();
         quizData = {
           'question': _questionController.text.trim(),
           'options': validOptions,
@@ -361,15 +369,16 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
         final simpleDelta = _simpleController.document.toDelta();
         final detailedDelta = _detailedController.document.toDelta();
         final comprehensiveDelta = _comprehensiveController.document.toDelta();
-        
+
         // Use detailed as default richContent for backward compatibility
         richContent = detailedDelta.toJson();
-        
+
         // Build textVariants with all 3 formats
         textVariants = {
           'simple': _simpleController.document.toPlainText().trim(),
           'detailed': _detailedController.document.toPlainText().trim(),
-          'comprehensive': _comprehensiveController.document.toPlainText().trim(),
+          'comprehensive':
+              _comprehensiveController.document.toPlainText().trim(),
           'simpleRichContent': simpleDelta.toJson(),
           'detailedRichContent': detailedDelta.toJson(),
           'comprehensiveRichContent': comprehensiveDelta.toJson(),
@@ -390,7 +399,8 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
         Navigator.of(context).pop(true);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Đã đóng góp bài học thành công! Bài đóng góp của bạn đang chờ được duyệt.'),
+            content: Text(
+                'Đã đóng góp bài học thành công! Bài đóng góp của bạn đang chờ được duyệt.'),
             backgroundColor: Colors.green,
             duration: Duration(seconds: 3),
           ),
@@ -414,17 +424,19 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
   void _showComparisonDialog() async {
     // Use originalData (current version) if available, otherwise use initialData
     Map<String, dynamic> original;
-    
+
     // Check if initialData contains combined data structure from version history
     Map<String, dynamic>? originalData = widget.originalData;
     Map<String, dynamic>? initialData = widget.initialData;
-    
-    if (widget.initialData != null && widget.initialData!.containsKey('originalData')) {
+
+    if (widget.initialData != null &&
+        widget.initialData!.containsKey('originalData')) {
       // Combined data structure from version history
-      originalData = widget.initialData!['originalData'] as Map<String, dynamic>?;
+      originalData =
+          widget.initialData!['originalData'] as Map<String, dynamic>?;
       initialData = widget.initialData!['initialData'] as Map<String, dynamic>?;
     }
-    
+
     if (originalData != null) {
       // Use current version data for comparison (when editing from version snapshot)
       original = {
@@ -447,7 +459,8 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
       // Fetch current content if neither provided
       try {
         final apiService = Provider.of<ApiService>(context, listen: false);
-        final currentContent = await apiService.getContentDetail(widget.contentItemId);
+        final currentContent =
+            await apiService.getContentDetail(widget.contentItemId);
         original = {
           'title': currentContent['title'] ?? '',
           'content': currentContent['content'] ?? '',
@@ -471,12 +484,15 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
     final detailedDelta = _detailedController.document.toDelta();
     final comprehensiveDelta = _comprehensiveController.document.toDelta();
     final richContent = detailedDelta.toJson();
-    
+
     Map<String, dynamic>? quizData;
     Map<String, dynamic>? textVariants;
-    
+
     if (_isQuiz) {
-      final validOptions = _optionControllers.where((c) => c.text.trim().isNotEmpty).map((c) => c.text.trim()).toList();
+      final validOptions = _optionControllers
+          .where((c) => c.text.trim().isNotEmpty)
+          .map((c) => c.text.trim())
+          .toList();
       quizData = {
         'question': _questionController.text.trim(),
         'options': validOptions,
@@ -507,7 +523,7 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
     };
 
     if (!mounted) return;
-    
+
     showDialog(
       context: context,
       builder: (context) => ComparisonDialog(
@@ -528,7 +544,8 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
     return '$baseUrl$url';
   }
 
-  void _loadRichContentToController(quill.QuillController controller, dynamic richContentData) {
+  void _loadRichContentToController(
+      quill.QuillController controller, dynamic richContentData) {
     try {
       if (richContentData is List) {
         final delta = Delta.fromJson(richContentData);
@@ -537,7 +554,8 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
         final delta = Delta.fromJson([richContentData]);
         controller.document = quill.Document.fromDelta(delta);
       } else {
-        controller.document = quill.Document()..insert(0, richContentData.toString());
+        controller.document = quill.Document()
+          ..insert(0, richContentData.toString());
       }
     } catch (e) {
       if (richContentData is String) {
@@ -545,7 +563,7 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
       }
     }
   }
-  
+
   quill.QuillController get _currentController {
     switch (_selectedComplexityIndex) {
       case 0:
@@ -664,7 +682,7 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
               maxLines: 3,
             ),
             const SizedBox(height: 24),
-            
+
             // ĐÁP ÁN
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -720,7 +738,8 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
                             _optionControllers.removeAt(index);
                             if (_correctAnswerIndex == index) {
                               _correctAnswerIndex = null;
-                            } else if (_correctAnswerIndex != null && _correctAnswerIndex! > index) {
+                            } else if (_correctAnswerIndex != null &&
+                                _correctAnswerIndex! > index) {
                               _correctAnswerIndex = _correctAnswerIndex! - 1;
                             }
                           });
@@ -731,7 +750,7 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
               );
             }),
             const SizedBox(height: 24),
-            
+
             // GIẢI THÍCH
             _buildSectionLabel('GIẢI THÍCH ĐÁP ÁN'),
             const SizedBox(height: 8),
@@ -764,19 +783,25 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
                   final colors = [Colors.green, Colors.blue, Colors.orange];
                   return Expanded(
                     child: GestureDetector(
-                      onTap: () => setState(() => _selectedComplexityIndex = index),
+                      onTap: () =>
+                          setState(() => _selectedComplexityIndex = index),
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 10),
                         decoration: BoxDecoration(
-                          color: isSelected ? colors[index] : Colors.transparent,
+                          color:
+                              isSelected ? colors[index] : Colors.transparent,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
                           _complexityLabels[index],
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: isSelected ? Colors.white : Colors.grey.shade700,
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            color: isSelected
+                                ? Colors.white
+                                : Colors.grey.shade700,
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.normal,
                             fontSize: 13,
                           ),
                         ),
@@ -791,7 +816,11 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
             Container(
               decoration: BoxDecoration(
                 border: Border.all(
-                  color: [Colors.green, Colors.blue, Colors.orange][_selectedComplexityIndex],
+                  color: [
+                    Colors.green,
+                    Colors.blue,
+                    Colors.orange
+                  ][_selectedComplexityIndex],
                   width: 2,
                 ),
                 borderRadius: BorderRadius.circular(12),
@@ -801,9 +830,15 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
                   // Complexity indicator
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                    padding:
+                        const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                     decoration: BoxDecoration(
-                      color: [Colors.green, Colors.blue, Colors.orange][_selectedComplexityIndex].withOpacity(0.1),
+                      color: [
+                        Colors.green,
+                        Colors.blue,
+                        Colors.orange
+                      ][_selectedComplexityIndex]
+                          .withOpacity(0.1),
                       borderRadius: const BorderRadius.only(
                         topLeft: Radius.circular(10),
                         topRight: Radius.circular(10),
@@ -812,15 +847,27 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
                     child: Row(
                       children: [
                         Icon(
-                          [Icons.sentiment_satisfied, Icons.auto_awesome, Icons.rocket_launch][_selectedComplexityIndex],
-                          color: [Colors.green, Colors.blue, Colors.orange][_selectedComplexityIndex],
+                          [
+                            Icons.sentiment_satisfied,
+                            Icons.auto_awesome,
+                            Icons.rocket_launch
+                          ][_selectedComplexityIndex],
+                          color: [
+                            Colors.green,
+                            Colors.blue,
+                            Colors.orange
+                          ][_selectedComplexityIndex],
                           size: 18,
                         ),
                         const SizedBox(width: 8),
                         Text(
                           'Đang chỉnh sửa: ${_complexityLabels[_selectedComplexityIndex]}',
                           style: TextStyle(
-                            color: [Colors.green, Colors.blue, Colors.orange][_selectedComplexityIndex],
+                            color: [
+                              Colors.green,
+                              Colors.blue,
+                              Colors.orange
+                            ][_selectedComplexityIndex],
                             fontWeight: FontWeight.bold,
                             fontSize: 13,
                           ),
@@ -830,14 +877,16 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
                   ),
                   // Rich text editor toolbar
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.grey.shade100,
                     ),
                     child: quill.QuillToolbar.simple(
                       configurations: quill.QuillSimpleToolbarConfigurations(
                         controller: _currentController,
-                        sharedConfigurations: const quill.QuillSharedConfigurations(),
+                        sharedConfigurations:
+                            const quill.QuillSharedConfigurations(),
                       ),
                     ),
                   ),
@@ -848,8 +897,10 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
                     child: quill.QuillEditor.basic(
                       configurations: quill.QuillEditorConfigurations(
                         controller: _currentController,
-                        placeholder: 'Nhập nội dung ${_complexityLabels[_selectedComplexityIndex].toLowerCase()}...',
-                        sharedConfigurations: const quill.QuillSharedConfigurations(),
+                        placeholder:
+                            'Nhập nội dung ${_complexityLabels[_selectedComplexityIndex].toLowerCase()}...',
+                        sharedConfigurations:
+                            const quill.QuillSharedConfigurations(),
                       ),
                     ),
                   ),
@@ -864,102 +915,146 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               _buildSectionLabel('HÌNH ẢNH MINH HỌA'),
-              Text(
-                '${_imageUrls.length}/5 ảnh',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey.shade600,
+              if (_imageUrls.isNotEmpty)
+                Text(
+                  '${_imageUrls.length}/5 ảnh',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade600,
+                  ),
                 ),
-              ),
             ],
           ),
           const SizedBox(height: 8),
-          SizedBox(
-            height: 100,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: _imageUrls.length + 1,
-              itemBuilder: (context, index) {
-                if (index == _imageUrls.length) {
-                  // Add image button
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: InkWell(
-                      onTap: _isSubmitting ? null : _pickAndCropImage,
-                      child: Container(
-                        width: 100,
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.green, style: BorderStyle.solid, width: 2),
-                          borderRadius: BorderRadius.circular(12),
-                          color: Colors.green.shade50,
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.add_photo_alternate, color: Colors.green.shade700, size: 32),
-                            const SizedBox(height: 4),
-                            const Text(
-                              'Thêm ảnh',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.green,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
+          if (_imageUrls.isEmpty) ...[
+            // No image placeholder
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade300),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.image_not_supported_outlined,
+                      color: Colors.grey.shade500, size: 24),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Bài học này chưa có hình ảnh',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey.shade600,
+                        fontStyle: FontStyle.italic,
                       ),
                     ),
-                  );
-                }
-                
-                // Image thumbnail
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: Stack(
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Image.network(
-                          _buildFullUrl(_imageUrls[index]),
+                  ),
+                  TextButton.icon(
+                    onPressed: _isSubmitting ? null : _pickAndCropImage,
+                    icon: const Icon(Icons.add_photo_alternate, size: 18),
+                    label: const Text('Thêm'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.green,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ] else ...[
+            // Image list with add button
+            SizedBox(
+              height: 100,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: _imageUrls.length + 1,
+                itemBuilder: (context, index) {
+                  if (index == _imageUrls.length) {
+                    // Add image button
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: InkWell(
+                        onTap: _isSubmitting ? null : _pickAndCropImage,
+                        child: Container(
                           width: 100,
-                          height: 100,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              width: 100,
-                              height: 100,
-                              color: Colors.grey.shade200,
-                              child: const Icon(Icons.broken_image),
-                            );
-                          },
-                        ),
-                      ),
-                      Positioned(
-                        top: 4,
-                        right: 4,
-                        child: InkWell(
-                          onTap: () {
-                            setState(() {
-                              _imageUrls.removeAt(index);
-                            });
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: const BoxDecoration(
-                              color: Colors.red,
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(Icons.close, color: Colors.white, size: 16),
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                                color: Colors.green,
+                                style: BorderStyle.solid,
+                                width: 2),
+                            borderRadius: BorderRadius.circular(12),
+                            color: Colors.green.shade50,
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.add_photo_alternate,
+                                  color: Colors.green.shade700, size: 32),
+                              const SizedBox(height: 4),
+                              const Text(
+                                'Thêm ảnh',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.green,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
-                    ],
-                  ),
-                );
-              },
+                    );
+                  }
+
+                  // Image thumbnail
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: Stack(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.network(
+                            _buildFullUrl(_imageUrls[index]),
+                            width: 100,
+                            height: 100,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                width: 100,
+                                height: 100,
+                                color: Colors.grey.shade200,
+                                child: const Icon(Icons.broken_image),
+                              );
+                            },
+                          ),
+                        ),
+                        Positioned(
+                          top: 4,
+                          right: 4,
+                          child: InkWell(
+                            onTap: () {
+                              setState(() {
+                                _imageUrls.removeAt(index);
+                              });
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: const BoxDecoration(
+                                color: Colors.red,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.close,
+                                  color: Colors.white, size: 16),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
             ),
-          ),
+          ],
           const SizedBox(height: 24),
 
           // VIDEO HƯỚNG DẪN
@@ -983,7 +1078,8 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
                           height: 200,
                           color: Colors.black,
                           child: const Center(
-                            child: Icon(Icons.video_library, color: Colors.white, size: 48),
+                            child: Icon(Icons.video_library,
+                                color: Colors.white, size: 48),
                           ),
                         ),
                 ),
@@ -1010,14 +1106,16 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
                     top: 12,
                     right: 12,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: Colors.black.withOpacity(0.7),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
                         _videoDuration!,
-                        style: const TextStyle(color: Colors.white, fontSize: 12),
+                        style:
+                            const TextStyle(color: Colors.white, fontSize: 12),
                       ),
                     ),
                   ),
@@ -1056,15 +1154,38 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
               ),
             ),
           ] else ...[
-            // Upload video button
-            ElevatedButton.icon(
-              onPressed: _isSubmitting ? null : _pickVideo,
-              icon: const Icon(Icons.video_library),
-              label: const Text('Tải video lên'),
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                backgroundColor: Colors.blue,
-                foregroundColor: Colors.white,
+            // No video placeholder
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade300),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.videocam_off_outlined,
+                      color: Colors.grey.shade500, size: 24),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Bài học này chưa có video',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey.shade600,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ),
+                  TextButton.icon(
+                    onPressed: _isSubmitting ? null : _pickVideo,
+                    icon: const Icon(Icons.video_library, size: 18),
+                    label: const Text('Thêm'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.blue,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -1091,7 +1212,8 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
                     )
                   : const Text(
                       'Đóng góp',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
             ),
           ),
@@ -1108,7 +1230,9 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
         children: [
           // Title preview
           Text(
-            _titleController.text.isEmpty ? 'Tiêu đề bài học' : _titleController.text,
+            _titleController.text.isEmpty
+                ? 'Tiêu đề bài học'
+                : _titleController.text,
             style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -1120,7 +1244,9 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
           if (_isQuiz) ...[
             // Quiz preview
             Text(
-              _questionController.text.isEmpty ? 'Câu hỏi quiz' : _questionController.text,
+              _questionController.text.isEmpty
+                  ? 'Câu hỏi quiz'
+                  : _questionController.text,
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w500,
@@ -1130,14 +1256,16 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
             ...List.generate(_optionControllers.length, (index) {
               final optionText = _optionControllers[index].text.trim();
               if (optionText.isEmpty) return const SizedBox.shrink();
-              
+
               final isCorrect = index == _correctAnswerIndex;
               return Padding(
                 padding: const EdgeInsets.only(bottom: 12),
                 child: Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: isCorrect ? Colors.green.shade100 : Colors.grey.shade100,
+                    color: isCorrect
+                        ? Colors.green.shade100
+                        : Colors.grey.shade100,
                     border: Border.all(
                       color: isCorrect ? Colors.green : Colors.grey.shade300,
                       width: isCorrect ? 2 : 1,
@@ -1147,7 +1275,9 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
                   child: Row(
                     children: [
                       Icon(
-                        isCorrect ? Icons.check_circle : Icons.radio_button_unchecked,
+                        isCorrect
+                            ? Icons.check_circle
+                            : Icons.radio_button_unchecked,
                         color: isCorrect ? Colors.green : Colors.grey,
                       ),
                       const SizedBox(width: 12),
@@ -1155,13 +1285,15 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
                         child: Text(
                           optionText,
                           style: TextStyle(
-                            fontWeight: isCorrect ? FontWeight.bold : FontWeight.normal,
+                            fontWeight:
+                                isCorrect ? FontWeight.bold : FontWeight.normal,
                           ),
                         ),
                       ),
                       if (isCorrect)
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             color: Colors.green,
                             borderRadius: BorderRadius.circular(4),
@@ -1215,19 +1347,25 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
                   final colors = [Colors.green, Colors.blue, Colors.orange];
                   return Expanded(
                     child: GestureDetector(
-                      onTap: () => setState(() => _selectedComplexityIndex = index),
+                      onTap: () =>
+                          setState(() => _selectedComplexityIndex = index),
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 10),
                         decoration: BoxDecoration(
-                          color: isSelected ? colors[index] : Colors.transparent,
+                          color:
+                              isSelected ? colors[index] : Colors.transparent,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
                           _complexityLabels[index],
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: isSelected ? Colors.white : Colors.grey.shade700,
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            color: isSelected
+                                ? Colors.white
+                                : Colors.grey.shade700,
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.normal,
                             fontSize: 13,
                           ),
                         ),
@@ -1243,7 +1381,11 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 border: Border.all(
-                  color: [Colors.green, Colors.blue, Colors.orange][_selectedComplexityIndex],
+                  color: [
+                    Colors.green,
+                    Colors.blue,
+                    Colors.orange
+                  ][_selectedComplexityIndex],
                 ),
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -1251,7 +1393,8 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
                 child: quill.QuillEditor.basic(
                   configurations: quill.QuillEditorConfigurations(
                     controller: _currentController,
-                    sharedConfigurations: const quill.QuillSharedConfigurations(),
+                    sharedConfigurations:
+                        const quill.QuillSharedConfigurations(),
                   ),
                 ),
               ),
@@ -1317,7 +1460,8 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
                           height: 200,
                           color: Colors.black,
                           child: const Center(
-                            child: Icon(Icons.video_library, color: Colors.white, size: 48),
+                            child: Icon(Icons.video_library,
+                                color: Colors.white, size: 48),
                           ),
                         ),
                 ),
@@ -1342,14 +1486,16 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
                     top: 12,
                     right: 12,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: Colors.black.withOpacity(0.7),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
                         _videoDuration!,
-                        style: const TextStyle(color: Colors.white, fontSize: 12),
+                        style:
+                            const TextStyle(color: Colors.white, fontSize: 12),
                       ),
                     ),
                   ),
@@ -1373,4 +1519,3 @@ class _EditLessonScreenState extends State<EditLessonScreen> {
     );
   }
 }
-

@@ -30,6 +30,7 @@ import { Quiz } from '../quiz/entities/quiz.entity';
 import { Payment } from '../payment/entities/payment.entity';
 import { UserPremium } from '../payment/entities/user-premium.entity';
 import { AdaptiveTest } from '../adaptive-test/entities/adaptive-test.entity';
+import { PendingContribution } from '../pending-contributions/entities/pending-contribution.entity';
 
 @Injectable()
 export class TypeOrmConfigService implements TypeOrmOptionsFactory {
@@ -69,6 +70,7 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
         Payment,
         UserPremium,
         AdaptiveTest,
+        PendingContribution,
       ],
       synchronize: this.configService.get<string>('NODE_ENV') === 'development',
       logging: this.configService.get<string>('NODE_ENV') === 'development',

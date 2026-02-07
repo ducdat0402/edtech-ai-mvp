@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/widgets/error_widget.dart';
 import 'package:edtech_mobile/core/widgets/skeleton_loader.dart';
+import 'package:edtech_mobile/theme/theme.dart';
 
 class DomainsListScreen extends StatefulWidget {
   final String subjectId;
@@ -23,14 +24,17 @@ class _DomainsListScreenState extends State<DomainsListScreen> {
   List<dynamic> _domains = [];
   bool _isLoading = true;
   String? _error;
+  String _userRole = 'user';
+
+  bool get _isContributor => _userRole == 'contributor' || _userRole == 'admin';
 
   @override
   void initState() {
     super.initState();
-    _loadDomains();
+    _loadData();
   }
 
-  Future<void> _loadDomains() async {
+  Future<void> _loadData() async {
     setState(() {
       _isLoading = true;
       _error = null;
@@ -38,9 +42,14 @@ class _DomainsListScreenState extends State<DomainsListScreen> {
 
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
-      final domains = await apiService.getDomainsBySubject(widget.subjectId);
+      final results = await Future.wait([
+        apiService.getDomainsBySubject(widget.subjectId),
+        apiService.getUserProfile(),
+      ]);
       setState(() {
-        _domains = domains;
+        _domains = results[0] as List<dynamic>;
+        final profile = results[1] as Map<String, dynamic>;
+        _userRole = profile['role'] as String? ?? 'user';
         _isLoading = false;
       });
     } catch (e) {
@@ -60,8 +69,8 @@ class _DomainsListScreenState extends State<DomainsListScreen> {
       body: _isLoading
           ? const SkeletonLoader(width: double.infinity, height: double.infinity)
           : _error != null
-              ? AppErrorWidget(message: _error!, onRetry: _loadDomains)
-              : _domains.isEmpty
+              ? AppErrorWidget(message: _error!, onRetry: _loadData)
+              : _domains.isEmpty && !_isContributor
                   ? Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -87,16 +96,63 @@ class _DomainsListScreenState extends State<DomainsListScreen> {
                       ),
                     )
                   : RefreshIndicator(
-                      onRefresh: _loadDomains,
+                      onRefresh: _loadData,
                       child: ListView.builder(
                         padding: const EdgeInsets.all(16),
-                        itemCount: _domains.length,
+                        itemCount: _domains.length + (_isContributor ? 1 : 0),
                         itemBuilder: (context, index) {
+                          if (_isContributor && index == _domains.length) {
+                            return _buildAddDomainCard();
+                          }
                           final domain = _domains[index];
                           return _buildDomainCard(domain);
                         },
                       ),
                     ),
+      floatingActionButton: _isContributor && !_isLoading
+          ? FloatingActionButton(
+              onPressed: () async {
+                final result = await context.push(
+                  '/contributor/create-domain?subjectId=${widget.subjectId}&subjectName=${Uri.encodeComponent(widget.subjectName ?? '')}',
+                );
+                if (result == true) _loadData();
+              },
+              backgroundColor: AppColors.contributorBlue,
+              child: const Icon(Icons.add, color: Colors.white),
+            )
+          : null,
+    );
+  }
+
+  Widget _buildAddDomainCard() {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      elevation: 0,
+      color: AppColors.contributorBlue.withOpacity(0.08),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: AppColors.contributorBlue.withOpacity(0.3), width: 1.5),
+      ),
+      child: InkWell(
+        onTap: () async {
+          final result = await context.push(
+            '/contributor/create-domain?subjectId=${widget.subjectId}&subjectName=${Uri.encodeComponent(widget.subjectName ?? '')}',
+          );
+          if (result == true) _loadData();
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.add_circle_outline, color: AppColors.contributorBlue, size: 24),
+              const SizedBox(width: 8),
+              Text('Thêm Domain mới', style: TextStyle(color: AppColors.contributorBlue, fontWeight: FontWeight.w600, fontSize: 16)),
+            ],
+          ),
+        ),
+      ),
     );
   }
 

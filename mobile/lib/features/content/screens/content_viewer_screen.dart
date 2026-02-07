@@ -54,7 +54,8 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
   bool _showQuizResult = false;
   bool _isCompleting = false;
   bool _isCompleted = false;
-  String? _userRole; // Store user role to check if admin
+  String? _userRole; // Store user role: 'user' (learner), 'contributor', 'admin'
+  bool get _canEdit => _userRole == 'contributor' || _userRole == 'admin';
   
   // Content display mode - user can switch between text, image, video
   ContentDisplayMode _displayMode = ContentDisplayMode.text;
@@ -346,18 +347,20 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
           },
         ),
         actions: [
-          IconButton(
-            icon: Icon(Icons.history_rounded, color: AppColors.textSecondary),
-            onPressed: () {
-              context.push('/content/${widget.contentId}/versions');
-            },
-            tooltip: 'Lịch sử phiên bản',
-          ),
-          TextButton.icon(
-            onPressed: () => _navigateToEditLesson(),
-            icon: Icon(Icons.edit_rounded, size: 18, color: AppColors.cyanNeon),
-            label: Text('Chỉnh sửa', style: AppTextStyles.labelSmall.copyWith(color: AppColors.cyanNeon)),
-          ),
+          if (_canEdit)
+            IconButton(
+              icon: Icon(Icons.history_rounded, color: AppColors.textSecondary),
+              onPressed: () {
+                context.push('/content/${widget.contentId}/versions');
+              },
+              tooltip: 'Lịch sử phiên bản',
+            ),
+          if (_canEdit)
+            TextButton.icon(
+              onPressed: () => _navigateToEditLesson(),
+              icon: Icon(Icons.edit_rounded, size: 18, color: AppColors.cyanNeon),
+              label: Text('Chỉnh sửa', style: AppTextStyles.labelSmall.copyWith(color: AppColors.cyanNeon)),
+            ),
         ],
       ),
       body: _isLoading
@@ -797,7 +800,9 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
   }
 
   /// Build placeholder notice banner with contribution guide
+  /// Only shown for contributors and admins
   Widget _buildPlaceholderNotice({required String type}) {
+    if (!_canEdit) return const SizedBox.shrink();
     final isVideo = type == 'video';
     final media = _contentData?['media'];
     
@@ -964,7 +969,9 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
   }
 
   /// Build contribution CTA button
+  /// Only shown for contributors and admins
   Widget _buildContributionButton({required String type}) {
+    if (!_canEdit) return const SizedBox.shrink();
     return Container(
       margin: const EdgeInsets.only(top: 16),
       child: ElevatedButton.icon(

@@ -149,6 +149,20 @@ class AppGradients {
   );
 
   // ═══════════════════════════════════════════════════════════════════
+  // ROLE/MODE GRADIENTS
+  // ═══════════════════════════════════════════════════════════════════
+
+  /// Contributor mode gradient (Blue)
+  static const LinearGradient contributor = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [
+      AppColors.contributorBlue,
+      AppColors.contributorBlueLight,
+    ],
+  );
+
+  // ═══════════════════════════════════════════════════════════════════
   // CARD/SURFACE GRADIENTS
   // ═══════════════════════════════════════════════════════════════════
   

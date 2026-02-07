@@ -20,6 +20,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Map<String, dynamic>? _currencyData;
   Map<String, dynamic>? _dashboardStats;
   bool _isLoading = true;
+  bool _isSwitchingRole = false;
   String? _error;
 
   @override
@@ -49,6 +50,89 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _error = e.toString();
         _isLoading = false;
       });
+    }
+  }
+
+  // === Role helpers ===
+  String get _currentRole => _profileData?['role'] ?? 'user';
+  bool get _isContributor => _currentRole == 'contributor';
+  bool get _isAdmin => _currentRole == 'admin';
+
+  Color get _accentColor => _isContributor ? AppColors.contributorBlue : AppColors.purpleNeon;
+  Color get _bgPrimary => _isContributor ? AppColors.contributorBgPrimary : AppColors.bgPrimary;
+  Color get _bgSecondary => _isContributor ? AppColors.contributorBgSecondary : AppColors.bgSecondary;
+  Color get _borderColor => _isContributor ? AppColors.contributorBorder : AppColors.borderPrimary;
+
+  LinearGradient get _primaryGradient =>
+      _isContributor ? AppGradients.contributor : AppGradients.primary;
+
+  Future<void> _handleSwitchRole() async {
+    final targetRole = _isContributor ? 'user' : 'contributor';
+    final targetLabel = targetRole == 'contributor' ? 'Contributor' : 'Learner';
+
+    final shouldSwitch = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: _bgSecondary,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(
+          'Chuyển sang $targetLabel',
+          style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary),
+        ),
+        content: Text(
+          targetRole == 'contributor'
+              ? 'Chế độ Contributor cho phép bạn đóng góp nội dung: thêm môn học, tạo domain, topic và bài học. Các đóng góp cần được admin duyệt.'
+              : 'Chế độ Learner cho phép bạn tập trung vào việc học. Bạn sẽ không thể chỉnh sửa hoặc đóng góp nội dung.',
+          style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text('Hủy', style: TextStyle(color: AppColors.textSecondary)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(
+              'Chuyển',
+              style: TextStyle(
+                color: targetRole == 'contributor'
+                    ? AppColors.contributorBlue
+                    : AppColors.purpleNeon,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldSwitch == true) {
+      setState(() => _isSwitchingRole = true);
+      try {
+        final apiService = Provider.of<ApiService>(context, listen: false);
+        await apiService.switchRole(targetRole);
+        await _loadProfile(); // Reload profile to get updated role
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Đã chuyển sang chế độ $targetLabel'),
+              backgroundColor: targetRole == 'contributor'
+                  ? AppColors.contributorBlue
+                  : AppColors.successNeon,
+            ),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Lỗi: $e'),
+              backgroundColor: AppColors.errorNeon,
+            ),
+          );
+        }
+      } finally {
+        if (mounted) setState(() => _isSwitchingRole = false);
+      }
     }
   }
 
@@ -100,7 +184,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: _bgPrimary,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -128,7 +212,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ? Center(child: Text('No data available', style: AppTextStyles.bodyMedium))
                   : RefreshIndicator(
                       onRefresh: _loadProfile,
-                      color: AppColors.cyanNeon,
+                      color: _accentColor,
                       child: _buildContent(),
                     ),
       bottomNavigationBar: const BottomNavBar(currentIndex: 3),
@@ -172,24 +256,47 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
-                gradient: AppGradients.primary,
+                gradient: _primaryGradient,
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.purpleNeon.withOpacity(0.3),
+                    color: _accentColor.withOpacity(0.3),
                     blurRadius: 10,
                   ),
                 ],
               ),
-              child: Text(
-                _profileData!['role']?.toUpperCase() ?? '',
-                style: AppTextStyles.labelMedium.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1,
-                ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    _isContributor
+                        ? Icons.edit_note
+                        : _isAdmin
+                            ? Icons.shield
+                            : Icons.school,
+                    color: Colors.white,
+                    size: 16,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    _isContributor
+                        ? 'CONTRIBUTOR'
+                        : _isAdmin
+                            ? 'ADMIN'
+                            : 'LEARNER',
+                    style: AppTextStyles.labelMedium.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                ],
               ),
             ),
+          const SizedBox(height: 16),
+
+          // Role Switcher (not for admin)
+          if (!_isAdmin) _buildRoleSwitcher(),
           const SizedBox(height: 24),
 
           // Stats Row
@@ -197,7 +304,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const SizedBox(height: 24),
 
           // Admin Panel Button (only for admin)
-          if (_profileData!['role'] == 'admin')
+          if (_isAdmin)
             _buildMenuCard(
               icon: Icons.admin_panel_settings,
               title: 'Admin Panel',
@@ -205,13 +312,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
               color: AppColors.cyanNeon,
               onTap: () => context.push('/admin/panel'),
             ),
+
+          // Contributor: My Pending Contributions
+          if (_isContributor)
+            _buildMenuCard(
+              icon: Icons.volunteer_activism,
+              title: 'Đóng góp của tôi',
+              subtitle: 'Xem đóng góp môn học, domain, topic & trạng thái duyệt',
+              color: AppColors.contributorBlue,
+              onTap: () => context.push('/contributor/my-contributions'),
+            ),
           
           // Journey Log Button
           _buildMenuCard(
             icon: Icons.history_edu,
             title: 'Nhật Ký Hành Trình',
-            subtitle: 'Lịch sử đóng góp & chỉnh sửa',
-            color: AppColors.purpleNeon,
+            subtitle: _isContributor
+                ? 'Lịch sử đóng góp & chỉnh sửa'
+                : 'Lịch sử học tập',
+            color: _accentColor,
             onTap: () => context.go('/profile/journey'),
           ),
 
@@ -246,6 +365,122 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  Widget _buildRoleSwitcher() {
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: _bgSecondary,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: _borderColor),
+      ),
+      child: Row(
+        children: [
+          // Learner tab
+          Expanded(
+            child: GestureDetector(
+              onTap: _isSwitchingRole || !_isContributor
+                  ? null
+                  : () => _handleSwitchRole(),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: !_isContributor
+                      ? AppColors.purpleNeon.withOpacity(0.2)
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(12),
+                  border: !_isContributor
+                      ? Border.all(color: AppColors.purpleNeon.withOpacity(0.5))
+                      : null,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.school,
+                      size: 18,
+                      color: !_isContributor
+                          ? AppColors.purpleNeon
+                          : AppColors.textTertiary,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Learner',
+                      style: AppTextStyles.labelMedium.copyWith(
+                        color: !_isContributor
+                            ? AppColors.purpleNeon
+                            : AppColors.textTertiary,
+                        fontWeight: !_isContributor
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 4),
+          // Contributor tab
+          Expanded(
+            child: GestureDetector(
+              onTap: _isSwitchingRole || _isContributor
+                  ? null
+                  : () => _handleSwitchRole(),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: _isContributor
+                      ? AppColors.contributorBlue.withOpacity(0.2)
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(12),
+                  border: _isContributor
+                      ? Border.all(color: AppColors.contributorBlue.withOpacity(0.5))
+                      : null,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (_isSwitchingRole && !_isContributor)
+                      SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.contributorBlue,
+                        ),
+                      )
+                    else
+                      Icon(
+                        Icons.edit_note,
+                        size: 18,
+                        color: _isContributor
+                            ? AppColors.contributorBlue
+                            : AppColors.textTertiary,
+                      ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Contributor',
+                      style: AppTextStyles.labelMedium.copyWith(
+                        color: _isContributor
+                            ? AppColors.contributorBlue
+                            : AppColors.textTertiary,
+                        fontWeight: _isContributor
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildAvatarSection() {
     return Stack(
       alignment: Alignment.center,
@@ -257,7 +492,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             gradient: RadialGradient(
-              colors: [AppColors.purpleNeon.withOpacity(0.3), Colors.transparent],
+              colors: [_accentColor.withOpacity(0.3), Colors.transparent],
             ),
           ),
         ),
@@ -267,10 +502,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           height: 110,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            gradient: AppGradients.primary,
+            gradient: _primaryGradient,
             boxShadow: [
               BoxShadow(
-                color: AppColors.purpleNeon.withOpacity(0.5),
+                color: _accentColor.withOpacity(0.5),
                 blurRadius: 20,
                 spreadRadius: 2,
               ),
@@ -280,10 +515,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
             margin: const EdgeInsets.all(4),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppColors.bgSecondary,
+              color: _bgSecondary,
             ),
-            child: const Center(
-              child: Icon(Icons.person, size: 50, color: AppColors.textSecondary),
+            child: Center(
+              child: Icon(
+                _isContributor ? Icons.edit_note : Icons.person,
+                size: 50,
+                color: AppColors.textSecondary,
+              ),
             ),
           ),
         ),
@@ -333,7 +572,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
+        color: _bgSecondary,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: color.withOpacity(0.3)),
       ),
@@ -364,7 +603,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
+        color: _bgSecondary,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: color.withOpacity(0.3)),
       ),
@@ -394,16 +633,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
       margin: const EdgeInsets.only(top: 12),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
+        color: _bgSecondary,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.borderPrimary),
+        border: Border.all(color: _borderColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.person_outline, color: AppColors.cyanNeon, size: 20),
+              Icon(Icons.person_outline, color: _accentColor, size: 20),
               const SizedBox(width: 8),
               Text('Thông tin cá nhân', style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
             ],
@@ -447,9 +686,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       margin: const EdgeInsets.only(top: 12),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
+        color: _bgSecondary,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.borderPrimary),
+        border: Border.all(color: _borderColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -489,9 +728,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       margin: const EdgeInsets.only(top: 12),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
+        color: _bgSecondary,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.borderPrimary),
+        border: Border.all(color: _borderColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

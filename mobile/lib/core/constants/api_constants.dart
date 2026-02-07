@@ -195,6 +195,20 @@ class ApiConstants {
   static const String generateBossQuiz = '/quiz/boss/generate';
   static const String submitQuiz = '/quiz/submit';
 
+  // User Role
+  static const String switchRole = '/users/switch-role';
+
+  // Pending Contributions (Contributor mode)
+  static const String myPendingContributions = '/pending-contributions/my';
+  static const String adminPendingContributions = '/pending-contributions/admin/pending';
+  static const String createSubjectContribution = '/pending-contributions/subject';
+  static const String createDomainContribution = '/pending-contributions/domain';
+  static const String createTopicContribution = '/pending-contributions/topic';
+  static const String createLessonContribution = '/pending-contributions/lesson';
+  static String pendingContributionDetail(String id) => '/pending-contributions/$id';
+  static String approvePendingContribution(String id) => '/pending-contributions/$id/approve';
+  static String rejectPendingContribution(String id) => '/pending-contributions/$id/reject';
+
   // Payment
   static const String paymentPackages = '/payment/packages';
   static const String createPayment = '/payment/create';

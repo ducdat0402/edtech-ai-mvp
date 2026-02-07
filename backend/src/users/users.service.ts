@@ -90,5 +90,25 @@ export class UsersService {
     }
     return this.usersRepository.save(user);
   }
+
+  async switchRole(
+    userId: string,
+    targetRole: 'user' | 'contributor',
+  ): Promise<User> {
+    const user = await this.findById(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+    // Admin cannot switch to lower roles via this endpoint
+    if (user.role === 'admin') {
+      throw new Error('Admin role cannot be changed');
+    }
+    // Only allow switching between user and contributor
+    if (targetRole !== 'user' && targetRole !== 'contributor') {
+      throw new Error('Invalid target role');
+    }
+    user.role = targetRole;
+    return this.usersRepository.save(user);
+  }
 }
 

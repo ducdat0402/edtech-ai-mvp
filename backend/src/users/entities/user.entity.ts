@@ -39,7 +39,7 @@ export class User {
   placementTestLevel: string;
 
   @Column({ type: 'varchar', default: 'user' })
-  role: 'user' | 'admin'; // Role: user (default) hoặc admin
+  role: 'user' | 'contributor' | 'admin'; // Role: user (learner), contributor, admin
 
   @CreateDateColumn()
   createdAt: Date;

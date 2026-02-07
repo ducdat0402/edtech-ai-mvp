@@ -20,6 +20,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Map<String, dynamic>? _dashboardData;
   bool _isLoading = true;
   String? _error;
+  String _userRole = 'user';
+
+  bool get _isContributor => _userRole == 'contributor';
 
   @override
   void initState() {
@@ -30,9 +33,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<void> _loadDashboard() async {
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
-      final data = await apiService.getDashboard();
+      final results = await Future.wait([
+        apiService.getDashboard(),
+        apiService.getUserProfile(),
+      ]);
       setState(() {
-        _dashboardData = data;
+        _dashboardData = results[0];
+        final profile = results[1];
+        _userRole = profile['role'] as String? ?? 'user';
         _isLoading = false;
       });
     } catch (e) {
@@ -665,15 +673,33 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildSubjectsSection(String title, List<dynamic> subjects) {
+    final totalCount = subjects.length + (_isContributor ? 1 : 0);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style: AppTextStyles.h3,
+        Row(
+          children: [
+            Text(title, style: AppTextStyles.h3),
+            if (_isContributor) ...[
+              const Spacer(),
+              GestureDetector(
+                onTap: () => context.push('/contributor/my-contributions'),
+                child: Row(
+                  children: [
+                    Icon(Icons.list_alt, size: 16, color: AppColors.contributorBlue),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Đóng góp',
+                      style: AppTextStyles.caption.copyWith(color: AppColors.contributorBlue),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
         ),
         const SizedBox(height: 16),
-        if (subjects.isEmpty)
+        if (subjects.isEmpty && !_isContributor)
           Center(
             child: Column(
               children: [
@@ -694,8 +720,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
             height: 160,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              itemCount: subjects.length,
+              itemCount: totalCount,
               itemBuilder: (context, index) {
+                // Add subject card for contributors
+                if (_isContributor && index == subjects.length) {
+                  return _buildAddSubjectCard();
+                }
+
                 final subject = subjects[index];
                 final subjectId = subject['id'] as String?;
                 final name = subject['name'] as String? ?? 'Môn học';
@@ -794,6 +825,62 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ),
       ],
+    );
+  }
+
+  Widget _buildAddSubjectCard() {
+    return Container(
+      width: 160,
+      margin: const EdgeInsets.only(right: 12),
+      child: Card(
+        elevation: 0,
+        color: AppColors.contributorBlue.withOpacity(0.08),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(
+            color: AppColors.contributorBlue.withOpacity(0.3),
+            width: 1.5,
+            strokeAlign: BorderSide.strokeAlignInside,
+          ),
+        ),
+        child: InkWell(
+          onTap: () {
+            HapticFeedback.lightImpact();
+            context.push('/contributor/create-subject');
+          },
+          borderRadius: BorderRadius.circular(12),
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.contributorBlue.withOpacity(0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.add, size: 28, color: AppColors.contributorBlue),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Thêm môn học',
+                  style: AppTextStyles.labelMedium.copyWith(
+                    color: AppColors.contributorBlue,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Đóng góp mới',
+                  style: AppTextStyles.caption.copyWith(
+                    color: AppColors.contributorBlue.withOpacity(0.7),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

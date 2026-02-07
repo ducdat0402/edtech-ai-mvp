@@ -485,6 +485,15 @@ class ApiService {
     return response.data;
   }
 
+  // Switch Role (user <-> contributor)
+  Future<Map<String, dynamic>> switchRole(String role) async {
+    final response = await _apiClient.patch(
+      ApiConstants.switchRole,
+      data: {'role': role},
+    );
+    return response.data;
+  }
+
   // Skill Tree
   Future<Map<String, dynamic>> generateSkillTree(String subjectId) async {
     final response = await _apiClient.post(
@@ -957,6 +966,120 @@ class ApiService {
       description: description,
       quizData: quizData,
     );
+  }
+
+  // =====================
+  // Pending Contributions (Contributor mode)
+  // =====================
+
+  Future<List<dynamic>> getMyPendingContributions() async {
+    final response = await _apiClient.get(ApiConstants.myPendingContributions);
+    return List<Map<String, dynamic>>.from(response.data);
+  }
+
+  Future<Map<String, dynamic>> createSubjectContribution({
+    required String name,
+    String? description,
+    String? track,
+  }) async {
+    final response = await _apiClient.post(
+      ApiConstants.createSubjectContribution,
+      data: {
+        'name': name,
+        if (description != null) 'description': description,
+        if (track != null) 'track': track,
+      },
+    );
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> createDomainContribution({
+    required String name,
+    required String subjectId,
+    String? description,
+  }) async {
+    final response = await _apiClient.post(
+      ApiConstants.createDomainContribution,
+      data: {
+        'name': name,
+        'subjectId': subjectId,
+        if (description != null) 'description': description,
+      },
+    );
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> createTopicContribution({
+    required String name,
+    required String domainId,
+    required String subjectId,
+    String? description,
+  }) async {
+    final response = await _apiClient.post(
+      ApiConstants.createTopicContribution,
+      data: {
+        'name': name,
+        'domainId': domainId,
+        'subjectId': subjectId,
+        if (description != null) 'description': description,
+      },
+    );
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> createLessonContribution({
+    required String title,
+    required String nodeId,
+    required String subjectId,
+    String? content,
+    dynamic richContent,
+    String? description,
+  }) async {
+    final response = await _apiClient.post(
+      ApiConstants.createLessonContribution,
+      data: {
+        'title': title,
+        'nodeId': nodeId,
+        'subjectId': subjectId,
+        if (content != null) 'content': content,
+        if (richContent != null) 'richContent': richContent,
+        if (description != null) 'description': description,
+      },
+    );
+    return response.data;
+  }
+
+  Future<void> deletePendingContribution(String id) async {
+    await _apiClient.delete(ApiConstants.pendingContributionDetail(id));
+  }
+
+  // Admin: pending contributions
+  Future<List<dynamic>> getAdminPendingContributions() async {
+    final response =
+        await _apiClient.get(ApiConstants.adminPendingContributions);
+    return List<Map<String, dynamic>>.from(response.data);
+  }
+
+  Future<Map<String, dynamic>> approvePendingContribution(
+    String id, {
+    String? note,
+  }) async {
+    final response = await _apiClient.put(
+      ApiConstants.approvePendingContribution(id),
+      data: note != null ? {'note': note} : {},
+    );
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> rejectPendingContribution(
+    String id, {
+    String? note,
+  }) async {
+    final response = await _apiClient.put(
+      ApiConstants.rejectPendingContribution(id),
+      data: note != null ? {'note': note} : {},
+    );
+    return response.data;
   }
 
   // =====================

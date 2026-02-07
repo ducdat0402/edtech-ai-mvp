@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/widgets/error_widget.dart';
 import 'package:edtech_mobile/core/widgets/skeleton_loader.dart';
+import 'package:edtech_mobile/theme/theme.dart';
 
 class DomainDetailScreen extends StatefulWidget {
   final String domainId;
@@ -21,6 +22,9 @@ class _DomainDetailScreenState extends State<DomainDetailScreen> {
   Map<String, dynamic>? _domainData;
   bool _isLoading = true;
   String? _error;
+  String _userRole = 'user';
+
+  bool get _isContributor => _userRole == 'contributor' || _userRole == 'admin';
 
   @override
   void initState() {
@@ -36,9 +40,14 @@ class _DomainDetailScreenState extends State<DomainDetailScreen> {
 
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
-      final domain = await apiService.getDomainDetail(widget.domainId);
+      final results = await Future.wait([
+        apiService.getDomainDetail(widget.domainId),
+        apiService.getUserProfile(),
+      ]);
       setState(() {
-        _domainData = domain;
+        _domainData = results[0];
+        final profile = results[1];
+        _userRole = profile['role'] as String? ?? 'user';
         _isLoading = false;
       });
     } catch (e) {
@@ -128,7 +137,7 @@ class _DomainDetailScreenState extends State<DomainDetailScreen> {
   Widget _buildNodesList() {
     final nodes = _domainData!['nodes'] as List<dynamic>? ?? [];
 
-    if (nodes.isEmpty) {
+    if (nodes.isEmpty && !_isContributor) {
       return Center(
         child: Column(
           children: [
@@ -149,17 +158,73 @@ class _DomainDetailScreenState extends State<DomainDetailScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Danh sách bài học',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.grey.shade800,
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Danh sách bài học',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey.shade800,
+              ),
+            ),
+            if (_isContributor)
+              TextButton.icon(
+                onPressed: () async {
+                  final subjectId = _domainData!['subjectId'] as String?;
+                  final domainName = _domainData!['name'] as String? ?? '';
+                  if (subjectId == null) return;
+                  final result = await context.push(
+                    '/contributor/create-topic?subjectId=$subjectId&domainId=${widget.domainId}&domainName=${Uri.encodeComponent(domainName)}',
+                  );
+                  if (result == true) _loadDomain();
+                },
+                icon: Icon(Icons.add, size: 18, color: AppColors.contributorBlue),
+                label: Text('Thêm Topic', style: TextStyle(color: AppColors.contributorBlue, fontWeight: FontWeight.w600)),
+              ),
+          ],
         ),
         const SizedBox(height: 12),
         ...nodes.map((node) => _buildNodeCard(node as Map<String, dynamic>)),
+        if (_isContributor) _buildAddTopicCard(),
       ],
+    );
+  }
+
+  Widget _buildAddTopicCard() {
+    final subjectId = _domainData!['subjectId'] as String?;
+    final domainName = _domainData!['name'] as String? ?? '';
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      elevation: 0,
+      color: AppColors.contributorBlue.withOpacity(0.08),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: AppColors.contributorBlue.withOpacity(0.3), width: 1.5),
+      ),
+      child: InkWell(
+        onTap: () async {
+          if (subjectId == null) return;
+          final result = await context.push(
+            '/contributor/create-topic?subjectId=$subjectId&domainId=${widget.domainId}&domainName=${Uri.encodeComponent(domainName)}',
+          );
+          if (result == true) _loadDomain();
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.add_circle_outline, color: AppColors.contributorBlue, size: 24),
+              const SizedBox(width: 8),
+              Text('Thêm Topic / Bài học mới',
+                  style: TextStyle(color: AppColors.contributorBlue, fontWeight: FontWeight.w600, fontSize: 15)),
+            ],
+          ),
+        ),
+      ),
     );
   }
 

@@ -58,6 +58,16 @@ class AppColors {
   static const Color textDisabled = Color(0xFF525252);
 
   // ═══════════════════════════════════════════════════════════════════
+  // ROLE/MODE COLORS
+  // ═══════════════════════════════════════════════════════════════════
+  static const Color contributorBlue = Color(0xFF2563EB);     // Contributor primary
+  static const Color contributorBlueDark = Color(0xFF1E40AF);  // Contributor dark
+  static const Color contributorBlueLight = Color(0xFF3B82F6); // Contributor light
+  static const Color contributorBgPrimary = Color(0xFF0A0F1A); // Contributor background
+  static const Color contributorBgSecondary = Color(0xFF111827); // Contributor cards
+  static const Color contributorBorder = Color(0xFF1E3A5F);    // Contributor borders
+
+  // ═══════════════════════════════════════════════════════════════════
   // GAMIFICATION COLORS
   // ═══════════════════════════════════════════════════════════════════
   // XP & Level System

@@ -29,6 +29,10 @@ import 'package:edtech_mobile/features/profile/screens/journey_log_screen.dart';
 import 'package:edtech_mobile/features/admin/screens/admin_panel_screen.dart';
 import 'package:edtech_mobile/features/learning_nodes/screens/my_contributions_screen.dart';
 import 'package:edtech_mobile/features/payment/screens/payment_screen.dart';
+import 'package:edtech_mobile/features/contributor/screens/create_subject_screen.dart';
+import 'package:edtech_mobile/features/contributor/screens/create_domain_screen.dart';
+import 'package:edtech_mobile/features/contributor/screens/create_topic_screen.dart';
+import 'package:edtech_mobile/features/contributor/screens/my_pending_contributions_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/login',
@@ -259,6 +263,39 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/payment',
       builder: (context, state) => const PaymentScreen(),
+    ),
+    // Contributor routes
+    GoRoute(
+      path: '/contributor/create-subject',
+      builder: (context, state) => const CreateSubjectScreen(),
+    ),
+    GoRoute(
+      path: '/contributor/create-domain',
+      builder: (context, state) {
+        final subjectId = state.uri.queryParameters['subjectId'] ?? '';
+        final subjectName = state.uri.queryParameters['subjectName'];
+        return CreateDomainScreen(
+          subjectId: subjectId,
+          subjectName: subjectName,
+        );
+      },
+    ),
+    GoRoute(
+      path: '/contributor/create-topic',
+      builder: (context, state) {
+        final subjectId = state.uri.queryParameters['subjectId'] ?? '';
+        final domainId = state.uri.queryParameters['domainId'] ?? '';
+        final domainName = state.uri.queryParameters['domainName'];
+        return CreateTopicScreen(
+          subjectId: subjectId,
+          domainId: domainId,
+          domainName: domainName,
+        );
+      },
+    ),
+    GoRoute(
+      path: '/contributor/my-contributions',
+      builder: (context, state) => const MyPendingContributionsScreen(),
     ),
   ],
 );

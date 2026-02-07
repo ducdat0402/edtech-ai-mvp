@@ -25,19 +25,22 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> with SingleTickerPr
   List<Map<String, dynamic>> _pendingEdits = [];
   List<Map<String, dynamic>> _allContentItems = [];
   List<Map<String, dynamic>> _editHistory = [];
+  List<Map<String, dynamic>> _pendingContributions = [];
   bool _isLoading = true;
   bool _isLoadingContent = false;
   bool _isLoadingHistory = false;
+  bool _isLoadingContributions = false;
   String? _error;
   late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
     _loadPendingEdits();
     _loadAllContentItems();
     _loadEditHistory();
+    _loadPendingContributions();
   }
 
   @override
@@ -179,6 +182,88 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> with SingleTickerPr
     }
   }
 
+  Future<void> _loadPendingContributions() async {
+    setState(() => _isLoadingContributions = true);
+    try {
+      final apiService = Provider.of<ApiService>(context, listen: false);
+      final data = await apiService.getAdminPendingContributions();
+      setState(() {
+        _pendingContributions = data.map((e) => Map<String, dynamic>.from(e)).toList();
+        _isLoadingContributions = false;
+      });
+    } catch (e) {
+      setState(() => _isLoadingContributions = false);
+    }
+  }
+
+  Future<void> _approveContribution(String id) async {
+    try {
+      final apiService = Provider.of<ApiService>(context, listen: false);
+      await apiService.approvePendingContribution(id);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Đã duyệt đóng góp!'), backgroundColor: Colors.green),
+        );
+        _loadPendingContributions();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  Future<void> _rejectContribution(String id) async {
+    final reason = await showDialog<String>(
+      context: context,
+      builder: (ctx) {
+        final controller = TextEditingController();
+        return AlertDialog(
+          backgroundColor: AppColors.bgSecondary,
+          title: Text('Từ chối đóng góp', style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
+          content: TextField(
+            controller: controller,
+            style: TextStyle(color: AppColors.textPrimary),
+            decoration: InputDecoration(
+              hintText: 'Lý do từ chối (không bắt buộc)',
+              hintStyle: TextStyle(color: AppColors.textTertiary),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(null),
+              child: Text('Hủy', style: TextStyle(color: AppColors.textSecondary)),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(controller.text),
+              child: Text('Từ chối', style: TextStyle(color: AppColors.errorNeon)),
+            ),
+          ],
+        );
+      },
+    );
+    if (reason == null) return;
+
+    try {
+      final apiService = Provider.of<ApiService>(context, listen: false);
+      await apiService.rejectPendingContribution(id, note: reason.isNotEmpty ? reason : null);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Đã từ chối đóng góp'), backgroundColor: Colors.orange),
+        );
+        _loadPendingContributions();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -206,8 +291,10 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> with SingleTickerPr
           labelColor: AppColors.purpleNeon,
           unselectedLabelColor: AppColors.textSecondary,
           labelStyle: AppTextStyles.labelMedium,
+          isScrollable: true,
           tabs: const [
-            Tab(text: 'Duyệt đóng góp', icon: Icon(Icons.pending_actions_rounded)),
+            Tab(text: 'Duyệt bài', icon: Icon(Icons.pending_actions_rounded)),
+            Tab(text: 'Duyệt đóng góp', icon: Icon(Icons.volunteer_activism)),
             Tab(text: 'Quản lý bài học', icon: Icon(Icons.article_rounded)),
             Tab(text: 'Lịch sử', icon: Icon(Icons.history_rounded)),
           ],
@@ -219,6 +306,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> with SingleTickerPr
               if (_tabController.index == 0) {
                 _loadPendingEdits();
               } else if (_tabController.index == 1) {
+                _loadPendingContributions();
+              } else if (_tabController.index == 2) {
                 _loadAllContentItems();
               } else {
                 _loadEditHistory();
@@ -232,6 +321,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> with SingleTickerPr
         controller: _tabController,
         children: [
           _buildPendingEditsTab(),
+          _buildPendingContributionsTab(),
           _buildContentItemsTab(),
           _buildHistoryTab(),
         ],
@@ -295,6 +385,216 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> with SingleTickerPr
                         },
                       ),
                     );
+  }
+
+  Widget _buildPendingContributionsTab() {
+    if (_isLoadingContributions) {
+      return Center(child: CircularProgressIndicator(color: AppColors.contributorBlueLight));
+    }
+    if (_pendingContributions.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.check_circle_outline, size: 64, color: AppColors.successNeon.withOpacity(0.3)),
+            const SizedBox(height: 16),
+            Text('Không có đóng góp nào chờ duyệt',
+                style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+          ],
+        ),
+      );
+    }
+    return RefreshIndicator(
+      onRefresh: _loadPendingContributions,
+      child: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: _pendingContributions.length,
+        itemBuilder: (context, index) {
+          final item = _pendingContributions[index];
+          return _buildContributionReviewCard(item);
+        },
+      ),
+    );
+  }
+
+  Widget _buildContributionReviewCard(Map<String, dynamic> item) {
+    final id = item['id'] as String;
+    final type = item['type'] as String? ?? 'subject';
+    final title = item['title'] as String? ?? '';
+    final description = item['description'] as String? ?? '';
+    final data = item['data'] as Map<String, dynamic>? ?? {};
+    final contributor = item['contributor'] as Map<String, dynamic>?;
+    final contributorName = contributor?['fullName'] ?? contributor?['email'] ?? 'Unknown';
+    final createdAt = item['createdAt'] as String?;
+
+    IconData typeIcon;
+    Color typeColor;
+    String typeLabel;
+    switch (type) {
+      case 'subject':
+        typeIcon = Icons.school;
+        typeColor = AppColors.contributorBlue;
+        typeLabel = 'Môn học';
+        break;
+      case 'domain':
+        typeIcon = Icons.folder;
+        typeColor = AppColors.cyanNeon;
+        typeLabel = 'Domain';
+        break;
+      case 'topic':
+        typeIcon = Icons.topic;
+        typeColor = AppColors.purpleNeon;
+        typeLabel = 'Topic';
+        break;
+      case 'lesson':
+        typeIcon = Icons.article;
+        typeColor = AppColors.successNeon;
+        typeLabel = 'Bài học';
+        break;
+      default:
+        typeIcon = Icons.help;
+        typeColor = AppColors.textSecondary;
+        typeLabel = type;
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.bgSecondary,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: typeColor.withOpacity(0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: typeColor.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(typeIcon, size: 14, color: typeColor),
+                    const SizedBox(width: 4),
+                    Text(typeLabel, style: AppTextStyles.caption.copyWith(color: typeColor, fontWeight: FontWeight.w600)),
+                  ],
+                ),
+              ),
+              const Spacer(),
+              if (createdAt != null)
+                Text(
+                  _formatContributionDate(createdAt),
+                  style: AppTextStyles.caption.copyWith(color: AppColors.textTertiary),
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          // Title
+          Text(title, style: AppTextStyles.labelLarge.copyWith(color: AppColors.textPrimary, fontWeight: FontWeight.bold)),
+
+          // Description
+          if (description.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Text(description, style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary), maxLines: 3, overflow: TextOverflow.ellipsis),
+          ],
+
+          // Contributor info
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Icon(Icons.person_outline, size: 14, color: AppColors.textTertiary),
+              const SizedBox(width: 4),
+              Text('$contributorName', style: AppTextStyles.caption.copyWith(color: AppColors.textTertiary)),
+            ],
+          ),
+
+          // Data details
+          if (data.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppColors.bgTertiary,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (data['track'] != null)
+                    _buildDataRow('Track', data['track']),
+                  if (data['subjectName'] != null)
+                    _buildDataRow('Môn học', data['subjectName']),
+                  if (data['name'] != null && data['name'] != title)
+                    _buildDataRow('Tên', data['name']),
+                ],
+              ),
+            ),
+          ],
+
+          // Action buttons
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => _rejectContribution(id),
+                  icon: const Icon(Icons.close, size: 18),
+                  label: const Text('Từ chối'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.errorNeon,
+                    side: BorderSide(color: AppColors.errorNeon.withOpacity(0.5)),
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () => _approveContribution(id),
+                  icon: const Icon(Icons.check, size: 18),
+                  label: const Text('Duyệt'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.successNeon,
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDataRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        children: [
+          Text('$label: ', style: AppTextStyles.caption.copyWith(color: AppColors.textTertiary)),
+          Text(value, style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary, fontWeight: FontWeight.w600)),
+        ],
+      ),
+    );
+  }
+
+  String _formatContributionDate(String isoDate) {
+    try {
+      final dt = DateTime.parse(isoDate).toLocal();
+      return '${dt.day}/${dt.month}/${dt.year}';
+    } catch (_) {
+      return isoDate;
+    }
   }
 
   Widget _buildContentItemsTab() {

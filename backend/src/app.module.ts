@@ -27,6 +27,7 @@ import { PersonalMindMapModule } from './personal-mind-map/personal-mind-map.mod
 import { QuizModule } from './quiz/quiz.module';
 import { PaymentModule } from './payment/payment.module';
 import { AdaptiveTestModule } from './adaptive-test/adaptive-test.module';
+import { PendingContributionsModule } from './pending-contributions/pending-contributions.module';
 import { TypeOrmConfigService } from './config/typeorm.config';
 
 @Module({
@@ -64,6 +65,7 @@ import { TypeOrmConfigService } from './config/typeorm.config';
     QuizModule,
     PaymentModule,
     AdaptiveTestModule,
+    PendingContributionsModule,
   ],
 })
 export class AppModule {}
