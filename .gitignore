@@ -33,6 +33,10 @@ backend/logs/
 backend/coverage/
 backend/.nyc_output/
 
+# compiled output
+/dist
+/node_modules
+
 # Mobile (Flutter)
 mobile/build/
 mobile/.dart_tool/
@@ -59,12 +63,18 @@ mobile/android/.vscode/
 
 # IDE
 .vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
 .idea/
 *.iml
 *.ipr
 *.iws
 .project
 .classpath
+.c9/
+*.launch
 .settings/
 *.sublime-workspace
 *.sublime-project
@@ -89,6 +99,7 @@ Desktop.ini
 *.cache
 
 # Logs
+logs
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -98,14 +109,14 @@ lerna-debug.log*
 
 # Test coverage
 coverage/
+/coverage
 .nyc_output/
-*.lcov
+/.nyc_output
 
 # Environment variables
 .env
 .env.local
 .env.*.local
-*.env
 
 # Database
 *.db
@@ -119,4 +130,3 @@ docker-compose.override.yml
 *.pid
 *.seed
 *.pid.lock
-

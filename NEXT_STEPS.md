@@ -75,159 +75,52 @@
 ## 🎯 Phase 3: Learning Features (Ưu tiên trung bình)
 
 ### 6. Subject List Screens
-**Status**: Chưa có
 - [ ] Explorer Subjects screen
 - [ ] Scholar Subjects screen
 - [ ] Subject detail screen
 - [ ] Unlock mechanism UI (Coins + Payment)
 
-**API**: `GET /subjects/explorer`, `GET /subjects/scholar`, `POST /unlock/scholar`
-
-**Estimated**: 3-4 hours
-
 ### 7. Learning Node Map (Fog of War)
-**Status**: Chưa có
 - [ ] Node map visualization
 - [ ] Fog of War effect (chỉ hiện unlocked nodes)
 - [ ] Node states (locked, unlocked, completed)
-- [ ] Tap node → navigate to node detail
-
-**API**: `GET /nodes/subject/:subjectId`
-
-**Estimated**: 6-8 hours (phức tạp)
 
 ### 8. Content Item Viewer
-**Status**: Chưa có
-- [ ] Content item screen (concept, example, hidden reward, boss quiz)
+- [ ] Content item screen
 - [ ] Video/image display
 - [ ] Quiz interaction
 - [ ] Complete item và nhận rewards
-- [ ] Progress HUD update
-
-**API**: `GET /content/node/:nodeId`, `POST /progress/complete-item`
-
-**Estimated**: 4-5 hours
 
 ### 9. Progress Tracking
-**Status**: Chưa có
 - [ ] Node progress screen với HUD
 - [ ] Progress percentage visualization
-- [ ] Completed items list
-- [ ] Rewards display
-
-**API**: `GET /progress/node/:nodeId`
-
-**Estimated**: 2-3 hours
-
----
-
-## 🎯 Phase 4: Roadmap & Quests (Ưu tiên trung bình)
-
-### 10. Roadmap Screen
-**Status**: Chưa có
-- [ ] Roadmap generation screen
-- [ ] 30-day roadmap view
-- [ ] Today's lesson highlight
-- [ ] Complete day functionality
-- [ ] Spaced repetition indicators
-
-**API**: `POST /roadmap/generate`, `GET /roadmap/:id/today`, `POST /roadmap/:id/complete-day`
-
-**Estimated**: 4-5 hours
-
-### 11. Daily Quests Screen
-**Status**: Chưa có
-- [ ] Daily quests list
-- [ ] Quest progress visualization
-- [ ] Claim rewards button
-- [ ] Quest history
-
-**API**: `GET /quests/daily`, `POST /quests/:id/claim`, `GET /quests/history`
-
-**Estimated**: 3-4 hours
-
----
-
-## 🎯 Phase 5: Gamification (Ưu tiên thấp)
-
-### 12. Leaderboard Screen
-**Status**: Chưa có
-- [ ] Global leaderboard
-- [ ] Weekly leaderboard
-- [ ] Subject-specific leaderboard
-- [ ] User rank display
-- [ ] Tabs để switch giữa các loại
-
-**API**: `GET /leaderboard/global`, `GET /leaderboard/weekly`, `GET /leaderboard/me`
-
-**Estimated**: 3-4 hours
-
-### 13. Currency & Rewards Display
-**Status**: Chưa có
-- [ ] Currency screen (XP, Coins, Streak, Shards)
-- [ ] Rewards history
-- [ ] Achievement badges (future)
-
-**API**: `GET /currency`
-
-**Estimated**: 2-3 hours
 
 ---
 
 ## 📋 Recommended Order
 
 ### Week 1: Core Polish
-1. ✅ Fix login issue
-2. ✅ Improve dashboard UI
-3. ✅ Add logout
-4. ✅ Test end-to-end auth flow
+1. Fix login issue
+2. Improve dashboard UI
+3. Add logout
 
 ### Week 2: Onboarding & Testing
-5. ✅ Onboarding AI Chat
-6. ✅ Placement Test
-7. ✅ Test onboarding → placement → roadmap flow
+4. Onboarding AI Chat
+5. Placement Test
 
 ### Week 3: Learning Core
-8. ✅ Subject Lists
-9. ✅ Learning Node Map (Fog of War)
-10. ✅ Content Item Viewer
-11. ✅ Progress Tracking
+6. Subject Lists
+7. Learning Node Map
+8. Content Item Viewer
 
 ### Week 4: Roadmap & Quests
-12. ✅ Roadmap Screen
-13. ✅ Daily Quests
-14. ✅ Integration testing
+9. Daily Quests
+10. Integration testing
 
 ### Week 5: Polish & Gamification
-15. ✅ Leaderboard
-16. ✅ Currency Display
-17. ✅ UI/UX improvements
-18. ✅ Performance optimization
-
----
-
-## 🎨 UI/UX Improvements (Ongoing)
-
-- [ ] Consistent color scheme (Explorer: Green, Scholar: Blue)
-- [ ] Loading animations
-- [ ] Error states với retry
-- [ ] Empty states
-- [ ] Pull-to-refresh animations
-- [ ] Navigation transitions
-- [ ] Responsive design
-
----
-
-## 🧪 Testing Checklist
-
-- [ ] Auth flow (register → login → dashboard)
-- [ ] Onboarding → Placement Test → Roadmap generation
-- [ ] Subject unlock (Coins + Payment)
-- [ ] Learning flow (Node → Content → Complete)
-- [ ] Quest completion và claim rewards
-- [ ] Leaderboard display
-- [ ] Error handling (network, API errors)
-- [ ] Offline handling (future)
+11. Leaderboard
+12. Currency Display
+13. UI/UX improvements
 
 ---
 
@@ -257,4 +150,3 @@ npm start
 cd mobile
 flutter run
 ```
-
