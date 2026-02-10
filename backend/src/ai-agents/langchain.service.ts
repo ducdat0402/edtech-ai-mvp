@@ -1,10 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { RagService } from '../knowledge-graph/rag.service';
-import { KnowledgeGraphService } from '../knowledge-graph/knowledge-graph.service';
 import { AiService } from '../ai/ai.service';
 import { DrlService } from './drl.service';
 import { ItsService } from './its.service';
-import { NodeType } from '../knowledge-graph/entities/knowledge-node.entity';
+import { LearningNodesService } from '../learning-nodes/learning-nodes.service';
 
 /**
 
@@ -20,11 +18,10 @@ export class LangChainService {
   private readonly logger = new Logger(LangChainService.name);
 
   constructor(
-    private ragService: RagService,
-    private knowledgeGraphService: KnowledgeGraphService,
     private aiService: AiService,
     private drlService: DrlService,
     private itsService: ItsService,
+    private learningNodesService: LearningNodesService,
   ) {}
 
   /**
@@ -54,11 +51,9 @@ export class LangChainService {
       // Step 1: Understand user query and extract learning goals
       const goals = await this.extractLearningGoals(userQuery);
 
-      // Step 2: Retrieve relevant nodes using RAG
-      const relevantNodes = await this.ragService.retrieveRelevantNodes(
-        userQuery,
-        20,
-        ['learning_node'],
+      // Step 2: Retrieve relevant learning nodes for this subject
+      const subjectLearningNodes = await this.learningNodesService.findBySubject(
+        subjectId,
       );
 
       // Step 3: Get user's current state
@@ -88,32 +83,30 @@ export class LangChainService {
             subjectId,
           );
 
-        if (nextNode && !visitedNodes.has(nextNode.nodeId)) {
-          const node = await this.knowledgeGraphService.getNodeByEntity(
-            nextNode.nodeId,
-            NodeType.LEARNING_NODE,
-          );
+          if (nextNode && !visitedNodes.has(nextNode.nodeId)) {
+            const learningNode = await this.learningNodesService.findById(
+              nextNode.nodeId,
+            );
 
-            if (node) {
-              const nodeEntityId = node.entityId || nextNode.nodeId;
+            if (learningNode) {
               // Check if should skip (ITS)
               const skipCheck = await this.itsService.shouldSkipTopic(
                 userId,
-                nodeEntityId,
+                learningNode.id,
               );
 
               if (!skipCheck.shouldSkip) {
                 // Adjust difficulty (ITS)
                 const difficultyAdjustment = await this.itsService.adjustDifficulty(
                   userId,
-                  nodeEntityId,
-                  node.metadata?.difficulty || 'medium',
+                  learningNode.id,
+                  learningNode.difficulty || 'medium',
                 );
 
                 roadmap.push({
                   day,
-                  nodeId: nodeEntityId,
-                  nodeName: node.name,
+                  nodeId: learningNode.id,
+                  nodeName: learningNode.title,
                   difficulty: difficultyAdjustment.suggestedDifficulty,
                   estimatedTime: this.estimateTime(
                     difficultyAdjustment.suggestedDifficulty,
@@ -122,41 +115,33 @@ export class LangChainService {
                   reason: nextNode.reason,
                 });
 
-                currentNodeId = nodeEntityId;
-                visitedNodes.add(nodeEntityId);
+                currentNodeId = learningNode.id;
+                visitedNodes.add(learningNode.id);
                 continue;
               }
             }
           }
         }
 
-        // Fallback: Use RAG results or recommendations
-        let fallbackNode = relevantNodes.find(
-          (n) => !visitedNodes.has(n.entityId || n.id),
+        // Fallback: Use subject learning nodes or recommendations
+        const fallbackNode = subjectLearningNodes.find(
+          (n) => !visitedNodes.has(n.id),
         );
-        
-        if (!fallbackNode && recommendations.recommendedFocus.length > 0) {
-          fallbackNode = await this.knowledgeGraphService.getNodeByEntity(
-            recommendations.recommendedFocus[0],
-            NodeType.LEARNING_NODE,
-          );
-        }
 
         if (fallbackNode) {
-          const nodeId = fallbackNode.entityId || fallbackNode.id;
           roadmap.push({
             day,
-            nodeId,
-            nodeName: fallbackNode.name,
-            difficulty: fallbackNode.metadata?.difficulty || 'medium',
+            nodeId: fallbackNode.id,
+            nodeName: fallbackNode.title,
+            difficulty: fallbackNode.difficulty || 'medium',
             estimatedTime: this.estimateTime(
-              fallbackNode.metadata?.difficulty || 'medium',
+              fallbackNode.difficulty || 'medium',
               recommendations.learningPace,
             ),
             reason: 'Recommended based on your learning goals',
           });
-          currentNodeId = nodeId;
-          visitedNodes.add(nodeId);
+          currentNodeId = fallbackNode.id;
+          visitedNodes.add(fallbackNode.id);
         } else {
           // No more nodes
           break;

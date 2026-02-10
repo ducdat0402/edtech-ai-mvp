@@ -18,9 +18,9 @@ import { SubjectsService } from '../subjects/subjects.service';
 import { DomainsService } from '../domains/domains.service';
 import { LearningNodesService } from '../learning-nodes/learning-nodes.service';
 import { AiService } from '../ai/ai.service';
-import { SkillTreeService } from '../skill-tree/skill-tree.service';
 import { UsersService } from '../users/users.service';
 import { PersonalMindMapService } from '../personal-mind-map/personal-mind-map.service';
+import { LessonTypeContentsService } from '../lesson-type-contents/lesson-type-contents.service';
 
 // Configuration
 const NODES_PER_TOPIC = 2; // Test 2-3 representative nodes per topic
@@ -42,11 +42,10 @@ export class AdaptiveTestService {
     @Inject(forwardRef(() => LearningNodesService))
     private nodesService: LearningNodesService,
     private aiService: AiService,
-    @Inject(forwardRef(() => SkillTreeService))
-    private skillTreeService: SkillTreeService,
     private usersService: UsersService,
     @Inject(forwardRef(() => PersonalMindMapService))
     private personalMindMapService: PersonalMindMapService,
+    private lessonTypeContentsService: LessonTypeContentsService,
   ) {}
 
   /**
@@ -715,7 +714,9 @@ export class AdaptiveTestService {
   }
 
   /**
-   * Generate a question for a node at specific difficulty
+   * Generate a question for a node at specific difficulty.
+   * First tries to use existing endQuiz questions from LessonTypeContent,
+   * then falls back to AI generation if none available.
    */
   private async generateQuestion(
     test: AdaptiveTest,
@@ -723,11 +724,97 @@ export class AdaptiveTestService {
     difficulty: DifficultyLevel,
   ): Promise<any> {
     try {
-      // Generate question using AI
-      const aiQuestion = await this.aiService.generatePlacementQuestion(
-        node.title,
-        difficulty,
+      let question: string;
+      let options: string[];
+      let correctAnswer: number;
+
+      // Collect already-used question texts so we don't repeat
+      const usedQuestions = new Set(
+        test.responses.map((r) => r.question),
       );
+
+      // 1. Try to find an unused endQuiz question from LessonTypeContent
+      let foundFromEndQuiz = false;
+      try {
+        const contents = await this.lessonTypeContentsService.getByNodeId(node.id);
+        // Gather all endQuiz questions across all lesson types for this node
+        const allEndQuizQuestions: Array<{
+          question: string;
+          options: string[];
+          correctAnswer: number; // index of the correct option
+        }> = [];
+
+        // Only use text-based lesson types (skip video, image_gallery, image_quiz
+        // because adaptive test UI cannot display images/videos)
+        const textContents = contents.filter(
+          (c) => c.lessonType === 'text',
+        );
+
+        for (const content of textContents) {
+          const endQuiz = content.endQuiz as any;
+          if (endQuiz?.questions && Array.isArray(endQuiz.questions)) {
+            for (const q of endQuiz.questions) {
+              if (q.question && q.options && q.correctAnswer != null) {
+                // Convert options: [{text, explanation}] -> string[]
+                const opts: string[] = Array.isArray(q.options)
+                  ? q.options.map((o: any) =>
+                      typeof o === 'string' ? o : o.text || String(o),
+                    )
+                  : [];
+                if (opts.length >= 2) {
+                  // correctAnswer may be a string (answer text) or number (index)
+                  // Convert to index if it's a string
+                  let correctIdx: number;
+                  if (typeof q.correctAnswer === 'number') {
+                    correctIdx = q.correctAnswer;
+                  } else {
+                    // Find index of the matching option text
+                    correctIdx = opts.findIndex(
+                      (o) => o === q.correctAnswer || o === String(q.correctAnswer),
+                    );
+                    if (correctIdx === -1) correctIdx = 0; // fallback to first option
+                  }
+
+                  allEndQuizQuestions.push({
+                    question: q.question,
+                    options: opts,
+                    correctAnswer: correctIdx,
+                  });
+                }
+              }
+            }
+          }
+        }
+
+        // Filter out already-used questions
+        const unusedQuestions = allEndQuizQuestions.filter(
+          (q) => !usedQuestions.has(q.question),
+        );
+
+        if (unusedQuestions.length > 0) {
+          // Pick a random unused question
+          const picked =
+            unusedQuestions[Math.floor(Math.random() * unusedQuestions.length)];
+          question = picked.question;
+          options = picked.options;
+          correctAnswer = picked.correctAnswer;
+          foundFromEndQuiz = true;
+        }
+      } catch (err) {
+        // If fetching endQuiz fails, fall through to AI generation
+        console.warn('Failed to fetch endQuiz questions for node', node.id, err);
+      }
+
+      // 2. Fallback: generate question using AI
+      if (!foundFromEndQuiz) {
+        const aiQuestion = await this.aiService.generatePlacementQuestion(
+          node.title,
+          difficulty,
+        );
+        question = aiQuestion.question;
+        options = aiQuestion.options;
+        correctAnswer = Number(aiQuestion.correctAnswer);
+      }
 
       // Create response record (without answer yet)
       const response: QuestionResponse = {
@@ -735,9 +822,9 @@ export class AdaptiveTestService {
         nodeId: node.id,
         topicId: test.currentTopicId,
         domainId: test.currentDomainId,
-        question: aiQuestion.question,
-        options: aiQuestion.options,
-        correctAnswer: aiQuestion.correctAnswer,
+        question,
+        options,
+        correctAnswer,
         userAnswer: undefined,
         isCorrect: undefined,
         difficulty,
@@ -749,10 +836,10 @@ export class AdaptiveTestService {
 
       return {
         id: response.questionId,
-        question: aiQuestion.question,
-        options: aiQuestion.options,
+        question,
+        options,
         difficulty,
-        correctAnswer: aiQuestion.correctAnswer, // Include for debugging, remove in production
+        correctAnswer, // Include for debugging, remove in production
       };
     } catch (error) {
       console.error('Error generating question:', error);
@@ -831,17 +918,6 @@ export class AdaptiveTestService {
       console.log('✅ Personalized learning path generated from adaptive test results');
     } catch (error) {
       console.error('Error generating personalized learning path:', error);
-      // Fallback to skill tree
-      try {
-        await this.skillTreeService.generateSkillTree(test.userId, test.subjectId, {
-          currentLevel: test.overallLevel,
-          interestedTopics: test.strongAreas,
-          learningGoals: `Cần cải thiện: ${test.weakAreas.join(', ')}`,
-        });
-        console.log('✅ Skill tree generated as fallback');
-      } catch (skillTreeError) {
-        console.error('Error generating skill tree fallback:', skillTreeError);
-      }
     }
   }
 

@@ -94,171 +94,71 @@ class ApiService {
     return response.data;
   }
 
-  // Knowledge Graph
-  Future<List<dynamic>> getPrerequisites(String nodeId) async {
+  // Topics
+  Future<List<dynamic>> getTopicsByDomain(String domainId) async {
     final response =
-        await _apiClient.get(ApiConstants.getPrerequisites(nodeId));
+        await _apiClient.get(ApiConstants.topicsByDomain(domainId));
     return List<Map<String, dynamic>>.from(response.data);
   }
 
-  Future<List<dynamic>> findLearningPath(
-      String fromNodeId, String toNodeId) async {
-    final response =
-        await _apiClient.get(ApiConstants.findPath(fromNodeId, toNodeId));
+  Future<Map<String, dynamic>> getTopicDetail(String topicId) async {
+    final response = await _apiClient.get(ApiConstants.topicDetail(topicId));
+    return response.data;
+  }
+
+  // Learning nodes by topic
+  Future<List<dynamic>> getNodesByTopic(String topicId) async {
+    final response = await _apiClient.get(ApiConstants.nodesByTopic(topicId));
     return List<Map<String, dynamic>>.from(response.data);
   }
 
-  Future<List<dynamic>> recommendNextTopics(String nodeId,
-      {int limit = 5}) async {
-    final response =
-        await _apiClient.get(ApiConstants.recommendNext(nodeId, limit: limit));
-    return List<Map<String, dynamic>>.from(response.data);
-  }
-
-  Future<List<dynamic>> getRelatedNodes(String nodeId, {int limit = 10}) async {
-    final response = await _apiClient
-        .get(ApiConstants.getRelatedNodes(nodeId, limit: limit));
-    return List<Map<String, dynamic>>.from(response.data);
-  }
-
-  Future<Map<String, dynamic>?> getNodeByEntity(
-      String type, String entityId) async {
-    try {
-      final response =
-          await _apiClient.get(ApiConstants.getNodeByEntity(type, entityId));
-      return Map<String, dynamic>.from(response.data);
-    } catch (e) {
-      return null; // Node not found
-    }
-  }
-
-  Future<List<dynamic>> getNodesByType(String type) async {
-    final response = await _apiClient.get(ApiConstants.getNodesByType(type));
-    return List<Map<String, dynamic>>.from(response.data);
-  }
-
-  // RAG (Semantic Search)
-  Future<List<dynamic>> semanticSearch(
-    String query, {
-    int limit = 10,
-    String? types,
-    double minSimilarity = 0.7,
-  }) async {
-    final response = await _apiClient.get(
-      ApiConstants.semanticSearch(query,
-          limit: limit, types: types, minSimilarity: minSimilarity),
-    );
-    return List<Map<String, dynamic>>.from(response.data);
-  }
-
-  Future<List<dynamic>> retrieveRelevantNodes(
-    String query, {
-    int topK = 5,
-    String? types,
-  }) async {
-    final response = await _apiClient.get(
-      ApiConstants.retrieveRelevantNodes(query, topK: topK, types: types),
-    );
-    return List<Map<String, dynamic>>.from(response.data);
-  }
-
-  Future<Map<String, dynamic>> generateRAGContext(
-    String query, {
-    int topK = 5,
-  }) async {
-    final response = await _apiClient.get(
-      ApiConstants.generateRAGContext(query, topK: topK),
-    );
-    return Map<String, dynamic>.from(response.data);
-  }
-
+  // Learning Node Detail
   Future<Map<String, dynamic>> getNodeDetail(String nodeId) async {
     final response = await _apiClient.get(ApiConstants.nodeDetail(nodeId));
     return response.data;
   }
 
-  Future<List<dynamic>> getContentByNode(String nodeId) async {
-    final response = await _apiClient.get(ApiConstants.contentByNode(nodeId));
-    return List<Map<String, dynamic>>.from(response.data);
+  // === Lesson Content (4 lesson types) ===
+  Future<Map<String, dynamic>> getLessonData(String nodeId) async {
+    final response = await _apiClient.get(ApiConstants.getLessonData(nodeId));
+    return Map<String, dynamic>.from(response.data);
   }
 
-  /// Lấy content theo node và độ khó
-  Future<List<dynamic>> getContentByNodeAndDifficulty(
-      String nodeId, String difficulty) async {
-    final response = await _apiClient.get(
-      ApiConstants.contentByNodeAndDifficulty(nodeId, difficulty),
-    );
-    return List<Map<String, dynamic>>.from(response.data);
+  Future<Map<String, dynamic>> updateLessonContent(String nodeId, Map<String, dynamic> data) async {
+    final response = await _apiClient.put(ApiConstants.updateLessonContent(nodeId), data: data);
+    return Map<String, dynamic>.from(response.data);
   }
 
-  /// Tạo content mới theo độ khó
-  Future<Map<String, dynamic>> generateContentByDifficulty(
-    String nodeId,
-    String difficulty,
-  ) async {
+  Future<Map<String, dynamic>> generateEndQuiz(String nodeId) async {
+    final response = await _apiClient.post(ApiConstants.generateEndQuiz(nodeId));
+    return Map<String, dynamic>.from(response.data);
+  }
+
+  Future<Map<String, dynamic>> submitEndQuiz(String nodeId, List<int> answers) async {
     final response = await _apiClient.post(
-      ApiConstants.generateContentByDifficulty(nodeId),
-      data: {'difficulty': difficulty},
+      ApiConstants.submitEndQuiz(nodeId),
+      data: {'answers': answers},
     );
-    return response.data;
+    return Map<String, dynamic>.from(response.data);
   }
 
-  /// Tạo video/image placeholders cho node
-  Future<Map<String, dynamic>> generatePlaceholders(String nodeId) async {
-    final response = await _apiClient.post(
-      ApiConstants.generatePlaceholders(nodeId),
+  // Uploads
+  Future<String> uploadImage(String imagePath) async {
+    final response = await _apiClient.postFile(
+      ApiConstants.uploadImage,
+      fileKey: 'image',
+      filePath: imagePath,
     );
-    return response.data;
+    final data = response.data;
+    return data['imageUrl'] as String? ?? data['url'] as String;
   }
 
-  /// Lấy tất cả placeholders
-  Future<List<dynamic>> getAllPlaceholders() async {
-    final response = await _apiClient.get(ApiConstants.allPlaceholders);
-    return List<Map<String, dynamic>>.from(response.data);
-  }
-
-  /// Lấy placeholders của một node
-  Future<List<dynamic>> getNodePlaceholders(String nodeId) async {
-    final response =
-        await _apiClient.get(ApiConstants.nodePlaceholders(nodeId));
-    return List<Map<String, dynamic>>.from(response.data);
-  }
-
-  /// Submit contribution cho một placeholder
-  Future<Map<String, dynamic>> submitContribution(
-    String contentId,
-    String mediaUrl,
-  ) async {
-    final response = await _apiClient.post(
-      ApiConstants.submitContribution(contentId),
-      data: {'mediaUrl': mediaUrl},
+  Future<Map<String, dynamic>> uploadVideo(String videoPath) async {
+    final response = await _apiClient.postFile(
+      ApiConstants.uploadVideo,
+      fileKey: 'video',
+      filePath: videoPath,
     );
-    return response.data;
-  }
-
-  /// Approve contribution (admin only)
-  Future<Map<String, dynamic>> approveContribution(String contentId) async {
-    final response = await _apiClient.post(
-      ApiConstants.approveContribution(contentId),
-    );
-    return response.data;
-  }
-
-  /// Reject contribution (admin only)
-  Future<Map<String, dynamic>> rejectContribution(
-    String contentId, {
-    String? reason,
-  }) async {
-    final response = await _apiClient.post(
-      ApiConstants.rejectContribution(contentId),
-      data: {'reason': reason},
-    );
-    return response.data;
-  }
-
-  Future<Map<String, dynamic>> getContentDetail(String contentId) async {
-    final response =
-        await _apiClient.get(ApiConstants.contentDetail(contentId));
     return response.data;
   }
 
@@ -388,33 +288,66 @@ class ApiService {
     return response.data;
   }
 
-  Future<Map<String, dynamic>> completeContentItem({
-    required String nodeId,
-    required String contentItemId,
-    required String itemType,
-    int? score,
-  }) async {
+  Future<Map<String, dynamic>> completeNode(String nodeId) async {
     final response = await _apiClient.post(
-      ApiConstants.completeItem,
-      data: {
-        'nodeId': nodeId,
-        'contentItemId': contentItemId,
-        'itemType': itemType,
-        if (score != null) 'score': score,
-      },
+      ApiConstants.completeNode,
+      data: {'nodeId': nodeId},
     );
     return response.data;
   }
 
-  /// Get completed content item IDs for a subject
-  /// Used for "Lộ trình tổng quát" to determine unlocked lessons
-  Future<List<String>> getCompletedContentItemsBySubject(String subjectId) async {
-    final response = await _apiClient.get(
-      ApiConstants.completedContentItemsBySubject(subjectId),
+  // === New: Lesson type completion cascade ===
+
+  /// Complete a specific lesson type for a node (triggers cascade rewards)
+  Future<Map<String, dynamic>> completeLessonType(String nodeId, String lessonType) async {
+    final response = await _apiClient.post(
+      ApiConstants.completeLessonType,
+      data: {'nodeId': nodeId, 'lessonType': lessonType},
     );
-    final data = response.data as Map<String, dynamic>;
-    final completedIds = data['completedContentIds'] as List<dynamic>? ?? [];
-    return completedIds.map((e) => e.toString()).toList();
+    return Map<String, dynamic>.from(response.data);
+  }
+
+  /// Get lesson type progress for a node (which types completed)
+  Future<Map<String, dynamic>> getLessonTypeProgress(String nodeId) async {
+    final response = await _apiClient.get(ApiConstants.lessonTypeProgress(nodeId));
+    return Map<String, dynamic>.from(response.data);
+  }
+
+  /// Get topic progress for current user
+  Future<Map<String, dynamic>> getTopicProgress(String topicId) async {
+    final response = await _apiClient.get(ApiConstants.topicProgress(topicId));
+    return Map<String, dynamic>.from(response.data);
+  }
+
+  /// Get domain progress for current user
+  Future<Map<String, dynamic>> getDomainProgress(String domainId) async {
+    final response = await _apiClient.get(ApiConstants.domainProgress(domainId));
+    return Map<String, dynamic>.from(response.data);
+  }
+
+  /// Get all lesson type contents for a node
+  Future<Map<String, dynamic>> getLessonTypeContents(String nodeId) async {
+    final response = await _apiClient.get(ApiConstants.lessonTypeContentsByNode(nodeId));
+    return Map<String, dynamic>.from(response.data);
+  }
+
+  /// Submit end quiz for a specific lesson type
+  Future<Map<String, dynamic>> submitEndQuizForType(
+    String nodeId,
+    String lessonType,
+    List<int> answers,
+  ) async {
+    final response = await _apiClient.post(
+      ApiConstants.submitEndQuizForType(nodeId, lessonType),
+      data: {'answers': answers},
+    );
+    return Map<String, dynamic>.from(response.data);
+  }
+
+  /// Get lesson data for a specific type
+  Future<Map<String, dynamic>> getLessonDataByType(String nodeId, String lessonType) async {
+    final response = await _apiClient.get(ApiConstants.getLessonDataByType(nodeId, lessonType));
+    return Map<String, dynamic>.from(response.data);
   }
 
   // Onboarding
@@ -494,250 +427,6 @@ class ApiService {
     return response.data;
   }
 
-  // Skill Tree
-  Future<Map<String, dynamic>> generateSkillTree(String subjectId) async {
-    final response = await _apiClient.post(
-      ApiConstants.generateSkillTree,
-      data: {'subjectId': subjectId},
-    );
-    return response.data;
-  }
-
-  Future<Map<String, dynamic>?> getSkillTree({String? subjectId}) async {
-    try {
-      final response = await _apiClient.get(
-        ApiConstants.getSkillTree,
-        queryParameters: subjectId != null ? {'subjectId': subjectId} : null,
-      );
-
-      // Handle null or empty response
-      if (response.data == null ||
-          (response.data is String && (response.data as String).isEmpty)) {
-        return null;
-      }
-
-      if (response.data is Map) {
-        return Map<String, dynamic>.from(response.data as Map);
-      }
-
-      return null;
-    } catch (e) {
-      final errorStr = e.toString().toLowerCase();
-      if (errorStr.contains('404') || errorStr.contains('not found')) {
-        return null;
-      }
-      rethrow;
-    }
-  }
-
-  Future<Map<String, dynamic>> unlockSkillNode(String nodeId) async {
-    final response = await _apiClient.post(ApiConstants.unlockNode(nodeId));
-    return response.data;
-  }
-
-  Future<Map<String, dynamic>> completeSkillNode(String nodeId,
-      {Map<String, dynamic>? progressData}) async {
-    final response = await _apiClient.post(
-      ApiConstants.completeNode(nodeId),
-      data: progressData != null ? {'progressData': progressData} : null,
-    );
-    return response.data;
-  }
-
-  Future<Map<String, dynamic>> unlockNextSkillNode(String subjectId) async {
-    final response = await _apiClient.post(
-      ApiConstants.unlockNextNode,
-      data: {'subjectId': subjectId},
-    );
-    return response.data;
-  }
-
-  Future<Map<String, dynamic>> getNextUnlockableNodes(String subjectId) async {
-    final response = await _apiClient.get(
-      ApiConstants.getNextUnlockableNodes,
-      queryParameters: {'subjectId': subjectId},
-    );
-    return response.data;
-  }
-
-  // Content Edits (Wiki-style Community Edit)
-  Future<Map<String, dynamic>> submitContentEdit({
-    required String contentItemId,
-    required String
-        type, // 'add_video', 'add_image', 'add_text', 'update_content'
-    String? videoUrl,
-    String? imageUrl,
-    String? textContent,
-    String? description,
-    String? caption,
-  }) async {
-    final response = await _apiClient.post(
-      ApiConstants.submitContentEdit(contentItemId),
-      data: {
-        'type': type,
-        if (videoUrl != null) 'videoUrl': videoUrl,
-        if (imageUrl != null) 'imageUrl': imageUrl,
-        if (textContent != null) 'textContent': textContent,
-        if (description != null) 'description': description,
-        if (caption != null) 'caption': caption,
-      },
-    );
-    return response.data;
-  }
-
-  Future<List<dynamic>> getContentEdits(String contentItemId) async {
-    final response = await _apiClient.get(
-      ApiConstants.getContentEdits(contentItemId),
-    );
-    return List<Map<String, dynamic>>.from(response.data);
-  }
-
-  Future<Map<String, dynamic>> uploadImageForEdit(String imagePath) async {
-    final response = await _apiClient.postFile(
-      ApiConstants.uploadImage,
-      fileKey: 'image',
-      filePath: imagePath,
-    );
-    return response.data;
-  }
-
-  Future<Map<String, dynamic>> submitLessonEdit({
-    required String contentItemId,
-    required String title,
-    dynamic richContent, // Optional for quiz
-    List<String>? imageUrls,
-    String? videoUrl,
-    String? description,
-    Map<String, dynamic>?
-        quizData, // Quiz data: {question, options, correctAnswer, explanation}
-    Map<String, dynamic>?
-        textVariants, // Text variants: {simple, detailed, comprehensive}
-  }) async {
-    final response = await _apiClient.post(
-      ApiConstants.submitLessonEdit(contentItemId),
-      data: {
-        'title': title,
-        if (richContent != null) 'richContent': richContent,
-        if (imageUrls != null) 'imageUrls': imageUrls,
-        if (videoUrl != null) 'videoUrl': videoUrl,
-        if (description != null) 'description': description,
-        if (quizData != null) 'quizData': quizData,
-        if (textVariants != null) 'textVariants': textVariants,
-      },
-    );
-    return response.data;
-  }
-
-  Future<Map<String, dynamic>> uploadVideoForEdit(String videoPath) async {
-    final response = await _apiClient.postFile(
-      ApiConstants.uploadVideo,
-      fileKey: 'video',
-      filePath: videoPath,
-    );
-    return response.data;
-  }
-
-  Future<Map<String, dynamic>> voteOnContentEdit(
-    String editId, {
-    required bool isUpvote,
-  }) async {
-    final response = await _apiClient.post(
-      ApiConstants.voteOnContentEdit(editId),
-      data: {'isUpvote': isUpvote},
-    );
-    return response.data;
-  }
-
-  // Admin endpoints
-  Future<List<dynamic>> getPendingContentEdits() async {
-    final response = await _apiClient.get(ApiConstants.pendingContentEdits);
-    return List<Map<String, dynamic>>.from(response.data);
-  }
-
-  Future<Map<String, dynamic>> approveContentEdit(String editId) async {
-    final response =
-        await _apiClient.put(ApiConstants.approveContentEdit(editId));
-    return response.data;
-  }
-
-  Future<Map<String, dynamic>> rejectContentEdit(String editId) async {
-    final response =
-        await _apiClient.put(ApiConstants.rejectContentEdit(editId));
-    return response.data;
-  }
-
-  Future<Map<String, dynamic>> removeContentEdit(String editId) async {
-    final response =
-        await _apiClient.delete(ApiConstants.removeContentEdit(editId));
-    return response.data;
-  }
-
-  Future<Map<String, dynamic>> getEditComparison(String editId) async {
-    final response =
-        await _apiClient.get(ApiConstants.getEditComparison(editId));
-    return response.data;
-  }
-
-  Future<List<dynamic>> getAllContentItemsWithEdits() async {
-    final response = await _apiClient.get(ApiConstants.allContentWithEdits);
-    return List<Map<String, dynamic>>.from(response.data);
-  }
-
-  Future<List<dynamic>> getMyContentEdits() async {
-    final response = await _apiClient.get(ApiConstants.getMyContentEdits);
-    return List<Map<String, dynamic>>.from(response.data);
-  }
-
-  // Edit History
-  Future<List<dynamic>> getHistoryForContent(String contentItemId) async {
-    final response =
-        await _apiClient.get(ApiConstants.getHistoryForContent(contentItemId));
-    return List<Map<String, dynamic>>.from(response.data);
-  }
-
-  Future<List<dynamic>> getHistoryForUser() async {
-    final response = await _apiClient.get(ApiConstants.getHistoryForUser);
-    return List<Map<String, dynamic>>.from(response.data);
-  }
-
-  Future<List<dynamic>> getAllHistory() async {
-    final response = await _apiClient.get(ApiConstants.getAllHistory);
-    return List<Map<String, dynamic>>.from(response.data);
-  }
-
-  Future<List<dynamic>> getHistoryForEdit(String editId) async {
-    final response =
-        await _apiClient.get(ApiConstants.getHistoryForEdit(editId));
-    return List<Map<String, dynamic>>.from(response.data);
-  }
-
-  // Content Versions
-  Future<List<dynamic>> getVersionsForContent(String contentItemId) async {
-    final response =
-        await _apiClient.get(ApiConstants.getVersionsForContent(contentItemId));
-    return List<Map<String, dynamic>>.from(response.data);
-  }
-
-  Future<List<dynamic>> getMyVersions({String? contentItemId}) async {
-    final response = await _apiClient.post(
-      ApiConstants.getMyVersions,
-      data: contentItemId != null ? {'contentItemId': contentItemId} : null,
-    );
-    return List<Map<String, dynamic>>.from(response.data);
-  }
-
-  Future<List<dynamic>> getMyVersionsForContent(String contentItemId) async {
-    final response = await _apiClient
-        .get(ApiConstants.getMyVersionsForContent(contentItemId));
-    return List<Map<String, dynamic>>.from(response.data);
-  }
-
-  Future<Map<String, dynamic>> revertToVersion(String versionId) async {
-    final response =
-        await _apiClient.post(ApiConstants.revertToVersion(versionId));
-    return Map<String, dynamic>.from(response.data);
-  }
-
   // Personal Mind Map
   Future<Map<String, dynamic>> checkPersonalMindMap(String subjectId) async {
     final response =
@@ -778,20 +467,14 @@ class ApiService {
     return response.data;
   }
 
-  // Personal Mind Map - Chat riêng cho từng môn học
-  // AI sẽ hỏi dựa trên domains, topics, bài học có sẵn
-
-  /// Bắt đầu chat session để tạo lộ trình cá nhân
-  /// AI sẽ hỏi dựa trên nội dung môn học cụ thể
-  Future<Map<String, dynamic>> startPersonalMindMapChat(
-      String subjectId) async {
+  // Personal Mind Map - Chat
+  Future<Map<String, dynamic>> startPersonalMindMapChat(String subjectId) async {
     final response = await _apiClient.post(
       ApiConstants.startPersonalMindMapChat(subjectId),
     );
     return response.data;
   }
 
-  /// Gửi tin nhắn trong chat session
   Future<Map<String, dynamic>> personalMindMapChat(
     String subjectId,
     String message,
@@ -803,169 +486,25 @@ class ApiService {
     return response.data;
   }
 
-  /// Lấy thông tin chat session hiện tại
-  Future<Map<String, dynamic>> getPersonalMindMapChatSession(
-      String subjectId) async {
+  Future<Map<String, dynamic>> getPersonalMindMapChatSession(String subjectId) async {
     final response = await _apiClient.get(
       ApiConstants.getPersonalMindMapChatSession(subjectId),
     );
     return response.data;
   }
 
-  /// Tạo lộ trình từ chat đã hoàn thành
-  Future<Map<String, dynamic>> generatePersonalMindMapFromChat(
-      String subjectId) async {
+  Future<Map<String, dynamic>> generatePersonalMindMapFromChat(String subjectId) async {
     final response = await _apiClient.post(
       ApiConstants.generatePersonalMindMapFromChat(subjectId),
     );
     return response.data;
   }
 
-  /// Reset chat session để bắt đầu lại
-  Future<Map<String, dynamic>> resetPersonalMindMapChat(
-      String subjectId) async {
+  Future<Map<String, dynamic>> resetPersonalMindMapChat(String subjectId) async {
     final response = await _apiClient.post(
       ApiConstants.resetPersonalMindMapChat(subjectId),
     );
     return response.data;
-  }
-
-  // === CONTRIBUTION HELPER METHODS ===
-  // Tất cả contribution đều sử dụng content-edits system để có:
-  // - Lịch sử đóng góp
-  // - Phiên bản
-  // - Voting
-  // - Preview & So sánh
-  // - Admin duyệt/từ chối
-
-  /// Upload và submit contribution cho video (dùng content-edits flow)
-  Future<Map<String, dynamic>> contributeVideo(
-      String contentId, String videoPath,
-      {String? description, String? caption}) async {
-    // 1. Upload video qua content-edits upload endpoint
-    final uploadResult = await uploadVideoForEdit(videoPath);
-    final videoUrl =
-        uploadResult['videoUrl'] as String? ?? uploadResult['url'] as String;
-
-    // 2. Submit contribution qua content-edits flow
-    return submitContentEdit(
-      contentItemId: contentId,
-      type: 'add_video',
-      videoUrl: videoUrl,
-      description: description,
-      caption: caption,
-    );
-  }
-
-  /// Upload và submit contribution cho image (dùng content-edits flow)
-  Future<Map<String, dynamic>> contributeImage(
-      String contentId, String imagePath,
-      {String? description, String? caption}) async {
-    // 1. Upload image qua content-edits upload endpoint
-    final uploadResult = await uploadImageForEdit(imagePath);
-    final imageUrl =
-        uploadResult['imageUrl'] as String? ?? uploadResult['url'] as String;
-
-    // 2. Submit contribution qua content-edits flow
-    return submitContentEdit(
-      contentItemId: contentId,
-      type: 'add_image',
-      imageUrl: imageUrl,
-      description: description,
-      caption: caption,
-    );
-  }
-
-  /// Tạo mới video contribution cho một node (dùng content-edits flow)
-  /// Trước tiên tạo placeholder content item, sau đó submit edit
-  Future<Map<String, dynamic>> createNewVideoContribution(
-      String nodeId, String videoPath,
-      {String? title, String? description}) async {
-    // 1. Tạo placeholder content item
-    final placeholderResponse = await _apiClient.post(
-      ApiConstants.createNewContribution(nodeId),
-      data: {
-        'format': 'video',
-        'title': title ?? 'Video đóng góp mới',
-      },
-    );
-    final contentItemId = placeholderResponse.data['id'] as String;
-
-    // 2. Upload video
-    final uploadResult = await uploadVideoForEdit(videoPath);
-    final videoUrl =
-        uploadResult['videoUrl'] as String? ?? uploadResult['url'] as String;
-
-    // 3. Submit contribution qua content-edits flow
-    return submitContentEdit(
-      contentItemId: contentItemId,
-      type: 'add_video',
-      videoUrl: videoUrl,
-      description: description ?? 'Video đóng góp mới cho bài học',
-    );
-  }
-
-  /// Tạo mới image contribution cho một node (dùng content-edits flow)
-  Future<Map<String, dynamic>> createNewImageContribution(
-      String nodeId, String imagePath,
-      {String? title, String? description}) async {
-    // 1. Tạo placeholder content item
-    final placeholderResponse = await _apiClient.post(
-      ApiConstants.createNewContribution(nodeId),
-      data: {
-        'format': 'image',
-        'title': title ?? 'Hình ảnh đóng góp mới',
-      },
-    );
-    final contentItemId = placeholderResponse.data['id'] as String;
-
-    // 2. Upload image
-    final uploadResult = await uploadImageForEdit(imagePath);
-    final imageUrl =
-        uploadResult['imageUrl'] as String? ?? uploadResult['url'] as String;
-
-    // 3. Submit contribution qua content-edits flow
-    return submitContentEdit(
-      contentItemId: contentItemId,
-      type: 'add_image',
-      imageUrl: imageUrl,
-      description: description ?? 'Hình ảnh đóng góp mới cho bài học',
-    );
-  }
-
-  /// Submit text contribution cho một content item (dùng content-edits flow)
-  Future<Map<String, dynamic>> contributeText(
-      String contentId, String textContent,
-      {String? description}) async {
-    return submitContentEdit(
-      contentItemId: contentId,
-      type: 'add_text',
-      textContent: textContent,
-      description: description,
-    );
-  }
-
-  /// Cập nhật nội dung bài học (full lesson edit với history)
-  Future<Map<String, dynamic>> updateLessonContent({
-    required String contentItemId,
-    required String title,
-    String? textContent,
-    String? videoUrl,
-    String? imageUrl,
-    List<String>? imageUrls,
-    String? description,
-    Map<String, dynamic>? quizData,
-    dynamic richContent,
-  }) async {
-    return submitLessonEdit(
-      contentItemId: contentItemId,
-      title: title,
-      richContent: richContent,
-      imageUrls: imageUrls,
-      videoUrl: videoUrl,
-      description: description,
-      quizData: quizData,
-    );
   }
 
   // =====================
@@ -997,6 +536,10 @@ class ApiService {
     required String name,
     required String subjectId,
     String? description,
+    String? difficulty,
+    String? afterEntityId,
+    int? expReward,
+    int? coinReward,
   }) async {
     final response = await _apiClient.post(
       ApiConstants.createDomainContribution,
@@ -1004,6 +547,10 @@ class ApiService {
         'name': name,
         'subjectId': subjectId,
         if (description != null) 'description': description,
+        if (difficulty != null) 'difficulty': difficulty,
+        if (afterEntityId != null) 'afterEntityId': afterEntityId,
+        if (expReward != null) 'expReward': expReward,
+        if (coinReward != null) 'coinReward': coinReward,
       },
     );
     return response.data;
@@ -1014,6 +561,10 @@ class ApiService {
     required String domainId,
     required String subjectId,
     String? description,
+    String? difficulty,
+    String? afterEntityId,
+    int? expReward,
+    int? coinReward,
   }) async {
     final response = await _apiClient.post(
       ApiConstants.createTopicContribution,
@@ -1022,35 +573,89 @@ class ApiService {
         'domainId': domainId,
         'subjectId': subjectId,
         if (description != null) 'description': description,
+        if (difficulty != null) 'difficulty': difficulty,
+        if (afterEntityId != null) 'afterEntityId': afterEntityId,
+        if (expReward != null) 'expReward': expReward,
+        if (coinReward != null) 'coinReward': coinReward,
       },
     );
     return response.data;
   }
 
-  Future<Map<String, dynamic>> createLessonContribution({
-    required String title,
-    required String nodeId,
-    required String subjectId,
-    String? content,
-    dynamic richContent,
-    String? description,
-  }) async {
+  Future<Map<String, dynamic>> createLessonContribution(Map<String, dynamic> data) async {
     final response = await _apiClient.post(
       ApiConstants.createLessonContribution,
-      data: {
-        'title': title,
-        'nodeId': nodeId,
-        'subjectId': subjectId,
-        if (content != null) 'content': content,
-        if (richContent != null) 'richContent': richContent,
-        if (description != null) 'description': description,
-      },
+      data: data,
     );
     return response.data;
   }
 
   Future<void> deletePendingContribution(String id) async {
     await _apiClient.delete(ApiConstants.pendingContributionDetail(id));
+  }
+
+  Future<Map<String, dynamic>> createEditContribution({
+    required String type,
+    required String entityId,
+    required String newName,
+    String? newDescription,
+    String? reason,
+    String? domainId,
+  }) async {
+    final response = await _apiClient.post(
+      ApiConstants.createEditContribution,
+      data: {
+        'type': type,
+        'entityId': entityId,
+        'newName': newName,
+        if (newDescription != null) 'newDescription': newDescription,
+        if (reason != null) 'reason': reason,
+        if (domainId != null) 'domainId': domainId,
+      },
+    );
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> createDeleteContribution({
+    required String type,
+    required String entityId,
+    String? reason,
+    String? domainId,
+  }) async {
+    final response = await _apiClient.post(
+      ApiConstants.createDeleteContribution,
+      data: {
+        'type': type,
+        'entityId': entityId,
+        if (reason != null) 'reason': reason,
+        if (domainId != null) 'domainId': domainId,
+      },
+    );
+    return response.data;
+  }
+
+  // Lesson Content Edit contribution
+  Future<Map<String, dynamic>> createLessonContentEditContribution(Map<String, dynamic> data) async {
+    final response = await _apiClient.post(
+      ApiConstants.createLessonContentEdit,
+      data: data,
+    );
+    return response.data;
+  }
+
+  // Lesson Type Version History
+  Future<Map<String, dynamic>> getLessonTypeHistory(String nodeId, String lessonType) async {
+    final response = await _apiClient.get(
+      ApiConstants.lessonTypeHistory(nodeId, lessonType),
+    );
+    return Map<String, dynamic>.from(response.data);
+  }
+
+  Future<Map<String, dynamic>> getLessonTypeVersion(String versionId) async {
+    final response = await _apiClient.get(
+      ApiConstants.lessonTypeVersionDetail(versionId),
+    );
+    return Map<String, dynamic>.from(response.data);
   }
 
   // Admin: pending contributions
@@ -1083,53 +688,14 @@ class ApiService {
   }
 
   // =====================
-  // Quiz APIs
-  // =====================
-
-  /// Generate quiz for a content item (concept or example)
-  Future<Map<String, dynamic>> generateQuiz(String contentItemId) async {
-    final response = await _apiClient.post(
-      ApiConstants.generateQuiz,
-      data: {'contentItemId': contentItemId},
-    );
-    return response.data;
-  }
-
-  /// Generate boss quiz for a learning node
-  Future<Map<String, dynamic>> generateBossQuiz(String nodeId) async {
-    final response = await _apiClient.post(
-      ApiConstants.generateBossQuiz,
-      data: {'nodeId': nodeId},
-    );
-    return response.data;
-  }
-
-  /// Submit quiz answers
-  Future<Map<String, dynamic>> submitQuiz(
-    String sessionId,
-    Map<String, String> answers,
-  ) async {
-    final response = await _apiClient.post(
-      ApiConstants.submitQuiz,
-      data: {
-        'sessionId': sessionId,
-        'answers': answers,
-      },
-    );
-    return response.data;
-  }
-
-  // =====================
   // Payment APIs
   // =====================
 
-  /// Get available payment packages
   Future<Map<String, dynamic>> getPaymentPackages() async {
     final response = await _apiClient.get(ApiConstants.paymentPackages);
     return response.data;
   }
 
-  /// Create a payment order
   Future<Map<String, dynamic>> createPayment(String packageId) async {
     final response = await _apiClient.post(
       ApiConstants.createPayment,
@@ -1138,25 +704,21 @@ class ApiService {
     return response.data;
   }
 
-  /// Get payment details
   Future<Map<String, dynamic>> getPayment(String paymentId) async {
     final response = await _apiClient.get(ApiConstants.getPayment(paymentId));
     return response.data;
   }
 
-  /// Get payment history
   Future<List<dynamic>> getPaymentHistory() async {
     final response = await _apiClient.get(ApiConstants.paymentHistory);
     return response.data['payments'] ?? [];
   }
 
-  /// Get premium status
   Future<Map<String, dynamic>> getPremiumStatus() async {
     final response = await _apiClient.get(ApiConstants.premiumStatus);
     return response.data;
   }
 
-  /// Get pending payment
   Future<Map<String, dynamic>> getPendingPayment() async {
     final response = await _apiClient.get(ApiConstants.pendingPayment);
     return response.data;

@@ -1,11 +1,16 @@
 import { Controller, Get, Param, Post, Put, Body, UseGuards, NotFoundException, Request, ForbiddenException } from '@nestjs/common';
 import { LearningNodesService } from './learning-nodes.service';
+import { LessonContentService } from './lesson-content.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
+import { UpdateLessonContentDto } from './dto/lesson-content.dto';
 
 @Controller('nodes')
 export class LearningNodesController {
-  constructor(private readonly nodesService: LearningNodesService) {}
+  constructor(
+    private readonly nodesService: LearningNodesService,
+    private readonly lessonContentService: LessonContentService,
+  ) {}
 
   /**
    * Get nodes by subject with premium lock status
@@ -18,6 +23,14 @@ export class LearningNodesController {
   ) {
     const userId = req.user?.id;
     return this.nodesService.findBySubjectWithPremiumStatus(subjectId, userId);
+  }
+
+  /**
+   * Get nodes by topic
+   */
+  @Get('topic/:topicId')
+  async getNodesByTopic(@Param('topicId') topicId: string) {
+    return this.nodesService.findByTopic(topicId);
   }
 
   /**
@@ -104,6 +117,75 @@ export class LearningNodesController {
     if (body.metadata) node.metadata = { ...node.metadata, ...body.metadata };
 
     return this.nodesService['nodeRepository'].save(node);
+  }
+
+  // === Lesson Content APIs ===
+
+  /**
+   * Get full lesson data (viewer)
+   */
+  @Get(':id/lesson')
+  @UseGuards(OptionalJwtAuthGuard)
+  async getLessonData(@Param('id') id: string) {
+    return this.lessonContentService.getLessonData(id);
+  }
+
+  /**
+   * Update lesson content (contributor/admin)
+   */
+  @Put(':id/lesson-content')
+  @UseGuards(JwtAuthGuard)
+  async updateLessonContent(
+    @Param('id') id: string,
+    @Body() body: UpdateLessonContentDto,
+  ) {
+    return this.lessonContentService.updateLessonContent(id, body);
+  }
+
+  /**
+   * AI generate end quiz suggestions
+   */
+  @Post(':id/end-quiz/generate')
+  @UseGuards(JwtAuthGuard)
+  async generateEndQuiz(@Param('id') id: string) {
+    return this.lessonContentService.generateEndQuiz(id);
+  }
+
+  /**
+   * Submit end quiz answers (legacy - reads from node's endQuiz)
+   */
+  @Post(':id/submit-quiz')
+  @UseGuards(JwtAuthGuard)
+  async submitEndQuiz(
+    @Param('id') id: string,
+    @Body() body: { answers: number[] },
+  ) {
+    return this.lessonContentService.submitEndQuiz(id, body.answers);
+  }
+
+  /**
+   * Submit end quiz for a specific lesson type (from lesson_type_contents)
+   */
+  @Post(':id/submit-quiz/:lessonType')
+  @UseGuards(JwtAuthGuard)
+  async submitEndQuizForType(
+    @Param('id') id: string,
+    @Param('lessonType') lessonType: string,
+    @Body() body: { answers: number[] },
+  ) {
+    return this.lessonContentService.submitEndQuizForType(id, lessonType, body.answers);
+  }
+
+  /**
+   * Get lesson data for a specific type (from lesson_type_contents)
+   */
+  @Get(':id/lesson/:lessonType')
+  @UseGuards(OptionalJwtAuthGuard)
+  async getLessonDataByType(
+    @Param('id') id: string,
+    @Param('lessonType') lessonType: string,
+  ) {
+    return this.lessonContentService.getLessonDataByType(id, lessonType);
   }
 }
 

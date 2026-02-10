@@ -350,7 +350,7 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
             child: SizedBox(
               height: 200,
               child: WebVideoPlayer(
-                videoUrl: _getFullUrl(media!['videoUrl']),
+                url: _getFullUrl(media!['videoUrl']),
                 height: 200,
               ),
             ),

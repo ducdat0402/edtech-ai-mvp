@@ -8,8 +8,7 @@ import { LearningNodesModule } from '../learning-nodes/learning-nodes.module';
 import { UserCurrencyModule } from '../user-currency/user-currency.module';
 import { SubjectLearningGoalsService } from './subject-learning-goals.service';
 import { AiModule } from '../ai/ai.module';
-import { KnowledgeGraphModule } from '../knowledge-graph/knowledge-graph.module';
-import { SkillTreeModule } from '../skill-tree/skill-tree.module';
+import { DomainsModule } from '../domains/domains.module';
 
 @Module({
   imports: [
@@ -18,8 +17,7 @@ import { SkillTreeModule } from '../skill-tree/skill-tree.module';
     forwardRef(() => LearningNodesModule),
     UserCurrencyModule,
     AiModule,
-    forwardRef(() => KnowledgeGraphModule),
-    forwardRef(() => SkillTreeModule),
+    forwardRef(() => DomainsModule),
   ],
   controllers: [SubjectsController],
   providers: [SubjectsService, SubjectLearningGoalsService],

@@ -15,6 +15,8 @@ export enum RewardSource {
   SKILL_NODE = 'skill_node',
   DAILY_STREAK = 'daily_streak',
   BONUS = 'bonus',
+  TOPIC = 'topic',
+  DOMAIN = 'domain',
 }
 
 @Entity('reward_transactions')

@@ -794,326 +794,473 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
             ],
           ),
         ),
-        // Mind map list view - CHỈ HIỂN THỊ CÁC BÀI HỌC CÓ LIÊN KẾT
+        // Mind map list view - Chỉ hiện tới topic (level 2)
         Expanded(
-          child: Builder(
-            builder: (context) {
-              // Lọc chỉ lấy các node có bài học thực tế
-              final lessonsWithContent = nodes.where((node) {
-                final n = node as Map<String, dynamic>;
-                final metadata = n['metadata'] as Map<String, dynamic>?;
-                final linkedLearningNodeId =
-                    metadata?['linkedLearningNodeId'] as String?;
-                final level = n['level'] as int? ?? 3;
-                // Chỉ hiển thị các node level 3 (lessons) có liên kết đến bài học
-                return level == 3 &&
-                    linkedLearningNodeId != null &&
-                    linkedLearningNodeId.isNotEmpty;
-              }).toList();
-
-              if (lessonsWithContent.isEmpty) {
-                return const Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.info_outline, size: 48, color: Colors.grey),
-                      SizedBox(height: 16),
-                      Text(
-                        'Chưa có bài học nào trong lộ trình này',
-                        style: TextStyle(color: Colors.grey, fontSize: 16),
-                      ),
-                    ],
-                  ),
-                );
-              }
-
-              return ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: lessonsWithContent.length,
-                itemBuilder: (context, index) {
-                  final node =
-                      lessonsWithContent[index] as Map<String, dynamic>;
-                  final title = node['title'] as String? ?? '';
-                  final status = node['status'] as String? ?? 'not_started';
-                  final priority = node['priority'] as String? ?? 'medium';
-                  final metadata = node['metadata'] as Map<String, dynamic>?;
-                  final icon = metadata?['icon'] as String? ?? '📖';
-                  final nodeId = node['id'] as String;
-                  final estimatedDays = node['estimatedDays'] as int? ?? 0;
-                  final linkedLearningNodeId =
-                      metadata?['linkedLearningNodeId'] as String?;
-
-                  return _buildNodeCard(
-                    nodeId: nodeId,
-                    title: title,
-                    status: status,
-                    priority: priority,
-                    icon: icon,
-                    estimatedDays: estimatedDays,
-                    index: index + 1, // Start from 1
-                    linkedLearningNodeId: linkedLearningNodeId,
-                  );
-                },
-              );
-            },
-          ),
+          child: _buildLearnerMindMapList(nodes),
         ),
       ],
     );
   }
 
-  Widget _buildNodeCard({
-    required String nodeId,
-    required String title,
-    required String status,
-    required String priority,
-    required String icon,
-    required int estimatedDays,
-    required int index,
-    String? linkedLearningNodeId,
-  }) {
-    Color statusColor;
-    IconData statusIcon;
-    String statusText;
+  /// Learner view: chỉ hiện level 1 (root) và level 2 (topics/milestones)
+  /// Không hiện level 3 (learning nodes) - cần hoàn thành bài tập để unlock
+  Widget _buildLearnerMindMapList(List<dynamic> allNodes) {
+    // Lấy level 2 nodes (topics/milestones)
+    final topicNodes = allNodes.where((n) {
+      final node = n as Map<String, dynamic>;
+      final level = node['level'] as int? ?? 3;
+      return level == 2;
+    }).toList();
 
-    switch (status) {
-      case 'completed':
-        statusColor = Colors.green;
-        statusIcon = Icons.check_circle;
-        statusText = 'Hoàn thành';
-        break;
-      case 'in_progress':
-        statusColor = Colors.blue;
-        statusIcon = Icons.play_circle;
-        statusText = 'Đang học';
-        break;
-      default:
-        statusColor = Colors.grey;
-        statusIcon = Icons.circle_outlined;
-        statusText = 'Chưa bắt đầu';
+    if (topicNodes.isEmpty) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.info_outline, size: 48, color: Colors.grey),
+            SizedBox(height: 16),
+            Text(
+              'Chưa có chủ đề nào trong lộ trình này',
+              style: TextStyle(color: Colors.grey, fontSize: 16),
+            ),
+          ],
+        ),
+      );
     }
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
-          color: status == 'completed'
-              ? Colors.green.shade200
-              : Colors.transparent,
-          width: 2,
-        ),
-      ),
-      child: InkWell(
-        onTap: () =>
-            _showNodeOptions(nodeId, title, status, linkedLearningNodeId),
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              // Index
-              Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: statusColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Center(
-                  child: Text(
-                    '$index',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: statusColor,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              // Icon
-              Text(icon, style: const TextStyle(fontSize: 24)),
-              const SizedBox(width: 12),
-              // Content
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Icon(statusIcon, size: 14, color: statusColor),
-                        const SizedBox(width: 4),
-                        Text(
-                          statusText,
-                          style: TextStyle(fontSize: 12, color: statusColor),
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: topicNodes.length,
+      itemBuilder: (context, index) {
+        final topic = topicNodes[index] as Map<String, dynamic>;
+        final topicId = topic['id'] as String;
+        final title = topic['title'] as String? ?? 'Chủ đề';
+        final description = topic['description'] as String? ?? '';
+        final status = topic['status'] as String? ?? 'not_started';
+        final metadata = topic['metadata'] as Map<String, dynamic>?;
+        final icon = metadata?['icon'] as String? ?? '📁';
+
+        // Đếm số bài học con (level 3) thuộc topic này
+        final childLessons = allNodes.where((n) {
+          final node = n as Map<String, dynamic>;
+          return node['parentId'] == topicId && (node['level'] as int? ?? 3) == 3;
+        }).toList();
+
+        final completedLessons = childLessons.where((n) {
+          final node = n as Map<String, dynamic>;
+          return node['status'] == 'completed';
+        }).length;
+
+        final totalLessons = childLessons.length;
+
+        Color statusColor;
+        IconData statusIcon;
+        String statusText;
+
+        if (completedLessons == totalLessons && totalLessons > 0) {
+          statusColor = Colors.green;
+          statusIcon = Icons.check_circle;
+          statusText = 'Hoàn thành';
+        } else if (completedLessons > 0) {
+          statusColor = Colors.blue;
+          statusIcon = Icons.play_circle;
+          statusText = 'Đang học';
+        } else if (status == 'in_progress') {
+          statusColor = Colors.blue;
+          statusIcon = Icons.play_circle;
+          statusText = 'Đang học';
+        } else {
+          statusColor = Colors.grey;
+          statusIcon = Icons.lock_outline;
+          statusText = 'Chưa mở khóa';
+        }
+
+        return Card(
+          margin: const EdgeInsets.only(bottom: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+            side: BorderSide(
+              color: completedLessons == totalLessons && totalLessons > 0
+                  ? Colors.green.shade200
+                  : Colors.transparent,
+              width: 2,
+            ),
+          ),
+          child: InkWell(
+            onTap: () {
+              _showTopicLessons(
+                title: title,
+                description: description,
+                icon: icon,
+                totalLessons: totalLessons,
+                completedLessons: completedLessons,
+                status: status,
+                childLessons: childLessons,
+              );
+            },
+            borderRadius: BorderRadius.circular(14),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      // Index
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: statusColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                        if (estimatedDays > 0) ...[
-                          const SizedBox(width: 12),
-                          Icon(Icons.schedule,
-                              size: 14, color: Colors.grey.shade600),
-                          const SizedBox(width: 4),
-                          Text(
-                            '$estimatedDays ngày',
+                        child: Center(
+                          child: Text(
+                            '${index + 1}',
                             style: TextStyle(
-                                fontSize: 12, color: Colors.grey.shade600),
+                              fontWeight: FontWeight.bold,
+                              color: statusColor,
+                              fontSize: 16,
+                            ),
                           ),
-                        ],
-                        if (linkedLearningNodeId != null) ...[
-                          const SizedBox(width: 12),
-                          Icon(Icons.link,
-                              size: 14, color: Colors.purple.shade400),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Có bài học',
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      // Icon
+                      Text(icon, style: const TextStyle(fontSize: 28)),
+                      const SizedBox(width: 12),
+                      // Title & status
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              title,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                Icon(statusIcon, size: 14, color: statusColor),
+                                const SizedBox(width: 4),
+                                Text(
+                                  statusText,
+                                  style: TextStyle(fontSize: 12, color: statusColor),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Lesson count badge
+                      if (totalLessons > 0)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: statusColor.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            '$completedLessons/$totalLessons',
                             style: TextStyle(
-                                fontSize: 12, color: Colors.purple.shade400),
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: statusColor,
+                            ),
                           ),
-                        ],
-                      ],
+                        ),
+                    ],
+                  ),
+                  // Description
+                  if (description.isNotEmpty) ...[
+                    const SizedBox(height: 10),
+                    Text(
+                      description,
+                      style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
-                ),
+                  // Progress bar
+                  if (totalLessons > 0) ...[
+                    const SizedBox(height: 10),
+                    LinearProgressIndicator(
+                      value: totalLessons > 0 ? completedLessons / totalLessons : 0,
+                      backgroundColor: Colors.grey.shade200,
+                      valueColor: AlwaysStoppedAnimation<Color>(statusColor),
+                      minHeight: 4,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ],
+                ],
               ),
-              // Priority badge
-              if (priority == 'high')
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.red.shade50,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    'Ưu tiên',
-                    style: TextStyle(fontSize: 10, color: Colors.red.shade700),
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showNodeOptions(String nodeId, String title, String currentStatus,
-      String? linkedLearningNodeId) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return Container(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style:
-                    const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 24),
-              // Nút bắt đầu học nếu có linkedLearningNodeId
-              if (linkedLearningNodeId != null) ...[
-                ListTile(
-                  leading: const Icon(Icons.play_arrow, color: Colors.green),
-                  title: const Text('Bắt đầu học'),
-                  subtitle: const Text('Xem nội dung bài học'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    context.push('/nodes/$linkedLearningNodeId');
-                  },
-                ),
-                const Divider(),
-              ],
-              ListTile(
-                leading: Icon(
-                  Icons.circle_outlined,
-                  color: currentStatus == 'not_started'
-                      ? Colors.blue
-                      : Colors.grey,
-                ),
-                title: const Text('Chưa bắt đầu'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _updateNodeStatus(nodeId, 'not_started');
-                },
-              ),
-              ListTile(
-                leading: Icon(
-                  Icons.play_circle,
-                  color: currentStatus == 'in_progress'
-                      ? Colors.blue
-                      : Colors.grey,
-                ),
-                title: const Text('Đang học'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _updateNodeStatus(nodeId, 'in_progress');
-                },
-              ),
-              ListTile(
-                leading: Icon(
-                  Icons.check_circle,
-                  color:
-                      currentStatus == 'completed' ? Colors.green : Colors.grey,
-                ),
-                title: const Text('Đã hoàn thành'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _updateNodeStatus(nodeId, 'completed');
-                },
-              ),
-            ],
+            ),
           ),
         );
       },
     );
   }
 
-  Future<void> _updateNodeStatus(String nodeId, String status) async {
-    try {
-      final apiService = Provider.of<ApiService>(context, listen: false);
-      final result = await apiService.updatePersonalMindMapNode(
-        widget.subjectId,
-        nodeId,
-        status,
-      );
-
-      final mindMap = result['mindMap'] as Map<String, dynamic>?;
-      if (mindMap != null) {
-        setState(() {
-          _mindMapData = mindMap;
-        });
-      }
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Đã cập nhật trạng thái'),
-            backgroundColor: Colors.green,
-            duration: Duration(seconds: 1),
+  /// Hiện danh sách bài học trong topic để learner chọn học
+  void _showTopicLessons({
+    required String title,
+    required String description,
+    required String icon,
+    required int totalLessons,
+    required int completedLessons,
+    required String status,
+    required List<dynamic> childLessons,
+  }) {
+    // Topic chưa mở khóa -> chỉ hiện thông báo
+    if (status == 'not_started' && completedLessons == 0) {
+      showModalBottomSheet(
+        context: context,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        builder: (ctx) => Container(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.lock_outline, size: 48, color: Colors.grey.shade400),
+              const SizedBox(height: 12),
+              Text(
+                title,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Hoàn thành các chủ đề trước để mở khóa.',
+                style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.purple,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  child: const Text('Đã hiểu', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
           ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text('Lỗi: ${e.toString()}'),
-              backgroundColor: Colors.red),
-        );
-      }
+        ),
+      );
+      return;
     }
+
+    // Topic đã mở khóa -> hiện danh sách bài học
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        // Determine which lessons are accessible:
+        // - completed lessons: always accessible
+        // - in_progress lessons: accessible
+        // - the first not_started lesson: accessible (next to learn)
+        // - rest: locked
+        bool foundFirstNotStarted = false;
+        final lessonStates = childLessons.map((l) {
+          final lesson = l as Map<String, dynamic>;
+          final lessonStatus = lesson['status'] as String? ?? 'not_started';
+          if (lessonStatus == 'completed' || lessonStatus == 'in_progress') {
+            return {'lesson': lesson, 'accessible': true};
+          } else if (!foundFirstNotStarted) {
+            foundFirstNotStarted = true;
+            return {'lesson': lesson, 'accessible': true};
+          } else {
+            return {'lesson': lesson, 'accessible': false};
+          }
+        }).toList();
+
+        return DraggableScrollableSheet(
+          initialChildSize: 0.55,
+          maxChildSize: 0.85,
+          minChildSize: 0.3,
+          expand: false,
+          builder: (_, scrollController) {
+            return Container(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Handle bar
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // Title row
+                  Row(
+                    children: [
+                      Text(icon, style: const TextStyle(fontSize: 28)),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              title,
+                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              '$completedLessons/$totalLessons bài hoàn thành',
+                              style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  // Progress bar
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: totalLessons > 0 ? completedLessons / totalLessons : 0,
+                      backgroundColor: Colors.grey.shade200,
+                      valueColor: const AlwaysStoppedAnimation<Color>(Colors.green),
+                      minHeight: 6,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // Lesson list
+                  Expanded(
+                    child: ListView.separated(
+                      controller: scrollController,
+                      itemCount: lessonStates.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 8),
+                      itemBuilder: (context, index) {
+                        final item = lessonStates[index] as Map<String, dynamic>;
+                        final lesson = item['lesson'] as Map<String, dynamic>;
+                        final accessible = item['accessible'] as bool;
+                        final lessonTitle = lesson['title'] as String? ?? 'Bài học';
+                        final lessonStatus = lesson['status'] as String? ?? 'not_started';
+                        final lessonMeta = lesson['metadata'] as Map<String, dynamic>?;
+                        final lessonIcon = lessonMeta?['icon'] as String? ?? '📖';
+                        final linkedNodeId = lessonMeta?['linkedLearningNodeId'] as String?;
+
+                        Color tileColor;
+                        IconData trailingIcon;
+                        if (lessonStatus == 'completed') {
+                          tileColor = Colors.green;
+                          trailingIcon = Icons.check_circle;
+                        } else if (accessible) {
+                          tileColor = Colors.blue;
+                          trailingIcon = Icons.play_circle_fill;
+                        } else {
+                          tileColor = Colors.grey;
+                          trailingIcon = Icons.lock_outline;
+                        }
+
+                        return Material(
+                          color: accessible ? null : Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(12),
+                          child: InkWell(
+                            onTap: accessible && linkedNodeId != null
+                                ? () {
+                                    Navigator.pop(ctx);
+                                    context.push(
+                                      '/lessons/$linkedNodeId/types',
+                                      extra: {'title': lessonTitle},
+                                    );
+                                  }
+                                : null,
+                            borderRadius: BorderRadius.circular(12),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: accessible ? tileColor.withOpacity(0.3) : Colors.grey.shade200,
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  // Index
+                                  Container(
+                                    width: 30,
+                                    height: 30,
+                                    decoration: BoxDecoration(
+                                      color: tileColor.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        '${index + 1}',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: tileColor,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Text(lessonIcon, style: const TextStyle(fontSize: 22)),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          lessonTitle,
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 14,
+                                            color: accessible ? null : Colors.grey,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          lessonStatus == 'completed'
+                                              ? 'Đã hoàn thành'
+                                              : accessible
+                                                  ? 'Nhấn để học'
+                                                  : 'Chưa mở khóa',
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            color: tileColor,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Icon(trailingIcon, color: tileColor, size: 24),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
   }
+
 }

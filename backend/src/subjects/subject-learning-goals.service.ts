@@ -1,9 +1,7 @@
-import { Injectable, Inject, forwardRef } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { AiService } from '../ai/ai.service';
-import { KnowledgeGraphService } from '../knowledge-graph/knowledge-graph.service';
 import { SubjectsService } from './subjects.service';
-import { NodeType } from '../knowledge-graph/entities/knowledge-node.entity';
-import { SkillTreeService } from '../skill-tree/skill-tree.service';
+import { DomainsService } from '../domains/domains.service';
 
 export interface LearningGoalsSession {
   userId: string;
@@ -25,10 +23,8 @@ export class SubjectLearningGoalsService {
 
   constructor(
     private aiService: AiService,
-    private kgService: KnowledgeGraphService,
+    private domainsService: DomainsService,
     private subjectsService: SubjectsService,
-    @Inject(forwardRef(() => SkillTreeService))
-    private skillTreeService: SkillTreeService,
   ) {}
 
   private getSessionKey(userId: string, subjectId: string): string {
@@ -73,11 +69,9 @@ export class SubjectLearningGoalsService {
       throw new Error('Subject not found');
     }
 
-    // Get mind map from knowledge graph - get domains for this subject
-    const allNodes = await this.kgService.getNodesByEntityIdPattern(subjectId);
-    const subjectDomains = allNodes.filter(
-      (node) => node.type === NodeType.DOMAIN,
-    );
+    // Get domains for this subject
+    const domains = await this.domainsService.findBySubject(subjectId);
+    const subjectDomains = domains.map(d => ({ name: d.name, description: d.description || '' }));
 
     // Build mind map structure for AI
     const mindMapStructure = {
@@ -95,7 +89,7 @@ export class SubjectLearningGoalsService {
 ${subject.description ? `Mô tả môn học: ${subject.description}` : ''}
 
 Mind map của môn học này có các chương/domain chính:
-${subjectDomains.map((d, i) => `${i + 1}. ${d.name}: ${d.description || ''}`).join('\n')}
+${subjectDomains.map((d, i) => `${i + 1}. ${d.name}: ${d.description}`).join('\n')}
 
 Nhiệm vụ của bạn:
 1. Chào hỏi người dùng một cách thân thiện
@@ -158,10 +152,8 @@ Hãy bắt đầu cuộc trò chuyện một cách tự nhiên và thân thiện
 
     // Generate AI response
     const subject = await this.subjectsService.findById(subjectId);
-    const allNodes = await this.kgService.getNodesByEntityIdPattern(subjectId);
-    const subjectDomains = allNodes.filter(
-      (node) => node.type === NodeType.DOMAIN,
-    );
+    const domains = await this.domainsService.findBySubject(subjectId);
+    const subjectDomains = domains.map(d => ({ name: d.name, description: d.description || '' }));
 
     const contextPrompt = `Bạn đang trò chuyện với người dùng về môn học "${subject?.name}".
 
@@ -295,12 +287,11 @@ ${JSON.stringify(messages, null, 2)}`;
       learningGoals: session.extractedData.learningGoals,
     };
 
-    // Generate skill tree with learning goals
-    return this.skillTreeService.generateSkillTree(
-      userId,
-      subjectId,
-      learningGoalsData,
-    );
+    // Return learning goals data (skill tree generation removed)
+    return {
+      message: 'Learning goals generated successfully',
+      learningGoals: learningGoalsData,
+    };
   }
 }
 

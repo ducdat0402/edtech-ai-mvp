@@ -6,13 +6,13 @@ import { PersonalMindMap } from './entities/personal-mind-map.entity';
 import { LearningNode } from '../learning-nodes/entities/learning-node.entity';
 import { UserPremium } from '../payment/entities/user-premium.entity';
 import { AiModule } from '../ai/ai.module';
-import { KnowledgeGraphModule } from '../knowledge-graph/knowledge-graph.module';
+import { DomainsModule } from '../domains/domains.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([PersonalMindMap, LearningNode, UserPremium]),
     AiModule,
-    KnowledgeGraphModule,
+    DomainsModule,
   ],
   controllers: [PersonalMindMapController],
   providers: [PersonalMindMapService],

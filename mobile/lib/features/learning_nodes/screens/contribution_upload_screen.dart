@@ -492,18 +492,11 @@ class _ContributionUploadScreenState extends State<ContributionUploadScreen> {
 
       setState(() => _uploadProgress = 0.3);
 
-      if (widget.isNewContribution && widget.nodeId != null) {
-        if (_isVideo) {
-          await apiService.createNewVideoContribution(widget.nodeId!, _selectedFile!.path, title: widget.title, description: description.isNotEmpty ? description : null);
-        } else {
-          await apiService.createNewImageContribution(widget.nodeId!, _selectedFile!.path, title: widget.title, description: description.isNotEmpty ? description : null);
-        }
+      // Upload file using new uploads endpoint
+      if (_isVideo) {
+        await apiService.uploadVideo(_selectedFile!.path);
       } else {
-        if (_isVideo) {
-          await apiService.contributeVideo(widget.contentId, _selectedFile!.path, description: description.isNotEmpty ? description : null, caption: caption.isNotEmpty ? caption : null);
-        } else {
-          await apiService.contributeImage(widget.contentId, _selectedFile!.path, description: description.isNotEmpty ? description : null, caption: caption.isNotEmpty ? caption : null);
-        }
+        await apiService.uploadImage(_selectedFile!.path);
       }
 
       setState(() => _uploadProgress = 1.0);

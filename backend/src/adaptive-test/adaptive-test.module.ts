@@ -7,9 +7,9 @@ import { SubjectsModule } from '../subjects/subjects.module';
 import { DomainsModule } from '../domains/domains.module';
 import { LearningNodesModule } from '../learning-nodes/learning-nodes.module';
 import { AiModule } from '../ai/ai.module';
-import { SkillTreeModule } from '../skill-tree/skill-tree.module';
 import { UsersModule } from '../users/users.module';
 import { PersonalMindMapModule } from '../personal-mind-map/personal-mind-map.module';
+import { LessonTypeContentsModule } from '../lesson-type-contents/lesson-type-contents.module';
 
 @Module({
   imports: [
@@ -18,9 +18,9 @@ import { PersonalMindMapModule } from '../personal-mind-map/personal-mind-map.mo
     forwardRef(() => DomainsModule),
     forwardRef(() => LearningNodesModule),
     AiModule,
-    forwardRef(() => SkillTreeModule),
     UsersModule,
     forwardRef(() => PersonalMindMapModule),
+    LessonTypeContentsModule,
   ],
   controllers: [AdaptiveTestController],
   providers: [AdaptiveTestService],

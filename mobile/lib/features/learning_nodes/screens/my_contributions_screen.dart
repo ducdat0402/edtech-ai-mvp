@@ -42,16 +42,13 @@ class _MyContributionsScreenState extends State<MyContributionsScreen>
     try {
       final apiService = context.read<ApiService>();
 
-      // Load my edits and history in parallel
-      final results = await Future.wait([
-        apiService.getMyContentEdits(),
-        apiService.getHistoryForUser(),
-      ]);
+      // Load my pending contributions
+      final contributions = await apiService.getMyPendingContributions();
 
       if (mounted) {
         setState(() {
-          _myEdits = results[0];
-          _myHistory = results[1];
+          _myEdits = contributions;
+          _myHistory = [];
           _isLoading = false;
         });
       }
@@ -824,7 +821,7 @@ class _MyContributionsScreenState extends State<MyContributionsScreen>
 
     try {
       final apiService = context.read<ApiService>();
-      final history = await apiService.getHistoryForEdit(editId);
+      final List<dynamic> history = []; // Old edit history removed
 
       if (!mounted) return;
       Navigator.pop(context);

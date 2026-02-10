@@ -10,6 +10,10 @@ import 'package:edtech_mobile/features/content/widgets/web_video_player.dart';
 import 'package:edtech_mobile/features/content/widgets/content_format_badge.dart';
 import 'package:edtech_mobile/features/content/widgets/difficulty_badge.dart';
 import 'package:edtech_mobile/features/admin/widgets/comparison_dialog.dart';
+import 'package:edtech_mobile/features/lessons/screens/image_quiz_lesson_screen.dart';
+import 'package:edtech_mobile/features/lessons/screens/image_gallery_lesson_screen.dart';
+import 'package:edtech_mobile/features/lessons/screens/video_lesson_screen.dart';
+import 'package:edtech_mobile/features/lessons/screens/text_lesson_screen.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:io';
@@ -57,7 +61,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> with SingleTickerPr
 
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
-      final edits = await apiService.getPendingContentEdits();
+      final List<dynamic> edits = []; // Old content edits system removed
       setState(() {
         _pendingEdits = edits.map((e) => Map<String, dynamic>.from(e)).toList();
         _isLoading = false;
@@ -77,7 +81,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> with SingleTickerPr
 
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
-      final items = await apiService.getAllContentItemsWithEdits();
+      final List<dynamic> items = []; // Old content items system removed
       setState(() {
         _allContentItems = items.map((e) => Map<String, dynamic>.from(e)).toList();
         _isLoadingContent = false;
@@ -96,7 +100,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> with SingleTickerPr
 
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
-      final history = await apiService.getAllHistory();
+      final List<dynamic> history = []; // Old edit history system removed
       setState(() {
         _editHistory = history.map((e) => Map<String, dynamic>.from(e)).toList();
         _isLoadingHistory = false;
@@ -111,7 +115,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> with SingleTickerPr
   Future<void> _approveEdit(String editId) async {
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
-      await apiService.approveContentEdit(editId);
+      // Old content edit approval removed - use pending contributions instead
+      throw Exception('Old content edit system removed');
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -158,7 +163,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> with SingleTickerPr
     if (shouldReject == true) {
       try {
         final apiService = Provider.of<ApiService>(context, listen: false);
-        await apiService.rejectContentEdit(editId);
+        // Old content edit rejection removed - use pending contributions instead
+        throw Exception('Old content edit system removed');
         
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -213,6 +219,221 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> with SingleTickerPr
         );
       }
     }
+  }
+
+  /// Preview a lesson contribution as the learner would see it
+  void _previewLessonContribution(Map<String, dynamic> data) {
+    final lessonType = data['lessonType'] as String? ?? 'text';
+    final lessonData = data['lessonData'] as Map<String, dynamic>? ?? {};
+    final title = data['title'] as String? ?? 'Bài học';
+    final endQuiz = data['endQuiz'] as Map<String, dynamic>?;
+
+    Widget viewer;
+    switch (lessonType) {
+      case 'image_quiz':
+        viewer = ImageQuizLessonScreen(nodeId: '', lessonData: lessonData, title: title, endQuiz: endQuiz);
+        break;
+      case 'image_gallery':
+        viewer = ImageGalleryLessonScreen(nodeId: '', lessonData: lessonData, title: title, endQuiz: endQuiz);
+        break;
+      case 'video':
+        viewer = VideoLessonScreen(nodeId: '', lessonData: lessonData, title: title, endQuiz: endQuiz);
+        break;
+      case 'text':
+      default:
+        viewer = TextLessonScreen(nodeId: '', lessonData: lessonData, title: title, endQuiz: endQuiz);
+        break;
+    }
+
+    Navigator.of(context).push(MaterialPageRoute(builder: (_) => viewer));
+  }
+
+  /// Show comparison for admin review
+  void _showLessonComparisonForAdmin(Map<String, dynamic> data, String title) {
+    final lessonType = data['lessonType'] as String? ?? 'text';
+    final lessonData = data['lessonData'] as Map<String, dynamic>? ?? {};
+    final description = data['description'] as String? ?? '';
+    final endQuiz = data['endQuiz'] as Map<String, dynamic>?;
+    final quizCount = (endQuiz?['questions'] as List?)?.length ?? 0;
+    final isContentEdit = data['isContentEdit'] == true;
+    final nodeId = data['nodeId'] as String?;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.bgPrimary,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => DraggableScrollableSheet(
+        initialChildSize: 0.85,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        expand: false,
+        builder: (context, scrollController) => isContentEdit && nodeId != null
+            ? _AdminContentEditComparisonView(
+                nodeId: nodeId,
+                lessonType: lessonType,
+                newLessonData: lessonData,
+                newEndQuiz: endQuiz,
+                title: title,
+                scrollController: scrollController,
+              )
+            : Column(
+          children: [
+            // Handle
+            Container(
+              margin: const EdgeInsets.symmetric(vertical: 12),
+              width: 40, height: 4,
+              decoration: BoxDecoration(color: AppColors.textTertiary, borderRadius: BorderRadius.circular(2)),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  const Icon(Icons.compare_arrows, color: AppColors.orangeNeon),
+                  const SizedBox(width: 8),
+                  const Expanded(
+                    child: Text('Chi tiết bài học đóng góp',
+                      style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
+                  ),
+                  IconButton(icon: const Icon(Icons.close, color: AppColors.textSecondary), onPressed: () => Navigator.pop(context)),
+                ],
+              ),
+            ),
+            const Divider(color: AppColors.borderPrimary),
+            Expanded(
+              child: ListView(
+                controller: scrollController,
+                padding: const EdgeInsets.all(16),
+                children: [
+                  // Info card
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.bgSecondary,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: AppColors.successNeon.withValues(alpha: 0.3)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppColors.successNeon.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Text('Đóng góp mới', style: TextStyle(color: AppColors.successNeon, fontSize: 12, fontWeight: FontWeight.bold)),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(title, style: const TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 4),
+                        Text(description, style: const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+                        const SizedBox(height: 8),
+                        // Lesson type
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: AppColors.purpleNeon.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(_getLessonTypeLabel(lessonType),
+                            style: const TextStyle(color: AppColors.purpleNeon, fontSize: 12)),
+                        ),
+                        const SizedBox(height: 12),
+                        // Content stats
+                        ..._buildLessonStats(lessonType, lessonData),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const Icon(Icons.quiz_outlined, color: AppColors.orangeNeon, size: 16),
+                            const SizedBox(width: 6),
+                            Text('Quiz cuối bài: $quizCount câu hỏi',
+                              style: const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // Note
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppColors.bgTertiary,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.borderPrimary),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(Icons.info_outline, color: AppColors.textTertiary, size: 18),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text('Nhấn "Xem trước bài học" để xem bài học này sẽ hiển thị như thế nào với người học.',
+                            style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _getLessonTypeLabel(String type) {
+    switch (type) {
+      case 'image_quiz': return 'Hình ảnh (Quiz)';
+      case 'image_gallery': return 'Hình ảnh (Thư viện)';
+      case 'video': return 'Video';
+      case 'text': return 'Văn bản';
+      default: return type;
+    }
+  }
+
+  List<Widget> _buildLessonStats(String lessonType, Map<String, dynamic> lessonData) {
+    switch (lessonType) {
+      case 'image_quiz':
+        final slides = lessonData['slides'] as List? ?? [];
+        return [_statRow(Icons.layers_outlined, '${slides.length} slides')];
+      case 'image_gallery':
+        final images = lessonData['images'] as List? ?? [];
+        return [_statRow(Icons.photo_library_outlined, '${images.length} hình ảnh')];
+      case 'video':
+        final keyPoints = lessonData['keyPoints'] as List? ?? [];
+        final keywords = lessonData['keywords'] as List? ?? [];
+        return [
+          _statRow(Icons.play_circle_outline, 'Có video URL'),
+          _statRow(Icons.list, '${keyPoints.length} nội dung chính'),
+          _statRow(Icons.label_outlined, '${keywords.length} từ khóa'),
+        ];
+      case 'text':
+        final sections = lessonData['sections'] as List? ?? [];
+        final inlineQuizzes = lessonData['inlineQuizzes'] as List? ?? [];
+        return [
+          _statRow(Icons.article_outlined, '${sections.length} phần nội dung'),
+          _statRow(Icons.help_outline, '${inlineQuizzes.length} câu hỏi xen kẽ'),
+        ];
+      default:
+        return [];
+    }
+  }
+
+  Widget _statRow(IconData icon, String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        children: [
+          Icon(icon, color: AppColors.textTertiary, size: 16),
+          const SizedBox(width: 6),
+          Text(text, style: const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+        ],
+      ),
+    );
   }
 
   Future<void> _rejectContribution(String id) async {
@@ -420,13 +641,16 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> with SingleTickerPr
   Widget _buildContributionReviewCard(Map<String, dynamic> item) {
     final id = item['id'] as String;
     final type = item['type'] as String? ?? 'subject';
+    final action = item['action'] as String? ?? 'create';
     final title = item['title'] as String? ?? '';
     final description = item['description'] as String? ?? '';
+    final contextDescription = item['contextDescription'] as String? ?? '';
     final data = item['data'] as Map<String, dynamic>? ?? {};
     final contributor = item['contributor'] as Map<String, dynamic>?;
     final contributorName = contributor?['fullName'] ?? contributor?['email'] ?? 'Unknown';
     final createdAt = item['createdAt'] as String?;
 
+    // Type styling
     IconData typeIcon;
     Color typeColor;
     String typeLabel;
@@ -457,18 +681,46 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> with SingleTickerPr
         typeLabel = type;
     }
 
+    // Action styling
+    IconData actionIcon;
+    Color actionColor;
+    String actionLabel;
+    switch (action) {
+      case 'edit':
+        actionIcon = Icons.edit_outlined;
+        actionColor = Colors.blue;
+        actionLabel = 'Sửa';
+        break;
+      case 'delete':
+        actionIcon = Icons.delete_outline;
+        actionColor = Colors.red;
+        actionLabel = 'Xóa';
+        break;
+      default: // create
+        actionIcon = Icons.add_circle_outline;
+        actionColor = Colors.green;
+        actionLabel = 'Tạo mới';
+    }
+
+    // Border color based on action
+    final borderColor = action == 'delete' 
+        ? Colors.red.withOpacity(0.4) 
+        : action == 'edit' 
+            ? Colors.blue.withOpacity(0.4) 
+            : typeColor.withOpacity(0.3);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.bgSecondary,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: typeColor.withOpacity(0.3)),
+        border: Border.all(color: borderColor, width: action == 'delete' ? 1.5 : 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
+          // Header: type badge + action badge + date
           Row(
             children: [
               Container(
@@ -486,6 +738,22 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> with SingleTickerPr
                   ],
                 ),
               ),
+              const SizedBox(width: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: actionColor.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(actionIcon, size: 13, color: actionColor),
+                    const SizedBox(width: 3),
+                    Text(actionLabel, style: AppTextStyles.caption.copyWith(color: actionColor, fontWeight: FontWeight.w600)),
+                  ],
+                ),
+              ),
               const Spacer(),
               if (createdAt != null)
                 Text(
@@ -496,13 +764,58 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> with SingleTickerPr
           ),
           const SizedBox(height: 12),
 
+          // Context description (prominent, for admin clarity)
+          if (contextDescription.isNotEmpty) ...[
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: actionColor.withOpacity(0.06),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: actionColor.withOpacity(0.15)),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    action == 'delete' ? Icons.warning_amber_rounded
+                        : action == 'edit' ? Icons.swap_horiz
+                        : Icons.lightbulb_outline,
+                    size: 18,
+                    color: actionColor,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      contextDescription,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF2D3748),
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
+          ],
+
           // Title
           Text(title, style: AppTextStyles.labelLarge.copyWith(color: AppColors.textPrimary, fontWeight: FontWeight.bold)),
 
-          // Description
+          // Description / Reason
           if (description.isNotEmpty) ...[
             const SizedBox(height: 6),
-            Text(description, style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary), maxLines: 3, overflow: TextOverflow.ellipsis),
+            Text(
+              action == 'delete' ? 'Lý do: $description'
+                  : action == 'edit' ? 'Lý do: $description'
+                  : description,
+              style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+            ),
           ],
 
           // Contributor info
@@ -511,11 +824,17 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> with SingleTickerPr
             children: [
               Icon(Icons.person_outline, size: 14, color: AppColors.textTertiary),
               const SizedBox(width: 4),
-              Text('$contributorName', style: AppTextStyles.caption.copyWith(color: AppColors.textTertiary)),
+              Expanded(
+                child: Text(
+                  contributorName.toString(),
+                  style: AppTextStyles.caption.copyWith(color: AppColors.textTertiary),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
             ],
           ),
 
-          // Data details
+          // Data details (for edit: show old->new, for delete: show entity info, for create: show details)
           if (data.isNotEmpty) ...[
             const SizedBox(height: 8),
             Container(
@@ -526,15 +845,44 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> with SingleTickerPr
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (data['track'] != null)
-                    _buildDataRow('Track', data['track']),
-                  if (data['subjectName'] != null)
-                    _buildDataRow('Môn học', data['subjectName']),
-                  if (data['name'] != null && data['name'] != title)
-                    _buildDataRow('Tên', data['name']),
-                ],
+                children: _buildDataDetails(action, type, data, title),
               ),
+            ),
+          ],
+
+          // Preview button for lesson contributions with new lesson types
+          if (type == 'lesson' && data['lessonType'] != null) ...[
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => _previewLessonContribution(data),
+                    icon: const Icon(Icons.visibility_outlined, size: 18),
+                    label: const Text('Xem trước bài học'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.cyanNeon,
+                      side: const BorderSide(color: AppColors.cyanNeon),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => _showLessonComparisonForAdmin(data, title),
+                    icon: const Icon(Icons.compare_arrows_outlined, size: 18),
+                    label: const Text('So sánh'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.orangeNeon,
+                      side: const BorderSide(color: AppColors.orangeNeon),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
 
@@ -559,17 +907,120 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> with SingleTickerPr
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: () => _approveContribution(id),
-                  icon: const Icon(Icons.check, size: 18),
-                  label: const Text('Duyệt'),
+                  icon: Icon(action == 'delete' ? Icons.delete : Icons.check, size: 18),
+                  label: Text(action == 'delete' ? 'Duyệt xóa' : 'Duyệt'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.successNeon,
-                    foregroundColor: Colors.black,
+                    backgroundColor: action == 'delete' ? Colors.red : AppColors.successNeon,
+                    foregroundColor: action == 'delete' ? Colors.white : Colors.black,
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
                 ),
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _buildDataDetails(String action, String type, Map<String, dynamic> data, String title) {
+    final rows = <Widget>[];
+
+    if (action == 'edit') {
+      // Show old name -> new name
+      if (data['oldName'] != null) {
+        rows.add(_buildDataRow('Tên cũ', data['oldName']));
+      }
+      if (data['newName'] != null) {
+        rows.add(_buildHighlightDataRow('Tên mới', data['newName'], Colors.blue));
+      }
+      if (data['subjectName'] != null) {
+        rows.add(_buildDataRow('Môn học', data['subjectName']));
+      }
+      if (data['domainName'] != null) {
+        rows.add(_buildDataRow('Domain', data['domainName']));
+      }
+    } else if (action == 'delete') {
+      // Show what will be deleted
+      if (data['entityName'] != null) {
+        rows.add(_buildHighlightDataRow('Sẽ xóa', data['entityName'], Colors.red));
+      }
+      if (data['subjectName'] != null) {
+        rows.add(_buildDataRow('Trong môn', data['subjectName']));
+      }
+      if (data['domainName'] != null) {
+        rows.add(_buildDataRow('Domain', data['domainName']));
+      }
+      if (data['reason'] != null && data['reason'].toString().isNotEmpty) {
+        rows.add(_buildDataRow('Lý do', data['reason']));
+      }
+    } else {
+      // Create action - existing logic
+      if (data['track'] != null) {
+        rows.add(_buildDataRow('Track', data['track']));
+      }
+      if (data['subjectName'] != null) {
+        rows.add(_buildDataRow('Môn học', data['subjectName']));
+      }
+      if (data['domainName'] != null) {
+        rows.add(_buildDataRow('Domain', data['domainName']));
+      }
+      if (data['topicName'] != null) {
+        rows.add(_buildDataRow('Topic', data['topicName']));
+      }
+      if (data['name'] != null && data['name'] != title) {
+        rows.add(_buildDataRow('Tên', data['name']));
+      }
+      // New lesson type info
+      if (data['lessonType'] != null) {
+        rows.add(_buildHighlightDataRow('Dạng bài', _getLessonTypeLabel(data['lessonType']), AppColors.purpleNeon));
+        // Show content stats
+        final lessonData = data['lessonData'] as Map<String, dynamic>? ?? {};
+        switch (data['lessonType']) {
+          case 'image_quiz':
+            final slides = lessonData['slides'] as List? ?? [];
+            rows.add(_buildDataRow('Số slides', '${slides.length}'));
+            break;
+          case 'image_gallery':
+            final images = lessonData['images'] as List? ?? [];
+            rows.add(_buildDataRow('Số hình ảnh', '${images.length}'));
+            break;
+          case 'video':
+            rows.add(_buildDataRow('Video URL', lessonData['videoUrl'] ?? 'N/A'));
+            break;
+          case 'text':
+            final sections = lessonData['sections'] as List? ?? [];
+            rows.add(_buildDataRow('Số phần', '${sections.length}'));
+            break;
+        }
+        // Quiz info
+        final endQuiz = data['endQuiz'] as Map<String, dynamic>?;
+        if (endQuiz != null) {
+          final questions = endQuiz['questions'] as List? ?? [];
+          rows.add(_buildDataRow('Quiz cuối bài', '${questions.length} câu'));
+        }
+      }
+    }
+
+    return rows;
+  }
+
+  Widget _buildHighlightDataRow(String label, String value, Color color) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('$label: ', style: AppTextStyles.caption.copyWith(color: AppColors.textTertiary)),
+          Expanded(
+            child: Text(
+              value,
+              style: AppTextStyles.caption.copyWith(
+                color: color,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),
@@ -657,12 +1108,10 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> with SingleTickerPr
               runSpacing: 4,
               children: [
                 ContentFormatBadge(
-                  format: item['format'] as String?,
-                  compact: true,
+                  format: (item['format'] as String?) ?? 'text',
                 ),
                 DifficultyBadge(
-                  difficulty: item['difficulty'] as String?,
-                  compact: true,
+                  difficulty: (item['difficulty'] as String?) ?? 'medium',
                 ),
               ],
             ),
@@ -704,7 +1153,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> with SingleTickerPr
   Future<void> _showComparisonDialog(String editId) async {
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
-      final comparison = await apiService.getEditComparison(editId);
+      final Map<String, dynamic> comparison = {}; // Old edit comparison removed
       
       if (!mounted) return;
       
@@ -746,7 +1195,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> with SingleTickerPr
 
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
-      await apiService.removeContentEdit(editId);
+      // Old content edit removal removed
+      throw Exception('Old content edit system removed');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Đã gỡ bài đóng góp thành công')),
@@ -1203,6 +1653,242 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> with SingleTickerPr
   }
 }
 
+/// Widget to show comparison between old and new content for admin review
+class _AdminContentEditComparisonView extends StatefulWidget {
+  final String nodeId;
+  final String lessonType;
+  final Map<String, dynamic> newLessonData;
+  final Map<String, dynamic>? newEndQuiz;
+  final String title;
+  final ScrollController scrollController;
+
+  const _AdminContentEditComparisonView({
+    required this.nodeId,
+    required this.lessonType,
+    required this.newLessonData,
+    this.newEndQuiz,
+    required this.title,
+    required this.scrollController,
+  });
+
+  @override
+  State<_AdminContentEditComparisonView> createState() => _AdminContentEditComparisonViewState();
+}
+
+class _AdminContentEditComparisonViewState extends State<_AdminContentEditComparisonView> {
+  bool _isLoading = true;
+  Map<String, dynamic>? _oldLessonData;
+  Map<String, dynamic>? _oldEndQuiz;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCurrentContent();
+  }
+
+  Future<void> _loadCurrentContent() async {
+    try {
+      final apiService = Provider.of<ApiService>(context, listen: false);
+      final contentResponse = await apiService.getLessonTypeContents(widget.nodeId);
+      final contents = contentResponse['contents'] as List? ?? [];
+
+      for (final c in contents) {
+        final m = c as Map<String, dynamic>;
+        if (m['lessonType'] == widget.lessonType) {
+          _oldLessonData = m['lessonData'] as Map<String, dynamic>?;
+          _oldEndQuiz = m['endQuiz'] as Map<String, dynamic>?;
+          break;
+        }
+      }
+    } catch (_) {
+      // If we can't load old content, that's OK - just show new
+    }
+    if (mounted) setState(() => _isLoading = false);
+  }
+
+  String _getLessonTypeLabel(String type) {
+    switch (type) {
+      case 'image_quiz': return 'Hình ảnh (Quiz)';
+      case 'image_gallery': return 'Hình ảnh (Thư viện)';
+      case 'video': return 'Video';
+      case 'text': return 'Văn bản';
+      default: return type;
+    }
+  }
+
+  List<Widget> _buildStats(Map<String, dynamic> data) {
+    switch (widget.lessonType) {
+      case 'image_quiz':
+        final slides = data['slides'] as List? ?? [];
+        return [_stat(Icons.layers_outlined, '${slides.length} slides')];
+      case 'image_gallery':
+        final images = data['images'] as List? ?? [];
+        return [_stat(Icons.photo_library_outlined, '${images.length} hình ảnh')];
+      case 'video':
+        final keyPoints = data['keyPoints'] as List? ?? [];
+        return [
+          _stat(Icons.play_circle_outline, (data['videoUrl'] as String?)?.isNotEmpty == true ? 'Có video URL' : 'Chưa có URL'),
+          _stat(Icons.list, '${keyPoints.length} nội dung chính'),
+        ];
+      case 'text':
+        final sections = data['sections'] as List? ?? [];
+        final quizzes = data['inlineQuizzes'] as List? ?? [];
+        return [
+          _stat(Icons.article_outlined, '${sections.length} phần'),
+          _stat(Icons.help_outline, '${quizzes.length} câu hỏi xen kẽ'),
+        ];
+      default:
+        return [];
+    }
+  }
+
+  Widget _stat(IconData icon, String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        children: [
+          Icon(icon, color: AppColors.textTertiary, size: 14),
+          const SizedBox(width: 6),
+          Text(text, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVersionCard(String label, Color color, Map<String, dynamic> data, int quizCount) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.bgSecondary,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(label, style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.bold)),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            decoration: BoxDecoration(
+              color: AppColors.purpleNeon.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text(_getLessonTypeLabel(widget.lessonType), style: const TextStyle(color: AppColors.purpleNeon, fontSize: 12)),
+          ),
+          const SizedBox(height: 10),
+          ..._buildStats(data),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              const Icon(Icons.quiz_outlined, color: AppColors.orangeNeon, size: 14),
+              const SizedBox(width: 6),
+              Text('Quiz: $quizCount câu hỏi', style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        // Handle
+        Container(
+          margin: const EdgeInsets.symmetric(vertical: 12),
+          width: 40, height: 4,
+          decoration: BoxDecoration(color: AppColors.textTertiary, borderRadius: BorderRadius.circular(2)),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: [
+              const Icon(Icons.compare_arrows, color: AppColors.orangeNeon),
+              const SizedBox(width: 8),
+              const Expanded(
+                child: Text('So sánh nội dung chỉnh sửa',
+                  style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
+              ),
+              IconButton(icon: const Icon(Icons.close, color: AppColors.textSecondary), onPressed: () => Navigator.pop(context)),
+            ],
+          ),
+        ),
+        const Divider(color: AppColors.borderPrimary),
+        Expanded(
+          child: _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : ListView(
+                  controller: widget.scrollController,
+                  padding: const EdgeInsets.all(16),
+                  children: [
+                    // Title
+                    Text(widget.title, style: const TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 16),
+
+                    // Old version
+                    if (_oldLessonData != null) ...[
+                      _buildVersionCard(
+                        'Phiên bản hiện tại',
+                        AppColors.textTertiary,
+                        _oldLessonData!,
+                        (_oldEndQuiz?['questions'] as List?)?.length ?? 0,
+                      ),
+                      const SizedBox(height: 12),
+                      const Center(
+                        child: Icon(Icons.arrow_downward_rounded, color: AppColors.orangeNeon, size: 28),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+
+                    // New version
+                    _buildVersionCard(
+                      'Phiên bản mới (đề xuất)',
+                      AppColors.successNeon,
+                      widget.newLessonData,
+                      (widget.newEndQuiz?['questions'] as List?)?.length ?? 0,
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Note
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.bgTertiary,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.borderPrimary),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.info_outline, color: AppColors.textTertiary, size: 18),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              _oldLessonData != null
+                                  ? 'Nếu duyệt, phiên bản hiện tại sẽ được lưu vào lịch sử và phiên bản mới sẽ thay thế.'
+                                  : 'Không tìm thấy nội dung hiện tại. Nếu duyệt, nội dung mới sẽ được tạo.',
+                              style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+        ),
+      ],
+    );
+  }
+}
+
 class _VideoPlayerWidget extends StatefulWidget {
   final String videoUrl;
 
@@ -1334,7 +2020,7 @@ class _VideoPlayerWidgetState extends State<_VideoPlayerWidget> {
     return ClipRRect(
       borderRadius: BorderRadius.circular(8),
       child: WebVideoPlayer(
-        videoUrl: widget.videoUrl,
+        url: widget.videoUrl,
         height: 200,
       ),
     );

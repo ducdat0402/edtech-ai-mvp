@@ -33,7 +33,7 @@ export class DomainsService {
     return this.domainRepository.find({
       where: { subjectId },
       order: { order: 'ASC' },
-      relations: ['nodes'],
+      relations: ['topics', 'nodes'],
     });
   }
 
@@ -43,7 +43,7 @@ export class DomainsService {
   async findById(id: string): Promise<Domain | null> {
     return this.domainRepository.findOne({
       where: { id },
-      relations: ['subject', 'nodes'],
+      relations: ['subject', 'topics', 'nodes'],
     });
   }
 
@@ -56,6 +56,9 @@ export class DomainsService {
       name: string;
       description?: string;
       order?: number;
+      difficulty?: 'easy' | 'medium' | 'hard';
+      expReward?: number;
+      coinReward?: number;
       metadata?: {
         icon?: string;
         color?: string;
@@ -84,6 +87,9 @@ export class DomainsService {
       name: data.name,
       description: data.description,
       order,
+      difficulty: data.difficulty || 'medium',
+      expReward: data.expReward || 0,
+      coinReward: data.coinReward || 0,
       metadata: data.metadata || {},
     });
 
@@ -99,6 +105,9 @@ export class DomainsService {
       name?: string;
       description?: string;
       order?: number;
+      difficulty?: 'easy' | 'medium' | 'hard';
+      expReward?: number;
+      coinReward?: number;
       metadata?: any;
     },
   ): Promise<Domain> {
@@ -110,6 +119,9 @@ export class DomainsService {
     if (data.name !== undefined) domain.name = data.name;
     if (data.description !== undefined) domain.description = data.description;
     if (data.order !== undefined) domain.order = data.order;
+    if (data.difficulty !== undefined) domain.difficulty = data.difficulty;
+    if (data.expReward !== undefined) domain.expReward = data.expReward;
+    if (data.coinReward !== undefined) domain.coinReward = data.coinReward;
     if (data.metadata !== undefined) domain.metadata = { ...domain.metadata, ...data.metadata };
 
     return await this.domainRepository.save(domain);

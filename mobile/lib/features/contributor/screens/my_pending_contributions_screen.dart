@@ -180,9 +180,11 @@ class _MyPendingContributionsScreenState
 
   Widget _buildContributionCard(Map<String, dynamic> item) {
     final type = item['type'] as String? ?? 'subject';
+    final action = item['action'] as String? ?? 'create';
     final status = item['status'] as String? ?? 'pending';
     final title = item['title'] as String? ?? '';
     final description = item['description'] as String? ?? '';
+    final contextDescription = item['contextDescription'] as String? ?? '';
     final createdAt = item['createdAt'] as String?;
     final reviewNote = item['reviewNote'] as String?;
     final id = item['id'] as String;
@@ -193,7 +195,9 @@ class _MyPendingContributionsScreenState
         color: AppColors.contributorBgSecondary,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: _getStatusColor(status).withOpacity(0.3),
+          color: action == 'delete'
+              ? AppColors.errorNeon.withOpacity(0.3)
+              : _getStatusColor(status).withOpacity(0.3),
         ),
       ),
       child: Padding(
@@ -205,7 +209,9 @@ class _MyPendingContributionsScreenState
             Row(
               children: [
                 _buildTypeBadge(type),
-                const SizedBox(width: 8),
+                const SizedBox(width: 6),
+                _buildActionBadge(action),
+                const SizedBox(width: 6),
                 _buildStatusBadge(status),
                 const Spacer(),
                 if (status == 'pending')
@@ -220,6 +226,27 @@ class _MyPendingContributionsScreenState
             ),
             const SizedBox(height: 12),
 
+            // Context description
+            if (contextDescription.isNotEmpty) ...[
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: _getActionColor(action).withOpacity(0.06),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: _getActionColor(action).withOpacity(0.15)),
+                ),
+                child: Text(
+                  contextDescription,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: const Color(0xFF2D3748),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
+
             // Title
             Text(
               title,
@@ -233,7 +260,7 @@ class _MyPendingContributionsScreenState
             if (description.isNotEmpty) ...[
               const SizedBox(height: 6),
               Text(
-                description,
+                action != 'create' ? 'Lý do: $description' : description,
                 style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -283,6 +310,51 @@ class _MyPendingContributionsScreenState
         ),
       ),
     );
+  }
+
+  Widget _buildActionBadge(String action) {
+    final color = _getActionColor(action);
+    IconData icon;
+    String label;
+    switch (action) {
+      case 'edit':
+        icon = Icons.edit_outlined;
+        label = 'Sửa';
+        break;
+      case 'delete':
+        icon = Icons.delete_outline;
+        label = 'Xóa';
+        break;
+      default:
+        icon = Icons.add_circle_outline;
+        label = 'Tạo mới';
+    }
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: color),
+          const SizedBox(width: 3),
+          Text(label, style: AppTextStyles.caption.copyWith(color: color, fontWeight: FontWeight.w600)),
+        ],
+      ),
+    );
+  }
+
+  Color _getActionColor(String action) {
+    switch (action) {
+      case 'edit':
+        return Colors.blue;
+      case 'delete':
+        return Colors.red;
+      default:
+        return Colors.green;
+    }
   }
 
   Widget _buildTypeBadge(String type) {

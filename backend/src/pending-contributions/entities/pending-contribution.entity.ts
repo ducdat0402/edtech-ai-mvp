@@ -16,6 +16,12 @@ export enum ContributionType {
   LESSON = 'lesson',
 }
 
+export enum ContributionAction {
+  CREATE = 'create',
+  EDIT = 'edit',
+  DELETE = 'delete',
+}
+
 export enum ContributionStatus {
   PENDING = 'pending',
   APPROVED = 'approved',
@@ -29,6 +35,9 @@ export class PendingContribution {
 
   @Column({ type: 'varchar' })
   type: ContributionType; // subject, domain, topic, lesson
+
+  @Column({ type: 'varchar', default: ContributionAction.CREATE })
+  action: ContributionAction; // create, edit, delete
 
   @Column({ type: 'varchar', default: ContributionStatus.PENDING })
   status: ContributionStatus;
@@ -47,13 +56,18 @@ export class PendingContribution {
   @Column({ type: 'text', nullable: true })
   description: string;
 
+  // Admin-readable description: "UserA đề xuất xóa topic X trong domain Y ở môn Z"
+  @Column({ type: 'text', nullable: true })
+  contextDescription: string;
+
   // The actual data for the contribution (varies by type)
   @Column({ type: 'jsonb' })
   data: Record<string, any>;
-  // For subject: { name, description, track }
-  // For domain: { name, description, subjectId }
-  // For topic: { name, description, domainId, subjectId }
-  // For lesson: { title, content, richContent, nodeId, subjectId }
+  // For create subject: { name, description, track }
+  // For create domain: { name, description, subjectId, subjectName }
+  // For create topic: { name, description, domainId, subjectId }
+  // For edit: { entityId, oldName, newName, newDescription?, subjectName, domainName? }
+  // For delete: { entityId, entityName, subjectName, domainName?, reason? }
 
   // Parent reference (subjectId for domain/topic/lesson)
   @Column({ type: 'uuid', nullable: true })
@@ -62,6 +76,10 @@ export class PendingContribution {
   // Parent reference (domainId for topic)
   @Column({ type: 'uuid', nullable: true })
   parentDomainId: string;
+
+  // Parent reference (topicId for lesson)
+  @Column({ type: 'uuid', nullable: true })
+  parentTopicId: string;
 
   // Admin who reviewed
   @Column({ type: 'uuid', nullable: true })

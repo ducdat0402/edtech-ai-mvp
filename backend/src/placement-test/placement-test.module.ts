@@ -1,4 +1,4 @@
-import { Module, forwardRef } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PlacementTestService } from './placement-test.service';
 import { PlacementTestController } from './placement-test.controller';
@@ -7,7 +7,6 @@ import { Question } from './entities/question.entity';
 import { UsersModule } from '../users/users.module';
 import { SubjectsModule } from '../subjects/subjects.module';
 import { AiModule } from '../ai/ai.module';
-import { SkillTreeModule } from '../skill-tree/skill-tree.module';
 
 @Module({
   imports: [
@@ -15,7 +14,6 @@ import { SkillTreeModule } from '../skill-tree/skill-tree.module';
     UsersModule,
     SubjectsModule,
     AiModule,
-    forwardRef(() => SkillTreeModule),
   ],
   controllers: [PlacementTestController],
   providers: [PlacementTestService],

@@ -26,7 +26,8 @@ class _JourneyLogScreenState extends State<JourneyLogScreen> {
   Future<void> _loadHistory() async {
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
-      final history = await apiService.getHistoryForUser();
+      // Load contributions as journey history
+      final history = await apiService.getMyPendingContributions();
       
       print('🔍 Journey Log: Loaded ${history.length} history entries');
       for (int i = 0; i < history.length; i++) {

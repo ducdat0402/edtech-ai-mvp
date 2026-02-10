@@ -1,31 +1,27 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 
-// Conditional import for web vs desktop
-import 'web_video_player_web.dart'
-    if (dart.library.io) 'web_video_player_desktop.dart';
-
-/// Web video player widget that uses HTML5 video element
+/// Stub widget - old content system removed
 class WebVideoPlayer extends StatelessWidget {
-  final String videoUrl;
+  final String url;
   final double? height;
-  final double? width;
 
-  const WebVideoPlayer({
-    super.key,
-    required this.videoUrl,
-    this.height = 200,
-    this.width,
-  });
+  const WebVideoPlayer({super.key, required this.url, this.height});
 
   @override
   Widget build(BuildContext context) {
-    if (kIsWeb) {
-      // For web, use HtmlElementView
-      return buildWebVideoPlayer(videoUrl, height, width);
-    } else {
-      // For desktop/mobile, use webview to embed HTML5 video
-      return buildDesktopVideoPlayer(videoUrl, height, width);
-    }
+    return Container(
+      height: height ?? 200,
+      color: Colors.black12,
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.video_library, size: 48, color: Colors.grey),
+            const SizedBox(height: 8),
+            Text(url, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+          ],
+        ),
+      ),
+    );
   }
 }

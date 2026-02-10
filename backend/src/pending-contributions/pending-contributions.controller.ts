@@ -43,7 +43,15 @@ export class PendingContributionsController {
   @UseGuards(ContributorGuard)
   async createDomainContribution(
     @Request() req,
-    @Body() body: { name: string; description?: string; subjectId: string },
+    @Body() body: {
+      name: string;
+      description?: string;
+      subjectId: string;
+      difficulty?: 'easy' | 'medium' | 'hard';
+      afterEntityId?: string;
+      expReward?: number;
+      coinReward?: number;
+    },
   ) {
     return this.service.createDomainContribution(req.user.id, body);
   }
@@ -58,6 +66,10 @@ export class PendingContributionsController {
       description?: string;
       domainId: string;
       subjectId: string;
+      difficulty?: 'easy' | 'medium' | 'hard';
+      afterEntityId?: string;
+      expReward?: number;
+      coinReward?: number;
     },
   ) {
     return this.service.createTopicContribution(req.user.id, body);
@@ -72,12 +84,73 @@ export class PendingContributionsController {
       title: string;
       content?: string;
       richContent?: any;
-      nodeId: string;
+      nodeId?: string;
       subjectId: string;
+      domainId?: string;
+      topicId?: string;
       description?: string;
+      // New lesson type fields
+      lessonType?: 'image_quiz' | 'image_gallery' | 'video' | 'text';
+      lessonData?: Record<string, any>;
+      endQuiz?: Record<string, any>;
+      topicName?: string;
+      // Ordering & rewards
+      difficulty?: 'easy' | 'medium' | 'hard';
+      afterEntityId?: string;
+      expReward?: number;
+      coinReward?: number;
     },
   ) {
     return this.service.createLessonContribution(req.user.id, body);
+  }
+
+  // Propose editing lesson type content
+  @Post('lesson-content-edit')
+  @UseGuards(ContributorGuard)
+  async createLessonContentEditContribution(
+    @Request() req,
+    @Body()
+    body: {
+      nodeId: string;
+      lessonType: 'image_quiz' | 'image_gallery' | 'video' | 'text';
+      lessonData: Record<string, any>;
+      endQuiz?: Record<string, any>;
+      reason?: string;
+    },
+  ) {
+    return this.service.createLessonContentEditContribution(req.user.id, body);
+  }
+
+  // Propose editing (renaming) an existing entity
+  @Post('edit')
+  @UseGuards(ContributorGuard)
+  async createEditContribution(
+    @Request() req,
+    @Body()
+    body: {
+      type: ContributionType; // subject, domain, topic, lesson
+      entityId: string;
+      newName: string;
+      newDescription?: string;
+      reason?: string;
+    },
+  ) {
+    return this.service.createEditContribution(req.user.id, body);
+  }
+
+  // Propose deleting an existing entity
+  @Post('delete')
+  @UseGuards(ContributorGuard)
+  async createDeleteContribution(
+    @Request() req,
+    @Body()
+    body: {
+      type: ContributionType; // subject, domain, topic, lesson
+      entityId: string;
+      reason?: string;
+    },
+  ) {
+    return this.service.createDeleteContribution(req.user.id, body);
   }
 
   // Get my contributions

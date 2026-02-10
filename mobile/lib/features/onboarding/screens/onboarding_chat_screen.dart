@@ -131,7 +131,7 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen> {
   }
 
   void _proceedToTest() {
-    context.go('/placement-test');
+    context.go('/dashboard');
   }
 
   @override
@@ -233,7 +233,7 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen> {
               child: GamingButton(
                 text: _turnCount < 3 && !_canProceed && !_isCompleted
                     ? 'Trả lời thêm ${3 - _turnCount} câu để tiếp tục'
-                    : 'Bắt đầu Placement Test',
+                    : 'Khám phá môn học',
                 onPressed: canProceedNow ? _proceedToTest : null,
                 gradient: canProceedNow ? AppGradients.success : null,
                 glowColor: canProceedNow ? AppColors.successNeon : null,

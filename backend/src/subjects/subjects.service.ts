@@ -5,11 +5,7 @@ import { Subject } from './entities/subject.entity';
 import { UserProgressService } from '../user-progress/user-progress.service';
 import { LearningNodesService } from '../learning-nodes/learning-nodes.service';
 import { UserCurrencyService } from '../user-currency/user-currency.service';
-import { KnowledgeGraphService } from '../knowledge-graph/knowledge-graph.service';
-import { KnowledgeNode, NodeType } from '../knowledge-graph/entities/knowledge-node.entity';
-import { EdgeType } from '../knowledge-graph/entities/knowledge-edge.entity';
-import { AiService } from '../ai/ai.service';
-import { GenerationProgressService } from '../learning-nodes/generation-progress.service';
+import { DomainsService } from '../domains/domains.service';
 
 @Injectable()
 export class SubjectsService {
@@ -18,11 +14,11 @@ export class SubjectsService {
     private subjectRepository: Repository<Subject>,
     @Inject(forwardRef(() => UserProgressService))
     private progressService: UserProgressService,
+    @Inject(forwardRef(() => LearningNodesService))
     private nodesService: LearningNodesService,
     private currencyService: UserCurrencyService,
-    @Inject(forwardRef(() => KnowledgeGraphService))
-    private knowledgeGraphService: KnowledgeGraphService,
-    private generationProgressService: GenerationProgressService,
+    @Inject(forwardRef(() => DomainsService))
+    private domainsService: DomainsService,
   ) {}
 
   async findByTrack(track: 'explorer' | 'scholar'): Promise<Subject[]> {
@@ -123,6 +119,29 @@ export class SubjectsService {
     if (name.includes('vẽ') || name.includes('drawing')) return '#F7DC6F'; // Yellow
     if (name.includes('english') || name.includes('tiếng anh')) return '#BB8FCE'; // Purple
     return '#95A5A6'; // Default gray
+  }
+
+  /**
+   * Update subject fields
+   */
+  async update(id: string, data: Partial<{ name: string; description: string; track: string; metadata: any }>): Promise<Subject> {
+    const subject = await this.findById(id);
+    if (!subject) {
+      throw new BadRequestException('Subject not found');
+    }
+    Object.assign(subject, data);
+    return this.subjectRepository.save(subject);
+  }
+
+  /**
+   * Delete a subject
+   */
+  async delete(id: string): Promise<void> {
+    const subject = await this.findById(id);
+    if (!subject) {
+      throw new BadRequestException('Subject not found');
+    }
+    await this.subjectRepository.remove(subject);
   }
 
   // Fog of War: Chỉ hiện nodes đã unlock
@@ -248,206 +267,107 @@ export class SubjectsService {
       throw new BadRequestException('Subject not found');
     }
 
-    // Try to get mind map from knowledge graph first
-    let mindMapNodes: any[] = [];
-    let mindMapEdges: any[] = [];
-    
-    try {
-      const mindMap = await this.knowledgeGraphService.getMindMapForSubject(subjectId);
-      
-      if (mindMap.nodes.length > 0) {
-        // Separate nodes by type/level
-        const subjectNode = mindMap.nodes.find(n => 
-          n.type === NodeType.SUBJECT || n.name === subject.name
-        );
-        const domainNodes = mindMap.nodes.filter(n => 
-          n.type === NodeType.DOMAIN || (n.metadata as any)?.originalType === 'domain'
-        );
-        const topicNodes = mindMap.nodes.filter(n => 
-          n.type === NodeType.CONCEPT || 
-          n.type === NodeType.LEARNING_NODE ||
-          (n.metadata as any)?.originalType === 'topic' || 
-          (n.metadata as any)?.originalType === 'concept'
-        );
-
-        // Canvas size: 1200x1200
-        const centerX = 600;
-        const centerY = 600;
-
-        // Build mind map structure with 3-layer hierarchy
-        const nodesWithLevel: any[] = [];
-
-        // Lớp 1: Subject ở giữa
-        if (subjectNode) {
-          nodesWithLevel.push({
-            id: subjectNode.id,
-            title: subjectNode.name,
-            position: { x: centerX, y: centerY },
-            order: 0,
-            level: 1,
-            type: 'subject',
-            isUnlocked: true,
-            isCompleted: false,
-          });
-        }
-
-        // Lớp 2: Domains xung quanh subject (vòng tròn bán kính 200-250)
-        domainNodes.forEach((domain, index) => {
-          const angle = (index / domainNodes.length) * 2 * Math.PI;
-          const radius = 200 + (domainNodes.length > 6 ? 50 : 0); // Tăng radius nếu có nhiều domains
-          nodesWithLevel.push({
-            id: domain.id,
-            title: domain.name,
-            position: {
-              x: centerX + radius * Math.cos(angle),
-              y: centerY + radius * Math.sin(angle),
-            },
-            order: index + 1,
-            level: 2,
-            type: 'domain',
-            parentId: subjectNode?.id,
-            isUnlocked: true,
-            isCompleted: false,
-          });
-        });
-
-        // Lớp 3: Topics xung quanh domain cha (vòng tròn bán kính 250-350, tùy thuộc vào domain)
-        // Group topics by domain
-        const topicsByDomain = new Map<string, typeof topicNodes>();
-        topicNodes.forEach(topic => {
-          // Tìm domain cha của topic này thông qua edges
-          // Edge type 'part_of' nghĩa là topic là phần của domain, vậy fromNodeId là domain, toNodeId là topic
-          const domainEdge = mindMap.edges.find(e => 
-            e.toNodeId === topic.id && e.type === EdgeType.PART_OF
-          );
-          if (domainEdge) {
-            const domainId = domainEdge.fromNodeId;
-            if (!topicsByDomain.has(domainId)) {
-              topicsByDomain.set(domainId, []);
-            }
-            topicsByDomain.get(domainId)!.push(topic);
-          } else {
-            // Nếu không tìm thấy domain cha, gán vào domain đầu tiên
-            if (domainNodes.length > 0) {
-              const firstDomainId = domainNodes[0].id;
-              if (!topicsByDomain.has(firstDomainId)) {
-                topicsByDomain.set(firstDomainId, []);
-              }
-              topicsByDomain.get(firstDomainId)!.push(topic);
-            }
-          }
-        });
-
-        // Đặt topics xung quanh domain cha
-        domainNodes.forEach((domain, domainIndex) => {
-          const domainTopics = topicsByDomain.get(domain.id) || [];
-          const domainAngle = (domainIndex / domainNodes.length) * 2 * Math.PI;
-          const domainRadius = 200 + (domainNodes.length > 6 ? 50 : 0);
-          const domainX = centerX + domainRadius * Math.cos(domainAngle);
-          const domainY = centerY + domainRadius * Math.sin(domainAngle);
-          
-          domainTopics.forEach((topic, topicIndex) => {
-            // Tính góc xoay quanh domain
-            const topicAngle = (topicIndex / domainTopics.length) * 2 * Math.PI;
-            const topicRadius = 120 + (domainTopics.length > 5 ? 30 : 0); // Tăng radius nếu có nhiều topics
-            const finalAngle = domainAngle + (topicAngle - Math.PI / 2); // Xoay 90 độ
-            
-            nodesWithLevel.push({
-              id: topic.id,
-              title: topic.name,
-              position: {
-                x: domainX + topicRadius * Math.cos(finalAngle),
-                y: domainY + topicRadius * Math.sin(finalAngle),
-              },
-              order: (domainIndex + 1) * 100 + topicIndex,
-              level: 3,
-              type: 'topic',
-              parentId: domain.id,
-              isUnlocked: true,
-              isCompleted: false,
-            });
-          });
-        });
-
-        // Nếu có topics không có domain cha, đặt chúng ở vòng ngoài
-        const orphanTopics = topicNodes.filter(topic => {
-          const hasDomainEdge = mindMap.edges.some(e => 
-            e.toNodeId === topic.id && e.type === EdgeType.PART_OF
-          );
-          return !hasDomainEdge;
-        });
-
-        orphanTopics.forEach((topic, index) => {
-          const angle = (index / Math.max(orphanTopics.length, 1)) * 2 * Math.PI;
-          const radius = 400; // Vòng ngoài cùng cho orphan topics
-          nodesWithLevel.push({
-            id: topic.id,
-            title: topic.name,
-            position: {
-              x: centerX + radius * Math.cos(angle),
-              y: centerY + radius * Math.sin(angle),
-            },
-            order: 10000 + index,
-            level: 3,
-            type: 'topic',
-            isUnlocked: true,
-            isCompleted: false,
-          });
-        });
-
-        mindMapNodes = nodesWithLevel;
-        mindMapEdges = mindMap.edges.map(edge => ({
-          from: edge.fromNodeId,
-          to: edge.toNodeId,
-        }));
-      }
-    } catch (error) {
-      // If knowledge graph doesn't have mind map, fallback to learning nodes
-      console.warn('Could not load mind map from knowledge graph, using learning nodes:', error);
-    }
-
-    // Get all nodes for this subject (for fallback or course outline)
+    // Get all nodes and domains for this subject
     const allNodes = await this.nodesService.findBySubject(subjectId);
     const completedNodeIds = await this.progressService.getCompletedNodes(userId);
-    const availableNodes = await this.nodesService.getAvailableNodes(
-      subjectId,
-      completedNodeIds,
-    );
 
-    // Use mind map if available, otherwise use learning nodes
-    let graphNodes: any[];
-    let edges: Array<{ from: string; to: string }>;
+    // Get domains for this subject
+    let domains = [];
+    try {
+      domains = await this.domainsService.findBySubject(subjectId);
+    } catch (e) {
+      // domains service might fail if no domains exist
+    }
 
-    if (mindMapNodes.length > 0) {
-      // Use mind map from knowledge graph
-      graphNodes = mindMapNodes;
-      edges = mindMapEdges;
-    } else {
-      // Fallback: Build knowledge graph nodes from learning nodes
-      graphNodes = allNodes.map((node) => {
-        const position = node.metadata?.position || {
-          x: (node.order % 3) * 150 + 100,
-          y: Math.floor(node.order / 3) * 150 + 100,
-        };
+    // Build hierarchical mind map: Subject (level 1) -> Domain (level 2) -> Topic (level 3)
+    const graphNodes: Array<any> = [];
+    const edges: Array<{ from: string; to: string }> = [];
 
-        return {
-          id: node.id,
-          title: node.title,
-          position,
-          order: node.order,
-          isUnlocked: availableNodes.some((n) => n.id === node.id),
-          isCompleted: completedNodeIds.includes(node.id),
-        };
+    // Level 1: Subject node
+    const subjectNodeId = `subject-${subjectId}`;
+    graphNodes.push({
+      id: subjectNodeId,
+      title: subject.name,
+      level: 1,
+      parentId: null,
+      position: { x: 400, y: 50 },
+      order: 0,
+      isUnlocked: true,
+      isCompleted: false,
+      nodeType: 'subject',
+    });
+
+    // Level 2: Domain nodes
+    let domainIndex = 0;
+    for (const domain of domains) {
+      const domainNodeId = `domain-${domain.id}`;
+      const xPos = 100 + (domainIndex % 4) * 200;
+      const yPos = 200 + Math.floor(domainIndex / 4) * 150;
+
+      graphNodes.push({
+        id: domainNodeId,
+        title: domain.name,
+        level: 2,
+        parentId: subjectNodeId,
+        position: { x: xPos, y: yPos },
+        order: domainIndex,
+        isUnlocked: true,
+        isCompleted: false,
+        nodeType: 'domain',
+        entityId: domain.id,
       });
 
-      // Build edges from prerequisites
-      edges = [];
-      allNodes.forEach((node) => {
-        if (node.prerequisites && node.prerequisites.length > 0) {
-          node.prerequisites.forEach((prereqId) => {
-            edges.push({ from: prereqId, to: node.id });
-          });
-        }
+      edges.push({ from: subjectNodeId, to: domainNodeId });
+
+      // Level 3: Topic nodes (from topics table)
+      const topics = domain.topics || [];
+      let topicIndex = 0;
+      for (const topic of topics) {
+        const topicNodeId = `topic-${topic.id}`;
+        const topicXPos = xPos - 50 + (topicIndex % 3) * 100;
+        const topicYPos = yPos + 130 + Math.floor(topicIndex / 3) * 100;
+
+        graphNodes.push({
+          id: topicNodeId,
+          title: topic.name,
+          level: 3,
+          parentId: domainNodeId,
+          position: { x: topicXPos, y: topicYPos },
+          order: topic.order || topicIndex,
+          isUnlocked: true,
+          isCompleted: false,
+          nodeType: 'topic',
+          entityId: topic.id,
+        });
+
+        edges.push({ from: domainNodeId, to: topicNodeId });
+        topicIndex++;
+      }
+
+      domainIndex++;
+    }
+
+    // If no domains, fall back to flat learning nodes display
+    if (domains.length === 0 && allNodes.length > 0) {
+      allNodes.forEach((node, idx) => {
+        const position = node.metadata?.position || {
+          x: (idx % 3) * 150 + 100,
+          y: Math.floor(idx / 3) * 150 + 200,
+        };
+
+        graphNodes.push({
+          id: node.id,
+          title: node.title,
+          level: 2,
+          parentId: subjectNodeId,
+          position,
+          order: node.order || idx,
+          isUnlocked: true,
+          isCompleted: completedNodeIds.includes(node.id),
+          nodeType: 'learning_node',
+        });
+
+        edges.push({ from: subjectNodeId, to: node.id });
       });
     }
 
@@ -519,73 +439,52 @@ export class SubjectsService {
   }
 
   /**
-   * Generate learning nodes from knowledge graph topic node
+   * Generate learning nodes from a topic
    */
   async generateLearningNodesFromTopic(
     subjectId: string,
     topicNodeId: string,
-  ): Promise<{ success: boolean; message: string; nodesCount?: number; alreadyExists?: boolean; taskId?: string }> {
+    topicName?: string,
+    topicDescription?: string,
+  ): Promise<{ success: boolean; message: string; nodesCount?: number; alreadyExists?: boolean }> {
     try {
-      // Get knowledge graph topic node
-      const topicNode = await this.knowledgeGraphService.getNodeById(topicNodeId);
-
-      if (!topicNode) {
-        throw new BadRequestException('Topic node not found');
-      }
-
       // Get subject
       const subject = await this.findById(subjectId);
       if (!subject) {
         throw new BadRequestException('Subject not found');
       }
 
-      // Kiểm tra xem đã có learning nodes nào được tạo từ topic này chưa
+      // Check if learning nodes already exist for this topic
       const existingNodes = await this.nodesService.findByTopicNodeId(topicNodeId);
-      
+
       if (existingNodes.length > 0) {
-        // Đã có nodes rồi, không tạo lại
         return {
           success: true,
-          message: `Đã có ${existingNodes.length} bài học cho chủ đề "${topicNode.name}". Đang mở...`,
+          message: `Đã có ${existingNodes.length} bài học cho chủ đề "${topicName || topicNodeId}". Đang mở...`,
           nodesCount: existingNodes.length,
           alreadyExists: true,
         };
       }
 
-      // Chưa có, tạo mới với progress tracking
-      const topicName = topicNode.name;
-      const topicDescription = topicNode.description || `Bài học về ${topicName}`;
-      const numberOfNodes = 5; // Generate 5 learning nodes for each topic
+      // Generate new learning nodes
+      const name = topicName || 'Unknown Topic';
+      const description = topicDescription || `Bài học về ${name}`;
+      const numberOfNodes = 5;
 
-      // Generate taskId
-      const taskId = `task_${subjectId}_${topicNodeId}_${Date.now()}`;
-      
-      // Initialize progress
-      this.generationProgressService.createTask(taskId, numberOfNodes);
-      
-      // Generate learning nodes in background (don't await)
-      this.nodesService.generateNodesFromRawData(
+      await this.nodesService.generateNodesFromRawData(
         subjectId,
-        topicName,
-        topicDescription,
-        [topicName], // Use topic name as the topic/chapter
+        name,
+        description,
+        [name],
         numberOfNodes,
-        topicNodeId, // Pass topicNodeId để lưu vào metadata
-        taskId, // Pass taskId để track progress
-      ).catch((error) => {
-        console.error('Error generating learning nodes in background:', error);
-        this.generationProgressService.updateProgress(taskId, {
-          status: 'error',
-          error: error.message,
-        });
-      });
+        topicNodeId,
+      );
 
       return {
         success: true,
-        message: `Đang tạo ${numberOfNodes} bài học cho chủ đề "${topicName}"...`,
+        message: `Đang tạo ${numberOfNodes} bài học cho chủ đề "${name}"...`,
         nodesCount: numberOfNodes,
         alreadyExists: false,
-        taskId,
       };
     } catch (error) {
       console.error('Error generating learning nodes from topic:', error);

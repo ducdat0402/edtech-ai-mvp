@@ -27,6 +27,9 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
   int _currentTutorialStep = 0;
   bool _showTutorial = false;
   bool _dontShowAgain = false;
+  String _userRole = 'user';
+
+  bool get _isContributor => _userRole == 'contributor' || _userRole == 'admin';
   
   // Mind map interaction state
   int _currentLevel = 1; // 1 = Subject, 2 = Domains, 3 = Topics
@@ -60,9 +63,14 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
   Future<void> _loadSubjectIntro() async {
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
-      final data = await apiService.getSubjectIntro(widget.subjectId);
+      final results = await Future.wait([
+        apiService.getSubjectIntro(widget.subjectId),
+        apiService.getUserProfile(),
+      ]);
       setState(() {
-        _introData = data;
+        _introData = results[0];
+        final profile = results[1];
+        _userRole = profile['role'] as String? ?? 'user';
         _isLoading = false;
       });
     } catch (e) {
@@ -104,6 +112,116 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
     if (_currentTutorialStep > 0) {
       setState(() => _currentTutorialStep--);
     }
+  }
+
+  void _showTopicInfoDialog(Map<String, dynamic> nodeData) {
+    final title = nodeData['title'] as String? ?? 'Chủ đề';
+    final isCompleted = nodeData['isCompleted'] as bool? ?? false;
+    final isUnlocked = nodeData['isUnlocked'] as bool? ?? false;
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return Container(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: isCompleted
+                          ? Colors.green.shade50
+                          : isUnlocked
+                              ? Colors.teal.shade50
+                              : Colors.grey.shade100,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      isCompleted
+                          ? Icons.check_circle
+                          : isUnlocked
+                              ? Icons.article
+                              : Icons.lock_outline,
+                      color: isCompleted
+                          ? Colors.green
+                          : isUnlocked
+                              ? Colors.teal
+                              : Colors.grey,
+                      size: 28,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          isCompleted
+                              ? 'Đã hoàn thành'
+                              : isUnlocked
+                                  ? 'Đã mở khóa'
+                                  : 'Chưa mở khóa',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: isCompleted ? Colors.green : isUnlocked ? Colors.teal : Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.amber.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.amber.shade200),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline, color: Colors.amber.shade700, size: 22),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Bản đồ kiến thức chỉ hiển thị tới cấp chủ đề. Hãy vào "Lộ trình cá nhân" để xem chi tiết bài học.',
+                        style: TextStyle(fontSize: 13, color: Colors.amber.shade800, height: 1.4),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.purple,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  child: const Text('Đã hiểu', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   Future<void> _handleTopicClick(String topicNodeId, String topicTitle) async {
@@ -368,6 +486,9 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
                               // Domains list
                               _buildDomainsList(),
                               const SizedBox(height: 24),
+
+                              // Contributor: nút vào mind map editor
+                              if (_isContributor) _buildContributorQuickAccess(),
                             ],
                           ),
                         ),
@@ -420,6 +541,61 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
     );
   }
 
+  Widget _buildContributorQuickAccess() {
+    final subjectName = _introData?['subject']?['name'] as String? ?? '';
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.contributorBlue.withOpacity(0.06),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.contributorBlue.withOpacity(0.2)),
+      ),
+      child: InkWell(
+        onTap: () async {
+          await context.push(
+            '/contributor/mind-map?subjectId=${widget.subjectId}&subjectName=${Uri.encodeComponent(subjectName)}',
+          );
+          // Reload data when returning from mind map editor
+          _loadSubjectIntro();
+        },
+        borderRadius: BorderRadius.circular(16),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppColors.contributorBlue.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(Icons.account_tree, color: AppColors.contributorBlue, size: 24),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Chỉnh sửa cấu trúc môn học',
+                    style: AppTextStyles.labelLarge.copyWith(
+                      color: AppColors.contributorBlue,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Thêm domain, topic, bài học dạng mind map',
+                    style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right, color: AppColors.contributorBlue),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildMindMapButtons() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -462,12 +638,22 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
             const SizedBox(width: 8),
             Expanded(
               child: _CompactMindMapButton(
-                title: 'Cá nhân',
-                icon: Icons.person_rounded,
-                color: AppColors.purpleNeon,
+                title: _isContributor ? 'Chỉnh sửa' : 'Cá nhân',
+                icon: _isContributor ? Icons.edit_note_rounded : Icons.person_rounded,
+                color: _isContributor ? AppColors.contributorBlue : AppColors.purpleNeon,
                 isSelected: false,
-                onTap: () {
-                  // Navigate to learning path choice screen
+                onTap: () async {
+                  if (_isContributor) {
+                    // Contributor: navigate to mind map editor
+                    final subjectName = _introData?['subject']?['name'] ?? '';
+                    await context.push(
+                      '/contributor/mind-map?subjectId=${widget.subjectId}&subjectName=${Uri.encodeComponent(subjectName)}',
+                    );
+                    // Reload data when returning from mind map editor
+                    _loadSubjectIntro();
+                    return;
+                  }
+                  // Learner: navigate to learning path choice screen
                   context.push('/subjects/${widget.subjectId}/learning-path-choice');
                 },
               ),
@@ -815,8 +1001,8 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
                           _selectedDomainNodeId = nodeId;
                         });
                       } else if (level == 3) {
-                        // Click vào Topic: Generate learning nodes
-                        _handleTopicClick(nodeId, title);
+                        // Click vào Topic: chỉ hiện thông tin, không mở learning nodes
+                        _showTopicInfoDialog(nodeData);
                       }
                     },
                     child: Container(
@@ -940,8 +1126,7 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
         );
       }
 
-      // Generate skill tree
-      await apiService.generateSkillTree(widget.subjectId);
+      // Skill tree generation removed (tables dropped)
 
       // Close loading
       if (mounted) {

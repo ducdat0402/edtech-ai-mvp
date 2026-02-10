@@ -24,7 +24,7 @@ export class UserProgress {
   @Column()
   userId: string;
 
-  @ManyToOne(() => LearningNode)
+  @ManyToOne(() => LearningNode, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'nodeId' })
   node: LearningNode;
 
@@ -33,11 +33,14 @@ export class UserProgress {
 
   @Column({ type: 'jsonb', default: {} })
   completedItems: {
-    concepts: string[]; // ContentItem IDs
+    concepts: string[];
     examples: string[];
     hiddenRewards: string[];
     bossQuiz: string[];
   };
+
+  @Column({ type: 'jsonb', default: [] })
+  completedLessonTypes: string[]; // e.g. ['image_quiz', 'video']
 
   @Column({ type: 'float', default: 0 })
   progressPercentage: number; // 0-100

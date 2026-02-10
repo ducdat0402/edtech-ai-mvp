@@ -177,10 +177,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
 
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
-      final result = await apiService.generateContentByDifficulty(
-        widget.nodeId,
-        difficulty,
-      );
+      // Old difficulty-based content generation removed
+      final Map<String, dynamic> result = {'message': 'Feature removed'};
 
       // Close loading dialog
       if (mounted) Navigator.pop(context);
@@ -264,14 +262,76 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
 
-      // Load node detail, progress, and content items in parallel
+      // Load node detail and progress in parallel
       final results = await Future.wait([
         apiService.getNodeDetail(widget.nodeId),
         apiService.getNodeProgress(widget.nodeId),
-        apiService.getContentByNode(widget.nodeId),
       ]);
 
       final nodeData = results[0] as Map<String, dynamic>;
+
+      // Check if this node has lesson type contents - redirect to types overview
+      final lessonType = nodeData['lessonType'] as String?;
+      if (lessonType != null && mounted) {
+        final title = nodeData['title'] as String? ?? 'Bài học';
+
+        // Try to fetch lesson type contents from the new table
+        try {
+          final typesData = await apiService.getLessonTypeContents(widget.nodeId);
+          final contents = typesData['contents'] as List<dynamic>? ?? [];
+
+          if (contents.length > 1) {
+            // Multiple types -> show types overview screen
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                context.push('/lessons/${widget.nodeId}/types', extra: {
+                  'title': title,
+                });
+              }
+            });
+            return;
+          } else if (contents.length == 1) {
+            // Single type -> go directly to viewer using data from lesson_type_contents
+            final singleContent = contents[0] as Map<String, dynamic>;
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                context.push('/lessons/${widget.nodeId}/view', extra: {
+                  'lessonType': singleContent['lessonType'] as String,
+                  'lessonData': singleContent['lessonData'] as Map<String, dynamic>? ?? {},
+                  'title': title,
+                  'endQuiz': singleContent['endQuiz'] as Map<String, dynamic>?,
+                });
+              }
+            });
+            return;
+          }
+        } catch (_) {
+          // Fallback: use legacy data from node
+        }
+
+        // Fallback: use legacy lessonType/lessonData from the node itself
+        Map<String, dynamic> lessonData;
+        Map<String, dynamic>? endQuiz;
+        try {
+          final fullLessonData = await apiService.getLessonData(widget.nodeId);
+          lessonData = fullLessonData['lessonData'] as Map<String, dynamic>? ?? {};
+          endQuiz = fullLessonData['endQuiz'] as Map<String, dynamic>?;
+        } catch (_) {
+          lessonData = nodeData['lessonData'] as Map<String, dynamic>? ?? {};
+          endQuiz = nodeData['endQuiz'] as Map<String, dynamic>?;
+        }
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            context.push('/lessons/${widget.nodeId}/view', extra: {
+              'lessonType': lessonType,
+              'lessonData': lessonData,
+              'title': title,
+              'endQuiz': endQuiz,
+            });
+          }
+        });
+        return;
+      }
 
       final allContent = results[2] as List<dynamic>;
       
@@ -627,12 +687,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                       final apiService =
                           Provider.of<ApiService>(context, listen: false);
 
-                      // Mark as complete
-                      await apiService.completeContentItem(
-                        nodeId: nodeId,
-                        contentItemId: itemId,
-                        itemType: itemType,
-                      );
+                      // Mark node as complete
+                      await apiService.completeNode(nodeId);
 
                       // Close dialog
                       if (context.mounted) {
@@ -2887,7 +2943,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
 
     try {
       final apiService = context.read<ApiService>();
-      final history = await apiService.getHistoryForContent(contentItemId);
+      final List<dynamic> history = []; // Content edit history removed
 
       if (!mounted) return;
       Navigator.pop(context); // Close loading
@@ -3088,7 +3144,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
 
     try {
       final apiService = context.read<ApiService>();
-      final versions = await apiService.getVersionsForContent(contentItemId);
+      final List<dynamic> versions = []; // Content versions removed
 
       if (!mounted) return;
       Navigator.pop(context); // Close loading
@@ -3343,7 +3399,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
         return;
       }
 
-      final comparison = await apiService.getEditComparison(editId);
+      final Map<String, dynamic> comparison = {}; // Edit comparison removed
 
       if (!mounted) return;
       Navigator.pop(context); // Close loading
@@ -3470,7 +3526,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
 
     try {
       final apiService = context.read<ApiService>();
-      await apiService.revertToVersion(versionId);
+      // Old version revert removed
+      throw Exception('Content version system removed');
 
       if (!mounted) return;
       Navigator.pop(context); // Close loading

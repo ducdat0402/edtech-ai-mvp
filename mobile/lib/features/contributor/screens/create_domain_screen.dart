@@ -23,12 +23,41 @@ class _CreateDomainScreenState extends State<CreateDomainScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
+  final _expController = TextEditingController(text: '100');
+  final _coinController = TextEditingController(text: '50');
   bool _isSubmitting = false;
+  bool _isLoading = true;
+
+  // New fields
+  String _difficulty = 'medium';
+  String? _afterEntityId; // null = first
+  List<Map<String, dynamic>> _existingDomains = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadExistingDomains();
+  }
+
+  Future<void> _loadExistingDomains() async {
+    try {
+      final apiService = Provider.of<ApiService>(context, listen: false);
+      final domains = await apiService.getDomainsBySubject(widget.subjectId);
+      setState(() {
+        _existingDomains = domains.cast<Map<String, dynamic>>();
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() => _isLoading = false);
+    }
+  }
 
   @override
   void dispose() {
     _nameController.dispose();
     _descriptionController.dispose();
+    _expController.dispose();
+    _coinController.dispose();
     super.dispose();
   }
 
@@ -42,6 +71,10 @@ class _CreateDomainScreenState extends State<CreateDomainScreen> {
         name: _nameController.text.trim(),
         subjectId: widget.subjectId,
         description: _descriptionController.text.trim(),
+        difficulty: _difficulty,
+        afterEntityId: _afterEntityId,
+        expReward: int.tryParse(_expController.text) ?? 100,
+        coinReward: int.tryParse(_coinController.text) ?? 50,
       );
 
       if (!mounted) return;
@@ -69,7 +102,7 @@ class _CreateDomainScreenState extends State<CreateDomainScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.cyanNeon.withOpacity(0.15),
+                color: AppColors.cyanNeon.withAlpha(38),
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.check_circle_outline, color: AppColors.cyanNeon, size: 48),
@@ -110,98 +143,145 @@ class _CreateDomainScreenState extends State<CreateDomainScreen> {
           onPressed: () => context.pop(),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Info banner
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.cyanNeon.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: AppColors.cyanNeon.withOpacity(0.3)),
-                ),
-                child: Row(
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.folder_open, color: AppColors.cyanNeon, size: 24),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                    // Info banner
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColors.cyanNeon.withAlpha(25),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: AppColors.cyanNeon.withAlpha(76)),
+                      ),
+                      child: Row(
                         children: [
-                          Text(
-                            'Tạo Domain cho: ${widget.subjectName ?? 'môn học'}',
-                            style: AppTextStyles.labelMedium.copyWith(color: AppColors.cyanNeon, fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Domain là nhóm các chủ đề/bài học. Ví dụ: "Cơ bản", "Nâng cao"...',
-                            style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+                          Icon(Icons.folder_open, color: AppColors.cyanNeon, size: 24),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Tạo Domain cho: ${widget.subjectName ?? 'môn học'}',
+                                  style: AppTextStyles.labelMedium.copyWith(color: AppColors.cyanNeon, fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Domain là nhóm các chủ đề/bài học. Ví dụ: "Cơ bản", "Nâng cao"...',
+                                  style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+                                ),
+                              ],
+                            ),
                           ),
                         ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Name
+                    _buildLabel('Tên Domain *'),
+                    const SizedBox(height: 8),
+                    _buildTextField(
+                      controller: _nameController,
+                      hint: 'VD: Kiến thức cơ bản, Kỹ thuật nâng cao...',
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) return 'Vui lòng nhập tên domain';
+                        if (v.trim().length < 2) return 'Tên quá ngắn';
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Description
+                    _buildLabel('Mô tả'),
+                    const SizedBox(height: 8),
+                    _buildTextField(
+                      controller: _descriptionController,
+                      hint: 'Mô tả ngắn gọn về nhóm bài học này...',
+                      maxLines: 3,
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Difficulty
+                    _buildLabel('Độ khó *'),
+                    const SizedBox(height: 8),
+                    _buildDifficultySelector(),
+                    const SizedBox(height: 20),
+
+                    // Order after
+                    _buildLabel('Thứ tự sau'),
+                    const SizedBox(height: 8),
+                    _buildOrderAfterSelector(
+                      items: _existingDomains,
+                      selectedId: _afterEntityId,
+                      emptyLabel: 'Đây là domain đầu tiên',
+                      onChanged: (id) => setState(() => _afterEntityId = id),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // EXP & Coin
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildLabel('EXP nhận được'),
+                              const SizedBox(height: 8),
+                              _buildNumberField(controller: _expController, icon: Icons.star, iconColor: Colors.amber),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildLabel('Coin nhận được'),
+                              const SizedBox(height: 8),
+                              _buildNumberField(controller: _coinController, icon: Icons.monetization_on, iconColor: Colors.orangeAccent),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 32),
+
+                    // Submit
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: ElevatedButton(
+                        onPressed: _isSubmitting ? null : _handleSubmit,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.contributorBlue,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          disabledBackgroundColor: AppColors.contributorBlue.withAlpha(127),
+                        ),
+                        child: _isSubmitting
+                            ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                            : Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.send, size: 20),
+                                  const SizedBox(width: 8),
+                                  Text('Gửi yêu cầu duyệt', style: AppTextStyles.labelLarge.copyWith(color: Colors.white, fontWeight: FontWeight.bold)),
+                                ],
+                              ),
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 24),
-
-              // Name
-              _buildLabel('Tên Domain *'),
-              const SizedBox(height: 8),
-              _buildTextField(
-                controller: _nameController,
-                hint: 'VD: Kiến thức cơ bản, Kỹ thuật nâng cao...',
-                validator: (v) {
-                  if (v == null || v.trim().isEmpty) return 'Vui lòng nhập tên domain';
-                  if (v.trim().length < 2) return 'Tên quá ngắn';
-                  return null;
-                },
-              ),
-              const SizedBox(height: 20),
-
-              // Description
-              _buildLabel('Mô tả'),
-              const SizedBox(height: 8),
-              _buildTextField(
-                controller: _descriptionController,
-                hint: 'Mô tả ngắn gọn về nhóm bài học này...',
-                maxLines: 3,
-              ),
-              const SizedBox(height: 32),
-
-              // Submit
-              SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: ElevatedButton(
-                  onPressed: _isSubmitting ? null : _handleSubmit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.contributorBlue,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                    disabledBackgroundColor: AppColors.contributorBlue.withOpacity(0.5),
-                  ),
-                  child: _isSubmitting
-                      ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                      : Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.send, size: 20),
-                            const SizedBox(width: 8),
-                            Text('Gửi yêu cầu duyệt', style: AppTextStyles.labelLarge.copyWith(color: Colors.white, fontWeight: FontWeight.bold)),
-                          ],
-                        ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 
@@ -229,6 +309,152 @@ class _CreateDomainScreenState extends State<CreateDomainScreen> {
         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.contributorBorder)),
         focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.contributorBlue, width: 2)),
         errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.errorNeon)),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      ),
+    );
+  }
+
+  Widget _buildDifficultySelector() {
+    final options = [
+      {'value': 'easy', 'label': 'Dễ', 'icon': Icons.sentiment_satisfied, 'color': Colors.green},
+      {'value': 'medium', 'label': 'Trung bình', 'icon': Icons.sentiment_neutral, 'color': Colors.orange},
+      {'value': 'hard', 'label': 'Khó', 'icon': Icons.sentiment_very_dissatisfied, 'color': Colors.red},
+    ];
+
+    return Row(
+      children: options.map((opt) {
+        final isSelected = _difficulty == opt['value'];
+        final color = opt['color'] as Color;
+        return Expanded(
+          child: GestureDetector(
+            onTap: () => setState(() => _difficulty = opt['value'] as String),
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              decoration: BoxDecoration(
+                color: isSelected ? color.withAlpha(30) : AppColors.contributorBgSecondary,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: isSelected ? color : AppColors.contributorBorder,
+                  width: isSelected ? 2 : 1,
+                ),
+              ),
+              child: Column(
+                children: [
+                  Icon(opt['icon'] as IconData, color: isSelected ? color : AppColors.textTertiary, size: 24),
+                  const SizedBox(height: 4),
+                  Text(
+                    opt['label'] as String,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: isSelected ? color : AppColors.textSecondary,
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildOrderAfterSelector({
+    required List<Map<String, dynamic>> items,
+    required String? selectedId,
+    required String emptyLabel,
+    required ValueChanged<String?> onChanged,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: AppColors.contributorBgSecondary,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.contributorBorder),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String?>(
+          value: selectedId,
+          isExpanded: true,
+          dropdownColor: AppColors.contributorBgSecondary,
+          style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary),
+          icon: Icon(Icons.arrow_drop_down, color: AppColors.textSecondary),
+          items: [
+            DropdownMenuItem<String?>(
+              value: null,
+              child: Row(
+                children: [
+                  Icon(Icons.first_page, size: 18, color: AppColors.contributorBlue),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      items.isEmpty ? emptyLabel : 'Đặt ở vị trí đầu tiên',
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: AppColors.textPrimary,
+                        fontStyle: items.isEmpty ? FontStyle.italic : FontStyle.normal,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            ...items.asMap().entries.map((entry) {
+              final item = entry.value;
+              final idx = entry.key;
+              return DropdownMenuItem<String?>(
+                value: item['id'] as String?,
+                child: Row(
+                  children: [
+                    Container(
+                      width: 22,
+                      height: 22,
+                      decoration: BoxDecoration(
+                        color: AppColors.contributorBlue.withAlpha(30),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        '${idx + 1}',
+                        style: AppTextStyles.bodySmall.copyWith(color: AppColors.contributorBlue, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        'Sau: ${item['name'] ?? ''}',
+                        style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+          ],
+          onChanged: onChanged,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNumberField({
+    required TextEditingController controller,
+    required IconData icon,
+    required Color iconColor,
+  }) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: TextInputType.number,
+      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+      style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary),
+      decoration: InputDecoration(
+        prefixIcon: Icon(icon, color: iconColor, size: 20),
+        filled: true,
+        fillColor: AppColors.contributorBgSecondary,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.contributorBorder)),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.contributorBorder)),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.contributorBlue, width: 2)),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
     );

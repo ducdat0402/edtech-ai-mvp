@@ -8,7 +8,7 @@ import {
   PersonalMindMapEdge,
 } from './entities/personal-mind-map.entity';
 import { AiService } from '../ai/ai.service';
-import { KnowledgeGraphService } from '../knowledge-graph/knowledge-graph.service';
+import { DomainsService } from '../domains/domains.service';
 import { LearningNode } from '../learning-nodes/entities/learning-node.entity';
 import { UserPremium } from '../payment/entities/user-premium.entity';
 
@@ -65,7 +65,7 @@ export class PersonalMindMapService {
     @InjectRepository(UserPremium)
     private userPremiumRepo: Repository<UserPremium>,
     private aiService: AiService,
-    private knowledgeGraphService: KnowledgeGraphService,
+    private domainsService: DomainsService,
   ) {}
 
   /**
@@ -89,6 +89,31 @@ export class PersonalMindMapService {
   }
 
   /**
+   * Get subject mind map data from domains and learning nodes (replaces KnowledgeGraphService.getMindMapForSubject)
+   */
+  private async getSubjectMindMapData(subjectId: string): Promise<{ nodes: any[]; edges: any[] }> {
+    const domains = await this.domainsService.findBySubject(subjectId);
+    const learningNodes = await this.learningNodeRepo.find({
+      where: { subjectId },
+      order: { order: 'ASC' },
+    });
+
+    const nodes: any[] = [];
+    // No subject node needed from KG - we get subject name from other sources
+    // Add domain nodes
+    for (const domain of domains) {
+      nodes.push({
+        id: domain.id,
+        name: domain.name,
+        type: 'domain',
+        description: domain.description,
+      });
+    }
+
+    return { nodes, edges: [] };
+  }
+
+  /**
    * Bắt đầu chat session để tạo lộ trình - HỎI DỰA TRÊN NỘI DUNG MÔN HỌC
    */
   async startSubjectChat(
@@ -105,13 +130,8 @@ export class PersonalMindMapService {
   }> {
     const key = this.getSessionKey(userId, subjectId);
 
-    // Lấy thông tin môn học
-    const subjectMindMap = await this.knowledgeGraphService.getMindMapForSubject(subjectId);
-    if (!subjectMindMap || subjectMindMap.nodes.length === 0) {
-      throw new NotFoundException('Không tìm thấy thông tin môn học');
-    }
-
-    const subjectNode = subjectMindMap.nodes.find((n: any) => n.type === 'subject');
+    // Lấy thông tin môn học từ domains và learning nodes
+    const subjectMindMap = await this.getSubjectMindMapData(subjectId);
     const domains = subjectMindMap.nodes.filter((n: any) => n.type === 'domain');
 
     // Lấy LearningNodes
@@ -128,7 +148,7 @@ export class PersonalMindMapService {
     const session: SubjectChatSession = {
       userId,
       subjectId,
-      subjectName: subjectNode?.name || 'Môn học',
+      subjectName: domains.length > 0 ? domains[0].name : 'Môn học',
       messages: [],
       extractedData: {},
       domains: domains.map((d: any) => ({ id: d.id, name: d.name, description: d.description })),
@@ -350,11 +370,8 @@ CHỈ TRẢ VỀ JSON.`;
     // Tạo learning goal từ extracted data
     const learningGoal = this.buildLearningGoalFromChat(session);
 
-    // Lấy mind map môn học
-    const subjectMindMap = await this.knowledgeGraphService.getMindMapForSubject(subjectId);
-    if (!subjectMindMap || subjectMindMap.nodes.length === 0) {
-      throw new NotFoundException('Không tìm thấy mind map môn học');
-    }
+    // Lấy mind map môn học từ domains
+    const subjectMindMap = await this.getSubjectMindMapData(subjectId);
 
     // Tạo lộ trình cá nhân hóa
     const personalizedPlan = await this.generateSmartPlan(
@@ -481,11 +498,8 @@ CHỈ TRẢ VỀ JSON.`;
     // Delete old mind map if exists
     await this.personalMindMapRepo.delete({ userId, subjectId });
 
-    // Get subject mind map
-    const subjectMindMap = await this.knowledgeGraphService.getMindMapForSubject(subjectId);
-    if (!subjectMindMap || subjectMindMap.nodes.length === 0) {
-      throw new NotFoundException('Không tìm thấy mind map môn học');
-    }
+    // Get subject mind map from domains
+    const subjectMindMap = await this.getSubjectMindMapData(subjectId);
 
     // Build learning goal from test results
     const learningGoal = this.buildLearningGoalFromTest(testResults);
@@ -611,6 +625,12 @@ CHỈ TRẢ VỀ JSON.`;
         .filter(a => a.score < 50 || a.level === 'beginner')
         .map(a => a.topicId)
     );
+
+    const strongTopicIds = new Set(
+      testResults.topicAssessments
+        .filter(a => a.score >= 70 || a.level === 'advanced')
+        .map(a => a.topicId)
+    );
     
     const prioritizedNodes = [...learningNodes].sort((a, b) => {
       const aIsWeak = weakTopicIds.has(a.id);
@@ -635,13 +655,14 @@ ${testResults.topicAssessments.map(a => `- ${a.topicId}: ${a.score}% (${a.level}
 MÔN HỌC: ${subjectNode?.name || 'Không xác định'}
 
 ⚠️ DANH SÁCH BÀI HỌC CÓ SẴN (BẮT BUỘC CHỌN TỪ DANH SÁCH NÀY):
-${prioritizedNodes.map((ln, i) => `${i + 1}. "${ln.title}" (ID: ${ln.id})${weakTopicIds.has(ln.id) ? ' [CẦN CẢI THIỆN]' : ''}`).join('\n')}
+${prioritizedNodes.map((ln, i) => `${i + 1}. "${ln.title}" (ID: ${ln.id})${weakTopicIds.has(ln.id) ? ' [CẦN CẢI THIỆN]' : strongTopicIds.has(ln.id) ? ' [ĐIỂM MẠNH]' : ''}`).join('\n')}
 
 YÊU CẦU TẠO LỘ TRÌNH:
 1. ƯU TIÊN các bài học [CẦN CẢI THIỆN] lên đầu lộ trình
-2. ${level === 'advanced' ? 'Bỏ qua các bài quá cơ bản, tập trung bài chuyên sâu' : level === 'intermediate' ? 'Ôn lại phần yếu, sau đó học nâng cao' : 'Bắt đầu từ cơ bản, củng cố nền tảng'}
-3. CHỈ ĐƯỢC CHỌN TỪ DANH SÁCH Ở TRÊN (dùng đúng ID)
-4. Số lượng bài: ${level === 'beginner' ? '8-12' : level === 'intermediate' ? '10-15' : '12-18'} bài
+2. THÊM các bài [ĐIỂM MẠNH] để ôn tập và nâng cao
+3. ${level === 'advanced' ? 'Bỏ qua các bài quá cơ bản, tập trung bài chuyên sâu' : level === 'intermediate' ? 'Ôn lại phần yếu, sau đó học nâng cao' : 'Bắt đầu từ cơ bản, củng cố nền tảng'}
+4. CHỈ ĐƯỢC CHỌN TỪ DANH SÁCH Ở TRÊN (dùng đúng ID)
+5. Số lượng bài: ${level === 'beginner' ? '8-12' : level === 'intermediate' ? '10-15' : '12-18'} bài
 
 Trả về JSON:
 {
@@ -651,9 +672,10 @@ Trả về JSON:
       "title": "tên bài",
       "priority": "high" | "medium" | "low",
       "estimatedDays": number,
-      "reason": "lý do (ví dụ: 'Cần cải thiện từ bài kiểm tra')",
+      "reason": "lý do (ví dụ: 'Cần cải thiện từ bài kiểm tra' hoặc 'Đã nắm vững - ôn tập')",
       "difficulty": "easy" | "medium" | "hard",
-      "isWeakArea": true/false
+      "isWeakArea": true/false,
+      "isStrongArea": true/false
     }
   ],
   "learningPath": ["id1", "id2", ...],
@@ -684,6 +706,7 @@ CHỈ TRẢ VỀ JSON.`;
         learningNodeMap,
         level,
         weakTopicIds,
+        strongTopicIds,
       );
     } catch (error) {
       console.error('Error generating plan from test:', error);
@@ -702,6 +725,7 @@ CHỈ TRẢ VỀ JSON.`;
     learningNodeMap: Map<string, LearningNode>,
     level: string,
     weakTopicIds: Set<string>,
+    strongTopicIds: Set<string>,
   ): { nodes: PersonalMindMapNode[]; edges: PersonalMindMapEdge[] } {
     const nodes: PersonalMindMapNode[] = [];
     const edges: PersonalMindMapEdge[] = [];
@@ -718,16 +742,25 @@ CHỈ TRẢ VỀ JSON.`;
     };
     nodes.push(goalNode);
 
-    // Create milestone nodes for organization
-    const weakLessons = (aiPlan.selectedLessons || []).filter((l: any) => 
+    // Split lessons into 3 categories: weak, strong, other
+    const allLessons = aiPlan.selectedLessons || [];
+    const weakLessons = allLessons.filter((l: any) => 
       weakTopicIds.has(l.learningNodeId) || l.isWeakArea
     );
-    const otherLessons = (aiPlan.selectedLessons || []).filter((l: any) => 
-      !weakTopicIds.has(l.learningNodeId) && !l.isWeakArea
+    const strongLessons = allLessons.filter((l: any) => 
+      !weakTopicIds.has(l.learningNodeId) && !l.isWeakArea &&
+      (strongTopicIds.has(l.learningNodeId) || l.isStrongArea)
+    );
+    const otherLessons = allLessons.filter((l: any) => 
+      !weakTopicIds.has(l.learningNodeId) && !l.isWeakArea &&
+      !strongTopicIds.has(l.learningNodeId) && !l.isStrongArea
     );
 
     let yOffset = 100;
     let edgeIndex = 0;
+
+    // Track first milestone for auto-unlock
+    let firstMilestoneUnlocked = false;
 
     // Add "Cần cải thiện" milestone if there are weak areas
     if (weakLessons.length > 0) {
@@ -738,9 +771,10 @@ CHỈ TRẢ VỀ JSON.`;
         level: 2,
         parentId: 'goal-root',
         position: { x: -200, y: yOffset },
-        status: 'not_started',
+        status: !firstMilestoneUnlocked ? 'in_progress' : 'not_started',
         priority: 'high',
       };
+      firstMilestoneUnlocked = true;
       nodes.push(weakMilestone);
       edges.push({
         id: `edge-${edgeIndex++}`,
@@ -762,7 +796,7 @@ CHỈ TRẢ VỀ JSON.`;
           level: 3,
           parentId: 'milestone-weak',
           position: { x: -200, y: yOffset },
-          status: 'not_started',
+          status: weakMilestone.status === 'in_progress' && index === 0 ? 'in_progress' : 'not_started',
           priority: 'high',
           estimatedDays: lesson.estimatedDays || 1,
           metadata: {
@@ -802,9 +836,10 @@ CHỈ TRẢ VỀ JSON.`;
         level: 2,
         parentId: 'goal-root',
         position: { x: 200, y: yOffset },
-        status: 'not_started',
+        status: !firstMilestoneUnlocked ? 'in_progress' : 'not_started',
         priority: 'medium',
       };
+      firstMilestoneUnlocked = true;
       nodes.push(otherMilestone);
 
       // Connect to previous section
@@ -838,7 +873,7 @@ CHỈ TRẢ VỀ JSON.`;
           level: 3,
           parentId: 'milestone-other',
           position: { x: 200, y: yOffset },
-          status: 'not_started',
+          status: otherMilestone.status === 'in_progress' && index === 0 ? 'in_progress' : 'not_started',
           priority: lesson.priority || 'medium',
           estimatedDays: lesson.estimatedDays || 1,
           metadata: {
@@ -858,6 +893,78 @@ CHỈ TRẢ VỀ JSON.`;
           });
         } else {
           const prevLessonId = `lesson-${otherLessons[index - 1].learningNodeId}`;
+          edges.push({
+            id: `edge-${edgeIndex++}`,
+            from: prevLessonId,
+            to: lessonNode.id,
+            type: 'leads_to',
+          });
+        }
+      });
+    }
+
+    // Add "Điểm mạnh" milestone for strong areas
+    if (strongLessons.length > 0) {
+      yOffset += 100;
+      const strongMilestone: PersonalMindMapNode = {
+        id: 'milestone-strong',
+        title: '✅ Điểm mạnh',
+        description: `${strongLessons.length} bài đã nắm vững - ôn lại khi cần`,
+        level: 2,
+        parentId: 'goal-root',
+        position: { x: 0, y: yOffset },
+        status: !firstMilestoneUnlocked ? 'in_progress' : 'not_started',
+        priority: 'low',
+      };
+      firstMilestoneUnlocked = true;
+      nodes.push(strongMilestone);
+
+      // Connect to previous section
+      const lastMilestoneId = otherLessons.length > 0
+        ? `lesson-${otherLessons[otherLessons.length - 1].learningNodeId}`
+        : weakLessons.length > 0
+          ? `lesson-${weakLessons[weakLessons.length - 1].learningNodeId}`
+          : 'goal-root';
+      edges.push({
+        id: `edge-${edgeIndex++}`,
+        from: lastMilestoneId,
+        to: 'milestone-strong',
+        type: 'leads_to',
+      });
+
+      // Add strong area lessons
+      strongLessons.forEach((lesson: any, index: number) => {
+        const learningNode = learningNodeMap.get(lesson.learningNodeId);
+        if (!learningNode) return;
+
+        yOffset += 80;
+        const lessonNode: PersonalMindMapNode = {
+          id: `lesson-${lesson.learningNodeId}`,
+          title: `🟢 ${lesson.title || learningNode.title}`,
+          description: lesson.reason || 'Đã nắm vững từ bài kiểm tra',
+          level: 3,
+          parentId: 'milestone-strong',
+          position: { x: 0, y: yOffset },
+          status: strongMilestone.status === 'in_progress' && index === 0 ? 'in_progress' : 'not_started',
+          priority: 'low',
+          estimatedDays: lesson.estimatedDays || 1,
+          metadata: {
+            linkedLearningNodeId: lesson.learningNodeId,
+            linkedLearningNodeTitle: learningNode.title,
+            hasLearningContent: true,
+          },
+        };
+        nodes.push(lessonNode);
+
+        if (index === 0) {
+          edges.push({
+            id: `edge-${edgeIndex++}`,
+            from: 'milestone-strong',
+            to: lessonNode.id,
+            type: 'leads_to',
+          });
+        } else {
+          const prevLessonId = `lesson-${strongLessons[index - 1].learningNodeId}`;
           edges.push({
             id: `edge-${edgeIndex++}`,
             from: prevLessonId,
@@ -909,13 +1016,8 @@ CHỈ TRẢ VỀ JSON.`;
       };
     }
 
-    // Lấy mind map môn học
-    const subjectMindMap =
-      await this.knowledgeGraphService.getMindMapForSubject(subjectId);
-
-    if (!subjectMindMap || subjectMindMap.nodes.length === 0) {
-      throw new NotFoundException('Không tìm thấy mind map môn học');
-    }
+    // Lấy mind map môn học từ domains
+    const subjectMindMap = await this.getSubjectMindMapData(subjectId);
 
     // Tạo learning goal từ onboarding data
     const learningGoal = this.buildLearningGoalFromOnboarding(onboardingData);
@@ -1198,6 +1300,9 @@ CHỈ TRẢ VỀ JSON.`;
     let yOffset = 150;
     let prevNodeId = goalNode.id;
 
+    // Track whether we've set the first milestone
+    let firstMilestoneSet = false;
+
     // Tạo milestone cho Easy lessons
     if (easyLessons.length > 0) {
       const milestoneEasy: PersonalMindMapNode = {
@@ -1207,10 +1312,11 @@ CHỈ TRẢ VỀ JSON.`;
         level: 2,
         parentId: goalNode.id,
         position: { x: 600, y: yOffset },
-        status: 'not_started',
+        status: !firstMilestoneSet ? 'in_progress' : 'not_started',
         priority: level === 'beginner' ? 'high' : 'low',
         metadata: { icon: '🌱', color: '#4ECDC4' },
       };
+      firstMilestoneSet = true;
       nodes.push(milestoneEasy);
       edges.push({
         id: `edge-goal-${milestoneEasy.id}`,
@@ -1219,7 +1325,7 @@ CHỈ TRẢ VỀ JSON.`;
         type: 'leads_to',
       });
 
-      this.addLearningNodeItems(nodes, edges, easyLessons, milestoneEasy.id, learningNodeMap, yOffset + 80);
+      this.addLearningNodeItems(nodes, edges, easyLessons, milestoneEasy.id, learningNodeMap, yOffset + 80, milestoneEasy.status === 'in_progress');
       yOffset += 80 + easyLessons.length * 60 + 50;
       prevNodeId = milestoneEasy.id;
     }
@@ -1233,10 +1339,11 @@ CHỈ TRẢ VỀ JSON.`;
         level: 2,
         parentId: goalNode.id,
         position: { x: 600, y: yOffset },
-        status: 'not_started',
+        status: !firstMilestoneSet ? 'in_progress' : 'not_started',
         priority: 'high',
         metadata: { icon: '📚', color: '#FFE66D' },
       };
+      firstMilestoneSet = true;
       nodes.push(milestoneMedium);
       edges.push({
         id: `edge-${prevNodeId}-${milestoneMedium.id}`,
@@ -1245,7 +1352,7 @@ CHỈ TRẢ VỀ JSON.`;
         type: 'leads_to',
       });
 
-      this.addLearningNodeItems(nodes, edges, mediumLessons, milestoneMedium.id, learningNodeMap, yOffset + 80);
+      this.addLearningNodeItems(nodes, edges, mediumLessons, milestoneMedium.id, learningNodeMap, yOffset + 80, milestoneMedium.status === 'in_progress');
       yOffset += 80 + mediumLessons.length * 60 + 50;
       prevNodeId = milestoneMedium.id;
     }
@@ -1259,10 +1366,11 @@ CHỈ TRẢ VỀ JSON.`;
         level: 2,
         parentId: goalNode.id,
         position: { x: 600, y: yOffset },
-        status: 'not_started',
+        status: !firstMilestoneSet ? 'in_progress' : 'not_started',
         priority: level === 'advanced' ? 'high' : 'medium',
         metadata: { icon: '🚀', color: '#FF6B6B' },
       };
+      firstMilestoneSet = true;
       nodes.push(milestoneHard);
       edges.push({
         id: `edge-${prevNodeId}-${milestoneHard.id}`,
@@ -1271,7 +1379,7 @@ CHỈ TRẢ VỀ JSON.`;
         type: 'leads_to',
       });
 
-      this.addLearningNodeItems(nodes, edges, hardLessons, milestoneHard.id, learningNodeMap, yOffset + 80);
+      this.addLearningNodeItems(nodes, edges, hardLessons, milestoneHard.id, learningNodeMap, yOffset + 80, milestoneHard.status === 'in_progress');
     }
 
     return { nodes, edges };
@@ -1279,6 +1387,7 @@ CHỈ TRẢ VỀ JSON.`;
 
   /**
    * Thêm các bài học vào milestone - SỬ DỤNG LearningNode THỰC TẾ
+   * @param unlockFirst - nếu true, bài học đầu tiên sẽ được mở khóa (in_progress)
    */
   private addLearningNodeItems(
     nodes: PersonalMindMapNode[],
@@ -1287,6 +1396,7 @@ CHỈ TRẢ VỀ JSON.`;
     parentId: string,
     learningNodeMap: Map<string, LearningNode>,
     startY: number,
+    unlockFirst = false,
   ): void {
     const startX = 300;
     const spacingX = 300;
@@ -1314,7 +1424,7 @@ CHỈ TRẢ VỀ JSON.`;
           x: startX + col * spacingX,
           y: startY + row * spacingY,
         },
-        status: 'not_started',
+        status: unlockFirst && index === 0 ? 'in_progress' : 'not_started',
         priority: lessonInfo.priority || 'medium',
         estimatedDays: lessonInfo.estimatedDays || 3,
         metadata: {
@@ -1376,7 +1486,7 @@ CHỈ TRẢ VỀ JSON.`;
           x: 200 + col * 250,
           y: 250 + row * 150,
         },
-        status: 'not_started',
+        status: index === 0 ? 'in_progress' : 'not_started',
         priority: 'medium',
         estimatedDays: 3,
         metadata: {

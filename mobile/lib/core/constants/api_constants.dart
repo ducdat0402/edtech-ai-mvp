@@ -30,29 +30,18 @@ class ApiConstants {
   static String domainsBySubject(String subjectId) => '/domains/subject/$subjectId';
   static String domainDetail(String id) => '/domains/$id';
 
+  // Topics
+  static String topicsByDomain(String domainId) => '/topics/domain/$domainId';
+  static String topicDetail(String id) => '/topics/$id';
+
   // Learning Nodes
   static String nodesBySubject(String subjectId) => '/nodes/subject/$subjectId';
+  static String nodesByTopic(String topicId) => '/nodes/topic/$topicId';
   static String nodeDetail(String id) => '/nodes/$id';
-
-  // Content Items
-  static String contentByNode(String nodeId) => '/content/node/$nodeId';
-  static String contentDetail(String id) => '/content/$id';
-  static String contentByNodeAndDifficulty(String nodeId, String difficulty) => '/content/node/$nodeId/difficulty/$difficulty';
-  static String generateContentByDifficulty(String nodeId) => '/content/node/$nodeId/generate-by-difficulty';
-  
-  // Media Placeholders & Contribution
-  static String generatePlaceholders(String nodeId) => '/content/node/$nodeId/generate-placeholders';
-  static const String allPlaceholders = '/content/placeholders';
-  static String nodePlaceholders(String nodeId) => '/content/node/$nodeId/placeholders';
-  static String submitContribution(String contentId) => '/content/$contentId/contribute';
-  static String approveContribution(String contentId) => '/content/$contentId/approve';
-  static String rejectContribution(String contentId) => '/content/$contentId/reject';
-  static String createNewContribution(String nodeId) => '/content/node/$nodeId/contribute-new';
 
   // Progress
   static String nodeProgress(String nodeId) => '/progress/node/$nodeId';
-  static const String completeItem = '/progress/complete-item';
-  static String completedContentItemsBySubject(String subjectId) => '/progress/subject/$subjectId/completed-items';
+  static const String completeNode = '/progress/complete-node';
 
   // Currency
   static const String currency = '/currency';
@@ -92,14 +81,6 @@ class ApiConstants {
   static String submitAdaptiveAnswer(String testId) => '/adaptive-test/$testId/submit';
   static String getAdaptiveTestResult(String testId) => '/adaptive-test/$testId/result';
 
-  // Skill Tree
-  static const String generateSkillTree = '/skill-tree/generate';
-  static const String getSkillTree = '/skill-tree';
-  static String unlockNode(String nodeId) => '/skill-tree/$nodeId/unlock';
-  static String completeNode(String nodeId) => '/skill-tree/$nodeId/complete';
-  static const String unlockNextNode = '/skill-tree/unlock-next';
-  static const String getNextUnlockableNodes = '/skill-tree/next-unlockable';
-
   // Onboarding
   static const String onboardingChat = '/onboarding/chat';
   static const String onboardingStatus = '/onboarding/status';
@@ -112,69 +93,32 @@ class ApiConstants {
   // Health
   static const String health = '/health';
 
-  // Content Edits (Wiki-style Community Edit)
-  static String submitContentEdit(String contentItemId) => '/content-edits/content/$contentItemId/submit';
-  static String submitLessonEdit(String contentItemId) => '/content-edits/content/$contentItemId/lesson-edit';
-  static String getContentEdits(String contentItemId) => '/content-edits/content/$contentItemId';
-  static String getContentEdit(String id) => '/content-edits/$id';
-  static String getEditComparison(String id) => '/content-edits/$id/comparison';
-  static String approveContentEdit(String id) => '/content-edits/$id/approve';
-  static String rejectContentEdit(String id) => '/content-edits/$id/reject';
-  static String voteOnContentEdit(String id) => '/content-edits/$id/vote';
-  static const String uploadImage = '/content-edits/upload-image';
-  static const String uploadVideo = '/content-edits/upload-video';
-  static const String pendingContentEdits = '/content-edits/pending/list';
-  static const String allContentWithEdits = '/content-edits/admin/all-content-with-edits';
-  static String removeContentEdit(String id) => '/content-edits/$id';
-  static const String getMyContentEdits = '/content-edits/user/my-edits';
-  
-  // Edit History
-  static String getHistoryForContent(String contentItemId) => '/content-edits/history/content/$contentItemId';
-  static const String getHistoryForUser = '/content-edits/history/user';
-  static const String getAllHistory = '/content-edits/history/all';
-  
-  // Content Versions
-  static String getVersionsForContent(String contentItemId) => '/content-edits/content/$contentItemId/versions';
-  static const String getMyVersions = '/content-edits/versions/my-versions';
-  static String getMyVersionsForContent(String contentItemId) => '/content-edits/content/$contentItemId/my-versions';
-  static String revertToVersion(String versionId) => '/content-edits/versions/$versionId/revert';
-  static String getHistoryForEdit(String editId) => '/content-edits/history/edit/$editId';
+  // Uploads
+  static const String uploadImage = '/uploads/image';
+  static const String uploadVideo = '/uploads/video';
 
-  // Knowledge Graph
-  static String getPrerequisites(String nodeId) => '/knowledge-graph/nodes/$nodeId/prerequisites';
-  static String findPath(String fromNodeId, String toNodeId) => '/knowledge-graph/path/$fromNodeId/$toNodeId';
-  static String recommendNext(String nodeId, {int? limit}) {
-    final limitParam = limit != null ? '?limit=$limit' : '';
-    return '/knowledge-graph/nodes/$nodeId/recommend-next$limitParam';
-  }
-  static String getRelatedNodes(String nodeId, {int? limit}) {
-    final limitParam = limit != null ? '?limit=$limit' : '';
-    return '/knowledge-graph/nodes/$nodeId/related$limitParam';
-  }
-  static String getNodeByEntity(String type, String entityId) => '/knowledge-graph/entity/$type/$entityId';
-  static String getNodesByType(String type) => '/knowledge-graph/nodes/type/$type';
-  
-  // RAG (Semantic Search)
-  static String semanticSearch(String query, {int? limit, String? types, double? minSimilarity}) {
-    final params = <String>[];
-    if (limit != null) params.add('limit=$limit');
-    if (types != null) params.add('types=$types');
-    if (minSimilarity != null) params.add('minSimilarity=$minSimilarity');
-    final queryParam = 'q=${Uri.encodeComponent(query)}';
-    return '/knowledge-graph/search?$queryParam${params.isNotEmpty ? '&${params.join('&')}' : ''}';
-  }
-  static String retrieveRelevantNodes(String query, {int? topK, String? types}) {
-    final params = <String>[];
-    if (topK != null) params.add('topK=$topK');
-    if (types != null) params.add('types=$types');
-    final queryParam = 'q=${Uri.encodeComponent(query)}';
-    return '/knowledge-graph/retrieve?$queryParam${params.isNotEmpty ? '&${params.join('&')}' : ''}';
-  }
-  static String generateRAGContext(String query, {int? topK}) {
-    final topKParam = topK != null ? '&topK=$topK' : '';
-    final queryParam = 'q=${Uri.encodeComponent(query)}';
-    return '/knowledge-graph/context?$queryParam$topKParam';
-  }
+  // Lesson Content (4 lesson types)
+  static String getLessonData(String nodeId) => '/nodes/$nodeId/lesson';
+  static String getLessonDataByType(String nodeId, String lessonType) => '/nodes/$nodeId/lesson/$lessonType';
+  static String updateLessonContent(String nodeId) => '/nodes/$nodeId/lesson-content';
+  static String generateEndQuiz(String nodeId) => '/nodes/$nodeId/end-quiz/generate';
+  static String submitEndQuiz(String nodeId) => '/nodes/$nodeId/submit-quiz';
+  static String submitEndQuizForType(String nodeId, String lessonType) => '/nodes/$nodeId/submit-quiz/$lessonType';
+
+  // Lesson Type Contents
+  static String lessonTypeContentsByNode(String nodeId) => '/lesson-type-contents/node/$nodeId';
+  static String lessonTypeContentByType(String nodeId, String lessonType) => '/lesson-type-contents/node/$nodeId/$lessonType';
+  static String lessonTypeHistory(String nodeId, String lessonType) => '/lesson-type-contents/node/$nodeId/$lessonType/history';
+  static String lessonTypeVersionDetail(String versionId) => '/lesson-type-contents/history/$versionId';
+
+  // Lesson Content Edit (via contributions)
+  static const String createLessonContentEdit = '/pending-contributions/lesson-content-edit';
+
+  // Progress - Lesson Types, Topics, Domains
+  static const String completeLessonType = '/progress/complete-lesson-type';
+  static String lessonTypeProgress(String nodeId) => '/progress/lesson/$nodeId/types';
+  static String topicProgress(String topicId) => '/progress/topic/$topicId';
+  static String domainProgress(String domainId) => '/progress/domain/$domainId';
 
   // Personal Mind Map
   static String checkPersonalMindMap(String subjectId) => '/personal-mind-map/check/$subjectId';
@@ -190,11 +134,6 @@ class ApiConstants {
   static String generatePersonalMindMapFromChat(String subjectId) => '/personal-mind-map/$subjectId/chat/generate';
   static String resetPersonalMindMapChat(String subjectId) => '/personal-mind-map/$subjectId/chat/reset';
 
-  // Quiz
-  static const String generateQuiz = '/quiz/generate';
-  static const String generateBossQuiz = '/quiz/boss/generate';
-  static const String submitQuiz = '/quiz/submit';
-
   // User Role
   static const String switchRole = '/users/switch-role';
 
@@ -205,6 +144,8 @@ class ApiConstants {
   static const String createDomainContribution = '/pending-contributions/domain';
   static const String createTopicContribution = '/pending-contributions/topic';
   static const String createLessonContribution = '/pending-contributions/lesson';
+  static const String createEditContribution = '/pending-contributions/edit';
+  static const String createDeleteContribution = '/pending-contributions/delete';
   static String pendingContributionDetail(String id) => '/pending-contributions/$id';
   static String approvePendingContribution(String id) => '/pending-contributions/$id/approve';
   static String rejectPendingContribution(String id) => '/pending-contributions/$id/reject';
@@ -217,4 +158,3 @@ class ApiConstants {
   static const String premiumStatus = '/payment/premium/status';
   static const String pendingPayment = '/payment/pending';
 }
-

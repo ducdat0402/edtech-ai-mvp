@@ -361,15 +361,15 @@ class _AnalysisCompleteScreenState extends State<AnalysisCompleteScreen>
         SizedBox(
           width: double.infinity,
           child: GamingButton(
-            text: subjectId != null && subjectId.isNotEmpty ? 'Xem Skill Tree' : 'Chọn môn học',
+            text: subjectId != null && subjectId.isNotEmpty ? 'Tạo lộ trình học tập' : 'Chọn môn học',
             onPressed: () {
               if (subjectId != null && subjectId.isNotEmpty) {
-                context.go('/skill-tree?subjectId=$subjectId');
+                context.go('/subjects/$subjectId/learning-path-choice');
               } else {
-                context.go('/subjects');
+                context.go('/dashboard');
               }
             },
-            icon: Icons.account_tree_rounded,
+            icon: Icons.route_rounded,
           ),
         ),
         const SizedBox(height: 12),
