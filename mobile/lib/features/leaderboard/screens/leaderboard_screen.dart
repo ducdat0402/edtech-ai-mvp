@@ -32,7 +32,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: widget.subjectId != null ? 3 : 2, vsync: this);
+    _tabController =
+        TabController(length: widget.subjectId != null ? 3 : 2, vsync: this);
     _tabController.addListener(_onTabChanged);
     _loadData();
   }
@@ -58,7 +59,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
 
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
-      
+
       try {
         final myRank = await apiService.getMyRank();
         setState(() {
@@ -87,16 +88,21 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
 
       switch (tabIndex) {
         case 0:
-          final globalData = await apiService.getGlobalLeaderboard(limit: _pageSize, page: 1);
+          final globalData =
+              await apiService.getGlobalLeaderboard(limit: _pageSize, page: 1);
           setState(() => _globalData = globalData);
           break;
         case 1:
-          final weeklyData = await apiService.getWeeklyLeaderboard(limit: _pageSize, page: 1);
+          final weeklyData =
+              await apiService.getWeeklyLeaderboard(limit: _pageSize, page: 1);
           setState(() => _weeklyData = weeklyData);
           break;
         case 2:
           if (widget.subjectId != null) {
-            final subjectData = await apiService.getSubjectLeaderboard(widget.subjectId!, limit: _pageSize, page: 1);
+            final subjectData = await apiService.getSubjectLeaderboard(
+                widget.subjectId!,
+                limit: _pageSize,
+                page: 1);
             setState(() => _subjectData = subjectData);
           }
           break;
@@ -113,7 +119,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text('Bảng xếp hạng', style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary)),
+        title: Text('Bảng xếp hạng',
+            style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary)),
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: AppColors.purpleNeon,
@@ -123,18 +130,29 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
           labelStyle: AppTextStyles.labelMedium,
           tabs: widget.subjectId != null
               ? const [
-                  Tab(text: 'Toàn cầu', icon: Icon(Icons.public_rounded, size: 20)),
-                  Tab(text: 'Tuần này', icon: Icon(Icons.calendar_view_week_rounded, size: 20)),
-                  Tab(text: 'Môn học', icon: Icon(Icons.book_rounded, size: 20)),
+                  Tab(
+                      text: 'Toàn cầu',
+                      icon: Icon(Icons.public_rounded, size: 20)),
+                  Tab(
+                      text: 'Tuần này',
+                      icon: Icon(Icons.calendar_view_week_rounded, size: 20)),
+                  Tab(
+                      text: 'Môn học',
+                      icon: Icon(Icons.book_rounded, size: 20)),
                 ]
               : const [
-                  Tab(text: 'Toàn cầu', icon: Icon(Icons.public_rounded, size: 20)),
-                  Tab(text: 'Tuần này', icon: Icon(Icons.calendar_view_week_rounded, size: 20)),
+                  Tab(
+                      text: 'Toàn cầu',
+                      icon: Icon(Icons.public_rounded, size: 20)),
+                  Tab(
+                      text: 'Tuần này',
+                      icon: Icon(Icons.calendar_view_week_rounded, size: 20)),
                 ],
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh_rounded, color: AppColors.textSecondary),
+            icon: const Icon(Icons.refresh_rounded,
+                color: AppColors.textSecondary),
             onPressed: _loadData,
           ),
         ],
@@ -168,9 +186,11 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(color: AppColors.purpleNeon),
+          const CircularProgressIndicator(color: AppColors.purpleNeon),
           const SizedBox(height: 16),
-          Text('Đang tải...', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+          Text('Đang tải...',
+              style: AppTextStyles.bodyMedium
+                  .copyWith(color: AppColors.textSecondary)),
         ],
       ),
     );
@@ -206,7 +226,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.2),
               shape: BoxShape.circle,
-              border: Border.all(color: Colors.white.withOpacity(0.3), width: 2),
+              border:
+                  Border.all(color: Colors.white.withOpacity(0.3), width: 2),
             ),
             child: Center(
               child: Column(
@@ -232,7 +253,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
                 const SizedBox(height: 4),
                 Text(
                   'Hạng $rank / $totalUsers người chơi',
-                  style: AppTextStyles.bodySmall.copyWith(color: Colors.white70),
+                  style:
+                      AppTextStyles.bodySmall.copyWith(color: Colors.white70),
                 ),
               ],
             ),
@@ -242,22 +264,26 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
             children: [
               Row(
                 children: [
-                  const Icon(Icons.star_rounded, color: AppColors.xpGold, size: 20),
+                  const Icon(Icons.star_rounded,
+                      color: AppColors.xpGold, size: 20),
                   const SizedBox(width: 4),
                   Text(
                     '${entry['totalXP'] ?? 0}',
-                    style: AppTextStyles.numberMedium.copyWith(color: Colors.white),
+                    style: AppTextStyles.numberMedium
+                        .copyWith(color: Colors.white),
                   ),
                 ],
               ),
               const SizedBox(height: 4),
               Row(
                 children: [
-                  const Icon(Icons.local_fire_department_rounded, color: AppColors.streakOrange, size: 16),
+                  const Icon(Icons.local_fire_department_rounded,
+                      color: AppColors.streakOrange, size: 16),
                   const SizedBox(width: 4),
                   Text(
                     '${entry['currentStreak'] ?? 0}',
-                    style: AppTextStyles.bodySmall.copyWith(color: Colors.white70),
+                    style:
+                        AppTextStyles.bodySmall.copyWith(color: Colors.white70),
                   ),
                 ],
               ),
@@ -270,7 +296,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
 
   Widget _buildLeaderboardList(Map<String, dynamic>? data) {
     if (data == null) {
-      return Center(child: CircularProgressIndicator(color: AppColors.purpleNeon));
+      return const Center(
+          child: CircularProgressIndicator(color: AppColors.purpleNeon));
     }
 
     final entries = data['entries'] as List<dynamic>? ?? [];
@@ -350,16 +377,21 @@ class _LeaderboardEntryCard extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: isTopThree ? rankColor.withOpacity(0.2) : AppColors.bgTertiary,
+              color: isTopThree
+                  ? rankColor.withOpacity(0.2)
+                  : AppColors.bgTertiary,
               borderRadius: BorderRadius.circular(12),
-              border: isTopThree ? Border.all(color: rankColor.withOpacity(0.5)) : null,
+              border: isTopThree
+                  ? Border.all(color: rankColor.withOpacity(0.5))
+                  : null,
             ),
             child: Center(
               child: isTopThree
                   ? Icon(rankIcon, color: rankColor, size: 24)
                   : Text(
                       '#$rank',
-                      style: AppTextStyles.labelLarge.copyWith(color: AppColors.textSecondary),
+                      style: AppTextStyles.labelLarge
+                          .copyWith(color: AppColors.textSecondary),
                     ),
             ),
           ),
@@ -378,21 +410,26 @@ class _LeaderboardEntryCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    if (entry['currentStreak'] != null && entry['currentStreak'] > 0) ...[
-                      Icon(Icons.local_fire_department_rounded, size: 14, color: AppColors.streakOrange),
+                    if (entry['currentStreak'] != null &&
+                        entry['currentStreak'] > 0) ...[
+                      const Icon(Icons.local_fire_department_rounded,
+                          size: 14, color: AppColors.streakOrange),
                       const SizedBox(width: 4),
                       Text(
                         '${entry['currentStreak']}',
-                        style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+                        style: AppTextStyles.caption
+                            .copyWith(color: AppColors.textSecondary),
                       ),
                       const SizedBox(width: 12),
                     ],
                     if (entry['coins'] != null) ...[
-                      Icon(Icons.monetization_on_rounded, size: 14, color: AppColors.coinGold),
+                      const Icon(Icons.monetization_on_rounded,
+                          size: 14, color: AppColors.coinGold),
                       const SizedBox(width: 4),
                       Text(
                         '${entry['coins']}',
-                        style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+                        style: AppTextStyles.caption
+                            .copyWith(color: AppColors.textSecondary),
                       ),
                     ],
                   ],
@@ -409,11 +446,13 @@ class _LeaderboardEntryCard extends StatelessWidget {
             ),
             child: Row(
               children: [
-                const Icon(Icons.star_rounded, color: AppColors.xpGold, size: 18),
+                const Icon(Icons.star_rounded,
+                    color: AppColors.xpGold, size: 18),
                 const SizedBox(width: 4),
                 Text(
                   '${entry['totalXP'] ?? entry['lPoints'] ?? 0}',
-                  style: AppTextStyles.numberMedium.copyWith(color: AppColors.xpGold, fontSize: 16),
+                  style: AppTextStyles.numberMedium
+                      .copyWith(color: AppColors.xpGold, fontSize: 16),
                 ),
               ],
             ),

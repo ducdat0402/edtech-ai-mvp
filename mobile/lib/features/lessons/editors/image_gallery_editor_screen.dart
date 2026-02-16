@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:edtech_mobile/theme/colors.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
@@ -12,6 +11,8 @@ class ImageGalleryEditorScreen extends StatefulWidget {
   final String? topicName;
   final String? topicId;
   final String? nodeId;
+  final String? initialTitle;
+  final String? initialDescription;
   final Map<String, dynamic>? initialLessonData;
   final Map<String, dynamic>? initialEndQuiz;
   final bool isEditMode;
@@ -25,6 +26,8 @@ class ImageGalleryEditorScreen extends StatefulWidget {
     this.topicName,
     this.topicId,
     this.nodeId,
+    this.initialTitle,
+    this.initialDescription,
     this.initialLessonData,
     this.initialEndQuiz,
     this.isEditMode = false,
@@ -44,7 +47,7 @@ class _ImageGalleryEditorScreenState extends State<ImageGalleryEditorScreen> {
   final _imagePicker = ImagePicker();
 
   List<_ImageCardData> _images = [_ImageCardData()];
-  Map<int, bool> _uploadingImages = {}; // Track upload state per image
+  final Map<int, bool> _uploadingImages = {}; // Track upload state per image
 
   @override
   void initState() {
@@ -53,6 +56,13 @@ class _ImageGalleryEditorScreenState extends State<ImageGalleryEditorScreen> {
   }
 
   void _prefillData() {
+    if (widget.initialTitle != null) {
+      _titleController.text = widget.initialTitle!;
+    }
+    if (widget.initialDescription != null) {
+      _descriptionController.text = widget.initialDescription!;
+    }
+
     final data = widget.initialLessonData;
     if (data == null) return;
 
@@ -167,7 +177,8 @@ class _ImageGalleryEditorScreenState extends State<ImageGalleryEditorScreen> {
           nodeId: widget.nodeId,
           initialEndQuiz: widget.initialEndQuiz,
           isEditMode: widget.isEditMode,
-          originalLessonData: widget.originalLessonData ?? widget.initialLessonData,
+          originalLessonData:
+              widget.originalLessonData ?? widget.initialLessonData,
           originalEndQuiz: widget.originalEndQuiz ?? widget.initialEndQuiz,
         ),
       ),
@@ -357,7 +368,7 @@ class _ImageGalleryEditorScreenState extends State<ImageGalleryEditorScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              
+
               // Show image preview if URL exists
               if (img.urlController.text.isNotEmpty)
                 Container(
@@ -373,7 +384,7 @@ class _ImageGalleryEditorScreenState extends State<ImageGalleryEditorScreen> {
                     ),
                   ),
                 ),
-              
+
               // Upload/Change button
               Row(
                 children: [
@@ -418,7 +429,8 @@ class _ImageGalleryEditorScreenState extends State<ImageGalleryEditorScreen> {
                   if (img.urlController.text.isNotEmpty) ...[
                     const SizedBox(width: 8),
                     IconButton(
-                      icon: const Icon(Icons.delete_outline, color: AppColors.errorNeon),
+                      icon: const Icon(Icons.delete_outline,
+                          color: AppColors.errorNeon),
                       onPressed: () {
                         setState(() {
                           img.urlController.clear();
@@ -428,7 +440,7 @@ class _ImageGalleryEditorScreenState extends State<ImageGalleryEditorScreen> {
                   ],
                 ],
               ),
-              
+
               // Validation message
               if (img.urlController.text.isEmpty)
                 const Padding(

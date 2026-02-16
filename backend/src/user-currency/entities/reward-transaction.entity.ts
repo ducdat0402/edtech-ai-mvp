@@ -17,6 +17,7 @@ export enum RewardSource {
   BONUS = 'bonus',
   TOPIC = 'topic',
   DOMAIN = 'domain',
+  PURCHASE = 'purchase',
 }
 
 @Entity('reward_transactions')

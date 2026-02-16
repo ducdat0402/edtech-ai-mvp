@@ -77,11 +77,13 @@ class _MyContributionsScreenState extends State<MyContributionsScreen>
               borderRadius: BorderRadius.circular(10),
               border: Border.all(color: AppColors.borderPrimary),
             ),
-            child: const Icon(Icons.arrow_back, color: AppColors.textPrimary, size: 20),
+            child: const Icon(Icons.arrow_back,
+                color: AppColors.textPrimary, size: 20),
           ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text('Đóng góp của tôi', style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
+        title: Text('Đóng góp của tôi',
+            style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: AppColors.purpleNeon,
@@ -90,13 +92,18 @@ class _MyContributionsScreenState extends State<MyContributionsScreen>
           unselectedLabelColor: AppColors.textSecondary,
           labelStyle: AppTextStyles.labelMedium,
           tabs: [
-            Tab(icon: const Icon(Icons.edit_document), text: 'Bài đóng góp (${_myEdits.length})'),
-            Tab(icon: const Icon(Icons.history), text: 'Lịch sử (${_myHistory.length})'),
+            Tab(
+                icon: const Icon(Icons.edit_document),
+                text: 'Bài đóng góp (${_myEdits.length})'),
+            Tab(
+                icon: const Icon(Icons.history),
+                text: 'Lịch sử (${_myHistory.length})'),
           ],
         ),
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator(color: AppColors.purpleNeon))
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.purpleNeon))
           : _error != null
               ? _buildErrorState()
               : TabBarView(
@@ -122,12 +129,19 @@ class _MyContributionsScreenState extends State<MyContributionsScreen>
                 color: AppColors.errorNeon.withOpacity(0.15),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.error_outline_rounded, size: 48, color: AppColors.errorNeon),
+              child: const Icon(Icons.error_outline_rounded,
+                  size: 48, color: AppColors.errorNeon),
             ),
             const SizedBox(height: 20),
-            Text(_error!, textAlign: TextAlign.center, style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+            Text(_error!,
+                textAlign: TextAlign.center,
+                style: AppTextStyles.bodyMedium
+                    .copyWith(color: AppColors.textSecondary)),
             const SizedBox(height: 24),
-            GamingButton(text: 'Thử lại', onPressed: _loadData, icon: Icons.refresh_rounded),
+            GamingButton(
+                text: 'Thử lại',
+                onPressed: _loadData,
+                icon: Icons.refresh_rounded),
           ],
         ),
       ),
@@ -139,7 +153,8 @@ class _MyContributionsScreenState extends State<MyContributionsScreen>
       return _buildEmptyState(
         icon: Icons.edit_off_rounded,
         title: 'Chưa có đóng góp nào',
-        subtitle: 'Hãy đóng góp video, hình ảnh hoặc nội dung cho bài học để nhận phần thưởng!',
+        subtitle:
+            'Hãy đóng góp video, hình ảnh hoặc nội dung cho bài học để nhận phần thưởng!',
       );
     }
 
@@ -208,9 +223,13 @@ class _MyContributionsScreenState extends State<MyContributionsScreen>
               child: Icon(icon, size: 48, color: AppColors.textTertiary),
             ),
             const SizedBox(height: 24),
-            Text(title, style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
+            Text(title,
+                style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
             const SizedBox(height: 8),
-            Text(subtitle, textAlign: TextAlign.center, style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+            Text(subtitle,
+                textAlign: TextAlign.center,
+                style: AppTextStyles.bodyMedium
+                    .copyWith(color: AppColors.textSecondary)),
           ],
         ),
       ),
@@ -400,7 +419,8 @@ class _MyContributionsScreenState extends State<MyContributionsScreen>
                   // Votes
                   Row(
                     children: [
-                      Icon(Icons.thumb_up, size: 16, color: Colors.green.shade600),
+                      Icon(Icons.thumb_up,
+                          size: 16, color: Colors.green.shade600),
                       const SizedBox(width: 4),
                       Text(
                         '$upvotes',
@@ -410,7 +430,8 @@ class _MyContributionsScreenState extends State<MyContributionsScreen>
                         ),
                       ),
                       const SizedBox(width: 12),
-                      Icon(Icons.thumb_down, size: 16, color: Colors.red.shade600),
+                      Icon(Icons.thumb_down,
+                          size: 16, color: Colors.red.shade600),
                       const SizedBox(width: 4),
                       Text(
                         '$downvotes',
@@ -663,7 +684,8 @@ class _MyContributionsScreenState extends State<MyContributionsScreen>
                                 ),
                                 Text(
                                   contentItem['title']?.toString() ?? 'N/A',
-                                  style: const TextStyle(fontWeight: FontWeight.w500),
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w500),
                                 ),
                               ],
                             ),
@@ -714,7 +736,8 @@ class _MyContributionsScreenState extends State<MyContributionsScreen>
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(Icons.play_circle_fill,
-                                  size: 64, color: Colors.white.withOpacity(0.8)),
+                                  size: 64,
+                                  color: Colors.white.withOpacity(0.8)),
                               const SizedBox(height: 8),
                               Text(
                                 'Video đã tải lên',

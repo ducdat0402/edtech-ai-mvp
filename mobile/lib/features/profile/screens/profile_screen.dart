@@ -32,7 +32,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _loadProfile() async {
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
-      
+
       final results = await Future.wait([
         apiService.getUserProfile(),
         apiService.getCurrency(),
@@ -58,10 +58,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool get _isContributor => _currentRole == 'contributor';
   bool get _isAdmin => _currentRole == 'admin';
 
-  Color get _accentColor => _isContributor ? AppColors.contributorBlue : AppColors.purpleNeon;
-  Color get _bgPrimary => _isContributor ? AppColors.contributorBgPrimary : AppColors.bgPrimary;
-  Color get _bgSecondary => _isContributor ? AppColors.contributorBgSecondary : AppColors.bgSecondary;
-  Color get _borderColor => _isContributor ? AppColors.contributorBorder : AppColors.borderPrimary;
+  Color get _accentColor =>
+      _isContributor ? AppColors.contributorBlue : AppColors.purpleNeon;
+  Color get _bgPrimary =>
+      _isContributor ? AppColors.contributorBgPrimary : AppColors.bgPrimary;
+  Color get _bgSecondary =>
+      _isContributor ? AppColors.contributorBgSecondary : AppColors.bgSecondary;
+  Color get _borderColor =>
+      _isContributor ? AppColors.contributorBorder : AppColors.borderPrimary;
 
   LinearGradient get _primaryGradient =>
       _isContributor ? AppGradients.contributor : AppGradients.primary;
@@ -83,12 +87,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
           targetRole == 'contributor'
               ? 'Chế độ Contributor cho phép bạn đóng góp nội dung: thêm môn học, tạo domain, topic và bài học. Các đóng góp cần được admin duyệt.'
               : 'Chế độ Learner cho phép bạn tập trung vào việc học. Bạn sẽ không thể chỉnh sửa hoặc đóng góp nội dung.',
-          style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+          style:
+              AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: Text('Hủy', style: TextStyle(color: AppColors.textSecondary)),
+            child: const Text('Hủy',
+                style: TextStyle(color: AppColors.textSecondary)),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
@@ -142,19 +148,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.bgSecondary,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Đăng xuất', style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary)),
+        title: Text('Đăng xuất',
+            style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary)),
         content: Text(
           'Bạn có chắc chắn muốn đăng xuất?',
-          style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+          style:
+              AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: Text('Hủy', style: TextStyle(color: AppColors.textSecondary)),
+            child: const Text('Hủy',
+                style: TextStyle(color: AppColors.textSecondary)),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: Text('Đăng xuất', style: TextStyle(color: AppColors.errorNeon)),
+            child: const Text('Đăng xuất',
+                style: TextStyle(color: AppColors.errorNeon)),
           ),
         ],
       ),
@@ -188,7 +198,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text('Profile', style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary)),
+        title: Text('Profile',
+            style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary)),
         actions: [
           IconButton(
             icon: Container(
@@ -197,7 +208,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 color: AppColors.errorNeon.withOpacity(0.15),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(Icons.logout, color: AppColors.errorNeon, size: 20),
+              child: const Icon(Icons.logout,
+                  color: AppColors.errorNeon, size: 20),
             ),
             tooltip: 'Đăng xuất',
             onPressed: () => _handleLogout(),
@@ -209,7 +221,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           : _error != null
               ? AppErrorWidget(message: _error!, onRetry: _loadProfile)
               : _profileData == null
-                  ? Center(child: Text('No data available', style: AppTextStyles.bodyMedium))
+                  ? const Center(
+                      child: Text('No data available',
+                          style: AppTextStyles.bodyMedium))
                   : RefreshIndicator(
                       onRefresh: _loadProfile,
                       color: _accentColor,
@@ -224,9 +238,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(color: AppColors.purpleNeon),
+          const CircularProgressIndicator(color: AppColors.purpleNeon),
           const SizedBox(height: 16),
-          Text('Đang tải...', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+          Text('Đang tải...',
+              style: AppTextStyles.bodyMedium
+                  .copyWith(color: AppColors.textSecondary)),
         ],
       ),
     );
@@ -250,7 +266,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             style: AppTextStyles.h2.copyWith(color: AppColors.textPrimary),
           ),
           const SizedBox(height: 8),
-          
+
           // Role Badge
           if (_profileData!['role'] != null)
             Container(
@@ -318,15 +334,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
             _buildMenuCard(
               icon: Icons.volunteer_activism,
               title: 'Đóng góp của tôi',
-              subtitle: 'Xem đóng góp môn học, domain, topic & trạng thái duyệt',
+              subtitle:
+                  'Xem đóng góp môn học, domain, topic & trạng thái duyệt',
               color: AppColors.contributorBlue,
               onTap: () => context.push('/contributor/my-contributions'),
             ),
-          
+
           // Journey Log Button
           _buildMenuCard(
             icon: Icons.history_edu,
-            title: 'Nhật Ký Hành Trình',
+            title: 'Nhật ký hành trình',
             subtitle: _isContributor
                 ? 'Lịch sử đóng góp & chỉnh sửa'
                 : 'Lịch sử học tập',
@@ -337,8 +354,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           // Premium/Payment Button
           _buildMenuCard(
             icon: Icons.workspace_premium,
-            title: 'Nâng cấp Premium',
-            subtitle: 'Mở khóa tất cả tính năng',
+            title: 'Nhận kim cương',
+            subtitle: 'Mở khóa chức năng nâng cao',
             color: AppColors.coinGold,
             onTap: () => context.push('/payment'),
           ),
@@ -348,15 +365,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const SizedBox(height: 16),
 
           // Onboarding Data
-          if (_profileData!['onboardingData'] != null)
-            _buildOnboardingCard(),
+          if (_profileData!['onboardingData'] != null) _buildOnboardingCard(),
 
           // Placement Test Info
           if (_profileData!['placementTestLevel'] != null)
             _buildPlacementTestCard(),
 
           const SizedBox(height: 24),
-          
+
           // Logout Button
           _buildLogoutButton(),
           const SizedBox(height: 32),
@@ -436,14 +452,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(12),
                   border: _isContributor
-                      ? Border.all(color: AppColors.contributorBlue.withOpacity(0.5))
+                      ? Border.all(
+                          color: AppColors.contributorBlue.withOpacity(0.5))
                       : null,
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     if (_isSwitchingRole && !_isContributor)
-                      SizedBox(
+                      const SizedBox(
                         width: 16,
                         height: 16,
                         child: CircularProgressIndicator(
@@ -530,7 +547,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildStatsRow(Map<String, dynamic> stats, Map<String, dynamic> currency) {
+  Widget _buildStatsRow(
+      Map<String, dynamic> stats, Map<String, dynamic> currency) {
     return Row(
       children: [
         Expanded(
@@ -586,7 +604,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           Text(
             label,
-            style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+            style:
+                AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
           ),
         ],
       ),
@@ -621,8 +640,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           child: Icon(icon, color: color, size: 24),
         ),
-        title: Text(title, style: AppTextStyles.labelLarge.copyWith(color: AppColors.textPrimary)),
-        subtitle: Text(subtitle, style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary)),
+        title: Text(title,
+            style: AppTextStyles.labelLarge
+                .copyWith(color: AppColors.textPrimary)),
+        subtitle: Text(subtitle,
+            style:
+                AppTextStyles.caption.copyWith(color: AppColors.textSecondary)),
         trailing: Icon(Icons.chevron_right, color: color),
       ),
     );
@@ -644,16 +667,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
             children: [
               Icon(Icons.person_outline, color: _accentColor, size: 20),
               const SizedBox(width: 8),
-              Text('Thông tin cá nhân', style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
+              Text('Thông tin cá nhân',
+                  style:
+                      AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
             ],
           ),
           const SizedBox(height: 16),
-          _buildInfoRow(Icons.badge_outlined, 'Tên', _profileData!['fullName'] ?? 'Chưa cập nhật'),
-          Divider(color: AppColors.borderPrimary, height: 24),
-          _buildInfoRow(Icons.email_outlined, 'Email', _profileData!['email'] ?? ''),
+          _buildInfoRow(Icons.badge_outlined, 'Tên',
+              _profileData!['fullName'] ?? 'Chưa cập nhật'),
+          const Divider(color: AppColors.borderPrimary, height: 24),
+          _buildInfoRow(
+              Icons.email_outlined, 'Email', _profileData!['email'] ?? ''),
           if (_profileData!['phone'] != null) ...[
-            Divider(color: AppColors.borderPrimary, height: 24),
-            _buildInfoRow(Icons.phone_outlined, 'Số điện thoại', _profileData!['phone'] ?? ''),
+            const Divider(color: AppColors.borderPrimary, height: 24),
+            _buildInfoRow(Icons.phone_outlined, 'Số điện thoại',
+                _profileData!['phone'] ?? ''),
           ],
         ],
       ),
@@ -669,9 +697,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: AppTextStyles.caption.copyWith(color: AppColors.textTertiary)),
+              Text(label,
+                  style: AppTextStyles.caption
+                      .copyWith(color: AppColors.textTertiary)),
               const SizedBox(height: 4),
-              Text(value, style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary)),
+              Text(value,
+                  style: AppTextStyles.bodyMedium
+                      .copyWith(color: AppColors.textPrimary)),
             ],
           ),
         ),
@@ -680,7 +712,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildOnboardingCard() {
-    final onboardingData = _profileData!['onboardingData'] as Map<String, dynamic>? ?? {};
+    final onboardingData =
+        _profileData!['onboardingData'] as Map<String, dynamic>? ?? {};
 
     return Container(
       margin: const EdgeInsets.only(top: 12),
@@ -695,25 +728,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
         children: [
           Row(
             children: [
-              Icon(Icons.school_outlined, color: AppColors.successNeon, size: 20),
+              const Icon(Icons.school_outlined,
+                  color: AppColors.successNeon, size: 20),
               const SizedBox(width: 8),
-              Text('Thông tin học tập', style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
+              Text('Thông tin học tập',
+                  style:
+                      AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
             ],
           ),
           const SizedBox(height: 16),
           if (onboardingData['nickname'] != null)
-            _buildInfoRow(Icons.badge_outlined, 'Biệt danh', onboardingData['nickname'] ?? ''),
+            _buildInfoRow(Icons.badge_outlined, 'Biệt danh',
+                onboardingData['nickname'] ?? ''),
           if (onboardingData['currentLevel'] != null) ...[
-            Divider(color: AppColors.borderPrimary, height: 24),
-            _buildInfoRow(Icons.trending_up_outlined, 'Trình độ', onboardingData['currentLevel'] ?? ''),
+            const Divider(color: AppColors.borderPrimary, height: 24),
+            _buildInfoRow(Icons.trending_up_outlined, 'Trình độ',
+                onboardingData['currentLevel'] ?? ''),
           ],
           if (onboardingData['targetGoal'] != null) ...[
-            Divider(color: AppColors.borderPrimary, height: 24),
-            _buildInfoRow(Icons.flag_outlined, 'Mục tiêu', onboardingData['targetGoal'] ?? ''),
+            const Divider(color: AppColors.borderPrimary, height: 24),
+            _buildInfoRow(Icons.flag_outlined, 'Mục tiêu',
+                onboardingData['targetGoal'] ?? ''),
           ],
           if (onboardingData['dailyTime'] != null) ...[
-            Divider(color: AppColors.borderPrimary, height: 24),
-            _buildInfoRow(Icons.access_time_outlined, 'Thời gian/ngày', '${onboardingData['dailyTime']} phút'),
+            const Divider(color: AppColors.borderPrimary, height: 24),
+            _buildInfoRow(Icons.access_time_outlined, 'Thời gian/ngày',
+                '${onboardingData['dailyTime']} phút'),
           ],
         ],
       ),
@@ -737,17 +777,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
         children: [
           Row(
             children: [
-              Icon(Icons.quiz_outlined, color: AppColors.warningNeon, size: 20),
+              const Icon(Icons.quiz_outlined,
+                  color: AppColors.warningNeon, size: 20),
               const SizedBox(width: 8),
-              Text('Placement Test', style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
+              Text('Placement Test',
+                  style:
+                      AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
             ],
           ),
           const SizedBox(height: 16),
           if (score != null)
             _buildInfoRow(Icons.score_outlined, 'Điểm số', '$score%'),
           if (level != null) ...[
-            Divider(color: AppColors.borderPrimary, height: 24),
-            _buildInfoRow(Icons.leaderboard_outlined, 'Level', level.toUpperCase()),
+            const Divider(color: AppColors.borderPrimary, height: 24),
+            _buildInfoRow(
+                Icons.leaderboard_outlined, 'Level', level.toUpperCase()),
           ],
         ],
       ),
@@ -770,11 +814,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.logout, color: AppColors.errorNeon),
+            const Icon(Icons.logout, color: AppColors.errorNeon),
             const SizedBox(width: 8),
             Text(
               'Đăng xuất',
-              style: AppTextStyles.labelLarge.copyWith(color: AppColors.errorNeon),
+              style:
+                  AppTextStyles.labelLarge.copyWith(color: AppColors.errorNeon),
             ),
           ],
         ),

@@ -92,7 +92,7 @@ class EmptyQuestsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return EmptyStateWidget(
+    return const EmptyStateWidget(
       icon: Icons.task_alt,
       title: 'Chưa có quest nào hôm nay',
       message: 'Quests sẽ được tạo tự động mỗi ngày',
@@ -105,12 +105,10 @@ class EmptyLeaderboardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return EmptyStateWidget(
+    return const EmptyStateWidget(
       icon: Icons.leaderboard,
       title: 'Chưa có dữ liệu',
       message: 'Bảng xếp hạng sẽ được cập nhật khi có người dùng',
     );
   }
 }
-
-

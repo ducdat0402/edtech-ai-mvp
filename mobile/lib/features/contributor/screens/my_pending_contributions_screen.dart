@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
@@ -52,19 +51,23 @@ class _MyPendingContributionsScreenState
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.contributorBgSecondary,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Xóa đóng góp', style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary)),
+        title: Text('Xóa đóng góp',
+            style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary)),
         content: Text(
           'Bạn có chắc muốn xóa đóng góp này?',
-          style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+          style:
+              AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text('Hủy', style: TextStyle(color: AppColors.textSecondary)),
+            child: const Text('Hủy',
+                style: TextStyle(color: AppColors.textSecondary)),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text('Xóa', style: TextStyle(color: AppColors.errorNeon)),
+            child:
+                const Text('Xóa', style: TextStyle(color: AppColors.errorNeon)),
           ),
         ],
       ),
@@ -77,8 +80,8 @@ class _MyPendingContributionsScreenState
       _loadContributions();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Đã xóa đóng góp'),
+          const SnackBar(
+            content: Text('Đã xóa đóng góp'),
             backgroundColor: AppColors.contributorBlue,
           ),
         );
@@ -86,7 +89,8 @@ class _MyPendingContributionsScreenState
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi: $e'), backgroundColor: AppColors.errorNeon),
+          SnackBar(
+              content: Text('Lỗi: $e'), backgroundColor: AppColors.errorNeon),
         );
       }
     }
@@ -109,14 +113,17 @@ class _MyPendingContributionsScreenState
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.add_circle_outline, color: AppColors.contributorBlueLight),
+            icon: const Icon(Icons.add_circle_outline,
+                color: AppColors.contributorBlueLight),
             onPressed: () => context.push('/contributor/create-subject'),
             tooltip: 'Tạo môn học mới',
           ),
         ],
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator(color: AppColors.contributorBlue))
+          ? const Center(
+              child:
+                  CircularProgressIndicator(color: AppColors.contributorBlue))
           : _error != null
               ? AppErrorWidget(message: _error!, onRetry: _loadContributions)
               : _contributions.isEmpty
@@ -128,7 +135,8 @@ class _MyPendingContributionsScreenState
                         padding: const EdgeInsets.all(16),
                         itemCount: _contributions.length,
                         itemBuilder: (context, index) {
-                          final item = _contributions[index] as Map<String, dynamic>;
+                          final item =
+                              _contributions[index] as Map<String, dynamic>;
                           return _buildContributionCard(item);
                         },
                       ),
@@ -137,7 +145,7 @@ class _MyPendingContributionsScreenState
         onPressed: () => context.push('/contributor/create-subject'),
         backgroundColor: AppColors.contributorBlue,
         icon: const Icon(Icons.add, color: Colors.white),
-        label: Text('Tạo môn học', style: TextStyle(color: Colors.white)),
+        label: const Text('Tạo môn học', style: TextStyle(color: Colors.white)),
       ),
     );
   }
@@ -170,7 +178,8 @@ class _MyPendingContributionsScreenState
             Text(
               'Bắt đầu đóng góp bằng cách tạo môn học mới!',
               textAlign: TextAlign.center,
-              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+              style: AppTextStyles.bodyMedium
+                  .copyWith(color: AppColors.textSecondary),
             ),
           ],
         ),
@@ -216,7 +225,8 @@ class _MyPendingContributionsScreenState
                 const Spacer(),
                 if (status == 'pending')
                   IconButton(
-                    icon: Icon(Icons.delete_outline, color: AppColors.errorNeon, size: 20),
+                    icon: const Icon(Icons.delete_outline,
+                        color: AppColors.errorNeon, size: 20),
                     onPressed: () => _deleteContribution(id),
                     tooltip: 'Xóa',
                     constraints: const BoxConstraints(),
@@ -234,7 +244,8 @@ class _MyPendingContributionsScreenState
                 decoration: BoxDecoration(
                   color: _getActionColor(action).withOpacity(0.06),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: _getActionColor(action).withOpacity(0.15)),
+                  border: Border.all(
+                      color: _getActionColor(action).withOpacity(0.15)),
                 ),
                 child: Text(
                   contextDescription,
@@ -261,7 +272,8 @@ class _MyPendingContributionsScreenState
               const SizedBox(height: 6),
               Text(
                 action != 'create' ? 'Lý do: $description' : description,
-                style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+                style: AppTextStyles.bodySmall
+                    .copyWith(color: AppColors.textSecondary),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -280,7 +292,9 @@ class _MyPendingContributionsScreenState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Icon(
-                      status == 'approved' ? Icons.check_circle : Icons.info_outline,
+                      status == 'approved'
+                          ? Icons.check_circle
+                          : Icons.info_outline,
                       size: 16,
                       color: _getStatusColor(status),
                     ),
@@ -303,7 +317,8 @@ class _MyPendingContributionsScreenState
               const SizedBox(height: 10),
               Text(
                 _formatDate(createdAt),
-                style: AppTextStyles.caption.copyWith(color: AppColors.textTertiary),
+                style: AppTextStyles.caption
+                    .copyWith(color: AppColors.textTertiary),
               ),
             ],
           ],
@@ -340,7 +355,9 @@ class _MyPendingContributionsScreenState
         children: [
           Icon(icon, size: 12, color: color),
           const SizedBox(width: 3),
-          Text(label, style: AppTextStyles.caption.copyWith(color: color, fontWeight: FontWeight.w600)),
+          Text(label,
+              style: AppTextStyles.caption
+                  .copyWith(color: color, fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -368,7 +385,8 @@ class _MyPendingContributionsScreenState
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(config['icon'] as IconData, size: 14, color: config['color'] as Color),
+          Icon(config['icon'] as IconData,
+              size: 14, color: config['color'] as Color),
           const SizedBox(width: 4),
           Text(
             config['label'] as String,
@@ -404,15 +422,35 @@ class _MyPendingContributionsScreenState
   Map<String, dynamic> _typeConfig(String type) {
     switch (type) {
       case 'subject':
-        return {'icon': Icons.school, 'label': 'Môn học', 'color': AppColors.contributorBlue};
+        return {
+          'icon': Icons.school,
+          'label': 'Môn học',
+          'color': AppColors.contributorBlue
+        };
       case 'domain':
-        return {'icon': Icons.folder, 'label': 'Domain', 'color': AppColors.cyanNeon};
+        return {
+          'icon': Icons.folder,
+          'label': 'Domain',
+          'color': AppColors.cyanNeon
+        };
       case 'topic':
-        return {'icon': Icons.topic, 'label': 'Topic', 'color': AppColors.purpleNeon};
+        return {
+          'icon': Icons.topic,
+          'label': 'Topic',
+          'color': AppColors.purpleNeon
+        };
       case 'lesson':
-        return {'icon': Icons.article, 'label': 'Bài học', 'color': AppColors.successNeon};
+        return {
+          'icon': Icons.article,
+          'label': 'Bài học',
+          'color': AppColors.successNeon
+        };
       default:
-        return {'icon': Icons.help, 'label': type, 'color': AppColors.textSecondary};
+        return {
+          'icon': Icons.help,
+          'label': type,
+          'color': AppColors.textSecondary
+        };
     }
   }
 

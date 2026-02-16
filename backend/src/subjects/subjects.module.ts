@@ -9,6 +9,7 @@ import { UserCurrencyModule } from '../user-currency/user-currency.module';
 import { SubjectLearningGoalsService } from './subject-learning-goals.service';
 import { AiModule } from '../ai/ai.module';
 import { DomainsModule } from '../domains/domains.module';
+import { UnlockTransactionsModule } from '../unlock-transactions/unlock-transactions.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { DomainsModule } from '../domains/domains.module';
     UserCurrencyModule,
     AiModule,
     forwardRef(() => DomainsModule),
+    forwardRef(() => UnlockTransactionsModule),
   ],
   controllers: [SubjectsController],
   providers: [SubjectsService, SubjectLearningGoalsService],

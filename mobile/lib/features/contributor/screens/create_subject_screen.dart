@@ -84,7 +84,8 @@ class _CreateSubjectScreenState extends State<CreateSubjectScreen> {
             Text(
               'Môn học "${_nameController.text.trim()}" đang chờ Admin duyệt. Bạn sẽ được thông báo khi có kết quả.',
               textAlign: TextAlign.center,
-              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+              style: AppTextStyles.bodyMedium
+                  .copyWith(color: AppColors.textSecondary),
             ),
           ],
         ),
@@ -94,7 +95,7 @@ class _CreateSubjectScreenState extends State<CreateSubjectScreen> {
               Navigator.of(ctx).pop();
               context.push('/contributor/my-contributions');
             },
-            child: Text(
+            child: const Text(
               'Xem đóng góp',
               style: TextStyle(color: AppColors.contributorBlue),
             ),
@@ -104,7 +105,7 @@ class _CreateSubjectScreenState extends State<CreateSubjectScreen> {
               Navigator.of(ctx).pop();
               context.pop(true);
             },
-            child: Text(
+            child: const Text(
               'Quay lại',
               style: TextStyle(color: AppColors.textSecondary),
             ),
@@ -148,7 +149,8 @@ class _CreateSubjectScreenState extends State<CreateSubjectScreen> {
                 controller: _nameController,
                 hint: 'VD: Lập trình Python, Guitar cơ bản...',
                 validator: (v) {
-                  if (v == null || v.trim().isEmpty) return 'Vui lòng nhập tên môn học';
+                  if (v == null || v.trim().isEmpty)
+                    return 'Vui lòng nhập tên môn học';
                   if (v.trim().length < 2) return 'Tên quá ngắn';
                   return null;
                 },
@@ -183,7 +185,8 @@ class _CreateSubjectScreenState extends State<CreateSubjectScreen> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    disabledBackgroundColor: AppColors.contributorBlue.withOpacity(0.5),
+                    disabledBackgroundColor:
+                        AppColors.contributorBlue.withOpacity(0.5),
                   ),
                   child: _isSubmitting
                       ? const SizedBox(
@@ -228,7 +231,8 @@ class _CreateSubjectScreenState extends State<CreateSubjectScreen> {
       ),
       child: Row(
         children: [
-          Icon(Icons.info_outline, color: AppColors.contributorBlue, size: 24),
+          const Icon(Icons.info_outline,
+              color: AppColors.contributorBlue, size: 24),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
@@ -266,26 +270,29 @@ class _CreateSubjectScreenState extends State<CreateSubjectScreen> {
       style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.textTertiary),
+        hintStyle:
+            AppTextStyles.bodyMedium.copyWith(color: AppColors.textTertiary),
         filled: true,
         fillColor: AppColors.contributorBgSecondary,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.contributorBorder),
+          borderSide: const BorderSide(color: AppColors.contributorBorder),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.contributorBorder),
+          borderSide: const BorderSide(color: AppColors.contributorBorder),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.contributorBlue, width: 2),
+          borderSide:
+              const BorderSide(color: AppColors.contributorBlue, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.errorNeon),
+          borderSide: const BorderSide(color: AppColors.errorNeon),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
     );
   }
@@ -345,14 +352,18 @@ class _CreateSubjectScreenState extends State<CreateSubjectScreen> {
           children: [
             Icon(
               icon,
-              color: isSelected ? AppColors.contributorBlue : AppColors.textTertiary,
+              color: isSelected
+                  ? AppColors.contributorBlue
+                  : AppColors.textTertiary,
               size: 28,
             ),
             const SizedBox(height: 8),
             Text(
               label,
               style: AppTextStyles.labelMedium.copyWith(
-                color: isSelected ? AppColors.contributorBlue : AppColors.textSecondary,
+                color: isSelected
+                    ? AppColors.contributorBlue
+                    : AppColors.textSecondary,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
             ),

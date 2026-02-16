@@ -34,10 +34,11 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen> {
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
       final status = await apiService.getOnboardingStatus();
-      
-        if (status['conversationHistory'] != null && 
+
+      if (status['conversationHistory'] != null &&
           (status['conversationHistory'] as List).isNotEmpty) {
-        final history = List<Map<String, dynamic>>.from(status['conversationHistory']);
+        final history =
+            List<Map<String, dynamic>>.from(status['conversationHistory']);
         setState(() {
           final startIndex = _messages.length;
           _messages.addAll(history);
@@ -55,7 +56,8 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen> {
         setState(() {
           _messages.add({
             'role': 'assistant',
-            'content': 'Xin chào! 👋 Mình là AI tutor của bạn. Mình sẽ giúp bạn bắt đầu hành trình học tập thú vị!\n\nTrước tiên, bạn có thể cho mình biết bạn muốn học gì hoặc mục tiêu học tập của bạn là gì không? 🎯',
+            'content':
+                'Xin chào! 👋 Mình là AI tutor của bạn. Mình sẽ giúp bạn bắt đầu hành trình học tập thú vị!\n\nTrước tiên, bạn có thể cho mình biết bạn muốn học gì hoặc mục tiêu học tập của bạn là gì không? 🎯',
           });
         });
       }
@@ -63,7 +65,8 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen> {
       setState(() {
         _messages.add({
           'role': 'assistant',
-          'content': 'Xin chào! 👋 Mình là AI tutor của bạn. Mình sẽ giúp bạn bắt đầu hành trình học tập thú vị!\n\nTrước tiên, bạn có thể cho mình biết bạn muốn học gì hoặc mục tiêu học tập của bạn là gì không? 🎯',
+          'content':
+              'Xin chào! 👋 Mình là AI tutor của bạn. Mình sẽ giúp bạn bắt đầu hành trình học tập thú vị!\n\nTrước tiên, bạn có thể cho mình biết bạn muốn học gì hoặc mục tiêu học tập của bạn là gì không? 🎯',
         });
       });
     }
@@ -91,8 +94,9 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen> {
         sessionId: _sessionId,
       );
 
-      final assistantMessage = response['response'] ?? 'Xin lỗi, tôi không hiểu. Bạn có thể nói lại được không?';
-      
+      final assistantMessage = response['response'] ??
+          'Xin lỗi, tôi không hiểu. Bạn có thể nói lại được không?';
+
       setState(() {
         _sessionId = response['sessionId'] ?? _sessionId;
         _messages.add({
@@ -110,7 +114,8 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen> {
       setState(() {
         _messages.add({
           'role': 'assistant',
-          'content': 'Xin lỗi, tôi gặp một chút vấn đề kỹ thuật. Bạn có thể thử lại được không? 😊',
+          'content':
+              'Xin lỗi, tôi gặp một chút vấn đề kỹ thuật. Bạn có thể thử lại được không? 😊',
         });
         _isLoading = false;
       });
@@ -158,10 +163,12 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen> {
                 gradient: AppGradients.primary,
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(Icons.smart_toy_rounded, color: Colors.white, size: 20),
+              child: const Icon(Icons.smart_toy_rounded,
+                  color: Colors.white, size: 20),
             ),
             const SizedBox(width: 12),
-            Text('AI Tutor', style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
+            Text('AI Tutor',
+                style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
           ],
         ),
         actions: [
@@ -171,14 +178,16 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen> {
               child: TextButton(
                 onPressed: _proceedToTest,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     gradient: AppGradients.success,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     'Tiếp tục →',
-                    style: AppTextStyles.labelSmall.copyWith(color: Colors.white),
+                    style:
+                        AppTextStyles.labelSmall.copyWith(color: Colors.white),
                   ),
                 ),
               ),
@@ -201,7 +210,8 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen> {
                 final message = _messages[index];
                 final isUser = message['role'] == 'user';
                 final content = message['content'] ?? '';
-                final shouldAnimate = !isUser && !_animatedMessages.contains(index);
+                final shouldAnimate =
+                    !isUser && !_animatedMessages.contains(index);
 
                 return _buildMessageBubble(
                   content: content,
@@ -237,7 +247,9 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen> {
                 onPressed: canProceedNow ? _proceedToTest : null,
                 gradient: canProceedNow ? AppGradients.success : null,
                 glowColor: canProceedNow ? AppColors.successNeon : null,
-                icon: canProceedNow ? Icons.play_arrow_rounded : Icons.lock_rounded,
+                icon: canProceedNow
+                    ? Icons.play_arrow_rounded
+                    : Icons.lock_rounded,
               ),
             ),
           ),
@@ -245,7 +257,7 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen> {
           // Input field
           Container(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: AppColors.bgSecondary,
               border: Border(top: BorderSide(color: AppColors.borderPrimary)),
             ),
@@ -261,12 +273,15 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen> {
                       ),
                       child: TextField(
                         controller: _messageController,
-                        style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary),
+                        style: AppTextStyles.bodyMedium
+                            .copyWith(color: AppColors.textPrimary),
                         decoration: InputDecoration(
                           hintText: 'Nhập tin nhắn...',
-                          hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.textTertiary),
+                          hintStyle: AppTextStyles.bodyMedium
+                              .copyWith(color: AppColors.textTertiary),
                           border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 14),
                         ),
                         onSubmitted: (_) => _sendMessage(),
                       ),
@@ -274,10 +289,12 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen> {
                   ),
                   const SizedBox(width: 12),
                   GestureDetector(
-                    onTap: _isLoading ? null : () {
-                      HapticFeedback.lightImpact();
-                      _sendMessage();
-                    },
+                    onTap: _isLoading
+                        ? null
+                        : () {
+                            HapticFeedback.lightImpact();
+                            _sendMessage();
+                          },
                     child: Container(
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
@@ -295,7 +312,8 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen> {
                       ),
                       child: Icon(
                         Icons.send_rounded,
-                        color: _isLoading ? AppColors.textTertiary : Colors.white,
+                        color:
+                            _isLoading ? AppColors.textTertiary : Colors.white,
                         size: 22,
                       ),
                     ),

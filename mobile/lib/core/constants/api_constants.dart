@@ -86,8 +86,13 @@ class ApiConstants {
   static const String onboardingStatus = '/onboarding/status';
   static const String resetOnboarding = '/onboarding/reset';
 
-  // Unlock
-  static const String unlockScholar = '/unlock/scholar';
+  // Unlock (Diamond-based)
+  static String unlockPricing(String subjectId) => '/unlock/pricing/$subjectId';
+  static const String unlockSubject = '/unlock/subject';
+  static const String unlockDomain = '/unlock/domain';
+  static const String unlockTopic = '/unlock/topic';
+  static String checkNodeAccess(String nodeId) => '/unlock/check-access/$nodeId';
+  static const String myUnlocks = '/unlock/my-unlocks';
   static const String unlockTransactions = '/unlock/transactions';
 
   // Health
@@ -102,6 +107,8 @@ class ApiConstants {
   static String getLessonDataByType(String nodeId, String lessonType) => '/nodes/$nodeId/lesson/$lessonType';
   static String updateLessonContent(String nodeId) => '/nodes/$nodeId/lesson-content';
   static String generateEndQuiz(String nodeId) => '/nodes/$nodeId/end-quiz/generate';
+  static const String generateExample = '/nodes/generate-example';
+  static const String generateQuizExplanations = '/nodes/generate-quiz-explanations';
   static String submitEndQuiz(String nodeId) => '/nodes/$nodeId/submit-quiz';
   static String submitEndQuizForType(String nodeId, String lessonType) => '/nodes/$nodeId/submit-quiz/$lessonType';
 
@@ -150,11 +157,11 @@ class ApiConstants {
   static String approvePendingContribution(String id) => '/pending-contributions/$id/approve';
   static String rejectPendingContribution(String id) => '/pending-contributions/$id/reject';
 
-  // Payment
+  // Payment (Diamond purchase)
   static const String paymentPackages = '/payment/packages';
   static const String createPayment = '/payment/create';
   static String getPayment(String paymentId) => '/payment/order/$paymentId';
   static const String paymentHistory = '/payment/history';
-  static const String premiumStatus = '/payment/premium/status';
+  static const String diamondBalance = '/payment/diamond-balance';
   static const String pendingPayment = '/payment/pending';
 }

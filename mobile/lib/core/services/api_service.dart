@@ -134,6 +134,32 @@ class ApiService {
     return Map<String, dynamic>.from(response.data);
   }
 
+  Future<Map<String, dynamic>> generateExample(String title, String content, String exampleType) async {
+    final response = await _apiClient.post(
+      ApiConstants.generateExample,
+      data: {'title': title, 'content': content, 'exampleType': exampleType},
+    );
+    return Map<String, dynamic>.from(response.data);
+  }
+
+  Future<Map<String, dynamic>> generateQuizExplanations({
+    required String question,
+    required List<Map<String, String>> options,
+    required int correctAnswer,
+    String? context,
+  }) async {
+    final response = await _apiClient.post(
+      ApiConstants.generateQuizExplanations,
+      data: {
+        'question': question,
+        'options': options,
+        'correctAnswer': correctAnswer,
+        if (context != null) 'context': context,
+      },
+    );
+    return Map<String, dynamic>.from(response.data);
+  }
+
   Future<Map<String, dynamic>> submitEndQuiz(String nodeId, List<int> answers) async {
     final response = await _apiClient.post(
       ApiConstants.submitEndQuiz(nodeId),
@@ -714,13 +740,51 @@ class ApiService {
     return response.data['payments'] ?? [];
   }
 
-  Future<Map<String, dynamic>> getPremiumStatus() async {
-    final response = await _apiClient.get(ApiConstants.premiumStatus);
+  Future<Map<String, dynamic>> getDiamondBalance() async {
+    final response = await _apiClient.get(ApiConstants.diamondBalance);
     return response.data;
   }
 
   Future<Map<String, dynamic>> getPendingPayment() async {
     final response = await _apiClient.get(ApiConstants.pendingPayment);
+    return response.data;
+  }
+
+  // =====================
+  // Unlock (Diamond) APIs
+  // =====================
+
+  Future<Map<String, dynamic>> getUnlockPricing(String subjectId) async {
+    final response = await _apiClient.get(ApiConstants.unlockPricing(subjectId));
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> unlockSubject(String subjectId) async {
+    final response = await _apiClient.post(
+      ApiConstants.unlockSubject,
+      data: {'subjectId': subjectId},
+    );
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> unlockDomain(String domainId) async {
+    final response = await _apiClient.post(
+      ApiConstants.unlockDomain,
+      data: {'domainId': domainId},
+    );
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> unlockTopic(String topicId) async {
+    final response = await _apiClient.post(
+      ApiConstants.unlockTopic,
+      data: {'topicId': topicId},
+    );
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> checkNodeAccess(String nodeId) async {
+    final response = await _apiClient.get(ApiConstants.checkNodeAccess(nodeId));
     return response.data;
   }
 }

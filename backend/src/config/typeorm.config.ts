@@ -7,6 +7,7 @@ import { LearningNode } from '../learning-nodes/entities/learning-node.entity';
 import { UserProgress } from '../user-progress/entities/user-progress.entity';
 import { UserCurrency } from '../user-currency/entities/user-currency.entity';
 import { UnlockTransaction } from '../unlock-transactions/entities/unlock-transaction.entity';
+import { UserUnlock } from '../unlock-transactions/entities/user-unlock.entity';
 import { PlacementTest } from '../placement-test/entities/placement-test.entity';
 import { Question } from '../placement-test/entities/question.entity';
 import { Quest } from '../quests/entities/quest.entity';
@@ -42,6 +43,7 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
         UserProgress,
         UserCurrency,
         UnlockTransaction,
+        UserUnlock,
         PlacementTest,
         Question,
         Quest,

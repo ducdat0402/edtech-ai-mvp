@@ -18,8 +18,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
   bool _isLoading = true;
   List<Map<String, dynamic>> _packages = [];
   Map<String, dynamic>? _bankInfo;
-  Map<String, dynamic>? _premiumStatus;
+  Map<String, dynamic>? _diamondBalance;
   Map<String, dynamic>? _currentPayment;
+  Map<String, dynamic>? _selectedPackage;
   String? _qrUrl;
   String? _error;
 
@@ -37,18 +38,18 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
-      
-      // Load packages and premium status in parallel
+
       final results = await Future.wait([
         apiService.getPaymentPackages(),
-        apiService.getPremiumStatus(),
+        apiService.getDiamondBalance(),
       ]);
 
       setState(() {
         final packagesData = results[0];
-        _packages = List<Map<String, dynamic>>.from(packagesData['packages'] ?? []);
+        _packages =
+            List<Map<String, dynamic>>.from(packagesData['packages'] ?? []);
         _bankInfo = packagesData['bankInfo'];
-        _premiumStatus = results[1];
+        _diamondBalance = results[1];
         _isLoading = false;
       });
     } catch (e) {
@@ -59,17 +60,16 @@ class _PaymentScreenState extends State<PaymentScreen> {
     }
   }
 
-  Future<void> _createPayment(String packageId) async {
-    setState(() {
-      _isLoading = true;
-    });
+  Future<void> _createPayment(Map<String, dynamic> pkg) async {
+    setState(() => _isLoading = true);
 
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
-      final result = await apiService.createPayment(packageId);
+      final result = await apiService.createPayment(pkg['id'] as String);
 
       setState(() {
         _currentPayment = result['payment'] as Map<String, dynamic>?;
+        _selectedPackage = pkg;
         _qrUrl = result['qrUrl'] as String?;
         _isLoading = false;
       });
@@ -78,7 +78,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         _error = e.toString();
         _isLoading = false;
       });
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -107,7 +107,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
     return Scaffold(
       backgroundColor: AppColors.bgPrimary,
       appBar: AppBar(
-        title: Text('Thanh toán Premium', style: AppTextStyles.h3),
+        title: const Text('Mua Kim Cương', style: AppTextStyles.h3),
         backgroundColor: AppColors.bgPrimary,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
@@ -115,7 +115,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppColors.purpleNeon))
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.purpleNeon))
           : _error != null
               ? _buildError()
               : _currentPayment != null
@@ -131,11 +132,13 @@ class _PaymentScreenState extends State<PaymentScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline, size: 64, color: AppColors.errorNeon),
+            const Icon(Icons.error_outline,
+                size: 64, color: AppColors.errorNeon),
             const SizedBox(height: 16),
-            Text('Có lỗi xảy ra', style: AppTextStyles.h3),
+            const Text('Có lỗi xảy ra', style: AppTextStyles.h3),
             const SizedBox(height: 8),
-            Text(_error!, style: AppTextStyles.bodyMedium, textAlign: TextAlign.center),
+            Text(_error!,
+                style: AppTextStyles.bodyMedium, textAlign: TextAlign.center),
             const SizedBox(height: 24),
             GamingButton(
               text: 'Thử lại',
@@ -149,81 +152,106 @@ class _PaymentScreenState extends State<PaymentScreen> {
   }
 
   Widget _buildPackageSelection() {
-    final isPremium = _premiumStatus?['isPremium'] == true;
-    final daysRemaining = _premiumStatus?['daysRemaining'] ?? 0;
+    final diamonds = _diamondBalance?['diamonds'] as int? ?? 0;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Premium status card
-          if (isPremium)
-            GlassCard(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [AppColors.coinGold, AppColors.orangeNeon],
-                        ),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(Icons.star, color: Colors.white, size: 24),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Premium đang hoạt động', style: AppTextStyles.labelLarge.copyWith(color: AppColors.coinGold)),
-                          const SizedBox(height: 4),
-                          Text('Còn $daysRemaining ngày', style: AppTextStyles.bodyMedium),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          
-          if (isPremium) const SizedBox(height: 24),
-
-          Text(
-            isPremium ? 'Gia hạn Premium' : 'Chọn gói Premium',
-            style: AppTextStyles.h2,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Mở khóa tất cả tính năng, học không giới hạn',
-            style: AppTextStyles.bodyMedium,
-          ),
+          // Current diamond balance
+          _buildDiamondBalanceCard(diamonds),
           const SizedBox(height: 24),
+
+          // Section title
+          const Text(
+            'Chọn gói kim cương',
+            style: TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'Mua kim cương để mở khóa nội dung và tính năng',
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+          ),
+          const SizedBox(height: 20),
 
           // Package cards
-          ..._packages.map((pkg) => _buildPackageCard(pkg)),
+          ...List.generate(
+              _packages.length, (i) => _buildPackageCard(_packages[i], i)),
 
           const SizedBox(height: 24),
 
-          // Features list
-          GlassCard(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Tính năng Premium', style: AppTextStyles.labelLarge),
-                  const SizedBox(height: 12),
-                  _buildFeatureItem(Icons.quiz, 'Không giới hạn quiz và bài học'),
-                  _buildFeatureItem(Icons.block, 'Không quảng cáo'),
-                  _buildFeatureItem(Icons.support_agent, 'Hỗ trợ ưu tiên'),
-                  _buildFeatureItem(Icons.stars, 'Badge độc quyền'),
-                  _buildFeatureItem(Icons.new_releases, 'Truy cập tính năng mới sớm'),
-                ],
+          // Info section
+          _buildInfoSection(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDiamondBalanceCard(int diamonds) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF1A1A2E), Color(0xFF16213E)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.cyanNeon.withOpacity(0.3)),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.cyanNeon.withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // Diamond icon
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF00BCD4), Color(0xFF00838F)],
               ),
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.cyanNeon.withOpacity(0.3),
+                  blurRadius: 12,
+                ),
+              ],
+            ),
+            child: const Icon(Icons.diamond, color: Colors.white, size: 28),
+          ),
+          const SizedBox(width: 16),
+          // Balance info
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Số dư kim cương',
+                  style:
+                      TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _formatNumber(diamonds),
+                  style: const TextStyle(
+                    color: AppColors.cyanNeon,
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -231,57 +259,176 @@ class _PaymentScreenState extends State<PaymentScreen> {
     );
   }
 
-  Widget _buildPackageCard(Map<String, dynamic> pkg) {
-    final id = pkg['id'] as String;
-    final name = pkg['name'] as String;
-    final price = (pkg['price'] as num).toInt();
-    final description = pkg['description'] as String? ?? '';
-    final isPopular = id == 'premium_3months';
+  Widget _buildPackageCard(Map<String, dynamic> pkg, int index) {
+    final name = pkg['name'] as String? ?? '';
+    final price = (pkg['price'] as num?)?.toInt() ?? 0;
+    final totalDiamonds = (pkg['totalDiamonds'] as num?)?.toInt() ?? 0;
+    final diamonds = (pkg['diamonds'] as num?)?.toInt() ?? 0;
+    final bonusDiamonds = (pkg['bonusDiamonds'] as num?)?.toInt() ?? 0;
+    final bonusPercent = (pkg['bonusPercent'] as num?)?.toInt() ?? 0;
+    final pricePerDiamond = (pkg['pricePerDiamond'] as num?)?.toInt() ?? 0;
+    final discount = pkg['discount'] as String? ?? '';
+    final badge = pkg['badge'] as String? ?? '';
+    final isPopular = pkg['isPopular'] == true;
+
+    // Colors based on package tier
+    final tierColors = [
+      [AppColors.textSecondary, AppColors.bgTertiary], // Starter
+      [AppColors.purpleNeon, AppColors.purpleNeon.withOpacity(0.08)], // Popular
+      [AppColors.orangeNeon, AppColors.orangeNeon.withOpacity(0.08)], // Pro
+      [AppColors.cyanNeon, AppColors.cyanNeon.withOpacity(0.08)], // Premium
+    ];
+    final accentColor = tierColors[index][0];
+    final bgColor = tierColors[index][1];
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      child: GlassCard(
-        borderColor: isPopular ? AppColors.purpleNeon : null,
+      child: Material(
+        color: Colors.transparent,
         child: InkWell(
-          onTap: () => _createPayment(id),
+          onTap: () => _createPayment(pkg),
           borderRadius: BorderRadius.circular(16),
-          child: Padding(
+          child: Container(
             padding: const EdgeInsets.all(16),
-            child: Row(
+            decoration: BoxDecoration(
+              color: bgColor,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isPopular ? accentColor : AppColors.borderPrimary,
+                width: isPopular ? 2 : 1,
+              ),
+            ),
+            child: Column(
               children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
+                Row(
+                  children: [
+                    // Diamond icon
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: accentColor.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(Icons.diamond, color: accentColor, size: 24),
+                    ),
+                    const SizedBox(width: 14),
+                    // Package info
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(name, style: AppTextStyles.labelLarge),
-                          if (isPopular) ...[
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [AppColors.purpleNeon, AppColors.pinkNeon],
+                          Row(
+                            children: [
+                              Text(
+                                name,
+                                style: const TextStyle(
+                                  color: AppColors.textPrimary,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
                                 ),
-                                borderRadius: BorderRadius.circular(12),
                               ),
-                              child: Text('HOT', style: AppTextStyles.caption.copyWith(color: Colors.white)),
+                              if (badge.isNotEmpty) ...[
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: accentColor,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text(
+                                    badge,
+                                    style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          // Diamond amount
+                          Row(
+                            children: [
+                              Text(
+                                '$totalDiamonds',
+                                style: TextStyle(
+                                  color: accentColor,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const Text(' kim cương',
+                                  style: TextStyle(
+                                      color: AppColors.textSecondary,
+                                      fontSize: 13)),
+                              if (bonusDiamonds > 0) ...[
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 6, vertical: 1),
+                                  decoration: BoxDecoration(
+                                    color:
+                                        AppColors.successNeon.withOpacity(0.15),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    '+$bonusPercent% Bonus',
+                                    style: const TextStyle(
+                                        color: AppColors.successNeon,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                          if (bonusDiamonds > 0)
+                            Text(
+                              '($diamonds + $bonusDiamonds bonus)',
+                              style: const TextStyle(
+                                  color: AppColors.textTertiary, fontSize: 11),
                             ),
-                          ],
                         ],
                       ),
-                      const SizedBox(height: 4),
-                      Text(description, style: AppTextStyles.bodySmall),
-                    ],
-                  ),
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      '${_formatCurrency(price)}đ',
-                      style: AppTextStyles.numberLarge.copyWith(color: AppColors.coinGold),
+                    ),
+                    // Price column
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          '${_formatCurrency(price)}đ',
+                          style: const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '${_formatCurrency(pricePerDiamond)}đ/',
+                              style: const TextStyle(
+                                  color: AppColors.textTertiary, fontSize: 11),
+                            ),
+                            const Icon(Icons.diamond,
+                                size: 10, color: AppColors.textTertiary),
+                            if (discount.isNotEmpty) ...[
+                              const SizedBox(width: 4),
+                              Text(
+                                discount,
+                                style: const TextStyle(
+                                    color: AppColors.successNeon,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -293,36 +440,131 @@ class _PaymentScreenState extends State<PaymentScreen> {
     );
   }
 
-  Widget _buildFeatureItem(IconData icon, String text) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
+  Widget _buildInfoSection() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.bgSecondary,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.borderPrimary),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 20, color: AppColors.successNeon),
-          const SizedBox(width: 12),
-          Expanded(child: Text(text, style: AppTextStyles.bodyMedium)),
+          const Row(
+            children: [
+              Icon(Icons.info_outline, color: AppColors.cyanNeon, size: 18),
+              SizedBox(width: 8),
+              Text(
+                'Kim cương dùng để làm gì?',
+                style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          _buildInfoItem(
+              Icons.lock_open, 'Mở khóa bài học và nội dung cao cấp'),
+          _buildInfoItem(Icons.auto_awesome, 'Sử dụng tính năng AI nâng cao'),
+          _buildInfoItem(Icons.stars, 'Mua vật phẩm đặc biệt và badge'),
+          _buildInfoItem(Icons.speed, 'Tăng tốc tiến trình học tập'),
         ],
       ),
     );
   }
 
+  Widget _buildInfoItem(IconData icon, String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        children: [
+          Icon(icon, size: 16, color: AppColors.successNeon),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(text,
+                style: const TextStyle(
+                    color: AppColors.textSecondary, fontSize: 13)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ==================== Payment Details ====================
+
   Widget _buildPaymentDetails() {
     final payment = _currentPayment!;
     final paymentCode = payment['paymentCode'] as String;
     final amount = (payment['amount'] as num).toInt();
-    final packageName = payment['packageName'] as String;
+    final diamondAmount = (payment['diamondAmount'] as num?)?.toInt() ?? 0;
+    final packageName = _selectedPackage?['name'] as String? ??
+        payment['packageName'] as String? ??
+        '';
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
+          // Package summary
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF1A1A2E), Color(0xFF16213E)],
+              ),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.cyanNeon.withOpacity(0.3)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.diamond, color: AppColors.cyanNeon, size: 32),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Gói $packageName',
+                          style: const TextStyle(
+                              color: AppColors.textSecondary, fontSize: 13)),
+                      const SizedBox(height: 2),
+                      Text(
+                        '$diamondAmount kim cương',
+                        style: const TextStyle(
+                            color: AppColors.cyanNeon,
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+                Text(
+                  '${_formatCurrency(amount)}đ',
+                  style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+
           // QR Code
           GlassCard(
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
-                  Text('Quét mã QR để thanh toán', style: AppTextStyles.labelLarge),
+                  const Text(
+                    'Quét mã QR để thanh toán',
+                    style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600),
+                  ),
                   const SizedBox(height: 16),
                   Container(
                     padding: const EdgeInsets.all(8),
@@ -341,7 +583,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
                               return const SizedBox(
                                 width: 250,
                                 height: 250,
-                                child: Center(child: CircularProgressIndicator()),
+                                child:
+                                    Center(child: CircularProgressIndicator()),
                               );
                             },
                             errorBuilder: (context, error, stackTrace) {
@@ -349,8 +592,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                 width: 250,
                                 height: 250,
                                 child: Center(
-                                  child: Icon(Icons.error, size: 48, color: Colors.red),
-                                ),
+                                    child: Icon(Icons.error,
+                                        size: 48, color: Colors.red)),
                               );
                             },
                           )
@@ -360,16 +603,14 @@ class _PaymentScreenState extends State<PaymentScreen> {
                             child: Center(child: Text('Không thể tải QR')),
                           ),
                   ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Hoặc chuyển khoản thủ công',
-                    style: AppTextStyles.bodySmall,
-                  ),
+                  const SizedBox(height: 12),
+                  const Text('Hoặc chuyển khoản thủ công',
+                      style: TextStyle(
+                          color: AppColors.textTertiary, fontSize: 13)),
                 ],
               ),
             ),
           ),
-
           const SizedBox(height: 16),
 
           // Bank info
@@ -379,43 +620,31 @@ class _PaymentScreenState extends State<PaymentScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Thông tin chuyển khoản', style: AppTextStyles.labelLarge),
+                  const Text('Thông tin chuyển khoản',
+                      style: TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600)),
                   const SizedBox(height: 16),
-                  
                   _buildInfoRow(
-                    'Ngân hàng',
-                    _bankInfo?['bankName'] ?? 'MB Bank',
-                    copyable: false,
-                  ),
+                      'Ngân hàng', _bankInfo?['bankName'] ?? 'MB Bank',
+                      copyable: false),
                   _buildInfoRow(
-                    'Số tài khoản',
-                    _bankInfo?['accountNumber'] ?? '',
-                    copyable: true,
-                  ),
+                      'Số tài khoản', _bankInfo?['accountNumber'] ?? '',
+                      copyable: true),
                   _buildInfoRow(
-                    'Chủ tài khoản',
-                    _bankInfo?['accountName'] ?? '',
-                    copyable: false,
-                  ),
-                  _buildInfoRow(
-                    'Số tiền',
-                    '${_formatCurrency(amount)} VNĐ',
-                    copyable: true,
-                    copyValue: amount.toString(),
-                    highlight: true,
-                  ),
-                  _buildInfoRow(
-                    'Nội dung CK',
-                    paymentCode,
-                    copyable: true,
-                    highlight: true,
-                    important: true,
-                  ),
+                      'Chủ tài khoản', _bankInfo?['accountName'] ?? '',
+                      copyable: false),
+                  _buildInfoRow('Số tiền', '${_formatCurrency(amount)} VNĐ',
+                      copyable: true,
+                      copyValue: amount.toString(),
+                      highlight: true),
+                  _buildInfoRow('Nội dung CK', paymentCode,
+                      copyable: true, highlight: true, important: true),
                 ],
               ),
             ),
           ),
-
           const SizedBox(height: 16),
 
           // Warning
@@ -433,37 +662,13 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 Expanded(
                   child: Text(
                     'Vui lòng nhập đúng nội dung chuyển khoản "$paymentCode" để hệ thống tự động xác nhận.',
-                    style: AppTextStyles.bodySmall.copyWith(color: AppColors.warningNeon),
+                    style: const TextStyle(
+                        color: AppColors.warningNeon, fontSize: 13),
                   ),
                 ),
               ],
             ),
           ),
-
-          const SizedBox(height: 16),
-
-          // Package info
-          GlassCard(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  const Icon(Icons.shopping_bag, color: AppColors.purpleNeon),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Gói đã chọn', style: AppTextStyles.caption),
-                        Text(packageName, style: AppTextStyles.labelLarge),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
           const SizedBox(height: 24),
 
           // Actions
@@ -474,43 +679,56 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   onPressed: () {
                     setState(() {
                       _currentPayment = null;
+                      _selectedPackage = null;
                       _qrUrl = null;
                     });
                   },
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(color: AppColors.borderPrimary),
                     padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: Text('Chọn gói khác', style: AppTextStyles.labelMedium),
+                  child: const Text('Chọn gói khác',
+                      style: TextStyle(color: AppColors.textSecondary)),
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: GamingButton(
-                  text: 'Kiểm tra trạng thái',
+                  text: 'Kiểm tra',
                   onPressed: () async {
-                    // Refresh premium status (auto-activated by webhook)
                     try {
-                      final apiService = Provider.of<ApiService>(context, listen: false);
-                      final status = await apiService.getPremiumStatus();
-                      
-                      final isPremium = status['isPremium'] as bool? ?? false;
-                      
-                      if (isPremium) {
+                      final apiService =
+                          Provider.of<ApiService>(context, listen: false);
+                      final balance = await apiService.getDiamondBalance();
+                      final newDiamonds = balance['diamonds'] as int? ?? 0;
+                      final oldDiamonds =
+                          _diamondBalance?['diamonds'] as int? ?? 0;
+
+                      if (newDiamonds > oldDiamonds) {
                         if (mounted) {
+                          setState(() => _diamondBalance = balance);
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Premium đã được kích hoạt! 🎉'),
+                            SnackBar(
+                              content: Text(
+                                  'Đã nhận ${newDiamonds - oldDiamonds} kim cương!'),
                               backgroundColor: AppColors.successNeon,
                             ),
                           );
-                          Navigator.pop(context, true);
+                          // Go back to package selection to show updated balance
+                          setState(() {
+                            _currentPayment = null;
+                            _selectedPackage = null;
+                            _qrUrl = null;
+                          });
                         }
                       } else {
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text('Chưa nhận được thanh toán. Vui lòng đợi 1-2 phút sau khi chuyển khoản.'),
+                              content: Text(
+                                  'Chưa nhận được thanh toán. Vui lòng đợi 1-2 phút sau khi chuyển khoản.'),
                               backgroundColor: AppColors.warningNeon,
                             ),
                           );
@@ -520,9 +738,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       if (mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('Lỗi: $e'),
-                            backgroundColor: AppColors.errorNeon,
-                          ),
+                              content: Text('Lỗi: $e'),
+                              backgroundColor: AppColors.errorNeon),
                         );
                       }
                     }
@@ -532,12 +749,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
               ),
             ],
           ),
-
           const SizedBox(height: 16),
-
-          Text(
-            'Sau khi chuyển khoản, hệ thống sẽ tự động kích hoạt trong 1-2 phút',
-            style: AppTextStyles.caption,
+          const Text(
+            'Sau khi chuyển khoản, hệ thống sẽ tự động cộng kim cương trong 1-2 phút',
+            style: TextStyle(color: AppColors.textTertiary, fontSize: 12),
             textAlign: TextAlign.center,
           ),
         ],
@@ -560,16 +775,22 @@ class _PaymentScreenState extends State<PaymentScreen> {
         children: [
           SizedBox(
             width: 100,
-            child: Text(label, style: AppTextStyles.bodySmall),
+            child: Text(label,
+                style: const TextStyle(
+                    color: AppColors.textTertiary, fontSize: 13)),
           ),
           Expanded(
             child: Text(
               value,
-              style: highlight
-                  ? AppTextStyles.labelLarge.copyWith(
-                      color: important ? AppColors.cyanNeon : AppColors.textPrimary,
-                    )
-                  : AppTextStyles.bodyMedium,
+              style: TextStyle(
+                color: important
+                    ? AppColors.cyanNeon
+                    : highlight
+                        ? AppColors.textPrimary
+                        : AppColors.textSecondary,
+                fontSize: highlight ? 16 : 14,
+                fontWeight: highlight ? FontWeight.bold : FontWeight.normal,
+              ),
             ),
           ),
           if (copyable)
@@ -587,8 +808,15 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   String _formatCurrency(int amount) {
     return amount.toString().replaceAllMapped(
-      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-      (Match m) => '${m[1]}.',
-    );
+          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+          (Match m) => '${m[1]}.',
+        );
+  }
+
+  String _formatNumber(int number) {
+    return number.toString().replaceAllMapped(
+          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+          (Match m) => '${m[1]},',
+        );
   }
 }

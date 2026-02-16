@@ -146,11 +146,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             const SizedBox(height: 24),
 
                             // Current Learning (nodes in progress)
-                            _buildCurrentLearningSection(_dashboardData!['currentLearningNodes'] ?? []),
+                            _buildCurrentLearningSection(
+                                _dashboardData!['currentLearningNodes'] ?? []),
                             const SizedBox(height: 24),
 
                             // Daily Quests
-                            _buildQuestsSection(_dashboardData!['dailyQuests'] ?? []),
+                            _buildQuestsSection(
+                                _dashboardData!['dailyQuests'] ?? []),
                             const SizedBox(height: 24),
 
                             // All Subjects
@@ -167,17 +169,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildSkeletonLoader() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+    return const SingleChildScrollView(
+      padding: EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SkeletonCard(height: 120),
-          const SizedBox(height: 24),
+          SizedBox(height: 24),
           SkeletonCard(height: 100),
-          const SizedBox(height: 24),
+          SizedBox(height: 24),
           SkeletonCard(height: 150),
-          const SizedBox(height: 24),
+          SizedBox(height: 24),
           SkeletonCard(height: 120),
         ],
       ),
@@ -208,7 +210,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ),
         const SizedBox(height: 20),
-        
+
         // Stats Row with new widgets
         Row(
           children: [
@@ -250,7 +252,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ],
     );
   }
-
 
   Widget _buildStatCard({
     required IconData icon,
@@ -316,7 +317,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   void _showLevelTitlesDialog() {
     final currentLevel = (_dashboardData?['stats']?['level'] as int?) ?? 1;
-    
+
     showDialog(
       context: context,
       builder: (context) => Dialog(
@@ -333,7 +334,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.military_tech, color: Colors.amber.shade700, size: 28),
+                    Icon(Icons.military_tech,
+                        color: Colors.amber.shade700, size: 28),
                     const SizedBox(width: 8),
                     const Text(
                       'Danh hiệu',
@@ -353,13 +355,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                _buildLevelTitleRow('Người mới', '1 - 5', Icons.emoji_people, Colors.green, currentLevel >= 1 && currentLevel <= 5),
-                _buildLevelTitleRow('Học viên', '6 - 10', Icons.school, Colors.blue, currentLevel >= 6 && currentLevel <= 10),
-                _buildLevelTitleRow('Sinh viên', '11 - 20', Icons.menu_book, Colors.indigo, currentLevel >= 11 && currentLevel <= 20),
-                _buildLevelTitleRow('Chuyên gia', '21 - 35', Icons.psychology, Colors.purple, currentLevel >= 21 && currentLevel <= 35),
-                _buildLevelTitleRow('Bậc thầy', '36 - 50', Icons.workspace_premium, Colors.orange, currentLevel >= 36 && currentLevel <= 50),
-                _buildLevelTitleRow('Huyền thoại', '51 - 75', Icons.auto_awesome, Colors.red, currentLevel >= 51 && currentLevel <= 75),
-                _buildLevelTitleRow('Thần đồng', '76+', Icons.diamond, Colors.amber, currentLevel >= 76),
+                _buildLevelTitleRow('Người mới', '1 - 5', Icons.emoji_people,
+                    Colors.green, currentLevel >= 1 && currentLevel <= 5),
+                _buildLevelTitleRow('Học viên', '6 - 10', Icons.school,
+                    Colors.blue, currentLevel >= 6 && currentLevel <= 10),
+                _buildLevelTitleRow('Sinh viên', '11 - 20', Icons.menu_book,
+                    Colors.indigo, currentLevel >= 11 && currentLevel <= 20),
+                _buildLevelTitleRow('Chuyên gia', '21 - 35', Icons.psychology,
+                    Colors.purple, currentLevel >= 21 && currentLevel <= 35),
+                _buildLevelTitleRow(
+                    'Bậc thầy',
+                    '36 - 50',
+                    Icons.workspace_premium,
+                    Colors.orange,
+                    currentLevel >= 36 && currentLevel <= 50),
+                _buildLevelTitleRow(
+                    'Huyền thoại',
+                    '51 - 75',
+                    Icons.auto_awesome,
+                    Colors.red,
+                    currentLevel >= 51 && currentLevel <= 75),
+                _buildLevelTitleRow('Thần đồng', '76+', Icons.diamond,
+                    Colors.amber, currentLevel >= 76),
                 const SizedBox(height: 12),
                 TextButton(
                   onPressed: () => Navigator.pop(context),
@@ -373,15 +390,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildLevelTitleRow(String title, String levelRange, IconData icon, Color color, bool isCurrent) {
+  Widget _buildLevelTitleRow(String title, String levelRange, IconData icon,
+      Color color, bool isCurrent) {
     return Container(
       margin: const EdgeInsets.only(bottom: 6),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: isCurrent 
-            ? [color.withOpacity(0.2), color.withOpacity(0.1)]
-            : [color.withOpacity(0.08), color.withOpacity(0.03)],
+          colors: isCurrent
+              ? [color.withOpacity(0.2), color.withOpacity(0.1)]
+              : [color.withOpacity(0.08), color.withOpacity(0.03)],
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
         ),
@@ -455,7 +473,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           'Quick Actions',
           style: AppTextStyles.h3,
         ),
@@ -501,7 +519,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
+            const Text(
               'Daily Quests',
               style: AppTextStyles.h3,
             ),
@@ -541,7 +559,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           'Topic đang học',
           style: AppTextStyles.h3,
         ),
@@ -574,96 +592,98 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           context.push('/nodes/$nodeId');
                         }
                       },
-                    borderRadius: BorderRadius.circular(12),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                icon,
-                                style: const TextStyle(fontSize: 24),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisSize: MainAxisSize.min,
+                      borderRadius: BorderRadius.circular(12),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  icon,
+                                  style: const TextStyle(fontSize: 24),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        subjectName,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey.shade600,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        title,
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          height: 1.3,
+                                        ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const Spacer(),
+                            const SizedBox(height: 12),
+                            // Progress bar
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
-                                      subjectName,
+                                      'Tiến độ',
                                       style: TextStyle(
                                         fontSize: 12,
                                         color: Colors.grey.shade600,
                                       ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
                                     ),
-                                    const SizedBox(height: 4),
                                     Text(
-                                      title,
-                                      style: const TextStyle(
-                                        fontSize: 16,
+                                      '$progress%',
+                                      style: TextStyle(
+                                        fontSize: 12,
                                         fontWeight: FontWeight.bold,
-                                        height: 1.3,
+                                        color: Colors.blue.shade700,
                                       ),
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ],
                                 ),
-                              ),
-                            ],
-                          ),
-                          const Spacer(),
-                          const SizedBox(height: 12),
-                          // Progress bar
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    'Tiến độ',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey.shade600,
-                                    ),
+                                const SizedBox(height: 4),
+                                LinearProgressIndicator(
+                                  value: progress / 100,
+                                  backgroundColor: Colors.grey.shade200,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.blue.shade400,
                                   ),
-                                  Text(
-                                    '$progress%',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.blue.shade700,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 4),
-                              LinearProgressIndicator(
-                                value: progress / 100,
-                                backgroundColor: Colors.grey.shade200,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  Colors.blue.shade400,
+                                  minHeight: 6,
+                                  borderRadius: BorderRadius.circular(3),
                                 ),
-                                minHeight: 6,
-                                borderRadius: BorderRadius.circular(3),
-                              ),
-                            ],
-                          ),
-                        ],
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
               );
             },
           ),
@@ -686,11 +706,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 onTap: () => context.push('/contributor/my-contributions'),
                 child: Row(
                   children: [
-                    Icon(Icons.list_alt, size: 16, color: AppColors.contributorBlue),
+                    const Icon(Icons.list_alt,
+                        size: 16, color: AppColors.contributorBlue),
                     const SizedBox(width: 4),
                     Text(
                       'Đóng góp',
-                      style: AppTextStyles.caption.copyWith(color: AppColors.contributorBlue),
+                      style: AppTextStyles.caption
+                          .copyWith(color: AppColors.contributorBlue),
                     ),
                   ],
                 ),
@@ -703,7 +725,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Center(
             child: Column(
               children: [
-                Icon(Icons.school_outlined, size: 64, color: Colors.grey.shade400),
+                Icon(Icons.school_outlined,
+                    size: 64, color: Colors.grey.shade400),
                 const SizedBox(height: 16),
                 Text(
                   'Chưa có môn học nào',
@@ -734,7 +757,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 final metadata = subject['metadata'] as Map<String, dynamic>?;
                 final icon = metadata?['icon'] as String? ?? '📚';
                 final totalNodesCount = subject['totalNodesCount'] as int? ?? 0;
-                final availableNodesCount = subject['availableNodesCount'] as int? ?? 0;
+                final availableNodesCount =
+                    subject['availableNodesCount'] as int? ?? 0;
 
                 return SlideIn(
                   delay: Duration(milliseconds: 50 * index),
@@ -751,75 +775,78 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             context.push('/subjects/$subjectId/intro');
                           }
                         },
-                      borderRadius: BorderRadius.circular(12),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Icon
-                                Text(
-                                  icon,
-                                  style: const TextStyle(fontSize: 32),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        name,
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                            if (description != null && description.isNotEmpty) ...[
-                              const SizedBox(height: 8),
-                              Text(
-                                description,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey.shade600,
-                                ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                            if (totalNodesCount > 0) ...[
-                              const SizedBox(height: 8),
+                        borderRadius: BorderRadius.circular(12),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
                               Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Icon(Icons.book, size: 14, color: Colors.grey.shade600),
-                                  const SizedBox(width: 4),
+                                  // Icon
                                   Text(
-                                    '$availableNodesCount/$totalNodesCount bài học',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey.shade600,
+                                    icon,
+                                    style: const TextStyle(fontSize: 32),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          name,
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ],
                               ),
+                              if (description != null &&
+                                  description.isNotEmpty) ...[
+                                const SizedBox(height: 8),
+                                Text(
+                                  description,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey.shade600,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                              if (totalNodesCount > 0) ...[
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    Icon(Icons.book,
+                                        size: 14, color: Colors.grey.shade600),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      '$availableNodesCount/$totalNodesCount bài học',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey.shade600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ],
-                          ],
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
                 );
               },
             ),
@@ -859,7 +886,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     color: AppColors.contributorBlue.withOpacity(0.15),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(Icons.add, size: 28, color: AppColors.contributorBlue),
+                  child: const Icon(Icons.add,
+                      size: 28, color: AppColors.contributorBlue),
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -951,4 +979,3 @@ class _ActionCard extends StatelessWidget {
     );
   }
 }
-

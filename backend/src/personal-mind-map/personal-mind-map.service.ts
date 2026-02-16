@@ -1,5 +1,5 @@
 // Personal Mind Map Service - Chat riêng cho từng môn học
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
@@ -10,10 +10,7 @@ import {
 import { AiService } from '../ai/ai.service';
 import { DomainsService } from '../domains/domains.service';
 import { LearningNode } from '../learning-nodes/entities/learning-node.entity';
-import { UserPremium } from '../payment/entities/user-premium.entity';
-
-// Number of free nodes before requiring premium
-const FREE_MIND_MAP_NODES_LIMIT = 2;
+import { UnlockTransactionsService } from '../unlock-transactions/unlock-transactions.service';
 
 // Interface cho onboarding data (từ OnboardingService cũ)
 interface OnboardingData {
@@ -62,27 +59,11 @@ export class PersonalMindMapService {
     private personalMindMapRepo: Repository<PersonalMindMap>,
     @InjectRepository(LearningNode)
     private learningNodeRepo: Repository<LearningNode>,
-    @InjectRepository(UserPremium)
-    private userPremiumRepo: Repository<UserPremium>,
     private aiService: AiService,
     private domainsService: DomainsService,
+    @Inject(forwardRef(() => UnlockTransactionsService))
+    private unlockService: UnlockTransactionsService,
   ) {}
-
-  /**
-   * Check if user has active premium
-   */
-  private async checkUserPremium(userId: string): Promise<boolean> {
-    if (!userId) return false;
-    
-    const userPremium = await this.userPremiumRepo.findOne({
-      where: { userId },
-    });
-
-    if (!userPremium) return false;
-
-    const now = new Date();
-    return userPremium.isPremium && userPremium.premiumExpiresAt > now;
-  }
 
   private getSessionKey(userId: string, subjectId: string): string {
     return `${userId}_${subjectId}`;
@@ -1557,16 +1538,16 @@ CHỈ TRẢ VỀ JSON.`;
   }
 
   /**
-   * Lấy personal mind map với premium lock status
-   * First 2 lesson nodes are free, rest require premium
+   * Lấy personal mind map với diamond unlock status
+   * Auto-unlocks first topic for free if user has no unlocks yet
+   * Nodes are locked unless user has unlocked them via diamonds
    */
   async getPersonalMindMapWithPremiumStatus(
     userId: string,
     subjectId: string,
   ): Promise<{
     mindMap: PersonalMindMap | null;
-    isPremium: boolean;
-    nodesWithLockStatus: (PersonalMindMapNode & { isLocked: boolean; requiresPremium: boolean })[];
+    nodesWithLockStatus: (PersonalMindMapNode & { isLocked: boolean; diamondCost: number })[];
   }> {
     const mindMap = await this.personalMindMapRepo.findOne({
       where: { userId, subjectId },
@@ -1576,38 +1557,40 @@ CHỈ TRẢ VỀ JSON.`;
     if (!mindMap) {
       return {
         mindMap: null,
-        isPremium: false,
         nodesWithLockStatus: [],
       };
     }
 
-    const isPremium = await this.checkUserPremium(userId);
+    // Auto-unlock first topic if needed
+    await this.unlockService.ensureFirstTopicUnlocked(userId, subjectId);
 
-    // Count only lesson nodes (not milestone or goal nodes)
-    let lessonNodeCount = 0;
+    // Get user's unlocked node IDs via diamond system
+    const unlockedIds = await this.unlockService.getUserUnlockedNodeIds(userId, subjectId);
+
+    const DIAMOND_PER_LESSON = 25;
+
     const nodesWithLockStatus = mindMap.nodes.map((node) => {
       // Check if this is a lesson node (has linkedLearningNodeId)
       const isLessonNode = node.id.startsWith('lesson-') || node.metadata?.linkedLearningNodeId;
+      const linkedNodeId = node.metadata?.linkedLearningNodeId;
       
       let isLocked = false;
-      let requiresPremium = false;
+      let diamondCost = 0;
       
-      if (isLessonNode) {
-        requiresPremium = lessonNodeCount >= FREE_MIND_MAP_NODES_LIMIT;
-        isLocked = !isPremium && requiresPremium;
-        lessonNodeCount++;
+      if (isLessonNode && linkedNodeId) {
+        isLocked = !unlockedIds.has(linkedNodeId);
+        diamondCost = isLocked ? DIAMOND_PER_LESSON : 0;
       }
 
       return {
         ...node,
         isLocked,
-        requiresPremium,
+        diamondCost,
       };
     });
 
     return {
       mindMap,
-      isPremium,
       nodesWithLockStatus,
     };
   }

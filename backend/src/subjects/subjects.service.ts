@@ -6,6 +6,7 @@ import { UserProgressService } from '../user-progress/user-progress.service';
 import { LearningNodesService } from '../learning-nodes/learning-nodes.service';
 import { UserCurrencyService } from '../user-currency/user-currency.service';
 import { DomainsService } from '../domains/domains.service';
+import { UnlockTransactionsService } from '../unlock-transactions/unlock-transactions.service';
 
 @Injectable()
 export class SubjectsService {
@@ -19,6 +20,8 @@ export class SubjectsService {
     private currencyService: UserCurrencyService,
     @Inject(forwardRef(() => DomainsService))
     private domainsService: DomainsService,
+    @Inject(forwardRef(() => UnlockTransactionsService))
+    private unlockService: UnlockTransactionsService,
   ) {}
 
   async findByTrack(track: 'explorer' | 'scholar'): Promise<Subject[]> {
@@ -234,6 +237,7 @@ export class SubjectsService {
       description: string;
       track: string;
       metadata: any;
+      domains?: any[]; // Include domains with topics for frontend
     };
     knowledgeGraph: {
       nodes: Array<{
@@ -256,7 +260,9 @@ export class SubjectsService {
       highlight?: string; // 'explorer' | 'scholar' | 'node' | 'fog'
     }>;
     courseOutline: {
-      totalNodes: number;
+      totalLessons: number;
+      totalTopics: number;
+      totalDomains: number;
       totalConcepts: number;
       totalExamples: number;
       estimatedDays: number;
@@ -270,6 +276,10 @@ export class SubjectsService {
     // Get all nodes and domains for this subject
     const allNodes = await this.nodesService.findBySubject(subjectId);
     const completedNodeIds = await this.progressService.getCompletedNodes(userId);
+
+    // Auto-unlock first topic and get unlocked node IDs
+    await this.unlockService.ensureFirstTopicUnlocked(userId, subjectId);
+    const unlockedNodeIds = await this.unlockService.getUserUnlockedNodeIds(userId, subjectId);
 
     // Get domains for this subject
     let domains = [];
@@ -322,10 +332,33 @@ export class SubjectsService {
       // Level 3: Topic nodes (from topics table)
       const topics = domain.topics || [];
       let topicIndex = 0;
+      let domainAllTopicsCompleted = topics.length > 0;
+
       for (const topic of topics) {
         const topicNodeId = `topic-${topic.id}`;
         const topicXPos = xPos - 50 + (topicIndex % 3) * 100;
         const topicYPos = yPos + 130 + Math.floor(topicIndex / 3) * 100;
+
+        // Get learning nodes for this topic and calculate completion
+        const topicNodes = allNodes.filter((n) => n.topicId === topic.id);
+        const topicCompletedNodes = topicNodes.filter((n) =>
+          completedNodeIds.includes(n.id),
+        );
+        const topicIsCompleted =
+          topicNodes.length > 0 &&
+          topicCompletedNodes.length === topicNodes.length;
+
+        if (!topicIsCompleted) domainAllTopicsCompleted = false;
+
+        // Calculate total rewards for this topic
+        const topicTotalXp = topicNodes.reduce(
+          (sum, n) => sum + (n.expReward || 0),
+          0,
+        );
+        const topicTotalCoins = topicNodes.reduce(
+          (sum, n) => sum + (n.coinReward || 0),
+          0,
+        );
 
         graphNodes.push({
           id: topicNodeId,
@@ -335,13 +368,34 @@ export class SubjectsService {
           position: { x: topicXPos, y: topicYPos },
           order: topic.order || topicIndex,
           isUnlocked: true,
-          isCompleted: false,
+          isCompleted: topicIsCompleted,
           nodeType: 'topic',
           entityId: topic.id,
+          totalLessons: topicNodes.length,
+          completedLessons: topicCompletedNodes.length,
+          totalXp: topicTotalXp,
+          totalCoins: topicTotalCoins,
+          // Include learning nodes under this topic with lock status
+          learningNodes: topicNodes.map((n) => ({
+            id: n.id,
+            title: n.title,
+            description: n.description,
+            order: n.order,
+            isCompleted: completedNodeIds.includes(n.id),
+            isLocked: !unlockedNodeIds.has(n.id),
+            expReward: n.expReward || 0,
+            coinReward: n.coinReward || 0,
+          })),
         });
 
         edges.push({ from: domainNodeId, to: topicNodeId });
         topicIndex++;
+      }
+
+      // Update domain completion
+      if (domainAllTopicsCompleted && topics.length > 0) {
+        const domainNode = graphNodes.find((n) => n.id === domainNodeId);
+        if (domainNode) domainNode.isCompleted = true;
       }
 
       domainIndex++;
@@ -416,6 +470,11 @@ export class SubjectsService {
       },
     ];
 
+    // Count total topics across all domains
+    const totalTopics = domains.reduce((sum, domain) => {
+      return sum + (domain.topics?.length || 0);
+    }, 0);
+
     return {
       subject: {
         id: subject.id,
@@ -423,6 +482,7 @@ export class SubjectsService {
         description: subject.description || '',
         track: subject.track,
         metadata: subject.metadata || {},
+        domains, // Include domains with topics for frontend
       },
       knowledgeGraph: {
         nodes: graphNodes,
@@ -430,7 +490,9 @@ export class SubjectsService {
       },
       tutorialSteps,
       courseOutline: {
-        totalNodes: allNodes.length,
+        totalLessons: allNodes.length,
+        totalTopics,
+        totalDomains: domains.length,
         totalConcepts,
         totalExamples,
         estimatedDays,

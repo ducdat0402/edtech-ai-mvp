@@ -17,7 +17,7 @@ export class PaymentController {
   constructor(private readonly paymentService: PaymentService) {}
 
   /**
-   * Get available payment packages
+   * Get available diamond packages
    */
   @Get('packages')
   getPackages() {
@@ -28,7 +28,7 @@ export class PaymentController {
   }
 
   /**
-   * Create a new payment order
+   * Create a new payment order for diamonds
    */
   @Post('create')
   @UseGuards(JwtAuthGuard)
@@ -47,6 +47,7 @@ export class PaymentController {
         paymentCode: result.payment.paymentCode,
         amount: result.payment.amount,
         packageName: result.payment.packageName,
+        diamondAmount: result.payment.diamondAmount,
         status: result.payment.status,
         expiresAt: result.payment.expiresAt,
         createdAt: result.payment.createdAt,
@@ -81,12 +82,12 @@ export class PaymentController {
   }
 
   /**
-   * Get user's premium status
+   * Get user's diamond balance
    */
-  @Get('premium/status')
+  @Get('diamond-balance')
   @UseGuards(JwtAuthGuard)
-  async getPremiumStatus(@Request() req) {
-    return this.paymentService.getPremiumStatus(req.user.id);
+  async getDiamondBalance(@Request() req) {
+    return this.paymentService.getDiamondBalance(req.user.id);
   }
 
   /**
@@ -120,8 +121,6 @@ export class PaymentController {
   async verifyManual(
     @Body() body: { paymentCode: string; transactionId: string },
   ) {
-    // This is a simplified manual verification
-    // In production, add admin check
     const mockPayload = {
       id: Date.now(),
       gateway: 'Manual',
@@ -132,12 +131,11 @@ export class PaymentController {
       content: body.paymentCode,
       transferType: 'in',
       description: `Manual verify: ${body.paymentCode}`,
-      transferAmount: 999999999, // Will be checked against actual payment
+      transferAmount: 999999999,
       referenceCode: body.transactionId,
       accumulated: 0,
     };
 
-    // Use a special key for manual verification
     return this.paymentService.handleSepayWebhook(
       mockPayload,
       `Apikey ${process.env.SEPAY_WEBHOOK_API_KEY}`,

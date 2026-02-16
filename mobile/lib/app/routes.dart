@@ -16,7 +16,6 @@ import 'package:edtech_mobile/features/subjects/screens/learning_path_choice_scr
 import 'package:edtech_mobile/features/placement_test/screens/adaptive_placement_test_screen.dart';
 import 'package:edtech_mobile/features/domains/screens/domains_list_screen.dart';
 import 'package:edtech_mobile/features/domains/screens/domain_detail_screen.dart';
-import 'package:edtech_mobile/features/learning_nodes/screens/learning_node_map_screen.dart';
 import 'package:edtech_mobile/features/learning_nodes/screens/all_lessons_screen.dart';
 import 'package:edtech_mobile/features/learning_nodes/screens/node_detail_screen.dart';
 import 'package:edtech_mobile/features/learning_nodes/screens/contribution_upload_screen.dart';
@@ -41,6 +40,7 @@ import 'package:edtech_mobile/features/lessons/screens/video_lesson_screen.dart'
 import 'package:edtech_mobile/features/lessons/screens/text_lesson_screen.dart';
 import 'package:edtech_mobile/features/lessons/screens/end_quiz_screen.dart';
 import 'package:edtech_mobile/features/lessons/screens/lesson_types_overview_screen.dart';
+import 'package:edtech_mobile/features/subjects/screens/unlock_subject_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/login',
@@ -77,6 +77,13 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) {
         final subjectId = state.pathParameters['id']!;
         return SubjectIntroScreen(subjectId: subjectId);
+      },
+    ),
+    GoRoute(
+      path: '/subjects/:id/unlock',
+      builder: (context, state) {
+        final subjectId = state.pathParameters['id']!;
+        return UnlockSubjectScreen(subjectId: subjectId);
       },
     ),
     GoRoute(
@@ -126,13 +133,6 @@ final GoRouter appRouter = GoRouter(
           subjectId: subjectId,
           subjectName: subjectName,
         );
-      },
-    ),
-    GoRoute(
-      path: '/subjects/:id/nodes',
-      builder: (context, state) {
-        final subjectId = state.pathParameters['id']!;
-        return LearningNodeMapScreen(subjectId: subjectId);
       },
     ),
     GoRoute(

@@ -85,7 +85,8 @@ class _CreateTopicScreenState extends State<CreateTopicScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Lỗi: $e'), backgroundColor: AppColors.errorNeon),
+        SnackBar(
+            content: Text('Lỗi: $e'), backgroundColor: AppColors.errorNeon),
       );
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
@@ -108,15 +109,18 @@ class _CreateTopicScreenState extends State<CreateTopicScreen> {
                 color: AppColors.purpleNeon.withAlpha(38),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.check_circle_outline, color: AppColors.purpleNeon, size: 48),
+              child: const Icon(Icons.check_circle_outline,
+                  color: AppColors.purpleNeon, size: 48),
             ),
             const SizedBox(height: 16),
-            Text('Đã gửi yêu cầu!', style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary)),
+            Text('Đã gửi yêu cầu!',
+                style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary)),
             const SizedBox(height: 8),
             Text(
               'Topic "${_nameController.text.trim()}" đang chờ Admin duyệt.',
               textAlign: TextAlign.center,
-              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+              style: AppTextStyles.bodyMedium
+                  .copyWith(color: AppColors.textSecondary),
             ),
           ],
         ),
@@ -126,7 +130,8 @@ class _CreateTopicScreenState extends State<CreateTopicScreen> {
               Navigator.of(ctx).pop();
               context.pop(true);
             },
-            child: Text('OK', style: TextStyle(color: AppColors.contributorBlue)),
+            child: const Text('OK',
+                style: TextStyle(color: AppColors.contributorBlue)),
           ),
         ],
       ),
@@ -140,7 +145,8 @@ class _CreateTopicScreenState extends State<CreateTopicScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text('Tạo Topic Mới', style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary)),
+        title: Text('Tạo Topic Mới',
+            style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary)),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () => context.pop(),
@@ -161,11 +167,13 @@ class _CreateTopicScreenState extends State<CreateTopicScreen> {
                       decoration: BoxDecoration(
                         color: AppColors.purpleNeon.withAlpha(25),
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: AppColors.purpleNeon.withAlpha(76)),
+                        border: Border.all(
+                            color: AppColors.purpleNeon.withAlpha(76)),
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.topic, color: AppColors.purpleNeon, size: 24),
+                          const Icon(Icons.topic,
+                              color: AppColors.purpleNeon, size: 24),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(
@@ -173,12 +181,15 @@ class _CreateTopicScreenState extends State<CreateTopicScreen> {
                               children: [
                                 Text(
                                   'Tạo Topic cho: ${widget.domainName ?? 'domain'}',
-                                  style: AppTextStyles.labelMedium.copyWith(color: AppColors.purpleNeon, fontWeight: FontWeight.bold),
+                                  style: AppTextStyles.labelMedium.copyWith(
+                                      color: AppColors.purpleNeon,
+                                      fontWeight: FontWeight.bold),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
                                   'Topic là chủ đề bài học trong một domain. Ví dụ: "Nốt nhạc", "Gam"...',
-                                  style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+                                  style: AppTextStyles.bodySmall
+                                      .copyWith(color: AppColors.textSecondary),
                                 ),
                               ],
                             ),
@@ -195,7 +206,8 @@ class _CreateTopicScreenState extends State<CreateTopicScreen> {
                       controller: _nameController,
                       hint: 'VD: Nốt nhạc cơ bản, Hợp âm trưởng...',
                       validator: (v) {
-                        if (v == null || v.trim().isEmpty) return 'Vui lòng nhập tên topic';
+                        if (v == null || v.trim().isEmpty)
+                          return 'Vui lòng nhập tên topic';
                         if (v.trim().length < 2) return 'Tên quá ngắn';
                         return null;
                       },
@@ -238,7 +250,10 @@ class _CreateTopicScreenState extends State<CreateTopicScreen> {
                             children: [
                               _buildLabel('EXP nhận được'),
                               const SizedBox(height: 8),
-                              _buildNumberField(controller: _expController, icon: Icons.star, iconColor: Colors.amber),
+                              _buildNumberField(
+                                  controller: _expController,
+                                  icon: Icons.star,
+                                  iconColor: Colors.amber),
                             ],
                           ),
                         ),
@@ -249,7 +264,10 @@ class _CreateTopicScreenState extends State<CreateTopicScreen> {
                             children: [
                               _buildLabel('Coin nhận được'),
                               const SizedBox(height: 8),
-                              _buildNumberField(controller: _coinController, icon: Icons.monetization_on, iconColor: Colors.orangeAccent),
+                              _buildNumberField(
+                                  controller: _coinController,
+                                  icon: Icons.monetization_on,
+                                  iconColor: Colors.orangeAccent),
                             ],
                           ),
                         ),
@@ -266,17 +284,26 @@ class _CreateTopicScreenState extends State<CreateTopicScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.contributorBlue,
                           foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                          disabledBackgroundColor: AppColors.contributorBlue.withAlpha(127),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14)),
+                          disabledBackgroundColor:
+                              AppColors.contributorBlue.withAlpha(127),
                         ),
                         child: _isSubmitting
-                            ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                            ? const SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2, color: Colors.white))
                             : Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   const Icon(Icons.send, size: 20),
                                   const SizedBox(width: 8),
-                                  Text('Gửi yêu cầu duyệt', style: AppTextStyles.labelLarge.copyWith(color: Colors.white, fontWeight: FontWeight.bold)),
+                                  Text('Gửi yêu cầu duyệt',
+                                      style: AppTextStyles.labelLarge.copyWith(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold)),
                                 ],
                               ),
                       ),
@@ -289,7 +316,9 @@ class _CreateTopicScreenState extends State<CreateTopicScreen> {
   }
 
   Widget _buildLabel(String text) {
-    return Text(text, style: AppTextStyles.labelLarge.copyWith(color: AppColors.textPrimary, fontWeight: FontWeight.w600));
+    return Text(text,
+        style: AppTextStyles.labelLarge.copyWith(
+            color: AppColors.textPrimary, fontWeight: FontWeight.w600));
   }
 
   Widget _buildTextField({
@@ -305,23 +334,49 @@ class _CreateTopicScreenState extends State<CreateTopicScreen> {
       style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.textTertiary),
+        hintStyle:
+            AppTextStyles.bodyMedium.copyWith(color: AppColors.textTertiary),
         filled: true,
         fillColor: AppColors.contributorBgSecondary,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.contributorBorder)),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.contributorBorder)),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.contributorBlue, width: 2)),
-        errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.errorNeon)),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppColors.contributorBorder)),
+        enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppColors.contributorBorder)),
+        focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide:
+                const BorderSide(color: AppColors.contributorBlue, width: 2)),
+        errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppColors.errorNeon)),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
     );
   }
 
   Widget _buildDifficultySelector() {
     final options = [
-      {'value': 'easy', 'label': 'Dễ', 'icon': Icons.sentiment_satisfied, 'color': Colors.green},
-      {'value': 'medium', 'label': 'Trung bình', 'icon': Icons.sentiment_neutral, 'color': Colors.orange},
-      {'value': 'hard', 'label': 'Khó', 'icon': Icons.sentiment_very_dissatisfied, 'color': Colors.red},
+      {
+        'value': 'easy',
+        'label': 'Dễ',
+        'icon': Icons.sentiment_satisfied,
+        'color': Colors.green
+      },
+      {
+        'value': 'medium',
+        'label': 'Trung bình',
+        'icon': Icons.sentiment_neutral,
+        'color': Colors.orange
+      },
+      {
+        'value': 'hard',
+        'label': 'Khó',
+        'icon': Icons.sentiment_very_dissatisfied,
+        'color': Colors.red
+      },
     ];
 
     return Row(
@@ -335,7 +390,9 @@ class _CreateTopicScreenState extends State<CreateTopicScreen> {
               margin: const EdgeInsets.symmetric(horizontal: 4),
               padding: const EdgeInsets.symmetric(vertical: 12),
               decoration: BoxDecoration(
-                color: isSelected ? color.withAlpha(30) : AppColors.contributorBgSecondary,
+                color: isSelected
+                    ? color.withAlpha(30)
+                    : AppColors.contributorBgSecondary,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: isSelected ? color : AppColors.contributorBorder,
@@ -344,13 +401,16 @@ class _CreateTopicScreenState extends State<CreateTopicScreen> {
               ),
               child: Column(
                 children: [
-                  Icon(opt['icon'] as IconData, color: isSelected ? color : AppColors.textTertiary, size: 24),
+                  Icon(opt['icon'] as IconData,
+                      color: isSelected ? color : AppColors.textTertiary,
+                      size: 24),
                   const SizedBox(height: 4),
                   Text(
                     opt['label'] as String,
                     style: AppTextStyles.bodySmall.copyWith(
                       color: isSelected ? color : AppColors.textSecondary,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      fontWeight:
+                          isSelected ? FontWeight.bold : FontWeight.normal,
                     ),
                   ),
                 ],
@@ -380,21 +440,25 @@ class _CreateTopicScreenState extends State<CreateTopicScreen> {
           value: selectedId,
           isExpanded: true,
           dropdownColor: AppColors.contributorBgSecondary,
-          style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary),
-          icon: Icon(Icons.arrow_drop_down, color: AppColors.textSecondary),
+          style:
+              AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary),
+          icon:
+              const Icon(Icons.arrow_drop_down, color: AppColors.textSecondary),
           items: [
             DropdownMenuItem<String?>(
               value: null,
               child: Row(
                 children: [
-                  Icon(Icons.first_page, size: 18, color: AppColors.contributorBlue),
+                  const Icon(Icons.first_page,
+                      size: 18, color: AppColors.contributorBlue),
                   const SizedBox(width: 8),
                   Flexible(
                     child: Text(
                       items.isEmpty ? emptyLabel : 'Đặt ở vị trí đầu tiên',
                       style: AppTextStyles.bodyMedium.copyWith(
                         color: AppColors.textPrimary,
-                        fontStyle: items.isEmpty ? FontStyle.italic : FontStyle.normal,
+                        fontStyle:
+                            items.isEmpty ? FontStyle.italic : FontStyle.normal,
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -419,14 +483,17 @@ class _CreateTopicScreenState extends State<CreateTopicScreen> {
                       alignment: Alignment.center,
                       child: Text(
                         '${idx + 1}',
-                        style: AppTextStyles.bodySmall.copyWith(color: AppColors.contributorBlue, fontWeight: FontWeight.bold),
+                        style: AppTextStyles.bodySmall.copyWith(
+                            color: AppColors.contributorBlue,
+                            fontWeight: FontWeight.bold),
                       ),
                     ),
                     const SizedBox(width: 8),
                     Flexible(
                       child: Text(
                         'Sau: ${item['name'] ?? ''}',
-                        style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary),
+                        style: AppTextStyles.bodyMedium
+                            .copyWith(color: AppColors.textPrimary),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -455,10 +522,18 @@ class _CreateTopicScreenState extends State<CreateTopicScreen> {
         prefixIcon: Icon(icon, color: iconColor, size: 20),
         filled: true,
         fillColor: AppColors.contributorBgSecondary,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.contributorBorder)),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.contributorBorder)),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.contributorBlue, width: 2)),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppColors.contributorBorder)),
+        enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppColors.contributorBorder)),
+        focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide:
+                const BorderSide(color: AppColors.contributorBlue, width: 2)),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
     );
   }

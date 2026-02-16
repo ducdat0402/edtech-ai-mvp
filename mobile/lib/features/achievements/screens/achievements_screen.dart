@@ -30,10 +30,10 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
 
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
-      
+
       // Check for new achievements first
       await apiService.checkAchievements();
-      
+
       // Load achievements with status
       final achievements = await apiService.getAchievements();
       setState(() {
@@ -52,7 +52,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
       await apiService.claimAchievementRewards(userAchievementId);
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -226,7 +226,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                           ),
                         ),
                         if (unlocked)
-                          Icon(
+                          const Icon(
                             Icons.check_circle,
                             color: Colors.green,
                             size: 20,
@@ -306,4 +306,3 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
     }
   }
 }
-

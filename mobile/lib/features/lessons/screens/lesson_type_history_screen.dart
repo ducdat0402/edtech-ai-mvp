@@ -32,7 +32,8 @@ class LessonTypeHistoryScreen extends StatefulWidget {
   });
 
   @override
-  State<LessonTypeHistoryScreen> createState() => _LessonTypeHistoryScreenState();
+  State<LessonTypeHistoryScreen> createState() =>
+      _LessonTypeHistoryScreenState();
 }
 
 class _LessonTypeHistoryScreenState extends State<LessonTypeHistoryScreen> {
@@ -53,7 +54,8 @@ class _LessonTypeHistoryScreenState extends State<LessonTypeHistoryScreen> {
     });
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
-      final data = await apiService.getLessonTypeHistory(widget.nodeId, widget.lessonType);
+      final data = await apiService.getLessonTypeHistory(
+          widget.nodeId, widget.lessonType);
       setState(() {
         _versions = data['versions'] as List? ?? [];
         _isLoading = false;
@@ -140,6 +142,8 @@ class _LessonTypeHistoryScreenState extends State<LessonTypeHistoryScreen> {
           domainId: widget.domainId ?? '',
           topicId: widget.topicId,
           nodeId: widget.nodeId,
+          initialTitle: widget.lessonTitle,
+          initialDescription: '',
           initialLessonData: lessonData,
           initialEndQuiz: endQuiz,
           isEditMode: true,
@@ -153,6 +157,8 @@ class _LessonTypeHistoryScreenState extends State<LessonTypeHistoryScreen> {
           domainId: widget.domainId ?? '',
           topicId: widget.topicId,
           nodeId: widget.nodeId,
+          initialTitle: widget.lessonTitle,
+          initialDescription: '',
           initialLessonData: lessonData,
           initialEndQuiz: endQuiz,
           isEditMode: true,
@@ -166,6 +172,8 @@ class _LessonTypeHistoryScreenState extends State<LessonTypeHistoryScreen> {
           domainId: widget.domainId ?? '',
           topicId: widget.topicId,
           nodeId: widget.nodeId,
+          initialTitle: widget.lessonTitle,
+          initialDescription: '',
           initialLessonData: lessonData,
           initialEndQuiz: endQuiz,
           isEditMode: true,
@@ -180,6 +188,8 @@ class _LessonTypeHistoryScreenState extends State<LessonTypeHistoryScreen> {
           domainId: widget.domainId ?? '',
           topicId: widget.topicId,
           nodeId: widget.nodeId,
+          initialTitle: widget.lessonTitle,
+          initialDescription: '',
           initialLessonData: lessonData,
           initialEndQuiz: endQuiz,
           isEditMode: true,
@@ -210,11 +220,15 @@ class _LessonTypeHistoryScreenState extends State<LessonTypeHistoryScreen> {
           children: [
             const Text(
               'Lịch sử chỉnh sửa',
-              style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold),
             ),
             Text(
               _getLessonTypeLabel(widget.lessonType),
-              style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+              style:
+                  const TextStyle(color: AppColors.textSecondary, fontSize: 12),
             ),
           ],
         ),
@@ -236,7 +250,9 @@ class _LessonTypeHistoryScreenState extends State<LessonTypeHistoryScreen> {
         children: [
           const Icon(Icons.error_outline, size: 48, color: AppColors.errorNeon),
           const SizedBox(height: 16),
-          Text('Lỗi: $_error', textAlign: TextAlign.center, style: const TextStyle(color: AppColors.errorNeon)),
+          Text('Lỗi: $_error',
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: AppColors.errorNeon)),
           const SizedBox(height: 16),
           ElevatedButton(onPressed: _loadHistory, child: const Text('Thử lại')),
         ],
@@ -249,7 +265,8 @@ class _LessonTypeHistoryScreenState extends State<LessonTypeHistoryScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.history, size: 64, color: AppColors.textTertiary.withOpacity(0.5)),
+          Icon(Icons.history,
+              size: 64, color: AppColors.textTertiary.withOpacity(0.5)),
           const SizedBox(height: 16),
           const Text(
             'Chưa có lịch sử chỉnh sửa',
@@ -291,7 +308,8 @@ class _LessonTypeHistoryScreenState extends State<LessonTypeHistoryScreen> {
     String dateStr = '';
     try {
       final date = DateTime.parse(createdAt);
-      dateStr = '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
+      dateStr =
+          '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
     } catch (_) {
       dateStr = createdAt;
     }
@@ -326,7 +344,9 @@ class _LessonTypeHistoryScreenState extends State<LessonTypeHistoryScreen> {
         color: AppColors.bgSecondary,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isNewest ? AppColors.purpleNeon.withOpacity(0.3) : AppColors.borderPrimary,
+          color: isNewest
+              ? AppColors.purpleNeon.withOpacity(0.3)
+              : AppColors.borderPrimary,
         ),
       ),
       child: Column(
@@ -339,7 +359,8 @@ class _LessonTypeHistoryScreenState extends State<LessonTypeHistoryScreen> {
               children: [
                 // Version number badge
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: isNewest
                         ? AppColors.purpleNeon.withOpacity(0.15)
@@ -349,7 +370,9 @@ class _LessonTypeHistoryScreenState extends State<LessonTypeHistoryScreen> {
                   child: Text(
                     'v$versionNumber',
                     style: TextStyle(
-                      color: isNewest ? AppColors.purpleNeon : AppColors.textSecondary,
+                      color: isNewest
+                          ? AppColors.purpleNeon
+                          : AppColors.textSecondary,
                       fontSize: 13,
                       fontWeight: FontWeight.bold,
                     ),
@@ -358,21 +381,26 @@ class _LessonTypeHistoryScreenState extends State<LessonTypeHistoryScreen> {
                 if (isNewest) ...[
                   const SizedBox(width: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
                       color: AppColors.successNeon.withOpacity(0.15),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: const Text(
                       'Mới nhất',
-                      style: TextStyle(color: AppColors.successNeon, fontSize: 11, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                          color: AppColors.successNeon,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold),
                     ),
                   ),
                 ],
                 const Spacer(),
                 Text(
                   dateStr,
-                  style: const TextStyle(color: AppColors.textTertiary, fontSize: 12),
+                  style: const TextStyle(
+                      color: AppColors.textTertiary, fontSize: 12),
                 ),
               ],
             ),
@@ -384,18 +412,26 @@ class _LessonTypeHistoryScreenState extends State<LessonTypeHistoryScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (note.isNotEmpty) ...[
-                  Text(note, style: const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+                  Text(note,
+                      style: const TextStyle(
+                          color: AppColors.textSecondary, fontSize: 13)),
                   const SizedBox(height: 8),
                 ],
                 Row(
                   children: [
-                    Icon(Icons.description_outlined, size: 14, color: AppColors.textTertiary),
+                    const Icon(Icons.description_outlined,
+                        size: 14, color: AppColors.textTertiary),
                     const SizedBox(width: 4),
-                    Text(contentSummary, style: const TextStyle(color: AppColors.textTertiary, fontSize: 12)),
+                    Text(contentSummary,
+                        style: const TextStyle(
+                            color: AppColors.textTertiary, fontSize: 12)),
                     const SizedBox(width: 12),
-                    Icon(Icons.quiz_outlined, size: 14, color: AppColors.textTertiary),
+                    const Icon(Icons.quiz_outlined,
+                        size: 14, color: AppColors.textTertiary),
                     const SizedBox(width: 4),
-                    Text('$quizCount câu hỏi', style: const TextStyle(color: AppColors.textTertiary, fontSize: 12)),
+                    Text('$quizCount câu hỏi',
+                        style: const TextStyle(
+                            color: AppColors.textTertiary, fontSize: 12)),
                   ],
                 ),
               ],
@@ -422,7 +458,8 @@ class _LessonTypeHistoryScreenState extends State<LessonTypeHistoryScreen> {
                 child: TextButton.icon(
                   onPressed: () => _editFromVersion(version),
                   icon: const Icon(Icons.edit_outlined, size: 16),
-                  label: const Text('Sửa từ bản này', style: TextStyle(fontSize: 13)),
+                  label: const Text('Sửa từ bản này',
+                      style: TextStyle(fontSize: 13)),
                   style: TextButton.styleFrom(
                     foregroundColor: AppColors.orangeNeon,
                     padding: const EdgeInsets.symmetric(vertical: 12),

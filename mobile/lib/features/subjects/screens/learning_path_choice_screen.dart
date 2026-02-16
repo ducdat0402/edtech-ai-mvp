@@ -9,7 +9,8 @@ import 'package:edtech_mobile/theme/theme.dart';
 class LearningPathChoiceScreen extends StatefulWidget {
   final String subjectId;
   final String? subjectName;
-  final bool forceShowChoice; // Force show choice screen even if mind map exists
+  final bool
+      forceShowChoice; // Force show choice screen even if mind map exists
 
   const LearningPathChoiceScreen({
     super.key,
@@ -19,7 +20,8 @@ class LearningPathChoiceScreen extends StatefulWidget {
   });
 
   @override
-  State<LearningPathChoiceScreen> createState() => _LearningPathChoiceScreenState();
+  State<LearningPathChoiceScreen> createState() =>
+      _LearningPathChoiceScreenState();
 }
 
 class _LearningPathChoiceScreenState extends State<LearningPathChoiceScreen> {
@@ -41,20 +43,21 @@ class _LearningPathChoiceScreenState extends State<LearningPathChoiceScreen> {
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
       final result = await apiService.checkPersonalMindMap(widget.subjectId);
-      
+
       final exists = result['exists'] as bool? ?? false;
-      
+
       if (exists && mounted) {
         // If mind map exists, navigate directly to it
         // Use addPostFrameCallback to avoid navigation during build
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
-            context.pushReplacement('/subjects/${widget.subjectId}/personal-mind-map');
+            context.pushReplacement(
+                '/subjects/${widget.subjectId}/personal-mind-map');
           }
         });
         return;
       }
-      
+
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -77,11 +80,12 @@ class _LearningPathChoiceScreenState extends State<LearningPathChoiceScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              CircularProgressIndicator(color: AppColors.purpleNeon),
+              const CircularProgressIndicator(color: AppColors.purpleNeon),
               const SizedBox(height: 16),
               Text(
                 'Đang kiểm tra lộ trình...',
-                style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+                style: AppTextStyles.bodyMedium
+                    .copyWith(color: AppColors.textSecondary),
               ),
             ],
           ),
@@ -105,7 +109,8 @@ class _LearningPathChoiceScreenState extends State<LearningPathChoiceScreen> {
               borderRadius: BorderRadius.circular(10),
               border: Border.all(color: AppColors.borderPrimary),
             ),
-            child: const Icon(Icons.arrow_back, color: AppColors.textPrimary, size: 20),
+            child: const Icon(Icons.arrow_back,
+                color: AppColors.textPrimary, size: 20),
           ),
           onPressed: () => Navigator.pop(context),
         ),
@@ -118,13 +123,15 @@ class _LearningPathChoiceScreenState extends State<LearningPathChoiceScreen> {
             // Header
             _buildHeader(),
             const SizedBox(height: 32),
-            
+
             // Option 1: AI Chat
             _buildOptionCard(
               context,
               title: 'Chat với AI',
-              subtitle: 'Trò chuyện để xác định mục tiêu và tạo lộ trình phù hợp',
-              description: 'AI sẽ hỏi về kinh nghiệm, mục tiêu học tập và sở thích của bạn để tạo ra lộ trình cá nhân hóa.',
+              subtitle:
+                  'Trò chuyện để xác định mục tiêu và tạo lộ trình phù hợp',
+              description:
+                  'AI sẽ hỏi về kinh nghiệm, mục tiêu học tập và sở thích của bạn để tạo ra lộ trình cá nhân hóa.',
               icon: Icons.chat_bubble_rounded,
               gradient: [AppColors.purpleNeon, AppColors.pinkNeon],
               duration: '5-10 phút',
@@ -139,32 +146,34 @@ class _LearningPathChoiceScreenState extends State<LearningPathChoiceScreen> {
                 context.push('/subjects/${widget.subjectId}/personal-mind-map');
               },
             ),
-            
+
             const SizedBox(height: 20),
-            
+
             // Divider with "hoặc"
             Row(
               children: [
-                Expanded(child: Divider(color: AppColors.borderPrimary)),
+                const Expanded(child: Divider(color: AppColors.borderPrimary)),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Text(
                     'hoặc',
-                    style: AppTextStyles.bodySmall.copyWith(color: AppColors.textTertiary),
+                    style: AppTextStyles.bodySmall
+                        .copyWith(color: AppColors.textTertiary),
                   ),
                 ),
-                Expanded(child: Divider(color: AppColors.borderPrimary)),
+                const Expanded(child: Divider(color: AppColors.borderPrimary)),
               ],
             ),
-            
+
             const SizedBox(height: 20),
-            
+
             // Option 2: Placement Test
             _buildOptionCard(
               context,
               title: 'Làm bài kiểm tra',
               subtitle: 'Đánh giá năng lực để xác định điểm xuất phát',
-              description: 'Bài test thích ứng sẽ đánh giá kiến thức của bạn qua 15-30 câu hỏi và tạo lộ trình dựa trên kết quả.',
+              description:
+                  'Bài test thích ứng sẽ đánh giá kiến thức của bạn qua 15-30 câu hỏi và tạo lộ trình dựa trên kết quả.',
               icon: Icons.quiz_rounded,
               gradient: [AppColors.cyanNeon, AppColors.successNeon],
               duration: '15-25 phút',
@@ -179,9 +188,9 @@ class _LearningPathChoiceScreenState extends State<LearningPathChoiceScreen> {
                 context.push('/subjects/${widget.subjectId}/adaptive-test');
               },
             ),
-            
+
             const SizedBox(height: 32),
-            
+
             // Info note
             Container(
               padding: const EdgeInsets.all(16),
@@ -198,7 +207,8 @@ class _LearningPathChoiceScreenState extends State<LearningPathChoiceScreen> {
                       color: AppColors.warningNeon.withOpacity(0.15),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Icon(Icons.info_outline_rounded, color: AppColors.warningNeon, size: 24),
+                    child: const Icon(Icons.info_outline_rounded,
+                        color: AppColors.warningNeon, size: 24),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -224,7 +234,7 @@ class _LearningPathChoiceScreenState extends State<LearningPathChoiceScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ShaderMask(
-          shaderCallback: (bounds) => LinearGradient(
+          shaderCallback: (bounds) => const LinearGradient(
             colors: [AppColors.purpleNeon, AppColors.cyanNeon],
           ).createShader(bounds),
           child: Text(
@@ -293,7 +303,7 @@ class _LearningPathChoiceScreenState extends State<LearningPathChoiceScreen> {
                   child: Icon(icon, color: Colors.white, size: 28),
                 ),
                 const SizedBox(width: 16),
-                
+
                 // Title and subtitle
                 Expanded(
                   child: Column(
@@ -301,17 +311,19 @@ class _LearningPathChoiceScreenState extends State<LearningPathChoiceScreen> {
                     children: [
                       Text(
                         title,
-                        style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+                        style: AppTextStyles.h4
+                            .copyWith(color: AppColors.textPrimary),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         subtitle,
-                        style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+                        style: AppTextStyles.bodySmall
+                            .copyWith(color: AppColors.textSecondary),
                       ),
                     ],
                   ),
                 ),
-                
+
                 // Arrow icon
                 Container(
                   padding: const EdgeInsets.all(8),
@@ -319,13 +331,14 @@ class _LearningPathChoiceScreenState extends State<LearningPathChoiceScreen> {
                     color: gradient[0].withOpacity(0.15),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Icon(Icons.arrow_forward_rounded, color: gradient[0], size: 20),
+                  child: Icon(Icons.arrow_forward_rounded,
+                      color: gradient[0], size: 20),
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Description
             Text(
               description,
@@ -334,17 +347,18 @@ class _LearningPathChoiceScreenState extends State<LearningPathChoiceScreen> {
                 height: 1.5,
               ),
             ),
-            
+
             const SizedBox(height: 16),
-            Divider(color: AppColors.borderPrimary),
+            const Divider(color: AppColors.borderPrimary),
             const SizedBox(height: 16),
-            
+
             // Duration and features
             Row(
               children: [
                 // Duration badge
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: gradient[0].withOpacity(0.15),
                     borderRadius: BorderRadius.circular(20),
@@ -356,33 +370,38 @@ class _LearningPathChoiceScreenState extends State<LearningPathChoiceScreen> {
                       const SizedBox(width: 6),
                       Text(
                         duration,
-                        style: AppTextStyles.labelSmall.copyWith(color: gradient[0]),
+                        style: AppTextStyles.labelSmall
+                            .copyWith(color: gradient[0]),
                       ),
                     ],
                   ),
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Features list
             ...features.map((feature) => Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Row(
-                children: [
-                  ShaderMask(
-                    shaderCallback: (bounds) => LinearGradient(colors: gradient).createShader(bounds),
-                    child: const Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Row(
+                    children: [
+                      ShaderMask(
+                        shaderCallback: (bounds) =>
+                            LinearGradient(colors: gradient)
+                                .createShader(bounds),
+                        child: const Icon(Icons.check_circle_rounded,
+                            color: Colors.white, size: 18),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        feature,
+                        style: AppTextStyles.bodySmall
+                            .copyWith(color: AppColors.textPrimary),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 10),
-                  Text(
-                    feature,
-                    style: AppTextStyles.bodySmall.copyWith(color: AppColors.textPrimary),
-                  ),
-                ],
-              ),
-            )),
+                )),
           ],
         ),
       ),

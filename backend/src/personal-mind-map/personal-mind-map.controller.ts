@@ -84,7 +84,7 @@ export class PersonalMindMapController {
   }
 
   /**
-   * Lấy personal mind map của user cho subject (with premium lock status)
+   * Lấy personal mind map của user cho subject (with diamond unlock status)
    */
   @Get(':subjectId')
   async getPersonalMindMap(
@@ -98,7 +98,7 @@ export class PersonalMindMapController {
     );
 
     if (!result.mindMap) {
-      return { exists: false, mindMap: null, isPremium: false };
+      return { exists: false, mindMap: null };
     }
 
     // Return mindMap with nodes replaced by nodesWithLockStatus
@@ -108,7 +108,6 @@ export class PersonalMindMapController {
         ...result.mindMap,
         nodes: result.nodesWithLockStatus,
       },
-      isPremium: result.isPremium,
     };
   }
 

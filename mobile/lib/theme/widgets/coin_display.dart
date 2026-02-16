@@ -67,11 +67,12 @@ class CoinDisplay extends StatelessWidget {
               Text(
                 formattedCoins,
                 style: compact
-                    ? AppTextStyles.numberSmall.copyWith(color: AppColors.coinGold)
+                    ? AppTextStyles.numberSmall
+                        .copyWith(color: AppColors.coinGold)
                     : AppTextStyles.coinDisplay,
               ),
               if (showLabel && !compact)
-                Text(
+                const Text(
                   'Coins',
                   style: AppTextStyles.labelSmall,
                 ),

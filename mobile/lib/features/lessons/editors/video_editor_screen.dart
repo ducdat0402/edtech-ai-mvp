@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
-import 'package:go_router/go_router.dart';
 import 'package:edtech_mobile/theme/colors.dart';
-import 'package:edtech_mobile/core/services/api_service.dart';
 import 'quiz_editor_screen.dart';
 
 class VideoEditorScreen extends StatefulWidget {
@@ -12,6 +9,8 @@ class VideoEditorScreen extends StatefulWidget {
   final String? topicName;
   final String? topicId;
   final String? nodeId;
+  final String? initialTitle;
+  final String? initialDescription;
   final Map<String, dynamic>? initialLessonData;
   final Map<String, dynamic>? initialEndQuiz;
   final bool isEditMode;
@@ -25,6 +24,8 @@ class VideoEditorScreen extends StatefulWidget {
     this.topicName,
     this.topicId,
     this.nodeId,
+    this.initialTitle,
+    this.initialDescription,
     this.initialLessonData,
     this.initialEndQuiz,
     this.isEditMode = false,
@@ -54,6 +55,13 @@ class _VideoEditorScreenState extends State<VideoEditorScreen> {
   }
 
   void _prefillData() {
+    if (widget.initialTitle != null) {
+      _titleController.text = widget.initialTitle!;
+    }
+    if (widget.initialDescription != null) {
+      _descriptionController.text = widget.initialDescription!;
+    }
+
     final data = widget.initialLessonData;
     if (data == null) return;
 
@@ -148,7 +156,8 @@ class _VideoEditorScreenState extends State<VideoEditorScreen> {
           nodeId: widget.nodeId,
           initialEndQuiz: widget.initialEndQuiz,
           isEditMode: widget.isEditMode,
-          originalLessonData: widget.originalLessonData ?? widget.initialLessonData,
+          originalLessonData:
+              widget.originalLessonData ?? widget.initialLessonData,
           originalEndQuiz: widget.originalEndQuiz ?? widget.initialEndQuiz,
         ),
       ),
@@ -270,10 +279,12 @@ class _VideoEditorScreenState extends State<VideoEditorScreen> {
                         ),
                         TextButton.icon(
                           onPressed: _addKeyPoint,
-                          icon: const Icon(Icons.add, color: AppColors.purpleNeon),
+                          icon: const Icon(Icons.add,
+                              color: AppColors.purpleNeon),
                           label: const Text(
                             'Thêm nội dung chính',
-                            style: TextStyle(color: AppColors.purpleNeon, fontSize: 13),
+                            style: TextStyle(
+                                color: AppColors.purpleNeon, fontSize: 13),
                           ),
                         ),
                       ],
@@ -303,7 +314,8 @@ class _VideoEditorScreenState extends State<VideoEditorScreen> {
                         Expanded(
                           child: TextFormField(
                             controller: _keywordController,
-                            style: const TextStyle(color: AppColors.textPrimary),
+                            style:
+                                const TextStyle(color: AppColors.textPrimary),
                             decoration: _inputDecoration('Thêm từ khóa'),
                             onFieldSubmitted: (_) => _addKeyword(),
                           ),
@@ -331,7 +343,8 @@ class _VideoEditorScreenState extends State<VideoEditorScreen> {
                                   const TextStyle(color: AppColors.textPrimary),
                             ),
                             backgroundColor: AppColors.bgTertiary,
-                            side: const BorderSide(color: AppColors.borderPrimary),
+                            side: const BorderSide(
+                                color: AppColors.borderPrimary),
                             deleteIcon: const Icon(Icons.close,
                                 size: 16, color: AppColors.textSecondary),
                             onDeleted: () => _removeKeyword(i),

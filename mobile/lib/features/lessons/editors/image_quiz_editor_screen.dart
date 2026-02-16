@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:dio/dio.dart';
 import 'package:edtech_mobile/theme/colors.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'quiz_editor_screen.dart';
@@ -12,6 +13,8 @@ class ImageQuizEditorScreen extends StatefulWidget {
   final String? topicName;
   final String? topicId;
   final String? nodeId;
+  final String? initialTitle;
+  final String? initialDescription;
   final Map<String, dynamic>? initialLessonData;
   final Map<String, dynamic>? initialEndQuiz;
   final bool isEditMode;
@@ -25,6 +28,8 @@ class ImageQuizEditorScreen extends StatefulWidget {
     this.topicName,
     this.topicId,
     this.nodeId,
+    this.initialTitle,
+    this.initialDescription,
     this.initialLessonData,
     this.initialEndQuiz,
     this.isEditMode = false,
@@ -43,7 +48,8 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
   final _imagePicker = ImagePicker();
 
   List<_SlideData> _slides = [_SlideData()];
-  Map<int, bool> _uploadingImages = {}; // Track upload state per slide
+  final Map<int, bool> _uploadingImages = {}; // Track upload state per slide
+  final Set<int> _generatingSlideExplanations = {};
 
   @override
   void initState() {
@@ -52,6 +58,13 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
   }
 
   void _prefillData() {
+    if (widget.initialTitle != null) {
+      _titleController.text = widget.initialTitle!;
+    }
+    if (widget.initialDescription != null) {
+      _descriptionController.text = widget.initialDescription!;
+    }
+
     final data = widget.initialLessonData;
     if (data == null) return;
 
@@ -72,7 +85,8 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
         for (int i = 0; i < options.length && i < 4; i++) {
           final opt = options[i] as Map<String, dynamic>;
           sd.optionControllers[i].text = opt['text'] as String? ?? '';
-          sd.explanationControllers[i].text = opt['explanation'] as String? ?? '';
+          sd.explanationControllers[i].text =
+              opt['explanation'] as String? ?? '';
         }
         return sd;
       }).toList();
@@ -184,14 +198,15 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
           nodeId: widget.nodeId,
           initialEndQuiz: widget.initialEndQuiz,
           isEditMode: widget.isEditMode,
-          originalLessonData: widget.originalLessonData ?? widget.initialLessonData,
+          originalLessonData:
+              widget.originalLessonData ?? widget.initialLessonData,
           originalEndQuiz: widget.originalEndQuiz ?? widget.initialEndQuiz,
         ),
       ),
     );
   }
 
-  InputDecoration _inputDecoration(String label, {int? maxLines}) {
+  InputDecoration _inputDecoration(String label) {
     return InputDecoration(
       labelText: label,
       labelStyle: const TextStyle(color: AppColors.textSecondary),
@@ -273,7 +288,8 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
                         ),
                         TextButton.icon(
                           onPressed: _addSlide,
-                          icon: const Icon(Icons.add, color: AppColors.purpleNeon),
+                          icon: const Icon(Icons.add,
+                              color: AppColors.purpleNeon),
                           label: const Text(
                             'Thêm slide',
                             style: TextStyle(color: AppColors.purpleNeon),
@@ -296,7 +312,8 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
                         );
                       },
                       itemBuilder: (context, index) {
-                        return _buildSlideCard(index, key: ValueKey('slide_$index'));
+                        return _buildSlideCard(index,
+                            key: ValueKey('slide_$index'));
                       },
                     ),
                   ],
@@ -336,6 +353,351 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
     );
   }
 
+  Future<void> _generateSlideAIExplanation(int index) async {
+    final slide = _slides[index];
+    final questionText = slide.questionController.text.trim();
+
+    if (questionText.length < 5) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+              'Vui lòng nhập câu hỏi (ít nhất 5 ký tự) trước khi tạo giải thích'),
+          backgroundColor: AppColors.warningNeon,
+          behavior: SnackBarBehavior.floating,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      );
+      return;
+    }
+
+    for (int i = 0; i < 4; i++) {
+      if (slide.optionControllers[i].text.trim().isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Vui lòng nhập đáp án ${[
+              'A',
+              'B',
+              'C',
+              'D'
+            ][i]} trước khi tạo giải thích'),
+            backgroundColor: AppColors.warningNeon,
+            behavior: SnackBarBehavior.floating,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+        );
+        return;
+      }
+    }
+
+    setState(() => _generatingSlideExplanations.add(index));
+
+    try {
+      final apiService = Provider.of<ApiService>(context, listen: false);
+      final result = await apiService.generateQuizExplanations(
+        question: questionText,
+        options: List.generate(
+            4, (i) => {'text': slide.optionControllers[i].text.trim()}),
+        correctAnswer: slide.correctAnswer,
+        context: _titleController.text.trim(),
+      );
+
+      if (!mounted) return;
+
+      final validationIssues =
+          (result['validationIssues'] as List?)?.cast<String>() ?? [];
+      final suggestedCorrectAnswer = result['suggestedCorrectAnswer'] as int?;
+      final suggestedCorrectReason =
+          result['suggestedCorrectReason'] as String?;
+      final explanations =
+          (result['explanations'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+
+      // Show validation issues
+      if (validationIssues.isNotEmpty) {
+        final shouldContinue =
+            await _showValidationIssuesDialog(validationIssues);
+        if (!mounted) return;
+        if (shouldContinue != true) {
+          setState(() => _generatingSlideExplanations.remove(index));
+          return;
+        }
+      }
+
+      // Show answer mismatch
+      if (suggestedCorrectAnswer != null &&
+          suggestedCorrectAnswer != slide.correctAnswer) {
+        final shouldChange = await _showAnswerMismatchDialog(
+          currentAnswer: slide.correctAnswer,
+          suggestedAnswer: suggestedCorrectAnswer,
+          reason: suggestedCorrectReason ?? '',
+        );
+        if (!mounted) return;
+        if (shouldChange == true) {
+          setState(() {
+            slide.correctAnswer = suggestedCorrectAnswer;
+          });
+        }
+      }
+
+      // Fill in explanations
+      for (int i = 0; i < explanations.length && i < 4; i++) {
+        final explanation = explanations[i]['explanation'] as String? ?? '';
+        if (explanation.isNotEmpty) {
+          slide.explanationControllers[i].text = explanation;
+        }
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Đã tạo lời giải thích thành công!'),
+            backgroundColor: AppColors.successGlow,
+            behavior: SnackBarBehavior.floating,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      String errorMsg = 'Lỗi tạo giải thích';
+      if (e is DioException && e.response?.data != null) {
+        final data = e.response!.data;
+        final msg = data is Map ? (data['message'] ?? '') : data.toString();
+        if (msg.toString().contains('kim cương')) {
+          _showDiamondInsufficientDialog(msg.toString());
+          setState(() => _generatingSlideExplanations.remove(index));
+          return;
+        }
+        errorMsg = msg.toString();
+      } else {
+        errorMsg = e.toString();
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(errorMsg),
+          backgroundColor: AppColors.errorNeon,
+          behavior: SnackBarBehavior.floating,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _generatingSlideExplanations.remove(index));
+    }
+  }
+
+  void _showDiamondInsufficientDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.bgSecondary,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Text('💎', style: TextStyle(fontSize: 24)),
+            SizedBox(width: 8),
+            Text('Không đủ kim cương',
+                style: TextStyle(color: Colors.white, fontSize: 16)),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(message,
+                style: const TextStyle(
+                    color: AppColors.textSecondary, fontSize: 14)),
+            const SizedBox(height: 12),
+            const Text(
+              'Bạn có thể mua thêm kim cương trong phần Cửa hàng.',
+              style: TextStyle(color: AppColors.textTertiary, fontSize: 13),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Đóng',
+                style: TextStyle(color: AppColors.textSecondary)),
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.pop(ctx);
+              context.push('/payment');
+            },
+            icon: const Text('💎', style: TextStyle(fontSize: 16)),
+            label: const Text('Mua kim cương'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.cyanNeon,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<bool?> _showValidationIssuesDialog(List<String> issues) {
+    return showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.bgSecondary,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: AppColors.warningNeon),
+            SizedBox(width: 8),
+            Text('Phát hiện vấn đề',
+                style: TextStyle(color: AppColors.textPrimary, fontSize: 17)),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: issues
+              .map((issue) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('• ',
+                            style: TextStyle(
+                                color: AppColors.warningNeon, fontSize: 14)),
+                        Expanded(
+                            child: Text(issue,
+                                style: const TextStyle(
+                                    color: AppColors.textSecondary,
+                                    fontSize: 14))),
+                      ],
+                    ),
+                  ))
+              .toList(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Sửa lỗi',
+                style: TextStyle(color: AppColors.textSecondary)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.warningNeon,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
+            ),
+            child:
+                const Text('Tiếp tục', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<bool?> _showAnswerMismatchDialog({
+    required int currentAnswer,
+    required int suggestedAnswer,
+    required String reason,
+  }) {
+    final labels = ['A', 'B', 'C', 'D'];
+    return showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.bgSecondary,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.error_outline, color: AppColors.errorNeon),
+            SizedBox(width: 8),
+            Expanded(
+              child: Text('Cảnh báo: Đáp án có thể sai',
+                  style: TextStyle(color: AppColors.textPrimary, fontSize: 17)),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            RichText(
+              text: TextSpan(
+                style: const TextStyle(
+                    color: AppColors.textSecondary, fontSize: 14),
+                children: [
+                  const TextSpan(text: 'Bạn đánh dấu: '),
+                  TextSpan(
+                      text: labels[currentAnswer],
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary)),
+                  const TextSpan(text: ' là đúng'),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            RichText(
+              text: TextSpan(
+                style: const TextStyle(
+                    color: AppColors.textSecondary, fontSize: 14),
+                children: [
+                  const TextSpan(text: 'AI đề xuất: '),
+                  TextSpan(
+                      text: labels[suggestedAnswer],
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.orangeNeon)),
+                  const TextSpan(text: ' mới đúng'),
+                ],
+              ),
+            ),
+            if (reason.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: AppColors.bgTertiary,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.lightbulb_outline,
+                        color: AppColors.orangeNeon, size: 16),
+                    const SizedBox(width: 8),
+                    Expanded(
+                        child: Text(reason,
+                            style: const TextStyle(
+                                color: AppColors.textSecondary, fontSize: 13))),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Giữ ${labels[currentAnswer]}',
+                style: const TextStyle(color: AppColors.textSecondary)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.orangeNeon,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
+            ),
+            child: Text('Đổi sang ${labels[suggestedAnswer]}',
+                style: const TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildSlideCard(int index, {Key? key}) {
     final slide = _slides[index];
     final labels = ['A', 'B', 'C', 'D'];
@@ -354,25 +716,64 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
         children: [
           // Slide header
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  const Icon(Icons.drag_handle, color: AppColors.textTertiary, size: 20),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Slide ${index + 1}',
-                    style: const TextStyle(
-                      color: AppColors.purpleNeon,
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
+              const Icon(Icons.drag_handle,
+                  color: AppColors.textTertiary, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'Slide ${index + 1}',
+                style: const TextStyle(
+                  color: AppColors.purpleNeon,
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
+              const Spacer(),
+              // AI Explain button
+              _generatingSlideExplanations.contains(index)
+                  ? Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 6),
+                      child: const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.orangeNeon,
+                        ),
+                      ),
+                    )
+                  : InkWell(
+                      onTap: () => _generateSlideAIExplanation(index),
+                      borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: AppColors.orangeNeon.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                              color: AppColors.orangeNeon.withOpacity(0.3)),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.auto_awesome,
+                                color: AppColors.orangeNeon, size: 14),
+                            SizedBox(width: 4),
+                            Text('AI 5💎',
+                                style: TextStyle(
+                                    color: AppColors.orangeNeon,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600)),
+                          ],
+                        ),
+                      ),
+                    ),
               if (_slides.length > 1)
                 IconButton(
-                  icon: const Icon(Icons.delete_outline, color: AppColors.errorNeon, size: 20),
+                  icon: const Icon(Icons.delete_outline,
+                      color: AppColors.errorNeon, size: 20),
                   onPressed: () => _removeSlide(index),
                 ),
             ],
@@ -392,7 +793,7 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              
+
               // Show image preview if URL exists
               if (slide.imageUrlController.text.isNotEmpty)
                 Container(
@@ -408,7 +809,7 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
                     ),
                   ),
                 ),
-              
+
               // Upload/Change button
               Row(
                 children: [
@@ -453,7 +854,8 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
                   if (slide.imageUrlController.text.isNotEmpty) ...[
                     const SizedBox(width: 8),
                     IconButton(
-                      icon: const Icon(Icons.delete_outline, color: AppColors.errorNeon),
+                      icon: const Icon(Icons.delete_outline,
+                          color: AppColors.errorNeon),
                       onPressed: () {
                         setState(() {
                           slide.imageUrlController.clear();
@@ -463,7 +865,7 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
                   ],
                 ],
               ),
-              
+
               // Validation message
               if (slide.imageUrlController.text.isEmpty)
                 const Padding(
@@ -531,10 +933,13 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
                       Expanded(
                         child: TextFormField(
                           controller: slide.optionControllers[optIdx],
-                          style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
-                          decoration: _inputDecoration('Đáp án ${labels[optIdx]}'),
-                          validator: (v) =>
-                              v == null || v.trim().isEmpty ? 'Nhập đáp án' : null,
+                          style: const TextStyle(
+                              color: AppColors.textPrimary, fontSize: 14),
+                          decoration:
+                              _inputDecoration('Đáp án ${labels[optIdx]}'),
+                          validator: (v) => v == null || v.trim().isEmpty
+                              ? 'Nhập đáp án'
+                              : null,
                         ),
                       ),
                     ],
@@ -543,7 +948,8 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
                     padding: const EdgeInsets.only(left: 56, top: 6),
                     child: TextFormField(
                       controller: slide.explanationControllers[optIdx],
-                      style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                      style: const TextStyle(
+                          color: AppColors.textSecondary, fontSize: 13),
                       decoration: _inputDecoration('Giải thích (tuỳ chọn)'),
                       maxLines: 2,
                     ),

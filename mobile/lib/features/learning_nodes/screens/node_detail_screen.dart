@@ -23,13 +23,14 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
   Map<String, dynamic>? _nodeData;
   Map<String, dynamic>? _progressData;
   List<dynamic>? _contentItems;
-  List<dynamic>? _filteredContentItems; // Content đã lọc theo difficulty và format
+  List<dynamic>?
+      _filteredContentItems; // Content đã lọc theo difficulty và format
   bool _isLoading = true;
   String? _error;
   String? _subjectId; // Store subjectId for navigation
   String _selectedDifficulty = 'medium'; // Default difficulty
   String _selectedFormat = 'all'; // Default format: all, text, video, image
-  bool _isPremiumLocked = false; // True if node requires premium
+  bool _isDiamondLocked = false; // True if node requires diamond unlock
 
   @override
   void initState() {
@@ -48,20 +49,22 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
   /// Lọc content items theo format được chọn
   /// Note: Không filter theo difficulty nữa vì mức độ văn bản được chọn trong content viewer
   /// Note: Đã loại bỏ type 'example' - chỉ hiển thị concept, hidden_reward, boss_quiz
-  List<dynamic> _filterContent(List<dynamic> items, String difficulty, String format) {
+  List<dynamic> _filterContent(
+      List<dynamic> items, String difficulty, String format) {
     // Lọc bỏ example - chỉ giữ concept, hidden_reward, boss_quiz
     var filtered = items.where((item) {
       final itemType = (item as Map<String, dynamic>)['type'] as String? ?? '';
       return itemType != 'example';
     }).toList();
-    
+
     // Lọc theo format nếu không phải "all"
     if (format != 'all') {
       final byFormat = filtered.where((item) {
-        final itemFormat = (item as Map<String, dynamic>)['format'] as String? ?? 'text';
+        final itemFormat =
+            (item as Map<String, dynamic>)['format'] as String? ?? 'text';
         return itemFormat == format;
       }).toList();
-      
+
       if (byFormat.isNotEmpty) {
         filtered = byFormat;
       } else {
@@ -70,12 +73,14 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
       }
     }
 
-    print('✅ Filtered ${filtered.length}/${items.length} items for format: $format (excluded examples)');
+    print(
+        '✅ Filtered ${filtered.length}/${items.length} items for format: $format (excluded examples)');
     return filtered;
   }
 
   /// Lọc content items theo độ khó được chọn (legacy - giữ cho tương thích)
-  List<dynamic> _filterContentByDifficulty(List<dynamic> items, String difficulty) {
+  List<dynamic> _filterContentByDifficulty(
+      List<dynamic> items, String difficulty) {
     return _filterContent(items, difficulty, _selectedFormat);
   }
 
@@ -84,21 +89,24 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
     setState(() {
       _selectedFormat = format;
       if (_contentItems != null) {
-        _filteredContentItems = _filterContent(_contentItems!, _selectedDifficulty, format);
+        _filteredContentItems =
+            _filterContent(_contentItems!, _selectedDifficulty, format);
       }
     });
   }
 
   /// Đếm số content items theo format
   Map<String, int> _countContentByFormat() {
-    if (_contentItems == null) return {'all': 0, 'text': 0, 'video': 0, 'image': 0};
-    
+    if (_contentItems == null)
+      return {'all': 0, 'text': 0, 'video': 0, 'image': 0};
+
     int textCount = 0;
     int videoCount = 0;
     int imageCount = 0;
-    
+
     for (final item in _contentItems!) {
-      final format = (item as Map<String, dynamic>)['format'] as String? ?? 'text';
+      final format =
+          (item as Map<String, dynamic>)['format'] as String? ?? 'text';
       switch (format) {
         case 'video':
           videoCount++;
@@ -110,7 +118,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
           textCount++;
       }
     }
-    
+
     return {
       'all': _contentItems!.length,
       'text': textCount,
@@ -168,7 +176,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
             const CircularProgressIndicator(),
             const SizedBox(width: 16),
             Expanded(
-              child: Text('Đang tạo nội dung ${_getDifficultyLabel(difficulty)}...'),
+              child: Text(
+                  'Đang tạo nội dung ${_getDifficultyLabel(difficulty)}...'),
             ),
           ],
         ),
@@ -193,7 +202,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
         setState(() {
           _selectedDifficulty = difficulty;
           if (_contentItems != null) {
-            _filteredContentItems = _filterContentByDifficulty(_contentItems!, difficulty);
+            _filteredContentItems =
+                _filterContentByDifficulty(_contentItems!, difficulty);
           }
         });
 
@@ -209,7 +219,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(message.isNotEmpty ? message : 'Không thể tạo nội dung'),
+              content:
+                  Text(message.isNotEmpty ? message : 'Không thể tạo nội dung'),
               backgroundColor: Colors.orange,
             ),
           );
@@ -268,7 +279,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
         apiService.getNodeProgress(widget.nodeId),
       ]);
 
-      final nodeData = results[0] as Map<String, dynamic>;
+      final nodeData = results[0];
 
       // Check if this node has lesson type contents - redirect to types overview
       final lessonType = nodeData['lessonType'] as String?;
@@ -277,7 +288,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
 
         // Try to fetch lesson type contents from the new table
         try {
-          final typesData = await apiService.getLessonTypeContents(widget.nodeId);
+          final typesData =
+              await apiService.getLessonTypeContents(widget.nodeId);
           final contents = typesData['contents'] as List<dynamic>? ?? [];
 
           if (contents.length > 1) {
@@ -297,7 +309,9 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
               if (mounted) {
                 context.push('/lessons/${widget.nodeId}/view', extra: {
                   'lessonType': singleContent['lessonType'] as String,
-                  'lessonData': singleContent['lessonData'] as Map<String, dynamic>? ?? {},
+                  'lessonData':
+                      singleContent['lessonData'] as Map<String, dynamic>? ??
+                          {},
                   'title': title,
                   'endQuiz': singleContent['endQuiz'] as Map<String, dynamic>?,
                 });
@@ -314,7 +328,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
         Map<String, dynamic>? endQuiz;
         try {
           final fullLessonData = await apiService.getLessonData(widget.nodeId);
-          lessonData = fullLessonData['lessonData'] as Map<String, dynamic>? ?? {};
+          lessonData =
+              fullLessonData['lessonData'] as Map<String, dynamic>? ?? {};
           endQuiz = fullLessonData['endQuiz'] as Map<String, dynamic>?;
         } catch (_) {
           lessonData = nodeData['lessonData'] as Map<String, dynamic>? ?? {};
@@ -334,13 +349,14 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
       }
 
       final allContent = results[2] as List<dynamic>;
-      
+
       setState(() {
         _nodeData = nodeData;
-        _progressData = results[1] as Map<String, dynamic>;
+        _progressData = results[1];
         _contentItems = allContent;
         // Lọc content theo difficulty được chọn
-        _filteredContentItems = _filterContentByDifficulty(allContent, _selectedDifficulty);
+        _filteredContentItems =
+            _filterContentByDifficulty(allContent, _selectedDifficulty);
         _isLoading = false;
         // Extract subjectId from nodeData (could be subjectId or subject.id)
         _subjectId = nodeData['subjectId'] as String? ??
@@ -367,9 +383,11 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
     } catch (e) {
       final errorStr = e.toString();
       // Check if this is a premium lock error
-      if (errorStr.contains('requiresPremium') || errorStr.contains('Premium') || errorStr.contains('403')) {
+      if (errorStr.contains('requiresUnlock') ||
+          errorStr.contains('mở khóa') ||
+          errorStr.contains('403')) {
         setState(() {
-          _isPremiumLocked = true;
+          _isDiamondLocked = true;
           _isLoading = false;
         });
       } else {
@@ -748,7 +766,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
     } catch (e) {
       print('⚠️ Error popping: $e');
     }
-    
+
     // If cannot pop or pop failed, navigate to skill tree or dashboard
     if (_subjectId != null) {
       context.go('/skill-tree?subjectId=$_subjectId');
@@ -757,15 +775,15 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
     }
   }
 
-  /// Build Premium Locked UI
-  Widget _buildPremiumLockedUI() {
+  /// Build Diamond Locked UI - replaces old Premium lock
+  Widget _buildDiamondLockedUI() {
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Lock icon with gradient glow
+            // Lock icon with diamond gradient glow
             Container(
               padding: const EdgeInsets.all(32),
               decoration: BoxDecoration(
@@ -774,47 +792,38 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    AppColors.coinGold.withOpacity(0.2),
-                    AppColors.orangeNeon.withOpacity(0.1),
+                    AppColors.purpleNeon.withOpacity(0.2),
+                    AppColors.cyanNeon.withOpacity(0.1),
                   ],
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.coinGold.withOpacity(0.3),
+                    color: AppColors.purpleNeon.withOpacity(0.3),
                     blurRadius: 30,
                     spreadRadius: 5,
                   ),
                 ],
               ),
-              child: ShaderMask(
-                shaderCallback: (bounds) => LinearGradient(
-                  colors: [AppColors.coinGold, AppColors.orangeNeon],
-                ).createShader(bounds),
-                child: const Icon(
-                  Icons.lock_rounded,
-                  size: 64,
-                  color: Colors.white,
-                ),
-              ),
+              child: const Text('💎', style: TextStyle(fontSize: 56)),
             ),
             const SizedBox(height: 32),
-            
+
             // Title
             ShaderMask(
-              shaderCallback: (bounds) => LinearGradient(
-                colors: [AppColors.coinGold, AppColors.orangeNeon],
+              shaderCallback: (bounds) => const LinearGradient(
+                colors: [AppColors.purpleNeon, AppColors.cyanNeon],
               ).createShader(bounds),
               child: Text(
-                'Nội dung Premium',
+                'Bài học chưa mở khóa',
                 style: AppTextStyles.h2.copyWith(color: Colors.white),
                 textAlign: TextAlign.center,
               ),
             ),
             const SizedBox(height: 12),
-            
+
             // Description
             Text(
-              'Bài học này yêu cầu nâng cấp Premium để mở khóa.\nHãy nâng cấp để truy cập toàn bộ nội dung học tập!',
+              'Bài học này cần được mở khóa bằng kim cương.\nBạn có thể mở khóa từng bài, theo chủ đề, chương hoặc cả môn để tiết kiệm hơn!',
               style: AppTextStyles.bodyMedium.copyWith(
                 color: AppColors.textSecondary,
                 height: 1.5,
@@ -822,8 +831,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
-            
-            // Features list
+
+            // Unlock options
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
@@ -833,29 +842,78 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
               ),
               child: Column(
                 children: [
-                  _buildFeatureRow(Icons.school, 'Truy cập tất cả bài học'),
+                  _buildUnlockOption(
+                    icon: Icons.topic_rounded,
+                    label: 'Mở khóa theo chủ đề',
+                    description: 'Giá gốc - không giảm',
+                    color: AppColors.orangeNeon,
+                  ),
                   const SizedBox(height: 12),
-                  _buildFeatureRow(Icons.quiz, 'Không giới hạn quiz'),
+                  _buildUnlockOption(
+                    icon: Icons.category_rounded,
+                    label: 'Mở khóa theo chương',
+                    description: 'Giảm 15%',
+                    color: AppColors.cyanNeon,
+                  ),
                   const SizedBox(height: 12),
-                  _buildFeatureRow(Icons.block, 'Không quảng cáo'),
-                  const SizedBox(height: 12),
-                  _buildFeatureRow(Icons.support_agent, 'Hỗ trợ ưu tiên'),
+                  _buildUnlockOption(
+                    icon: Icons.star_rounded,
+                    label: 'Mở khóa cả môn',
+                    description: 'Giảm 30% - tiết kiệm nhất!',
+                    color: AppColors.purpleNeon,
+                  ),
                 ],
               ),
             ),
             const SizedBox(height: 32),
-            
-            // Upgrade button
-            GamingButton(
-              text: 'Nâng cấp Premium',
-              onPressed: () {
-                HapticFeedback.mediumImpact();
-                context.push('/payment');
-              },
-              icon: Icons.workspace_premium,
+
+            // Navigate to unlock screen
+            if (_subjectId != null)
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () async {
+                    HapticFeedback.mediumImpact();
+                    await context.push('/subjects/$_subjectId/unlock');
+                    // Reload data after returning
+                    _loadData();
+                  },
+                  icon: const Text('💎', style: TextStyle(fontSize: 18)),
+                  label: const Text('Xem bảng giá mở khóa',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.purpleNeon,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
+                  ),
+                ),
+              ),
+            const SizedBox(height: 12),
+
+            // Buy diamonds button
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  HapticFeedback.lightImpact();
+                  context.push('/payment');
+                },
+                icon: const Icon(Icons.shopping_cart_rounded, size: 18),
+                label: const Text('Mua kim cương'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.cyanNeon,
+                  side: BorderSide(color: AppColors.cyanNeon.withOpacity(0.5)),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14)),
+                ),
+              ),
             ),
             const SizedBox(height: 16),
-            
+
             // Back button
             TextButton.icon(
               onPressed: _handleBack,
@@ -871,25 +929,41 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
     );
   }
 
-  Widget _buildFeatureRow(IconData icon, String text) {
+  Widget _buildUnlockOption({
+    required IconData icon,
+    required String label,
+    required String description,
+    required Color color,
+  }) {
     return Row(
       children: [
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: AppColors.successNeon.withOpacity(0.15),
+            color: color.withOpacity(0.15),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(icon, size: 18, color: AppColors.successNeon),
+          child: Icon(icon, size: 18, color: color),
         ),
         const SizedBox(width: 12),
         Expanded(
-          child: Text(text, style: AppTextStyles.bodyMedium),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label,
+                  style: AppTextStyles.bodyMedium
+                      .copyWith(fontWeight: FontWeight.w600)),
+              Text(description,
+                  style: AppTextStyles.caption
+                      .copyWith(color: AppColors.textTertiary)),
+            ],
+          ),
         ),
       ],
     );
   }
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.bgPrimary,
@@ -904,7 +978,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
               borderRadius: BorderRadius.circular(10),
               border: Border.all(color: AppColors.borderPrimary),
             ),
-            child: const Icon(Icons.arrow_back, color: AppColors.textPrimary, size: 20),
+            child: const Icon(Icons.arrow_back,
+                color: AppColors.textPrimary, size: 20),
           ),
           onPressed: _handleBack,
           tooltip: 'Quay lại',
@@ -918,59 +993,70 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
         automaticallyImplyLeading: false,
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator(color: AppColors.purpleNeon))
-          : _isPremiumLocked
-              ? _buildPremiumLockedUI()
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.purpleNeon))
+          : _isDiamondLocked
+              ? _buildDiamondLockedUI()
               : _error != null
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: AppColors.errorNeon.withOpacity(0.15),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(Icons.error_outline_rounded, size: 48, color: AppColors.errorNeon),
-                        ),
-                        const SizedBox(height: 16),
-                        Text('Error: $_error', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary), textAlign: TextAlign.center),
-                        const SizedBox(height: 16),
-                        GamingButton(text: 'Retry', onPressed: _loadData, icon: Icons.refresh_rounded),
-                      ],
-                    ),
-                  ),
-                )
-              : _nodeData == null
-                  ? Center(child: Text('No data available', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)))
-                  : RefreshIndicator(
-                      onRefresh: _refreshData,
-                      color: AppColors.purpleNeon,
-                      child: SingleChildScrollView(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        padding: const EdgeInsets.all(16),
+                  ? Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            if (_progressData != null) _buildProgressHUD(),
-                            const SizedBox(height: 24),
-                            _buildNodeInfo(),
-                            const SizedBox(height: 24),
-                            _buildContentPath(),
+                            Container(
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                color: AppColors.errorNeon.withOpacity(0.15),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.error_outline_rounded,
+                                  size: 48, color: AppColors.errorNeon),
+                            ),
+                            const SizedBox(height: 16),
+                            Text('Error: $_error',
+                                style: AppTextStyles.bodyMedium
+                                    .copyWith(color: AppColors.textSecondary),
+                                textAlign: TextAlign.center),
+                            const SizedBox(height: 16),
+                            GamingButton(
+                                text: 'Retry',
+                                onPressed: _loadData,
+                                icon: Icons.refresh_rounded),
                           ],
                         ),
                       ),
-                    ),
+                    )
+                  : _nodeData == null
+                      ? Center(
+                          child: Text('No data available',
+                              style: AppTextStyles.bodyMedium
+                                  .copyWith(color: AppColors.textSecondary)))
+                      : RefreshIndicator(
+                          onRefresh: _refreshData,
+                          color: AppColors.purpleNeon,
+                          child: SingleChildScrollView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (_progressData != null) _buildProgressHUD(),
+                                const SizedBox(height: 24),
+                                _buildNodeInfo(),
+                                const SizedBox(height: 24),
+                                _buildContentPath(),
+                              ],
+                            ),
+                          ),
+                        ),
     );
   }
 
   /// Widget chọn dạng bài học (text/video/image)
   Widget _buildFormatSelector() {
     final formatCounts = _countContentByFormat();
-    
+
     return Card(
       color: _getFormatColor(_selectedFormat).withOpacity(0.1),
       shape: RoundedRectangleBorder(
@@ -1000,7 +1086,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                 ),
                 const Spacer(),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: _getFormatColor(_selectedFormat),
                     borderRadius: BorderRadius.circular(20),
@@ -1019,13 +1106,17 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
             const SizedBox(height: 16),
             Row(
               children: [
-                _buildFormatChip('all', 'Tất cả', Icons.apps, Colors.grey.shade700, formatCounts['all'] ?? 0),
+                _buildFormatChip('all', 'Tất cả', Icons.apps,
+                    Colors.grey.shade700, formatCounts['all'] ?? 0),
                 const SizedBox(width: 6),
-                _buildFormatChip('text', 'Văn bản', Icons.article, Colors.blue, formatCounts['text'] ?? 0),
+                _buildFormatChip('text', 'Văn bản', Icons.article, Colors.blue,
+                    formatCounts['text'] ?? 0),
                 const SizedBox(width: 6),
-                _buildFormatChip('video', 'Video', Icons.videocam, Colors.purple, formatCounts['video'] ?? 0),
+                _buildFormatChip('video', 'Video', Icons.videocam,
+                    Colors.purple, formatCounts['video'] ?? 0),
                 const SizedBox(width: 6),
-                _buildFormatChip('image', 'Hình ảnh', Icons.image, Colors.teal, formatCounts['image'] ?? 0),
+                _buildFormatChip('image', 'Hình ảnh', Icons.image, Colors.teal,
+                    formatCounts['image'] ?? 0),
               ],
             ),
           ],
@@ -1034,10 +1125,11 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
     );
   }
 
-  Widget _buildFormatChip(String format, String label, IconData icon, Color color, int count) {
+  Widget _buildFormatChip(
+      String format, String label, IconData icon, Color color, int count) {
     final isSelected = _selectedFormat == format;
     final hasContent = count > 0 || format == 'all';
-    
+
     return Expanded(
       child: InkWell(
         onTap: () {
@@ -1048,10 +1140,14 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
-            color: isSelected ? color : (hasContent ? Colors.grey.shade100 : Colors.grey.shade50),
+            color: isSelected
+                ? color
+                : (hasContent ? Colors.grey.shade100 : Colors.grey.shade50),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: isSelected ? color : (hasContent ? Colors.grey.shade300 : Colors.grey.shade200),
+              color: isSelected
+                  ? color
+                  : (hasContent ? Colors.grey.shade300 : Colors.grey.shade200),
               width: isSelected ? 2 : 1,
             ),
             boxShadow: isSelected
@@ -1071,7 +1167,11 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                 children: [
                   Icon(
                     icon,
-                    color: isSelected ? Colors.white : (hasContent ? Colors.grey.shade600 : Colors.grey.shade400),
+                    color: isSelected
+                        ? Colors.white
+                        : (hasContent
+                            ? Colors.grey.shade600
+                            : Colors.grey.shade400),
                     size: 22,
                   ),
                   if (count > 0)
@@ -1079,7 +1179,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                       right: -8,
                       top: -4,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 4, vertical: 1),
                         decoration: BoxDecoration(
                           color: isSelected ? Colors.white : color,
                           borderRadius: BorderRadius.circular(8),
@@ -1102,7 +1203,11 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  color: isSelected ? Colors.white : (hasContent ? Colors.grey.shade600 : Colors.grey.shade400),
+                  color: isSelected
+                      ? Colors.white
+                      : (hasContent
+                          ? Colors.grey.shade600
+                          : Colors.grey.shade400),
                 ),
               ),
               if (!hasContent && format != 'all')
@@ -1164,7 +1269,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
           _progressData!['progress'] as Map<String, dynamic>? ?? _progressData;
       final completedItems =
           progressData?['completedItems'] as Map<String, dynamic>? ?? {};
-      
+
       // Collect all completed IDs from concepts, hiddenRewards (examples removed)
       for (final key in ['concepts', 'hiddenRewards']) {
         final items = completedItems[key] as List?;
@@ -1184,9 +1289,11 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
       // Chỉ tính concept vào tiến độ học (đã loại bỏ example)
       if (itemType == 'concept') {
         if (result.containsKey(itemDifficulty)) {
-          result[itemDifficulty]!['total'] = result[itemDifficulty]!['total']! + 1;
+          result[itemDifficulty]!['total'] =
+              result[itemDifficulty]!['total']! + 1;
           if (completedIds.contains(itemId)) {
-            result[itemDifficulty]!['completed'] = result[itemDifficulty]!['completed']! + 1;
+            result[itemDifficulty]!['completed'] =
+                result[itemDifficulty]!['completed']! + 1;
           }
         }
       }
@@ -1227,7 +1334,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
 
   Widget _buildProgressHUD() {
     final progressByDiff = _calculateProgressByDifficulty();
-    
+
     final selectedProgress = progressByDiff[_selectedDifficulty]!;
     final completed = selectedProgress['completed']!;
     final total = selectedProgress['total']!;
@@ -1249,17 +1356,21 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
             children: [
               Row(
                 children: [
-                  Text('Tiến độ', style: AppTextStyles.labelLarge.copyWith(color: AppColors.textPrimary)),
+                  Text('Tiến độ',
+                      style: AppTextStyles.labelLarge
+                          .copyWith(color: AppColors.textPrimary)),
                   const SizedBox(width: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
                       color: diffColor,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
                       _getDifficultyLabel(_selectedDifficulty),
-                      style: AppTextStyles.caption.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+                      style: AppTextStyles.caption.copyWith(
+                          color: Colors.white, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ],
@@ -1281,13 +1392,17 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                 ),
               ),
               FractionallySizedBox(
-                widthFactor: total > 0 ? (completed / total).clamp(0.0, 1.0) : 0,
+                widthFactor:
+                    total > 0 ? (completed / total).clamp(0.0, 1.0) : 0,
                 child: Container(
                   height: 10,
                   decoration: BoxDecoration(
                     color: diffColor,
                     borderRadius: BorderRadius.circular(5),
-                    boxShadow: [BoxShadow(color: diffColor.withOpacity(0.5), blurRadius: 8)],
+                    boxShadow: [
+                      BoxShadow(
+                          color: diffColor.withOpacity(0.5), blurRadius: 8)
+                    ],
                   ),
                 ),
               ),
@@ -1299,7 +1414,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
     );
   }
 
-  Widget _buildDifficultyProgress(String difficulty, String label, Color color, Map<String, int> progress) {
+  Widget _buildDifficultyProgress(
+      String difficulty, String label, Color color, Map<String, int> progress) {
     final completed = progress['completed']!;
     final total = progress['total']!;
     final isCompleted = total > 0 && completed >= total;
@@ -1312,7 +1428,9 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
           color: isSelected ? color.withOpacity(0.2) : Colors.white,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: isCompleted ? color : (isSelected ? color : Colors.grey.shade300),
+            color: isCompleted
+                ? color
+                : (isSelected ? color : Colors.grey.shade300),
             width: isCompleted ? 2 : 1,
           ),
         ),
@@ -1329,7 +1447,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                     label,
                     style: TextStyle(
                       fontSize: 10,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      fontWeight:
+                          isSelected ? FontWeight.bold : FontWeight.normal,
                       color: isCompleted ? color : Colors.grey.shade700,
                     ),
                     overflow: TextOverflow.ellipsis,
@@ -1410,7 +1529,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
             const SizedBox(height: 12),
             Text(
               _nodeData!['description'] ?? '',
-              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+              style: AppTextStyles.bodyMedium
+                  .copyWith(color: AppColors.textSecondary),
             ),
           ],
           const SizedBox(height: 16),
@@ -1447,10 +1567,12 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
   Widget _buildContentPath() {
     // Sử dụng filtered content nếu có, không thì dùng tất cả
     final contentToShow = _filteredContentItems ?? _contentItems;
-    
+
     if (contentToShow == null || contentToShow.isEmpty) {
       // Nếu đang lọc theo format cụ thể và không có content
-      if (_selectedFormat != 'all' && _contentItems != null && _contentItems!.isNotEmpty) {
+      if (_selectedFormat != 'all' &&
+          _contentItems != null &&
+          _contentItems!.isNotEmpty) {
         return _buildEmptyFormatState();
       }
       return const SizedBox.shrink();
@@ -1528,9 +1650,9 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
             child: Builder(
               builder: (context) {
                 // ✅ Calculate proper width: nodeSize (70) + spacing (80) for each additional node
-                final nodeSize = 70.0;
-                final nodeSpacing = 80.0;
-                final horizontalPadding = 16.0;
+                const nodeSize = 70.0;
+                const nodeSpacing = 80.0;
+                const horizontalPadding = 16.0;
                 final totalWidth = horizontalPadding +
                     nodeSize +
                     (sortedItems.length > 1
@@ -1540,7 +1662,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
 
                 return Container(
                   width: totalWidth,
-                  padding: EdgeInsets.symmetric(
+                  padding: const EdgeInsets.symmetric(
                       horizontal: horizontalPadding, vertical: 8),
                   child: Stack(
                     children: [
@@ -1619,7 +1741,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
 
           return _buildPathContentItemCard(
               item, index + 1, isCompleted, itemType, isUnlocked);
-        }).toList(),
+        }),
       ],
     );
   }
@@ -1628,9 +1750,12 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
   Widget _buildEmptyFormatState() {
     final formatColor = _getFormatColor(_selectedFormat);
     final formatLabel = _getFormatLabel(_selectedFormat);
-    final formatIcon = _selectedFormat == 'video' ? Icons.videocam 
-        : _selectedFormat == 'image' ? Icons.image : Icons.article;
-    
+    final formatIcon = _selectedFormat == 'video'
+        ? Icons.videocam
+        : _selectedFormat == 'image'
+            ? Icons.image
+            : Icons.article;
+
     return Card(
       color: formatColor.withOpacity(0.05),
       shape: RoundedRectangleBorder(
@@ -1649,7 +1774,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
               decoration: BoxDecoration(
                 color: formatColor.withOpacity(0.1),
                 shape: BoxShape.circle,
-                border: Border.all(color: formatColor.withOpacity(0.3), width: 3),
+                border:
+                    Border.all(color: formatColor.withOpacity(0.3), width: 3),
               ),
               child: Icon(
                 formatIcon,
@@ -1658,7 +1784,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            
+
             // Title
             Text(
               'Chưa có nội dung $formatLabel',
@@ -1669,7 +1795,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
               ),
             ),
             const SizedBox(height: 12),
-            
+
             // Description
             Text(
               'Bài học này chưa có nội dung dạng ${formatLabel.toLowerCase()}.\nBạn có thể đóng góp để giúp cộng đồng!',
@@ -1681,7 +1807,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            
+
             // Rewards info
             Container(
               padding: const EdgeInsets.all(16),
@@ -1693,7 +1819,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.emoji_events, color: Colors.amber.shade700, size: 24),
+                  Icon(Icons.emoji_events,
+                      color: Colors.amber.shade700, size: 24),
                   const SizedBox(width: 12),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1709,10 +1836,16 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                       const SizedBox(height: 2),
                       Row(
                         children: [
-                          Icon(Icons.star, size: 14, color: Colors.orange.shade600),
-                          Text(' +50 XP  ', style: TextStyle(fontSize: 12, color: Colors.grey.shade700)),
-                          Icon(Icons.monetization_on, size: 14, color: Colors.amber.shade600),
-                          Text(' +30 Coin', style: TextStyle(fontSize: 12, color: Colors.grey.shade700)),
+                          Icon(Icons.star,
+                              size: 14, color: Colors.orange.shade600),
+                          Text(' +50 XP  ',
+                              style: TextStyle(
+                                  fontSize: 12, color: Colors.grey.shade700)),
+                          Icon(Icons.monetization_on,
+                              size: 14, color: Colors.amber.shade600),
+                          Text(' +30 Coin',
+                              style: TextStyle(
+                                  fontSize: 12, color: Colors.grey.shade700)),
                         ],
                       ),
                     ],
@@ -1721,17 +1854,20 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            
+
             // Contribute button
             SizedBox(
               width: double.infinity,
               height: 52,
               child: ElevatedButton.icon(
                 onPressed: () => _showContributeFormatDialog(),
-                icon: Icon(_selectedFormat == 'video' ? Icons.upload : Icons.add_photo_alternate),
+                icon: Icon(_selectedFormat == 'video'
+                    ? Icons.upload
+                    : Icons.add_photo_alternate),
                 label: Text(
-                  'Đóng góp ${formatLabel}',
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  'Đóng góp $formatLabel',
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: formatColor,
@@ -1743,9 +1879,9 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Switch format hint
             TextButton.icon(
               onPressed: () => _changeFormat('all'),
@@ -1766,7 +1902,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
     final formatColor = _getFormatColor(_selectedFormat);
     final formatLabel = _getFormatLabel(_selectedFormat);
     final nodeTitle = _nodeData?['title'] ?? 'Bài học';
-    
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -1797,7 +1933,9 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Icon(
-                          _selectedFormat == 'video' ? Icons.videocam : Icons.image,
+                          _selectedFormat == 'video'
+                              ? Icons.videocam
+                              : Icons.image,
                           color: formatColor,
                           size: 32,
                         ),
@@ -1828,7 +1966,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                     ],
                   ),
                   const SizedBox(height: 24),
-                  
+
                   // Instructions
                   const Text(
                     'Hướng dẫn đóng góp',
@@ -1845,7 +1983,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                   ),
                   _buildContributionGuideItem(
                     Icons.check_circle_outline,
-                    _selectedFormat == 'video' 
+                    _selectedFormat == 'video'
                         ? 'Video rõ ràng, chất lượng tốt (720p trở lên)'
                         : 'Hình ảnh rõ nét, có chú thích',
                     Colors.green,
@@ -1862,9 +2000,9 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                         : 'Kích thước: tối đa 10MB',
                     Colors.purple,
                   ),
-                  
+
                   const SizedBox(height: 24),
-                  
+
                   // Rewards
                   Container(
                     padding: const EdgeInsets.all(16),
@@ -1876,7 +2014,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.emoji_events, color: Colors.amber, size: 32),
+                        const Icon(Icons.emoji_events,
+                            color: Colors.amber, size: 32),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(
@@ -1892,9 +2031,11 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                               const SizedBox(height: 4),
                               Row(
                                 children: [
-                                  Icon(Icons.star, color: Colors.orange.shade600, size: 16),
+                                  Icon(Icons.star,
+                                      color: Colors.orange.shade600, size: 16),
                                   const Text(' +50 XP  '),
-                                  Icon(Icons.monetization_on, color: Colors.amber.shade600, size: 16),
+                                  Icon(Icons.monetization_on,
+                                      color: Colors.amber.shade600, size: 16),
                                   const Text(' +30 Coin'),
                                 ],
                               ),
@@ -1905,7 +2046,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  
+
                   // Upload button
                   SizedBox(
                     width: double.infinity,
@@ -1915,10 +2056,15 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                         Navigator.pop(context);
                         _navigateToContribute();
                       },
-                      icon: Icon(_selectedFormat == 'video' ? Icons.upload : Icons.add_photo_alternate),
+                      icon: Icon(_selectedFormat == 'video'
+                          ? Icons.upload
+                          : Icons.add_photo_alternate),
                       label: Text(
-                        _selectedFormat == 'video' ? 'Tải lên Video' : 'Tải lên Hình ảnh',
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        _selectedFormat == 'video'
+                            ? 'Tải lên Video'
+                            : 'Tải lên Hình ảnh',
+                        style: const TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: formatColor,
@@ -1965,7 +2111,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
     final nodeId = widget.nodeId;
     final format = _selectedFormat;
     final nodeTitle = _nodeData?['title'] ?? 'Bài học';
-    
+
     context.push(
       '/contribute/new-$nodeId-$format?format=$format',
       extra: {
@@ -1973,9 +2119,12 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
         'nodeId': nodeId,
         'isNewContribution': true,
         'contributionGuide': {
-          'suggestedContent': 'Tạo ${format == 'video' ? 'video' : 'hình ảnh'} giải thích về "$nodeTitle"',
+          'suggestedContent':
+              'Tạo ${format == 'video' ? 'video' : 'hình ảnh'} giải thích về "$nodeTitle"',
           'requirements': [
-            format == 'video' ? 'Video rõ ràng, chất lượng 720p trở lên' : 'Hình ảnh rõ nét',
+            format == 'video'
+                ? 'Video rõ ràng, chất lượng 720p trở lên'
+                : 'Hình ảnh rõ nét',
             'Nội dung liên quan đến bài học',
             'Ưu tiên tiếng Việt',
             format == 'video' ? 'Độ dài 2-10 phút' : 'Kích thước tối đa 10MB',
@@ -2008,7 +2157,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
           : () {
               HapticFeedback.lightImpact();
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
+                const SnackBar(
                   content: Text('Hoàn thành các bài trước để mở khóa bài này!'),
                   backgroundColor: Colors.orange,
                 ),
@@ -2245,9 +2394,9 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
     final status = item['status'] as String? ?? 'published';
     final isPlaceholder = status == 'placeholder';
     final isAwaitingReview = status == 'awaiting_review';
-    
+
     // Placeholder uses different color scheme
-    final color = isPlaceholder 
+    final color = isPlaceholder
         ? (format == 'video' ? Colors.purple : Colors.teal)
         : _getItemTypeColor(itemType);
     final icon = isPlaceholder
@@ -2384,7 +2533,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
             children: [
               // Status badge for content item
               if (isPlaceholder) ...[
-                Icon(Icons.volunteer_activism, color: Colors.orange.shade600, size: 14),
+                Icon(Icons.volunteer_activism,
+                    color: Colors.orange.shade600, size: 14),
                 const SizedBox(width: 4),
                 Flexible(
                   child: Text(
@@ -2398,7 +2548,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                   ),
                 ),
               ] else if (isAwaitingReview) ...[
-                Icon(Icons.hourglass_empty, color: Colors.blue.shade600, size: 14),
+                Icon(Icons.hourglass_empty,
+                    color: Colors.blue.shade600, size: 14),
                 const SizedBox(width: 4),
                 Flexible(
                   child: Text(
@@ -2448,7 +2599,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
           ),
           trailing: isPlaceholder
               ? Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
                     color: Colors.orange,
                     borderRadius: BorderRadius.circular(16),
@@ -2463,12 +2615,16 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                   ),
                 )
               : isAwaitingReview
-                  ? Icon(Icons.hourglass_empty, color: Colors.blue.shade400, size: 24)
+                  ? Icon(Icons.hourglass_empty,
+                      color: Colors.blue.shade400, size: 24)
                   : isCompleted
-                      ? Icon(Icons.check_circle, color: Colors.green.shade600, size: 28)
+                      ? Icon(Icons.check_circle,
+                          color: Colors.green.shade600, size: 28)
                       : isUnlocked
-                          ? Icon(Icons.arrow_forward_ios, size: 16, color: color)
-                          : Icon(Icons.lock, color: Colors.grey.shade400, size: 20),
+                          ? Icon(Icons.arrow_forward_ios,
+                              size: 16, color: color)
+                          : Icon(Icons.lock,
+                              color: Colors.grey.shade400, size: 20),
           onTap: canAccess
               ? () {
                   if (isPlaceholder) {
@@ -2496,7 +2652,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
     final title = item['title'] as String? ?? 'Nội dung';
     final content = item['content'] as String? ?? '';
     final format = item['format'] as String? ?? 'text';
-    final contributionGuide = item['contributionGuide'] as Map<String, dynamic>?;
+    final contributionGuide =
+        item['contributionGuide'] as Map<String, dynamic>?;
     final rewards = item['rewards'] as Map<String, dynamic>?;
     final itemId = item['id'] as String?;
 
@@ -2533,7 +2690,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                         ),
                         child: Icon(
                           format == 'video' ? Icons.videocam : Icons.image,
-                          color: format == 'video' ? Colors.purple : Colors.teal,
+                          color:
+                              format == 'video' ? Colors.purple : Colors.teal,
                           size: 32,
                         ),
                       ),
@@ -2560,7 +2718,9 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
-                                format == 'video' ? 'Video cần đóng góp' : 'Hình ảnh cần đóng góp',
+                                format == 'video'
+                                    ? 'Video cần đóng góp'
+                                    : 'Hình ảnh cần đóng góp',
                                 style: TextStyle(
                                   color: Colors.orange.shade700,
                                   fontSize: 12,
@@ -2581,13 +2741,17 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [Colors.amber.shade100, Colors.orange.shade100],
+                          colors: [
+                            Colors.amber.shade100,
+                            Colors.orange.shade100
+                          ],
                         ),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.emoji_events, color: Colors.amber, size: 32),
+                          const Icon(Icons.emoji_events,
+                              color: Colors.amber, size: 32),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(
@@ -2604,13 +2768,17 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                                 Row(
                                   children: [
                                     if (rewards['xp'] != null) ...[
-                                      Icon(Icons.star, color: Colors.orange.shade600, size: 16),
+                                      Icon(Icons.star,
+                                          color: Colors.orange.shade600,
+                                          size: 16),
                                       const SizedBox(width: 4),
                                       Text('+${rewards['xp']} XP'),
                                       const SizedBox(width: 12),
                                     ],
                                     if (rewards['coin'] != null) ...[
-                                      Icon(Icons.monetization_on, color: Colors.amber.shade600, size: 16),
+                                      Icon(Icons.monetization_on,
+                                          color: Colors.amber.shade600,
+                                          size: 16),
                                       const SizedBox(width: 4),
                                       Text('+${rewards['coin']} Coin'),
                                     ],
@@ -2641,7 +2809,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      contributionGuide?['suggestedContent'] as String? ?? content,
+                      contributionGuide?['suggestedContent'] as String? ??
+                          content,
                       style: const TextStyle(fontSize: 14, height: 1.5),
                     ),
                   ),
@@ -2660,10 +2829,10 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                     // Xử lý an toàn: requirements có thể là List hoặc String
                     ...(() {
                       final raw = contributionGuide!['requirements'];
-                      final reqs = raw is List 
-                          ? raw 
-                          : raw is String 
-                              ? [raw] 
+                      final reqs = raw is List
+                          ? raw
+                          : raw is String
+                              ? [raw]
                               : <dynamic>[];
                       return reqs.map((req) {
                         return Padding(
@@ -2671,7 +2840,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Icon(Icons.check_circle, color: Colors.green.shade600, size: 20),
+                              Icon(Icons.check_circle,
+                                  color: Colors.green.shade600, size: 20),
                               const SizedBox(width: 8),
                               Expanded(child: Text(req.toString())),
                             ],
@@ -2696,18 +2866,24 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                               ),
                               child: Row(
                                 children: [
-                                  Icon(Icons.signal_cellular_alt, color: Colors.blue.shade600),
+                                  Icon(Icons.signal_cellular_alt,
+                                      color: Colors.blue.shade600),
                                   const SizedBox(width: 8),
                                   Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       const Text(
                                         'Độ khó',
-                                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                                        style: TextStyle(
+                                            fontSize: 12, color: Colors.grey),
                                       ),
                                       Text(
-                                        _getDifficultyText(contributionGuide['difficulty'] as String),
-                                        style: const TextStyle(fontWeight: FontWeight.bold),
+                                        _getDifficultyText(
+                                            contributionGuide['difficulty']
+                                                as String),
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.bold),
                                       ),
                                     ],
                                   ),
@@ -2727,18 +2903,23 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                               ),
                               child: Row(
                                 children: [
-                                  Icon(Icons.schedule, color: Colors.green.shade600),
+                                  Icon(Icons.schedule,
+                                      color: Colors.green.shade600),
                                   const SizedBox(width: 8),
                                   Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       const Text(
                                         'Thời gian',
-                                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                                        style: TextStyle(
+                                            fontSize: 12, color: Colors.grey),
                                       ),
                                       Text(
-                                        contributionGuide['estimatedTime'] as String,
-                                        style: const TextStyle(fontWeight: FontWeight.bold),
+                                        contributionGuide['estimatedTime']
+                                            as String,
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.bold),
                                       ),
                                     ],
                                   ),
@@ -2759,19 +2940,25 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                       onPressed: () {
                         Navigator.pop(context);
                         _navigateToUpload(
-                          itemId, 
-                          format, 
+                          itemId,
+                          format,
                           title: title,
                           contributionGuide: contributionGuide,
                         );
                       },
-                      icon: Icon(format == 'video' ? Icons.upload : Icons.add_photo_alternate),
+                      icon: Icon(format == 'video'
+                          ? Icons.upload
+                          : Icons.add_photo_alternate),
                       label: Text(
-                        format == 'video' ? 'Tải lên Video' : 'Tải lên Hình ảnh',
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        format == 'video'
+                            ? 'Tải lên Video'
+                            : 'Tải lên Hình ảnh',
+                        style: const TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: format == 'video' ? Colors.purple : Colors.teal,
+                        backgroundColor:
+                            format == 'video' ? Colors.purple : Colors.teal,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
@@ -2792,7 +2979,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                               Navigator.pop(context);
                               _showEditHistory(itemId);
                             },
-                            icon: Icon(Icons.history, size: 18, color: Colors.grey.shade700),
+                            icon: Icon(Icons.history,
+                                size: 18, color: Colors.grey.shade700),
                             label: Text(
                               'Lịch sử',
                               style: TextStyle(color: Colors.grey.shade700),
@@ -2813,7 +3001,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                               Navigator.pop(context);
                               _showVersions(itemId);
                             },
-                            icon: Icon(Icons.folder_copy, size: 18, color: Colors.grey.shade700),
+                            icon: Icon(Icons.folder_copy,
+                                size: 18, color: Colors.grey.shade700),
                             label: Text(
                               'Phiên bản',
                               style: TextStyle(color: Colors.grey.shade700),
@@ -2852,7 +3041,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
     }
   }
 
-  void _navigateToUpload(String? itemId, String format, {String? title, Map<String, dynamic>? contributionGuide}) {
+  void _navigateToUpload(String? itemId, String format,
+      {String? title, Map<String, dynamic>? contributionGuide}) {
     if (itemId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -2976,7 +3166,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                             color: Colors.blue.shade100,
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Icon(Icons.history, color: Colors.blue.shade700, size: 24),
+                          child: Icon(Icons.history,
+                              color: Colors.blue.shade700, size: 24),
                         ),
                         const SizedBox(width: 12),
                         const Expanded(
@@ -3005,7 +3196,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                           padding: const EdgeInsets.all(32),
                           child: Column(
                             children: [
-                              Icon(Icons.history_toggle_off, size: 64, color: Colors.grey.shade400),
+                              Icon(Icons.history_toggle_off,
+                                  size: 64, color: Colors.grey.shade400),
                               const SizedBox(height: 16),
                               Text(
                                 'Chưa có lịch sử đóng góp',
@@ -3019,7 +3211,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                         ),
                       )
                     else
-                      ...history.map((entry) => _buildHistoryItem(entry as Map<String, dynamic>)),
+                      ...history.map((entry) =>
+                          _buildHistoryItem(entry as Map<String, dynamic>)),
                   ],
                 ),
               );
@@ -3044,13 +3237,14 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
     final action = entry['action'] as String? ?? 'unknown';
     final description = entry['description'] as String? ?? '';
     final createdAt = entry['createdAt'] as String?;
-    
+
     // Parse date
     String formattedDate = '';
     if (createdAt != null) {
       try {
         final date = DateTime.parse(createdAt);
-        formattedDate = '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
+        formattedDate =
+            '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
       } catch (_) {
         formattedDate = createdAt;
       }
@@ -3177,7 +3371,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                             color: Colors.purple.shade100,
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Icon(Icons.folder_copy, color: Colors.purple.shade700, size: 24),
+                          child: Icon(Icons.folder_copy,
+                              color: Colors.purple.shade700, size: 24),
                         ),
                         const SizedBox(width: 12),
                         const Expanded(
@@ -3206,7 +3401,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                           padding: const EdgeInsets.all(32),
                           child: Column(
                             children: [
-                              Icon(Icons.folder_off, size: 64, color: Colors.grey.shade400),
+                              Icon(Icons.folder_off,
+                                  size: 64, color: Colors.grey.shade400),
                               const SizedBox(height: 16),
                               Text(
                                 'Chưa có phiên bản nào',
@@ -3224,7 +3420,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                         final index = entry.key;
                         final version = entry.value as Map<String, dynamic>;
                         final isLatest = index == 0;
-                        return _buildVersionItem(version, isLatest, contentItemId);
+                        return _buildVersionItem(
+                            version, isLatest, contentItemId);
                       }),
                   ],
                 ),
@@ -3246,18 +3443,20 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
     }
   }
 
-  Widget _buildVersionItem(Map<String, dynamic> version, bool isLatest, String contentItemId) {
+  Widget _buildVersionItem(
+      Map<String, dynamic> version, bool isLatest, String contentItemId) {
     final versionId = version['id'] as String? ?? '';
     final description = version['description'] as String? ?? 'Phiên bản';
     final createdAt = version['createdAt'] as String?;
     final versionNumber = version['versionNumber'] as int? ?? 1;
-    
+
     // Parse date
     String formattedDate = '';
     if (createdAt != null) {
       try {
         final date = DateTime.parse(createdAt);
-        formattedDate = '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
+        formattedDate =
+            '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
       } catch (_) {
         formattedDate = createdAt;
       }
@@ -3311,7 +3510,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                     ),
                     if (isLatest)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
                           color: Colors.green,
                           borderRadius: BorderRadius.circular(8),
@@ -3340,14 +3540,18 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                   children: [
                     // View comparison
                     TextButton.icon(
-                      onPressed: () => _showVersionComparison(versionId, version),
-                      icon: Icon(Icons.compare_arrows, size: 16, color: Colors.blue.shade600),
+                      onPressed: () =>
+                          _showVersionComparison(versionId, version),
+                      icon: Icon(Icons.compare_arrows,
+                          size: 16, color: Colors.blue.shade600),
                       label: Text(
                         'So sánh',
-                        style: TextStyle(color: Colors.blue.shade600, fontSize: 12),
+                        style: TextStyle(
+                            color: Colors.blue.shade600, fontSize: 12),
                       ),
                       style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
                         minimumSize: Size.zero,
                       ),
                     ),
@@ -3355,14 +3559,18 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                     if (!isLatest) ...[
                       const SizedBox(width: 8),
                       TextButton.icon(
-                        onPressed: () => _revertToVersion(versionId, versionNumber),
-                        icon: Icon(Icons.restore, size: 16, color: Colors.orange.shade600),
+                        onPressed: () =>
+                            _revertToVersion(versionId, versionNumber),
+                        icon: Icon(Icons.restore,
+                            size: 16, color: Colors.orange.shade600),
                         label: Text(
                           'Khôi phục',
-                          style: TextStyle(color: Colors.orange.shade600, fontSize: 12),
+                          style: TextStyle(
+                              color: Colors.orange.shade600, fontSize: 12),
                         ),
                         style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
                           minimumSize: Size.zero,
                         ),
                       ),
@@ -3378,7 +3586,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
   }
 
   /// Hiển thị so sánh phiên bản
-  void _showVersionComparison(String versionId, Map<String, dynamic> version) async {
+  void _showVersionComparison(
+      String versionId, Map<String, dynamic> version) async {
     // Show loading
     showDialog(
       context: context,
@@ -3390,7 +3599,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
       final apiService = context.read<ApiService>();
       // Get edit ID from version
       final editId = version['editId'] as String?;
-      
+
       if (editId == null) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -3433,9 +3642,11 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.remove_circle, color: Colors.red.shade600, size: 16),
+                          Icon(Icons.remove_circle,
+                              color: Colors.red.shade600, size: 16),
                           const SizedBox(width: 4),
-                          const Text('Trước', style: TextStyle(fontWeight: FontWeight.bold)),
+                          const Text('Trước',
+                              style: TextStyle(fontWeight: FontWeight.bold)),
                         ],
                       ),
                       const SizedBox(height: 8),
@@ -3460,9 +3671,11 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.add_circle, color: Colors.green.shade600, size: 16),
+                          Icon(Icons.add_circle,
+                              color: Colors.green.shade600, size: 16),
                           const SizedBox(width: 4),
-                          const Text('Sau', style: TextStyle(fontWeight: FontWeight.bold)),
+                          const Text('Sau',
+                              style: TextStyle(fontWeight: FontWeight.bold)),
                         ],
                       ),
                       const SizedBox(height: 8),
@@ -3500,7 +3713,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Khôi phục phiên bản?'),
-        content: Text('Bạn có chắc muốn khôi phục về phiên bản v$versionNumber?'),
+        content:
+            Text('Bạn có chắc muốn khôi phục về phiên bản v$versionNumber?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -3509,7 +3723,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
-            child: const Text('Khôi phục', style: TextStyle(color: Colors.white)),
+            child:
+                const Text('Khôi phục', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -3701,7 +3916,8 @@ class _InfoChip extends StatelessWidget {
       decoration: BoxDecoration(
         color: color != null ? color!.withOpacity(0.1) : Colors.grey.shade100,
         borderRadius: BorderRadius.circular(20),
-        border: color != null ? Border.all(color: color!.withOpacity(0.3)) : null,
+        border:
+            color != null ? Border.all(color: color!.withOpacity(0.3)) : null,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

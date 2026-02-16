@@ -50,7 +50,7 @@ class StreakDisplay extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Icon(
+              const Icon(
                 Icons.local_fire_department,
                 size: 48,
                 color: Colors.white,
@@ -170,11 +170,13 @@ class StreakDisplay extends StatelessWidget {
     for (int i = 6; i >= 0; i--) {
       final date = now.subtract(Duration(days: i));
       final dayName = _getDayName(date.weekday);
-      final isWeekend = date.weekday == DateTime.saturday || date.weekday == DateTime.sunday;
+      final isWeekend =
+          date.weekday == DateTime.saturday || date.weekday == DateTime.sunday;
       final isToday = date.day == now.day && date.month == now.month;
-      
+
       // Check if this day has progress
-      final dateKey = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+      final dateKey =
+          '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
       final hasProgress = weeklyProgress?[dateKey] == true;
 
       weekDays.add(
@@ -195,7 +197,9 @@ class StreakDisplay extends StatelessWidget {
                 height: 36,
                 decoration: BoxDecoration(
                   color: hasProgress
-                      ? (isWeekend ? Colors.yellow.shade400 : Colors.blue.shade400)
+                      ? (isWeekend
+                          ? Colors.yellow.shade400
+                          : Colors.blue.shade400)
                       : Colors.white.withOpacity(0.2),
                   shape: BoxShape.circle,
                   border: isToday
@@ -240,5 +244,3 @@ class StreakDisplay extends StatelessWidget {
     return days[weekday - 1];
   }
 }
-
-

@@ -11,6 +11,7 @@ import { QuestsModule } from '../quests/quests.module';
 import { LessonTypeContentsModule } from '../lesson-type-contents/lesson-type-contents.module';
 import { Topic } from '../topics/entities/topic.entity';
 import { Domain } from '../domains/entities/domain.entity';
+import { PersonalMindMap } from '../personal-mind-map/entities/personal-mind-map.entity';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { Domain } from '../domains/entities/domain.entity';
       LearningNode,
       Topic,
       Domain,
+      PersonalMindMap,
     ]),
     UserCurrencyModule,
     forwardRef(() => QuestsModule),

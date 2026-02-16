@@ -69,6 +69,10 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
   }
 
   Future<void> _loadData() async {
+    // Clear cache so fresh data is fetched
+    _lessonTypeCache.clear();
+    _lessonTypeFetching.clear();
+
     // Only show full loading on first load; subsequent loads are silent refresh
     if (_isFirstLoad) {
       setState(() {
@@ -101,14 +105,24 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
       }
 
       if (mounted) {
+        final allNodes = results[2] as List<dynamic>;
         setState(() {
           _subjectData = (results[0] as Map<String, dynamic>)['subject'];
           _domains = domains;
-          _allNodes = results[2] as List<dynamic>;
+          _allNodes = allNodes;
           _topicsByDomain = topicsMap;
           _isLoading = false;
           _isFirstLoad = false;
         });
+
+        // Pre-fetch lesson type counts for all nodes
+        for (final node in allNodes) {
+          final n = node as Map<String, dynamic>;
+          final nodeId = n['id'] as String?;
+          if (nodeId != null) {
+            _fetchLessonTypesForNode(nodeId);
+          }
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -284,7 +298,8 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.warning_amber_rounded, color: Colors.orange.shade700, size: 20),
+                  Icon(Icons.warning_amber_rounded,
+                      color: Colors.orange.shade700, size: 20),
                   const SizedBox(width: 8),
                   Flexible(
                     child: Text(
@@ -313,12 +328,14 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.article_outlined, color: Colors.orange.shade600, size: 16),
+                      Icon(Icons.article_outlined,
+                          color: Colors.orange.shade600, size: 16),
                       const SizedBox(width: 6),
                       Flexible(
                         child: Text(
                           title,
-                          style: TextStyle(fontSize: 12, color: Colors.orange.shade900),
+                          style: TextStyle(
+                              fontSize: 12, color: Colors.orange.shade900),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -336,7 +353,8 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
                             color: Colors.red.shade50,
                             borderRadius: BorderRadius.circular(6),
                           ),
-                          child: Icon(Icons.more_vert, color: Colors.red.shade400, size: 16),
+                          child: Icon(Icons.more_vert,
+                              color: Colors.red.shade400, size: 16),
                         ),
                       ),
                     ],
@@ -520,7 +538,8 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
 
   /// Fetch lesson type contents for a node from the API and cache them
   void _fetchLessonTypesForNode(String nodeId) {
-    if (_lessonTypeCache.containsKey(nodeId) || _lessonTypeFetching.contains(nodeId)) return;
+    if (_lessonTypeCache.containsKey(nodeId) ||
+        _lessonTypeFetching.contains(nodeId)) return;
     _lessonTypeFetching.add(nodeId);
     final apiService = Provider.of<ApiService>(context, listen: false);
     apiService.getLessonTypeContents(nodeId).then((data) {
@@ -550,8 +569,8 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
     final lessonKey = 'lesson-$nodeId';
     final isExpanded = _expandedNodes.contains(lessonKey);
 
-    // Fetch lesson types from API when expanding
-    if (isExpanded && nodeId != null) {
+    // Ensure lesson types are fetched (may already be cached from _loadData)
+    if (nodeId != null) {
       _fetchLessonTypesForNode(nodeId);
     }
 
@@ -608,14 +627,17 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
                       icon: type['icon'] as IconData,
                       isActive: isActive,
                       onAction: isActive
-                          ? () => _showLessonTypeActions(nodeId!, typeKey, type['label'] as String, nodeData!)
+                          ? () => _showLessonTypeActions(nodeId!, typeKey,
+                              type['label'] as String, nodeData!)
                           : () => _addLessonType(
                                 typeKey: typeKey,
                                 topicId: topicId,
                                 domainId: domainId ?? '',
                                 topicName: name,
                                 existingNodeId: nodeId,
-                                existingLessonType: activeTypes.isNotEmpty ? activeTypes.first : null,
+                                existingLessonType: activeTypes.isNotEmpty
+                                    ? activeTypes.first
+                                    : null,
                               ),
                     ),
                   ],
@@ -684,7 +706,7 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
               ),
               child: Text(
                 '$completedCount/4',
-                style: TextStyle(
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
@@ -724,7 +746,7 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
     required bool isActive,
     VoidCallback? onAction,
   }) {
-    final activeColor = const Color(0xFF5B7EC2);
+    const activeColor = Color(0xFF5B7EC2);
     return GestureDetector(
       onTap: onAction,
       child: Container(
@@ -982,11 +1004,11 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.add, size: 14, color: AppColors.contributorBlue),
+            const Icon(Icons.add, size: 14, color: AppColors.contributorBlue),
             const SizedBox(width: 4),
             Text(
               label,
-              style: TextStyle(
+              style: const TextStyle(
                 color: AppColors.contributorBlue,
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
@@ -1042,7 +1064,8 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
   }
 
   /// Navigate to edit an existing lesson type (opens the relevant editor with pre-filled data)
-  Future<void> _editLessonType(String nodeId, String lessonType, Map<String, dynamic> nodeData) async {
+  Future<void> _editLessonType(
+      String nodeId, String lessonType, Map<String, dynamic> nodeData) async {
     // Show loading
     showDialog(
       context: context,
@@ -1068,7 +1091,8 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
       if (!mounted) return;
       Navigator.of(context).pop(); // dismiss loading
 
-      final lessonData = existingContent?['lessonData'] as Map<String, dynamic>? ?? {};
+      final lessonData =
+          existingContent?['lessonData'] as Map<String, dynamic>? ?? {};
       final endQuiz = existingContent?['endQuiz'] as Map<String, dynamic>?;
       final title = nodeData['title'] as String? ?? '';
       final description = nodeData['description'] as String? ?? '';
@@ -1084,6 +1108,8 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
             domainId: domainId,
             topicId: topicId,
             nodeId: nodeId,
+            initialTitle: title,
+            initialDescription: description,
             initialLessonData: lessonData,
             initialEndQuiz: endQuiz,
             isEditMode: true,
@@ -1097,6 +1123,8 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
             domainId: domainId,
             topicId: topicId,
             nodeId: nodeId,
+            initialTitle: title,
+            initialDescription: description,
             initialLessonData: lessonData,
             initialEndQuiz: endQuiz,
             isEditMode: true,
@@ -1110,6 +1138,8 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
             domainId: domainId,
             topicId: topicId,
             nodeId: nodeId,
+            initialTitle: title,
+            initialDescription: description,
             initialLessonData: lessonData,
             initialEndQuiz: endQuiz,
             isEditMode: true,
@@ -1124,6 +1154,8 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
             domainId: domainId,
             topicId: topicId,
             nodeId: nodeId,
+            initialTitle: title,
+            initialDescription: description,
             initialLessonData: lessonData,
             initialEndQuiz: endQuiz,
             isEditMode: true,
@@ -1151,7 +1183,8 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
   }
 
   /// Show actions for an active (existing) lesson type: Edit, History
-  void _showLessonTypeActions(String nodeId, String typeKey, String typeLabel, Map<String, dynamic> nodeData) {
+  void _showLessonTypeActions(String nodeId, String typeKey, String typeLabel,
+      Map<String, dynamic> nodeData) {
     HapticFeedback.lightImpact();
     showModalBottomSheet(
       context: context,
@@ -1168,7 +1201,8 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
             children: [
               Row(
                 children: [
-                  const Icon(Icons.extension, color: Color(0xFF5B7EC2), size: 22),
+                  const Icon(Icons.extension,
+                      color: Color(0xFF5B7EC2), size: 22),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Column(
@@ -1176,11 +1210,15 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
                       children: [
                         Text(
                           typeLabel,
-                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF2D3748)),
+                          style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF2D3748)),
                         ),
                         Text(
                           nodeData['title'] as String? ?? 'Bài học',
-                          style: const TextStyle(fontSize: 12, color: Color(0xFF718096)),
+                          style: const TextStyle(
+                              fontSize: 12, color: Color(0xFF718096)),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -1200,10 +1238,14 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
                     color: Colors.blue.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(Icons.edit_outlined, color: Colors.blue, size: 22),
+                  child: const Icon(Icons.edit_outlined,
+                      color: Colors.blue, size: 22),
                 ),
-                title: const Text('Sửa nội dung', style: TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF2D3748))),
-                subtitle: const Text('Chỉnh sửa nội dung bài học (cần duyệt)', style: TextStyle(fontSize: 12, color: Color(0xFF718096))),
+                title: const Text('Sửa nội dung',
+                    style: TextStyle(
+                        fontWeight: FontWeight.w600, color: Color(0xFF2D3748))),
+                subtitle: const Text('Chỉnh sửa nội dung bài học (cần duyệt)',
+                    style: TextStyle(fontSize: 12, color: Color(0xFF718096))),
                 onTap: () {
                   Navigator.pop(ctx);
                   _editLessonType(nodeId, typeKey, nodeData);
@@ -1217,10 +1259,14 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
                     color: Colors.purple.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(Icons.history, color: Colors.purple, size: 22),
+                  child:
+                      const Icon(Icons.history, color: Colors.purple, size: 22),
                 ),
-                title: const Text('Lịch sử chỉnh sửa', style: TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF2D3748))),
-                subtitle: const Text('Xem các phiên bản trước đó', style: TextStyle(fontSize: 12, color: Color(0xFF718096))),
+                title: const Text('Lịch sử chỉnh sửa',
+                    style: TextStyle(
+                        fontWeight: FontWeight.w600, color: Color(0xFF2D3748))),
+                subtitle: const Text('Xem các phiên bản trước đó',
+                    style: TextStyle(fontSize: 12, color: Color(0xFF718096))),
                 onTap: () {
                   Navigator.pop(ctx);
                   Navigator.of(context).push(
@@ -1265,7 +1311,8 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
       queryParts.add('nodeId=$existingNodeId');
       queryParts.add('existingLessonNodeId=$existingNodeId');
     }
-    if (existingLessonType != null) queryParts.add('existingLessonType=$existingLessonType');
+    if (existingLessonType != null)
+      queryParts.add('existingLessonType=$existingLessonType');
     final result = await context.push(
       '/lessons/create?${queryParts.join('&')}',
     );

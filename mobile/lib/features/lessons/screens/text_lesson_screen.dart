@@ -1,9 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 import 'package:edtech_mobile/theme/colors.dart';
-import 'package:edtech_mobile/core/services/api_service.dart';
 import 'end_quiz_screen.dart';
 
 class TextLessonScreen extends StatefulWidget {
@@ -32,18 +29,22 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
   final Set<int> _checkedObjectives = {};
 
   List<Map<String, dynamic>> get _sections {
-    final raw = widget.lessonData['sections'] ?? widget.lessonData['content'] ?? [];
+    final raw =
+        widget.lessonData['sections'] ?? widget.lessonData['content'] ?? [];
     if (raw is List) return List<Map<String, dynamic>>.from(raw);
     return [];
   }
 
   List<Map<String, dynamic>> get _inlineQuizzes {
-    final raw = widget.lessonData['inlineQuizzes'] ?? widget.lessonData['quizzes'] ?? [];
+    final raw = widget.lessonData['inlineQuizzes'] ??
+        widget.lessonData['quizzes'] ??
+        [];
     return List<Map<String, dynamic>>.from(raw);
   }
 
   String get _summaryText =>
-      (widget.lessonData['summary'] ?? widget.lessonData['conclusion'] ?? '').toString();
+      (widget.lessonData['summary'] ?? widget.lessonData['conclusion'] ?? '')
+          .toString();
 
   List<String> get _learningObjectives {
     final raw = widget.lessonData['learningObjectives'] ??
@@ -147,7 +148,8 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
                         nodeId: widget.nodeId,
                         title: widget.title,
                         lessonType: widget.lessonType ?? 'text',
-                        questions: (widget.endQuiz?['questions'] as List?)?.cast<dynamic>(),
+                        questions: (widget.endQuiz?['questions'] as List?)
+                            ?.cast<dynamic>(),
                       ),
                     ),
                   );
@@ -208,12 +210,14 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
       // Check if there's a quiz after this section
       if (quizIndex < _inlineQuizzes.length) {
         final quiz = _inlineQuizzes[quizIndex];
-        final afterSection = quiz['afterSection'] ?? quiz['position'] ?? quizIndex;
+        final afterSection =
+            quiz['afterSection'] ?? quiz['position'] ?? quizIndex;
         final sectionPos = afterSection is int
             ? afterSection
             : int.tryParse(afterSection.toString()) ?? quizIndex;
 
-        if (sectionPos == i || (sectionPos <= i && quizIndex < _inlineQuizzes.length)) {
+        if (sectionPos == i ||
+            (sectionPos <= i && quizIndex < _inlineQuizzes.length)) {
           widgets.add(_buildInlineQuiz(quizIndex, quiz));
           quizIndex++;
         }
@@ -230,8 +234,11 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
   }
 
   Widget _buildSectionCard(Map<String, dynamic> section) {
-    final sectionTitle = (section['title'] ?? section['heading'] ?? '').toString();
+    final sectionTitle =
+        (section['title'] ?? section['heading'] ?? '').toString();
     final content = (section['content'] ?? section['text'] ?? '').toString();
+    final examples =
+        (section['examples'] as List?)?.cast<Map<String, dynamic>>() ?? [];
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
@@ -259,6 +266,75 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
                 height: 1.7,
               ),
             ),
+          // Per-section examples
+          if (examples.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            ...examples.map((example) => _buildExampleItem(example)),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildExampleItem(Map<String, dynamic> example) {
+    final type = example['type'] as String? ?? 'real_world_scenario';
+    final info =
+        _exampleTypeInfo[type] ?? _exampleTypeInfo['real_world_scenario']!;
+    final color = Color(info['color'] as int);
+    final icon = info['icon'] as IconData;
+    final label = info['label'] as String;
+    final title = example['title'] as String? ?? '';
+    final content = example['content'] as String? ?? '';
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.3)),
+        color: color.withOpacity(0.05),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.12),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(11)),
+            ),
+            child: Row(
+              children: [
+                Icon(icon, size: 14, color: color),
+                const SizedBox(width: 5),
+                Text(label,
+                    style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: color)),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (title.isNotEmpty)
+                  Text(title,
+                      style: const TextStyle(
+                          fontSize: 14, fontWeight: FontWeight.bold)),
+                if (title.isNotEmpty && content.isNotEmpty)
+                  const SizedBox(height: 4),
+                if (content.isNotEmpty)
+                  Text(content,
+                      style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey.shade600,
+                          height: 1.5)),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -335,7 +411,8 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
           ...List.generate(options.length.clamp(0, 4), (optIdx) {
             final option = options[optIdx];
             final label = String.fromCharCode(65 + optIdx);
-            final optionText = (option['text'] ?? option['content'] ?? '').toString();
+            final optionText =
+                (option['text'] ?? option['content'] ?? '').toString();
             final isCorrect = optIdx == correctIndex;
             final isSelected = selected == optIdx;
 
@@ -362,7 +439,8 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 300),
                   curve: Curves.easeInOut,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   decoration: BoxDecoration(
                     color: bgColor,
                     borderRadius: BorderRadius.circular(10),
@@ -402,9 +480,11 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
                         ),
                       ),
                       if (revealed && isCorrect)
-                        const Icon(Icons.check_circle, color: AppColors.successNeon, size: 20),
+                        const Icon(Icons.check_circle,
+                            color: AppColors.successNeon, size: 20),
                       if (revealed && isSelected && !isCorrect)
-                        const Icon(Icons.cancel, color: AppColors.errorNeon, size: 20),
+                        const Icon(Icons.cancel,
+                            color: AppColors.errorNeon, size: 20),
                     ],
                   ),
                 ),
@@ -440,7 +520,9 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Icon(
-                            selected == correctIndex ? Icons.check_circle_outline : Icons.info_outline,
+                            selected == correctIndex
+                                ? Icons.check_circle_outline
+                                : Icons.info_outline,
                             color: selected == correctIndex
                                 ? AppColors.successNeon
                                 : AppColors.orangeNeon,
@@ -467,6 +549,44 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
       ),
     );
   }
+
+  static const _exampleTypeInfo = <String, Map<String, dynamic>>{
+    'real_world_scenario': {
+      'label': 'Tình huống thực tế',
+      'icon': Icons.public,
+      'color': 0xFF4CAF50
+    },
+    'everyday_analogy': {
+      'label': 'So sánh đời thường',
+      'icon': Icons.lightbulb_outline,
+      'color': 0xFFFF9800
+    },
+    'hypothetical_situation': {
+      'label': 'Tình huống giả định',
+      'icon': Icons.psychology,
+      'color': 0xFF9C27B0
+    },
+    'technical_implementation': {
+      'label': 'Ví dụ kỹ thuật',
+      'icon': Icons.code,
+      'color': 0xFF2196F3
+    },
+    'step_by_step': {
+      'label': 'Từng bước',
+      'icon': Icons.format_list_numbered,
+      'color': 0xFF00BCD4
+    },
+    'comparison': {
+      'label': 'So sánh',
+      'icon': Icons.compare_arrows,
+      'color': 0xFFE91E63
+    },
+    'story_narrative': {
+      'label': 'Kể chuyện',
+      'icon': Icons.auto_stories,
+      'color': 0xFF795548
+    },
+  };
 
   Widget _buildSummaryCard() {
     return Container(
@@ -496,7 +616,8 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
                   color: AppColors.purpleNeon.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.auto_awesome, color: AppColors.purpleNeon, size: 22),
+                child: const Icon(Icons.auto_awesome,
+                    color: AppColors.purpleNeon, size: 22),
               ),
               const SizedBox(width: 12),
               const Text(
@@ -543,7 +664,8 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
                   color: AppColors.cyanNeon.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.checklist, color: AppColors.cyanNeon, size: 22),
+                child: const Icon(Icons.checklist,
+                    color: AppColors.cyanNeon, size: 22),
               ),
               const SizedBox(width: 12),
               const Text(
@@ -592,7 +714,8 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
                         ),
                       ),
                       child: isChecked
-                          ? const Icon(Icons.check, color: AppColors.successNeon, size: 16)
+                          ? const Icon(Icons.check,
+                              color: AppColors.successNeon, size: 16)
                           : null,
                     ),
                     const SizedBox(width: 10),
@@ -605,9 +728,8 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
                               : AppColors.textSecondary,
                           fontSize: 14,
                           height: 1.5,
-                          decoration: isChecked
-                              ? TextDecoration.lineThrough
-                              : null,
+                          decoration:
+                              isChecked ? TextDecoration.lineThrough : null,
                         ),
                       ),
                     ),

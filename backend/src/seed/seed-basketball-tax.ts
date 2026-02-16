@@ -489,7 +489,13 @@ Tạo nội dung cho ĐẦY ĐỦ 4 dạng bài học, trả về JSON theo form
   },
   "text": {
     "sections": [
-      { "title": "Tiêu đề phần", "content": "Nội dung chi tiết (có thể dài)" }
+      {
+        "title": "Tiêu đề phần",
+        "content": "Nội dung chi tiết (có thể dài)",
+        "examples": [
+          { "type": "real_world_scenario", "title": "Tiêu đề ví dụ", "content": "Nội dung ví dụ chi tiết" }
+        ]
+      }
     ],
     "inlineQuizzes": [
       {
@@ -517,7 +523,7 @@ YÊU CẦU:
 - image_quiz: Tạo 4-5 slides, mỗi slide 1 câu hỏi với 4 đáp án, endQuiz 5 câu
 - image_gallery: Tạo 5-6 images với mô tả chi tiết, endQuiz 5 câu
 - video: Tạo summary, 4-5 keyPoints với timestamp tăng dần (giây), 5 keywords, endQuiz 5 câu
-- text: Tạo 3-4 sections nội dung chi tiết, 2 inlineQuizzes, summary, 3 learningObjectives, endQuiz 5 câu
+- text: Tạo 3-4 sections nội dung chi tiết, mỗi section có 1-2 examples trong trường examples (loại: real_world_scenario, everyday_analogy, hypothetical_situation, technical_implementation, step_by_step, comparison, story_narrative), 2 inlineQuizzes, summary, 3 learningObjectives, endQuiz 5 câu
 - Mỗi endQuiz có ĐÚng 5 câu hỏi, mỗi câu 4 đáp án
 - correctAnswer là index (0-3)
 - Nội dung phải chính xác, hữu ích, phù hợp trình độ người học

@@ -8,7 +8,7 @@ import 'package:edtech_mobile/features/content/widgets/web_video_player.dart';
 class _ComparisonDialog extends StatefulWidget {
   final Map<String, dynamic> comparison;
 
-  const _ComparisonDialog({required this.comparison});
+  const _ComparisonDialog({super.key, required this.comparison});
 
   @override
   State<_ComparisonDialog> createState() => _ComparisonDialogState();
@@ -272,7 +272,7 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
             height: 100,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              itemCount: (media!['imageUrls'] as List).length,
+              itemCount: (media['imageUrls'] as List).length,
               itemBuilder: (context, index) {
                 final imageUrl = (media['imageUrls'] as List)[index];
                 return Padding(
@@ -312,7 +312,7 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: CachedNetworkImage(
-              imageUrl: _getFullUrl(media!['imageUrl']),
+              imageUrl: _getFullUrl(media['imageUrl']),
               width: double.infinity,
               height: 200,
               fit: BoxFit.cover,
@@ -350,7 +350,7 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
             child: SizedBox(
               height: 200,
               child: WebVideoPlayer(
-                url: _getFullUrl(media!['videoUrl']),
+                url: _getFullUrl(media['videoUrl']),
                 height: 200,
               ),
             ),
@@ -597,5 +597,5 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
 
 // Export the widget
 class ComparisonDialog extends _ComparisonDialog {
-  const ComparisonDialog({required super.comparison});
+  const ComparisonDialog({super.key, required super.comparison});
 }

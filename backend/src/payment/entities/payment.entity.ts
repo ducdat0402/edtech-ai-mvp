@@ -6,12 +6,14 @@ import {
   JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  Index,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 
 export type PaymentStatus = 'pending' | 'paid' | 'expired' | 'cancelled';
 
 @Entity('payments')
+@Index(['userId', 'status'])
 export class Payment {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -37,8 +39,12 @@ export class Payment {
   @Column({ nullable: true })
   description: string;
 
-  // Duration in days (for premium subscription)
-  @Column({ default: 30 })
+  // Number of diamonds (coins) purchased
+  @Column({ default: 0 })
+  diamondAmount: number;
+
+  // Duration in days (legacy - for old premium subscription records)
+  @Column({ default: 0 })
   durationDays: number;
 
   // Status
@@ -46,7 +52,8 @@ export class Payment {
   status: PaymentStatus;
 
   // Bank transfer info (filled when paid)
-  @Column({ nullable: true })
+  // Unique constraint prevents duplicate webhook processing (idempotency)
+  @Column({ nullable: true, unique: true })
   transactionId: string;
 
   @Column({ nullable: true })

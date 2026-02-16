@@ -78,6 +78,9 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
       'lessonData': lessonData,
       'title': widget.title,
       'endQuiz': endQuiz,
+    }).then((_) {
+      // Refresh progress when returning from lesson
+      if (mounted) _loadData();
     });
   }
 

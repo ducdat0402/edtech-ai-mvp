@@ -853,6 +853,12 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
 
         final totalLessons = childLessons.length;
 
+        // Check diamond lock status from backend
+        final allLessonsLocked = childLessons.every((l) {
+          final lesson = l as Map<String, dynamic>;
+          return lesson['isLocked'] == true && lesson['status'] != 'completed';
+        });
+
         Color statusColor;
         IconData statusIcon;
         String statusText;
@@ -865,14 +871,14 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
           statusColor = Colors.blue;
           statusIcon = Icons.play_circle;
           statusText = 'Đang học';
-        } else if (status == 'in_progress') {
+        } else if (!allLessonsLocked) {
           statusColor = Colors.blue;
           statusIcon = Icons.play_circle;
-          statusText = 'Đang học';
+          statusText = 'Sẵn sàng';
         } else {
-          statusColor = Colors.grey;
-          statusIcon = Icons.lock_outline;
-          statusText = 'Chưa mở khóa';
+          statusColor = Colors.orange;
+          statusIcon = Icons.lock;
+          statusText = 'Cần mở khóa 💎';
         }
 
         return Card(
@@ -1005,6 +1011,7 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
   }
 
   /// Hiện danh sách bài học trong topic để learner chọn học
+  /// Uses diamond-based lock from backend (isLocked field)
   void _showTopicLessons({
     required String title,
     required String description,
@@ -1014,8 +1021,16 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
     required String status,
     required List<dynamic> childLessons,
   }) {
-    // Topic chưa mở khóa -> chỉ hiện thông báo
-    if (status == 'not_started' && completedLessons == 0) {
+    // Check if ALL lessons in this topic are locked (diamond-based)
+    final allLocked = childLessons.every((l) {
+      final lesson = l as Map<String, dynamic>;
+      final isLocked = lesson['isLocked'] as bool? ?? false;
+      final lessonStatus = lesson['status'] as String? ?? 'not_started';
+      return isLocked && lessonStatus != 'completed';
+    });
+
+    if (allLocked && completedLessons == 0) {
+      // All lessons locked -> show unlock dialog
       showModalBottomSheet(
         context: context,
         shape: const RoundedRectangleBorder(
@@ -1026,30 +1041,46 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.lock_outline, size: 48, color: Colors.grey.shade400),
+              const Text('🔒', style: TextStyle(fontSize: 48)),
               const SizedBox(height: 12),
-              Text(
-                title,
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
+              Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               Text(
-                'Hoàn thành các chủ đề trước để mở khóa.',
+                'Chủ đề này cần mở khóa bằng kim cương.\nBạn có thể mở khóa từng topic, chương hoặc cả môn.',
                 style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.pop(ctx),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.purple,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      style: OutlinedButton.styleFrom(
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      child: const Text('Đóng'),
+                    ),
                   ),
-                  child: const Text('Đã hiểu', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    flex: 2,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        context.push('/subjects/${widget.subjectId}/unlock');
+                      },
+                      icon: const Text('💎', style: TextStyle(fontSize: 16)),
+                      label: const Text('Mở khóa', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.deepPurple,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -1058,7 +1089,7 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
       return;
     }
 
-    // Topic đã mở khóa -> hiện danh sách bài học
+    // Show lesson list with diamond-based lock status
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -1066,25 +1097,6 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) {
-        // Determine which lessons are accessible:
-        // - completed lessons: always accessible
-        // - in_progress lessons: accessible
-        // - the first not_started lesson: accessible (next to learn)
-        // - rest: locked
-        bool foundFirstNotStarted = false;
-        final lessonStates = childLessons.map((l) {
-          final lesson = l as Map<String, dynamic>;
-          final lessonStatus = lesson['status'] as String? ?? 'not_started';
-          if (lessonStatus == 'completed' || lessonStatus == 'in_progress') {
-            return {'lesson': lesson, 'accessible': true};
-          } else if (!foundFirstNotStarted) {
-            foundFirstNotStarted = true;
-            return {'lesson': lesson, 'accessible': true};
-          } else {
-            return {'lesson': lesson, 'accessible': false};
-          }
-        }).toList();
-
         return DraggableScrollableSheet(
           initialChildSize: 0.55,
           maxChildSize: 0.85,
@@ -1117,10 +1129,7 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              title,
-                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                            ),
+                            Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                             const SizedBox(height: 2),
                             Text(
                               '$completedLessons/$totalLessons bài hoàn thành',
@@ -1132,7 +1141,6 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  // Progress bar
                   ClipRRect(
                     borderRadius: BorderRadius.circular(4),
                     child: LinearProgressIndicator(
@@ -1147,23 +1155,25 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
                   Expanded(
                     child: ListView.separated(
                       controller: scrollController,
-                      itemCount: lessonStates.length,
+                      itemCount: childLessons.length,
                       separatorBuilder: (_, __) => const SizedBox(height: 8),
                       itemBuilder: (context, index) {
-                        final item = lessonStates[index] as Map<String, dynamic>;
-                        final lesson = item['lesson'] as Map<String, dynamic>;
-                        final accessible = item['accessible'] as bool;
+                        final lesson = childLessons[index] as Map<String, dynamic>;
                         final lessonTitle = lesson['title'] as String? ?? 'Bài học';
                         final lessonStatus = lesson['status'] as String? ?? 'not_started';
                         final lessonMeta = lesson['metadata'] as Map<String, dynamic>?;
                         final lessonIcon = lessonMeta?['icon'] as String? ?? '📖';
                         final linkedNodeId = lessonMeta?['linkedLearningNodeId'] as String?;
+                        final isLocked = lesson['isLocked'] as bool? ?? false;
+                        final diamondCost = lesson['diamondCost'] as int? ?? 25;
+                        final isCompleted = lessonStatus == 'completed';
+                        final accessible = !isLocked || isCompleted;
 
                         Color tileColor;
                         IconData trailingIcon;
-                        if (lessonStatus == 'completed') {
+                        if (isCompleted) {
                           tileColor = Colors.green;
-                          trailingIcon = Icons.check_circle;
+                          trailingIcon = Icons.replay;
                         } else if (accessible) {
                           tileColor = Colors.blue;
                           trailingIcon = Icons.play_circle_fill;
@@ -1173,46 +1183,46 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
                         }
 
                         return Material(
-                          color: accessible ? null : Colors.grey.shade100,
+                          color: isCompleted
+                              ? Colors.green.withOpacity(0.04)
+                              : accessible ? null : Colors.grey.shade100,
                           borderRadius: BorderRadius.circular(12),
                           child: InkWell(
-                            onTap: accessible && linkedNodeId != null
-                                ? () {
-                                    Navigator.pop(ctx);
-                                    context.push(
-                                      '/lessons/$linkedNodeId/types',
-                                      extra: {'title': lessonTitle},
-                                    );
-                                  }
-                                : null,
+                            onTap: () {
+                              if (accessible && linkedNodeId != null) {
+                                Navigator.pop(ctx);
+                                context.push(
+                                  '/lessons/$linkedNodeId/types',
+                                  extra: {'title': lessonTitle},
+                                ).then((_) => _checkAndLoadMindMap());
+                              } else if (!accessible) {
+                                Navigator.pop(ctx);
+                                _showUnlockDialog(linkedNodeId ?? '', lessonTitle);
+                              }
+                            },
                             borderRadius: BorderRadius.circular(12),
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                  color: accessible ? tileColor.withOpacity(0.3) : Colors.grey.shade200,
+                                  color: isCompleted
+                                      ? Colors.green.withOpacity(0.3)
+                                      : accessible ? tileColor.withOpacity(0.3) : Colors.grey.shade200,
                                 ),
                               ),
                               child: Row(
                                 children: [
-                                  // Index
                                   Container(
-                                    width: 30,
-                                    height: 30,
+                                    width: 30, height: 30,
                                     decoration: BoxDecoration(
-                                      color: tileColor.withOpacity(0.1),
+                                      color: tileColor.withOpacity(0.15),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Center(
-                                      child: Text(
-                                        '${index + 1}',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: tileColor,
-                                          fontSize: 14,
-                                        ),
-                                      ),
+                                      child: isCompleted
+                                          ? Icon(Icons.check, color: tileColor, size: 18)
+                                          : Text('${index + 1}', style: TextStyle(fontWeight: FontWeight.bold, color: tileColor, fontSize: 14)),
                                     ),
                                   ),
                                   const SizedBox(width: 10),
@@ -1222,26 +1232,24 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Text(
-                                          lessonTitle,
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 14,
-                                            color: accessible ? null : Colors.grey,
-                                          ),
-                                        ),
+                                        Text(lessonTitle, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: accessible ? null : Colors.grey)),
                                         const SizedBox(height: 2),
-                                        Text(
-                                          lessonStatus == 'completed'
-                                              ? 'Đã hoàn thành'
-                                              : accessible
-                                                  ? 'Nhấn để học'
-                                                  : 'Chưa mở khóa',
-                                          style: TextStyle(
-                                            fontSize: 11,
-                                            color: tileColor,
-                                          ),
-                                        ),
+                                        if (isCompleted)
+                                          Row(children: [
+                                            Icon(Icons.check_circle, size: 12, color: Colors.green.shade400),
+                                            const SizedBox(width: 3),
+                                            Text('Đã hoàn thành', style: TextStyle(fontSize: 11, color: Colors.green.shade600)),
+                                            const SizedBox(width: 6),
+                                            Text('· Nhấn để xem lại', style: TextStyle(fontSize: 10, color: Colors.grey.shade500)),
+                                          ])
+                                        else if (accessible)
+                                          Text('Nhấn để học', style: TextStyle(fontSize: 11, color: tileColor))
+                                        else
+                                          Row(children: [
+                                            Icon(Icons.lock, size: 11, color: Colors.orange.shade400),
+                                            const SizedBox(width: 3),
+                                            Text('$diamondCost 💎 để mở khóa', style: TextStyle(fontSize: 11, color: Colors.orange.shade600)),
+                                          ]),
                                       ],
                                     ),
                                   ),
@@ -1263,4 +1271,46 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
     );
   }
 
+  void _showUnlockDialog(String nodeId, String title) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Bài học chưa mở khóa'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Bài "$title" cần được mở khóa bằng kim cương.'),
+            const SizedBox(height: 12),
+            const Text('Bạn có thể mở khóa từng topic, chương, hoặc cả môn để tiết kiệm hơn.'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Đóng'),
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.pop(ctx);
+              context.push('/subjects/${widget.subjectId}/unlock');
+            },
+            icon: const Text('💎', style: TextStyle(fontSize: 16)),
+            label: const Text('Mở khóa'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.deepPurple,
+              foregroundColor: Colors.white,
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              context.push('/payment');
+            },
+            child: const Text('Mua kim cương'),
+          ),
+        ],
+      ),
+    );
+  }
 }

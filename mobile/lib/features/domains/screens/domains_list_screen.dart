@@ -67,7 +67,8 @@ class _DomainsListScreenState extends State<DomainsListScreen> {
         title: Text(widget.subjectName ?? 'Chương học'),
       ),
       body: _isLoading
-          ? const SkeletonLoader(width: double.infinity, height: double.infinity)
+          ? const SkeletonLoader(
+              width: double.infinity, height: double.infinity)
           : _error != null
               ? AppErrorWidget(message: _error!, onRetry: _loadData)
               : _domains.isEmpty && !_isContributor
@@ -75,7 +76,8 @@ class _DomainsListScreenState extends State<DomainsListScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.book_outlined, size: 64, color: Colors.grey.shade400),
+                          Icon(Icons.book_outlined,
+                              size: 64, color: Colors.grey.shade400),
                           const SizedBox(height: 16),
                           Text(
                             'Chưa có chương học nào',
@@ -131,7 +133,8 @@ class _DomainsListScreenState extends State<DomainsListScreen> {
       color: AppColors.contributorBlue.withOpacity(0.08),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: AppColors.contributorBlue.withOpacity(0.3), width: 1.5),
+        side: BorderSide(
+            color: AppColors.contributorBlue.withOpacity(0.3), width: 1.5),
       ),
       child: InkWell(
         onTap: () async {
@@ -141,14 +144,19 @@ class _DomainsListScreenState extends State<DomainsListScreen> {
           if (result == true) _loadData();
         },
         borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
+        child: const Padding(
+          padding: EdgeInsets.all(20),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.add_circle_outline, color: AppColors.contributorBlue, size: 24),
-              const SizedBox(width: 8),
-              Text('Thêm Domain mới', style: TextStyle(color: AppColors.contributorBlue, fontWeight: FontWeight.w600, fontSize: 16)),
+              Icon(Icons.add_circle_outline,
+                  color: AppColors.contributorBlue, size: 24),
+              SizedBox(width: 8),
+              Text('Thêm Domain mới',
+                  style: TextStyle(
+                      color: AppColors.contributorBlue,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16)),
             ],
           ),
         ),
@@ -232,7 +240,8 @@ class _DomainsListScreenState extends State<DomainsListScreen> {
                     Row(
                       children: [
                         if (nodesCount > 0) ...[
-                          Icon(Icons.book, size: 14, color: Colors.grey.shade600),
+                          Icon(Icons.book,
+                              size: 14, color: Colors.grey.shade600),
                           const SizedBox(width: 4),
                           Text(
                             '$nodesCount bài học',
@@ -245,7 +254,8 @@ class _DomainsListScreenState extends State<DomainsListScreen> {
                         if (estimatedDays != null && estimatedDays > 0) ...[
                           if (nodesCount > 0) ...[
                             const SizedBox(width: 16),
-                            Icon(Icons.schedule, size: 14, color: Colors.grey.shade600),
+                            Icon(Icons.schedule,
+                                size: 14, color: Colors.grey.shade600),
                             const SizedBox(width: 4),
                             Text(
                               '~$estimatedDays ngày',
@@ -270,4 +280,3 @@ class _DomainsListScreenState extends State<DomainsListScreen> {
     );
   }
 }
-

@@ -119,7 +119,7 @@ class _RewardsHistoryScreenState extends State<RewardsHistoryScreen> {
                   onRetry: () => _loadHistory(),
                 )
               : _transactions.isEmpty
-                  ? EmptyStateWidget(
+                  ? const EmptyStateWidget(
                       title: 'Chưa có lịch sử',
                       icon: Icons.history,
                       message: 'Bạn chưa nhận được phần thưởng nào',
@@ -306,10 +306,8 @@ class _RewardsHistoryScreenState extends State<RewardsHistoryScreen> {
   String _formatShardName(String name) {
     return name
         .split('-')
-        .map((word) => word.isEmpty
-            ? ''
-            : word[0].toUpperCase() + word.substring(1))
+        .map((word) =>
+            word.isEmpty ? '' : word[0].toUpperCase() + word.substring(1))
         .join(' ');
   }
 }
-

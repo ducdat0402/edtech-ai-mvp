@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -30,12 +29,12 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
   String _userRole = 'user';
 
   bool get _isContributor => _userRole == 'contributor' || _userRole == 'admin';
-  
+
   // Mind map interaction state
   int _currentLevel = 1; // 1 = Subject, 2 = Domains, 3 = Topics
   String? _selectedSubjectNodeId; // Selected subject node
   String? _selectedDomainNodeId; // Selected domain node
-  
+
   static const String _tutorialPrefKey = 'mindmap_tutorial_done';
 
   @override
@@ -44,7 +43,7 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
     _checkTutorialPref();
     _loadSubjectIntro();
   }
-  
+
   Future<void> _checkTutorialPref() async {
     final prefs = await SharedPreferences.getInstance();
     final done = prefs.getBool(_tutorialPrefKey) ?? false;
@@ -52,7 +51,7 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
       setState(() => _showTutorial = true);
     }
   }
-  
+
   Future<void> _saveTutorialPref() async {
     if (_dontShowAgain) {
       final prefs = await SharedPreferences.getInstance();
@@ -99,7 +98,7 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
     _saveTutorialPref();
     setState(() => _showTutorial = false);
   }
-  
+
   void _nextStep() {
     if (_currentTutorialStep < 2) {
       setState(() => _currentTutorialStep++);
@@ -107,7 +106,7 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
       _skipTutorial();
     }
   }
-  
+
   void _prevStep() {
     if (_currentTutorialStep > 0) {
       setState(() => _currentTutorialStep--);
@@ -164,7 +163,8 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
                       children: [
                         Text(
                           title,
-                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 4),
                         Text(
@@ -175,7 +175,11 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
                                   : 'Chưa mở khóa',
                           style: TextStyle(
                             fontSize: 13,
-                            color: isCompleted ? Colors.green : isUnlocked ? Colors.teal : Colors.grey,
+                            color: isCompleted
+                                ? Colors.green
+                                : isUnlocked
+                                    ? Colors.teal
+                                    : Colors.grey,
                           ),
                         ),
                       ],
@@ -193,12 +197,16 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.info_outline, color: Colors.amber.shade700, size: 22),
+                    Icon(Icons.info_outline,
+                        color: Colors.amber.shade700, size: 22),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
                         'Bản đồ kiến thức chỉ hiển thị tới cấp chủ đề. Hãy vào "Lộ trình cá nhân" để xem chi tiết bài học.',
-                        style: TextStyle(fontSize: 13, color: Colors.amber.shade800, height: 1.4),
+                        style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.amber.shade800,
+                            height: 1.4),
                       ),
                     ),
                   ],
@@ -211,10 +219,13 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
                   onPressed: () => Navigator.pop(ctx),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.purple,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
-                  child: const Text('Đã hiểu', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  child: const Text('Đã hiểu',
+                      style: TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold)),
                 ),
               ),
             ],
@@ -272,7 +283,8 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
                   LinearProgressIndicator(
                     value: dialogProgress / 100,
                     backgroundColor: Colors.grey.shade200,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.blue.shade400),
+                    valueColor:
+                        AlwaysStoppedAnimation<Color>(Colors.blue.shade400),
                     minHeight: 6,
                     borderRadius: BorderRadius.circular(3),
                   ),
@@ -321,7 +333,8 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
 
       // Poll progress if we have a taskId
       progressTimer?.cancel();
-      progressTimer = Timer.periodic(const Duration(milliseconds: 500), (timer) async {
+      progressTimer =
+          Timer.periodic(const Duration(milliseconds: 500), (timer) async {
         if (!mounted || dialogContext == null) {
           timer.cancel();
           return;
@@ -338,9 +351,11 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
             return;
           }
 
-          final progress = (progressData['progress'] as num?)?.toDouble() ?? 0.0;
+          final progress =
+              (progressData['progress'] as num?)?.toDouble() ?? 0.0;
           final status = progressData['status'] as String? ?? 'generating';
-          final currentStep = progressData['currentStep'] as String? ?? 'Đang xử lý...';
+          final currentStep =
+              progressData['currentStep'] as String? ?? 'Đang xử lý...';
 
           dialogProgress = progress;
           dialogStatus = currentStep;
@@ -356,7 +371,8 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
 
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(result['message'] ?? 'Đã tạo bài học thành công!'),
+                content:
+                    Text(result['message'] ?? 'Đã tạo bài học thành công!'),
                 backgroundColor: Colors.green,
                 duration: const Duration(seconds: 3),
               ),
@@ -372,7 +388,8 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
             if (!mounted || dialogContext == null) return;
             NavigationHelper.safePop(dialogContext!);
 
-            final errorMsg = progressData['error'] as String? ?? 'Có lỗi xảy ra';
+            final errorMsg =
+                progressData['error'] as String? ?? 'Có lỗi xảy ra';
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text('Lỗi: $errorMsg'),
@@ -406,7 +423,8 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text('Giới thiệu khóa học', style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
+        title: Text('Giới thiệu khóa học',
+            style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
         leading: IconButton(
           icon: Container(
             padding: const EdgeInsets.all(8),
@@ -415,7 +433,8 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
               borderRadius: BorderRadius.circular(10),
               border: Border.all(color: AppColors.borderPrimary),
             ),
-            child: const Icon(Icons.arrow_back, color: AppColors.textPrimary, size: 20),
+            child: const Icon(Icons.arrow_back,
+                color: AppColors.textPrimary, size: 20),
           ),
           onPressed: () => Navigator.pop(context),
         ),
@@ -423,7 +442,9 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
           if (_showTutorial)
             TextButton(
               onPressed: _skipTutorial,
-              child: Text('Bỏ qua', style: AppTextStyles.labelMedium.copyWith(color: AppColors.cyanNeon)),
+              child: Text('Bỏ qua',
+                  style: AppTextStyles.labelMedium
+                      .copyWith(color: AppColors.cyanNeon)),
             ),
         ],
       ),
@@ -432,9 +453,11 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  CircularProgressIndicator(color: AppColors.purpleNeon),
+                  const CircularProgressIndicator(color: AppColors.purpleNeon),
                   const SizedBox(height: 16),
-                  Text('Đang tải...', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+                  Text('Đang tải...',
+                      style: AppTextStyles.bodyMedium
+                          .copyWith(color: AppColors.textSecondary)),
                 ],
               ),
             )
@@ -449,17 +472,26 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
                           color: AppColors.errorNeon.withOpacity(0.15),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.error_outline_rounded, size: 48, color: AppColors.errorNeon),
+                        child: const Icon(Icons.error_outline_rounded,
+                            size: 48, color: AppColors.errorNeon),
                       ),
                       const SizedBox(height: 16),
-                      Text('Lỗi: $_error', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+                      Text('Lỗi: $_error',
+                          style: AppTextStyles.bodyMedium
+                              .copyWith(color: AppColors.textSecondary)),
                       const SizedBox(height: 16),
-                      GamingButton(text: 'Thử lại', onPressed: _loadSubjectIntro, icon: Icons.refresh_rounded),
+                      GamingButton(
+                          text: 'Thử lại',
+                          onPressed: _loadSubjectIntro,
+                          icon: Icons.refresh_rounded),
                     ],
                   ),
                 )
               : _introData == null
-                  ? Center(child: Text('Không có dữ liệu', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)))
+                  ? Center(
+                      child: Text('Không có dữ liệu',
+                          style: AppTextStyles.bodyMedium
+                              .copyWith(color: AppColors.textSecondary)))
                   : Stack(
                       children: [
                         // Main content
@@ -474,7 +506,11 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
 
                               // Course outline
                               _buildCourseOutline(),
-                              const SizedBox(height: 24),
+                              const SizedBox(height: 16),
+
+                              // Unlock button (diamond)
+                              if (!_isContributor) _buildUnlockBanner(),
+                              const SizedBox(height: 16),
 
                               // Mind map buttons
                               _buildMindMapButtons(),
@@ -488,7 +524,8 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
                               const SizedBox(height: 24),
 
                               // Contributor: nút vào mind map editor
-                              if (_isContributor) _buildContributorQuickAccess(),
+                              if (_isContributor)
+                                _buildContributorQuickAccess(),
                             ],
                           ),
                         ),
@@ -503,7 +540,8 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
   Widget _buildSubjectHeader() {
     final subject = _introData!['subject'] as Map<String, dynamic>;
     final track = subject['track'] as String;
-    final trackColor = track == 'explorer' ? AppColors.successNeon : AppColors.cyanNeon;
+    final trackColor =
+        track == 'explorer' ? AppColors.successNeon : AppColors.cyanNeon;
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -520,9 +558,12 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              gradient: LinearGradient(colors: [trackColor, trackColor.withOpacity(0.8)]),
+              gradient: LinearGradient(
+                  colors: [trackColor, trackColor.withOpacity(0.8)]),
               borderRadius: BorderRadius.circular(12),
-              boxShadow: [BoxShadow(color: trackColor.withOpacity(0.4), blurRadius: 8)],
+              boxShadow: [
+                BoxShadow(color: trackColor.withOpacity(0.4), blurRadius: 8)
+              ],
             ),
             child: Text(
               track.toUpperCase(),
@@ -530,11 +571,13 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          Text(subject['name'] ?? 'Subject', style: AppTextStyles.h2.copyWith(color: AppColors.textPrimary)),
+          Text(subject['name'] ?? 'Subject',
+              style: AppTextStyles.h2.copyWith(color: AppColors.textPrimary)),
           const SizedBox(height: 10),
           Text(
             subject['description'] ?? '',
-            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary, height: 1.5),
+            style: AppTextStyles.bodyMedium
+                .copyWith(color: AppColors.textSecondary, height: 1.5),
           ),
         ],
       ),
@@ -567,7 +610,8 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
                 color: AppColors.contributorBlue.withOpacity(0.12),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(Icons.account_tree, color: AppColors.contributorBlue, size: 24),
+              child: const Icon(Icons.account_tree,
+                  color: AppColors.contributorBlue, size: 24),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -584,12 +628,13 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
                   const SizedBox(height: 2),
                   Text(
                     'Thêm domain, topic, bài học dạng mind map',
-                    style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+                    style: AppTextStyles.bodySmall
+                        .copyWith(color: AppColors.textSecondary),
                   ),
                 ],
               ),
             ),
-            Icon(Icons.chevron_right, color: AppColors.contributorBlue),
+            const Icon(Icons.chevron_right, color: AppColors.contributorBlue),
           ],
         ),
       ),
@@ -600,7 +645,8 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Bản đồ kiến thức', style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
+        Text('Bản đồ kiến thức',
+            style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
         const SizedBox(height: 16),
         // Single row with 3 equal compact buttons
         Row(
@@ -639,8 +685,12 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
             Expanded(
               child: _CompactMindMapButton(
                 title: _isContributor ? 'Chỉnh sửa' : 'Cá nhân',
-                icon: _isContributor ? Icons.edit_note_rounded : Icons.person_rounded,
-                color: _isContributor ? AppColors.contributorBlue : AppColors.purpleNeon,
+                icon: _isContributor
+                    ? Icons.edit_note_rounded
+                    : Icons.person_rounded,
+                color: _isContributor
+                    ? AppColors.contributorBlue
+                    : AppColors.purpleNeon,
                 isSelected: false,
                 onTap: () async {
                   if (_isContributor) {
@@ -654,7 +704,8 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
                     return;
                   }
                   // Learner: navigate to learning path choice screen
-                  context.push('/subjects/${widget.subjectId}/learning-path-choice');
+                  context.push(
+                      '/subjects/${widget.subjectId}/learning-path-choice');
                 },
               ),
             ),
@@ -670,9 +721,10 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
     final isCompleted = nodeData['isCompleted'] as bool? ?? false;
     final title = nodeData['title'] as String? ?? '';
     final nodeId = nodeData['id'] as String?;
-    
-    final nodeColor = isCompleted ? Colors.green.shade700 : Colors.orange.shade600;
-    
+
+    final nodeColor =
+        isCompleted ? Colors.green.shade700 : Colors.orange.shade600;
+
     return Container(
       height: 300,
       decoration: BoxDecoration(
@@ -732,7 +784,8 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
                 ),
                 const SizedBox(height: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(12),
@@ -762,7 +815,7 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
     if (graph == null) {
       return const SizedBox.shrink();
     }
-    
+
     final allNodes = graph['nodes'] as List? ?? [];
     final allEdges = graph['edges'] as List? ?? [];
 
@@ -777,9 +830,9 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
     if (_currentLevel == 1) {
       // Only show subject node (level 1)
       final subjectNode = allNodes.cast<Map<String, dynamic>>().firstWhere(
-        (n) => n['level'] == 1,
-        orElse: () => <String, dynamic>{},
-      );
+            (n) => n['level'] == 1,
+            orElse: () => <String, dynamic>{},
+          );
       if (subjectNode.isNotEmpty) {
         visibleNodes.add(subjectNode);
         _selectedSubjectNodeId = subjectNode['id'] as String?;
@@ -787,9 +840,9 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
     } else if (_currentLevel == 2 && _selectedSubjectNodeId != null) {
       // Show subject node + domains (level 2)
       final subjectNode = allNodes.cast<Map<String, dynamic>>().firstWhere(
-        (n) => n['id'] == _selectedSubjectNodeId,
-        orElse: () => <String, dynamic>{},
-      );
+            (n) => n['id'] == _selectedSubjectNodeId,
+            orElse: () => <String, dynamic>{},
+          );
       if (subjectNode.isNotEmpty) {
         visibleNodes.add(subjectNode);
       }
@@ -802,36 +855,37 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
 
       // Add edges between subject and domains
       final subjectEdges = allEdges.cast<Map<String, dynamic>>().where((e) {
-        return e['from'] == _selectedSubjectNodeId || e['to'] == _selectedSubjectNodeId;
+        return e['from'] == _selectedSubjectNodeId ||
+            e['to'] == _selectedSubjectNodeId;
       }).toList();
       visibleEdges.addAll(subjectEdges);
     } else if (_currentLevel == 3 && _selectedDomainNodeId != null) {
       // Ensure _selectedSubjectNodeId is set
       if (_selectedSubjectNodeId == null) {
         final subjectNode = allNodes.cast<Map<String, dynamic>>().firstWhere(
-          (n) => n['level'] == 1,
-          orElse: () => <String, dynamic>{},
-        );
+              (n) => n['level'] == 1,
+              orElse: () => <String, dynamic>{},
+            );
         if (subjectNode.isNotEmpty) {
           _selectedSubjectNodeId = subjectNode['id'] as String?;
         }
       }
-      
+
       // Show subject + domain + topics (level 3) of selected domain
       if (_selectedSubjectNodeId != null) {
         final subjectNode = allNodes.cast<Map<String, dynamic>>().firstWhere(
-          (n) => n['id'] == _selectedSubjectNodeId,
-          orElse: () => <String, dynamic>{},
-        );
+              (n) => n['id'] == _selectedSubjectNodeId,
+              orElse: () => <String, dynamic>{},
+            );
         if (subjectNode.isNotEmpty) {
           visibleNodes.add(subjectNode);
         }
       }
 
       final domainNode = allNodes.cast<Map<String, dynamic>>().firstWhere(
-        (n) => n['id'] == _selectedDomainNodeId,
-        orElse: () => <String, dynamic>{},
-      );
+            (n) => n['id'] == _selectedDomainNodeId,
+            orElse: () => <String, dynamic>{},
+          );
       if (domainNode.isNotEmpty) {
         visibleNodes.add(domainNode);
       }
@@ -839,20 +893,23 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
       // Get topics connected to selected domain
       final topicNodes = allNodes.cast<Map<String, dynamic>>().where((n) {
         final nodeParentId = n['parentId'] as String?;
-        final matches = n['level'] == 3 && nodeParentId == _selectedDomainNodeId;
+        final matches =
+            n['level'] == 3 && nodeParentId == _selectedDomainNodeId;
         return matches;
       }).toList();
       visibleNodes.addAll(topicNodes);
 
       // Add edges between domain and topics
       final domainEdges = allEdges.cast<Map<String, dynamic>>().where((e) {
-        return e['from'] == _selectedDomainNodeId || e['to'] == _selectedDomainNodeId;
+        return e['from'] == _selectedDomainNodeId ||
+            e['to'] == _selectedDomainNodeId;
       }).toList();
       visibleEdges.addAll(domainEdges);
-      
+
       // Also add edges between subject and domain
       final subjectEdges = allEdges.cast<Map<String, dynamic>>().where((e) {
-        return e['from'] == _selectedSubjectNodeId && e['to'] == _selectedDomainNodeId;
+        return e['from'] == _selectedSubjectNodeId &&
+            e['to'] == _selectedDomainNodeId;
       }).toList();
       visibleEdges.addAll(subjectEdges);
     }
@@ -868,7 +925,7 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
     // Tính bounding box của tất cả nodes để căn giữa
     double minX = double.infinity, maxX = double.negativeInfinity;
     double minY = double.infinity, maxY = double.negativeInfinity;
-    
+
     for (final node in nodes) {
       final pos = node['position'] as Map<String, dynamic>?;
       if (pos != null) {
@@ -880,7 +937,7 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
         if (y > maxY) maxY = y;
       }
     }
-    
+
     // Tính kích thước cần thiết và padding
     final graphWidth = (maxX - minX) + 300; // Thêm padding cho nodes
     final graphHeight = (maxY - minY) + 200;
@@ -904,7 +961,7 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
             final graphCenterY = (minY + maxY) / 2;
             final offsetX = centerX - graphCenterX;
             final offsetY = centerY - graphCenterY;
-            
+
             return SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: SingleChildScrollView(
@@ -925,152 +982,165 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
                       ),
                       // Nodes (interactive) - drawn on top
                       ...nodes.map((node) {
-                        final nodeData = node as Map<String, dynamic>;
-                        final position = nodeData['position'] as Map<String, dynamic>?;
+                        final nodeData = node;
+                        final position =
+                            nodeData['position'] as Map<String, dynamic>?;
                         if (position == null) return const SizedBox.shrink();
-                        
-                        final x = ((position['x'] as num?)?.toDouble() ?? 0.0) + offsetX;
-                        final y = ((position['y'] as num?)?.toDouble() ?? 0.0) + offsetY;
-                final isUnlocked = nodeData['isUnlocked'] as bool? ?? false;
-                final isCompleted = nodeData['isCompleted'] as bool? ?? false;
-                final title = nodeData['title'] as String? ?? '';
-                final level = nodeData['level'] as int? ?? 3;
 
-                // Màu sắc và kích thước theo level
-                Color nodeColor;
-                double nodeWidth;
-                double minHeight;
-                double maxHeight;
-                double fontSize;
-                double borderWidth;
+                        final x = ((position['x'] as num?)?.toDouble() ?? 0.0) +
+                            offsetX;
+                        final y = ((position['y'] as num?)?.toDouble() ?? 0.0) +
+                            offsetY;
+                        final isUnlocked =
+                            nodeData['isUnlocked'] as bool? ?? false;
+                        final isCompleted =
+                            nodeData['isCompleted'] as bool? ?? false;
+                        final title = nodeData['title'] as String? ?? '';
+                        final level = nodeData['level'] as int? ?? 3;
 
-                switch (level) {
-                  case 1: // Subject - Lớp 1
-                    nodeColor = isCompleted
-                        ? Colors.green.shade700
-                        : Colors.orange.shade600;
-                    nodeWidth = 200;
-                    minHeight = 90;
-                    maxHeight = 140;
-                    fontSize = 13;
-                    borderWidth = 4;
-                    break;
-                  case 2: // Domain - Lớp 2
-                    nodeColor = isCompleted
-                        ? Colors.green.shade600
-                        : Colors.blue.shade600;
-                    nodeWidth = 180;
-                    minHeight = 80;
-                    maxHeight = 120;
-                    fontSize = 12;
-                    borderWidth = 3;
-                    break;
-                  default: // Topic - Lớp 3
-                    nodeColor = isCompleted
-                        ? Colors.green.shade500
-                        : isUnlocked
-                            ? Colors.teal.shade500
-                            : Colors.grey.shade400;
-                    nodeWidth = 160;
-                    minHeight = 70;
-                    maxHeight = 110;
-                    fontSize = 11;
-                    borderWidth = 2;
-                    break;
-                }
+                        // Màu sắc và kích thước theo level
+                        Color nodeColor;
+                        double nodeWidth;
+                        double minHeight;
+                        double maxHeight;
+                        double fontSize;
+                        double borderWidth;
 
-                return Positioned(
-                  left: x - (nodeWidth / 2),
-                  top: y - (minHeight / 2),
-                  child: GestureDetector(
-                    onTap: () async {
-                      final nodeId = nodeData['id'] as String?;
-                      if (nodeId == null) return;
+                        switch (level) {
+                          case 1: // Subject - Lớp 1
+                            nodeColor = isCompleted
+                                ? Colors.green.shade700
+                                : Colors.orange.shade600;
+                            nodeWidth = 200;
+                            minHeight = 90;
+                            maxHeight = 140;
+                            fontSize = 13;
+                            borderWidth = 4;
+                            break;
+                          case 2: // Domain - Lớp 2
+                            nodeColor = isCompleted
+                                ? Colors.green.shade600
+                                : Colors.blue.shade600;
+                            nodeWidth = 180;
+                            minHeight = 80;
+                            maxHeight = 120;
+                            fontSize = 12;
+                            borderWidth = 3;
+                            break;
+                          default: // Topic - Lớp 3
+                            nodeColor = isCompleted
+                                ? Colors.green.shade500
+                                : isUnlocked
+                                    ? Colors.teal.shade500
+                                    : Colors.grey.shade400;
+                            nodeWidth = 160;
+                            minHeight = 70;
+                            maxHeight = 110;
+                            fontSize = 11;
+                            borderWidth = 2;
+                            break;
+                        }
 
-                      if (level == 1) {
-                        // Click vào Subject: Expand để hiển thị Domains
-                        setState(() {
-                          _currentLevel = 2;
-                          _selectedSubjectNodeId = nodeId;
-                          _selectedDomainNodeId = null;
-                        });
-                      } else if (level == 2) {
-                        // Click vào Domain: Expand để hiển thị Topics
-                        setState(() {
-                          _currentLevel = 3;
-                          _selectedDomainNodeId = nodeId;
-                        });
-                      } else if (level == 3) {
-                        // Click vào Topic: chỉ hiện thông tin, không mở learning nodes
-                        _showTopicInfoDialog(nodeData);
-                      }
-                    },
-                    child: Container(
-                      width: nodeWidth,
-                      constraints: BoxConstraints(
-                        minHeight: minHeight,
-                        maxHeight: maxHeight,
-                      ),
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: nodeColor,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: Colors.white,
-                          width: borderWidth,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.3),
-                            blurRadius: level == 1 ? 12 : level == 2 ? 8 : 6,
-                            spreadRadius: level == 1 ? 3 : level == 2 ? 2 : 1,
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          if (level == 1)
-                            Icon(
-                              Icons.school,
-                              color: Colors.white,
-                              size: 28,
-                            )
-                          else if (level == 2)
-                            Icon(
-                              Icons.book,
-                              color: Colors.white,
-                              size: 22,
-                            )
-                          else
-                            Icon(
-                              Icons.article,
-                              color: Colors.white,
-                              size: 18,
-                            ),
-                          const SizedBox(height: 6),
-                          Flexible(
-                            child: Text(
-                              title,
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: fontSize,
-                                height: 1.3,
+                        return Positioned(
+                          left: x - (nodeWidth / 2),
+                          top: y - (minHeight / 2),
+                          child: GestureDetector(
+                            onTap: () async {
+                              final nodeId = nodeData['id'] as String?;
+                              if (nodeId == null) return;
+
+                              if (level == 1) {
+                                // Click vào Subject: Expand để hiển thị Domains
+                                setState(() {
+                                  _currentLevel = 2;
+                                  _selectedSubjectNodeId = nodeId;
+                                  _selectedDomainNodeId = null;
+                                });
+                              } else if (level == 2) {
+                                // Click vào Domain: Expand để hiển thị Topics
+                                setState(() {
+                                  _currentLevel = 3;
+                                  _selectedDomainNodeId = nodeId;
+                                });
+                              } else if (level == 3) {
+                                // Click vào Topic: chỉ hiện thông tin, không mở learning nodes
+                                _showTopicInfoDialog(nodeData);
+                              }
+                            },
+                            child: Container(
+                              width: nodeWidth,
+                              constraints: BoxConstraints(
+                                minHeight: minHeight,
+                                maxHeight: maxHeight,
                               ),
-                              textAlign: TextAlign.center,
-                              maxLines: 4,
-                              overflow: TextOverflow.ellipsis,
-                              softWrap: true,
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: nodeColor,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: borderWidth,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.3),
+                                    blurRadius: level == 1
+                                        ? 12
+                                        : level == 2
+                                            ? 8
+                                            : 6,
+                                    spreadRadius: level == 1
+                                        ? 3
+                                        : level == 2
+                                            ? 2
+                                            : 1,
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  if (level == 1)
+                                    const Icon(
+                                      Icons.school,
+                                      color: Colors.white,
+                                      size: 28,
+                                    )
+                                  else if (level == 2)
+                                    const Icon(
+                                      Icons.book,
+                                      color: Colors.white,
+                                      size: 22,
+                                    )
+                                  else
+                                    const Icon(
+                                      Icons.article,
+                                      color: Colors.white,
+                                      size: 18,
+                                    ),
+                                  const SizedBox(height: 6),
+                                  Flexible(
+                                    child: Text(
+                                      title,
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: fontSize,
+                                        height: 1.3,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                      maxLines: 4,
+                                      overflow: TextOverflow.ellipsis,
+                                      softWrap: true,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
+                        );
                       }),
                     ],
                   ),
@@ -1096,14 +1166,29 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Tổng quan khóa học', style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
+          Text('Tổng quan khóa học',
+              style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
           const SizedBox(height: 20),
           Row(
             children: [
-              Expanded(child: _OutlineItem(icon: Icons.book_rounded, label: 'Chủ đề', value: '${outline['totalNodes'] ?? 0}', color: AppColors.purpleNeon)),
-              Expanded(child: _OutlineItem(icon: Icons.lightbulb_rounded, label: 'Khái niệm', value: '${outline['totalConcepts'] ?? 0}', color: AppColors.xpGold)),
-              Expanded(child: _OutlineItem(icon: Icons.code_rounded, label: 'Ví dụ', value: '${outline['totalExamples'] ?? 0}', color: AppColors.cyanNeon)),
-              Expanded(child: _OutlineItem(icon: Icons.calendar_today_rounded, label: 'Ngày', value: '${outline['estimatedDays'] ?? 0}', color: AppColors.pinkNeon)),
+              Expanded(
+                  child: _OutlineItem(
+                      icon: Icons.book_rounded,
+                      label: 'Bài học',
+                      value: '${outline['totalLessons'] ?? 0}',
+                      color: AppColors.purpleNeon)),
+              Expanded(
+                  child: _OutlineItem(
+                      icon: Icons.topic_rounded,
+                      label: 'Topic',
+                      value: '${outline['totalTopics'] ?? 0}',
+                      color: AppColors.cyanNeon)),
+              Expanded(
+                  child: _OutlineItem(
+                      icon: Icons.category_rounded,
+                      label: 'Domain',
+                      value: '${outline['totalDomains'] ?? 0}',
+                      color: AppColors.pinkNeon)),
             ],
           ),
         ],
@@ -1111,10 +1196,75 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
     );
   }
 
+  Widget _buildUnlockBanner() {
+    return InkWell(
+      onTap: () async {
+        await context.push('/subjects/${widget.subjectId}/unlock');
+        // Reload data when returning
+        _loadSubjectIntro();
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              AppColors.purpleNeon.withOpacity(0.12),
+              AppColors.cyanNeon.withOpacity(0.08)
+            ],
+          ),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.purpleNeon.withOpacity(0.25)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppColors.purpleNeon.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Text('💎', style: TextStyle(fontSize: 24)),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Mo khoa bai hoc',
+                    style: AppTextStyles.labelLarge.copyWith(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Su dung kim cuong de mo khoa tung bai, chuong hoac ca mon',
+                    style: AppTextStyles.caption
+                        .copyWith(color: AppColors.textSecondary),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.purpleNeon.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Icons.chevron_right_rounded,
+                  color: AppColors.purpleNeon, size: 20),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _startLearning() async {
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
-      
+
       // Show loading
       if (mounted) {
         showDialog(
@@ -1159,7 +1309,7 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
     // Check if subject has domains
     final domains = _introData?['subject']?['domains'] as List<dynamic>?;
     final hasDomains = domains != null && domains.isNotEmpty;
-    
+
     if (!hasDomains) {
       return const SizedBox.shrink();
     }
@@ -1174,7 +1324,8 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Các chương học', style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
+        Text('Các chương học',
+            style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
         const SizedBox(height: 16),
         ...domains.asMap().entries.map((entry) {
           final index = entry.key;
@@ -1185,7 +1336,8 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
           final order = domainData['order'] as int? ?? 0;
           final metadata = domainData['metadata'] as Map<String, dynamic>?;
           final icon = metadata?['icon'] as String? ?? '📚';
-          final nodesCount = (domainData['nodes'] as List<dynamic>?)?.length ?? 0;
+          final nodesCount =
+              (domainData['nodes'] as List<dynamic>?)?.length ?? 0;
           final colorPair = colors[index % colors.length];
 
           return Container(
@@ -1215,10 +1367,16 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
                         decoration: BoxDecoration(
                           gradient: LinearGradient(colors: colorPair),
                           borderRadius: BorderRadius.circular(12),
-                          boxShadow: [BoxShadow(color: colorPair[0].withOpacity(0.3), blurRadius: 8)],
+                          boxShadow: [
+                            BoxShadow(
+                                color: colorPair[0].withOpacity(0.3),
+                                blurRadius: 8)
+                          ],
                         ),
                         child: Center(
-                          child: Text('${order + 1}', style: AppTextStyles.labelLarge.copyWith(color: Colors.white)),
+                          child: Text('${order + 1}',
+                              style: AppTextStyles.labelLarge
+                                  .copyWith(color: Colors.white)),
                         ),
                       ),
                       const SizedBox(width: 14),
@@ -1230,12 +1388,16 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(name, style: AppTextStyles.labelLarge.copyWith(color: AppColors.textPrimary)),
-                            if (description != null && description.isNotEmpty) ...[
+                            Text(name,
+                                style: AppTextStyles.labelLarge
+                                    .copyWith(color: AppColors.textPrimary)),
+                            if (description != null &&
+                                description.isNotEmpty) ...[
                               const SizedBox(height: 4),
                               Text(
                                 description,
-                                style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+                                style: AppTextStyles.bodySmall
+                                    .copyWith(color: AppColors.textSecondary),
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -1244,9 +1406,12 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
                               const SizedBox(height: 8),
                               Row(
                                 children: [
-                                  Icon(Icons.book_rounded, size: 14, color: AppColors.textTertiary),
+                                  const Icon(Icons.book_rounded,
+                                      size: 14, color: AppColors.textTertiary),
                                   const SizedBox(width: 4),
-                                  Text('$nodesCount bài học', style: AppTextStyles.caption.copyWith(color: AppColors.textTertiary)),
+                                  Text('$nodesCount bài học',
+                                      style: AppTextStyles.caption.copyWith(
+                                          color: AppColors.textTertiary)),
                                 ],
                               ),
                             ],
@@ -1259,7 +1424,8 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
                           color: AppColors.bgTertiary,
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary, size: 20),
+                        child: const Icon(Icons.chevron_right_rounded,
+                            color: AppColors.textSecondary, size: 20),
                       ),
                     ],
                   ),
@@ -1267,14 +1433,14 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
               ),
             ),
           );
-        }).toList(),
+        }),
       ],
     );
   }
 
   Widget _buildTutorialOverlay() {
     final isLast = _currentTutorialStep == 2;
-    
+
     return Container(
       color: Colors.black.withOpacity(0.9),
       child: SafeArea(
@@ -1288,26 +1454,31 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
                 children: [
                   Text(
                     'Bước ${_currentTutorialStep + 1}/3',
-                    style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 14),
+                    style: TextStyle(
+                        color: Colors.white.withOpacity(0.7), fontSize: 14),
                   ),
                   TextButton(
                     onPressed: _skipTutorial,
-                    child: const Text('Bỏ qua', style: TextStyle(color: Colors.white70)),
+                    child: const Text('Bỏ qua',
+                        style: TextStyle(color: Colors.white70)),
                   ),
                 ],
               ),
             ),
-            
+
             // Title
             const Text(
               'Hướng dẫn sử dụng Mind Map',
-              style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 24),
-            
+
             // Illustration
             Expanded(child: _buildIllustration()),
-            
+
             // Checkbox for last step
             if (isLast)
               Padding(
@@ -1317,14 +1488,16 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
                   children: [
                     Checkbox(
                       value: _dontShowAgain,
-                      onChanged: (v) => setState(() => _dontShowAgain = v ?? false),
+                      onChanged: (v) =>
+                          setState(() => _dontShowAgain = v ?? false),
                       fillColor: WidgetStateProperty.all(Colors.orange),
                     ),
-                    const Text('Không hiển thị lại', style: TextStyle(color: Colors.white70)),
+                    const Text('Không hiển thị lại',
+                        style: TextStyle(color: Colors.white70)),
                   ],
                 ),
               ),
-            
+
             // Navigation
             Padding(
               padding: const EdgeInsets.all(24),
@@ -1361,16 +1534,20 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
       ),
     );
   }
-  
+
   Widget _buildIllustration() {
     switch (_currentTutorialStep) {
-      case 0: return _buildStep1();
-      case 1: return _buildStep2();
-      case 2: return _buildStep3();
-      default: return const SizedBox.shrink();
+      case 0:
+        return _buildStep1();
+      case 1:
+        return _buildStep2();
+      case 2:
+        return _buildStep3();
+      default:
+        return const SizedBox.shrink();
     }
   }
-  
+
   // Step 1: Click Subject
   Widget _buildStep1() {
     return Column(
@@ -1381,22 +1558,32 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
           width: 180,
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            gradient: LinearGradient(colors: [Colors.orange.shade400, Colors.orange.shade600]),
+            gradient: LinearGradient(
+                colors: [Colors.orange.shade400, Colors.orange.shade600]),
             borderRadius: BorderRadius.circular(16),
-            boxShadow: [BoxShadow(color: Colors.orange.withOpacity(0.5), blurRadius: 20)],
+            boxShadow: [
+              BoxShadow(color: Colors.orange.withOpacity(0.5), blurRadius: 20)
+            ],
           ),
           child: Column(
             children: [
               const Icon(Icons.school, color: Colors.white, size: 48),
               const SizedBox(height: 8),
-              const Text('Môn học', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+              const Text('Môn học',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold)),
               const SizedBox(height: 4),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.touch_app, color: Colors.yellow.shade300, size: 20),
+                  Icon(Icons.touch_app,
+                      color: Colors.yellow.shade300, size: 20),
                   const SizedBox(width: 4),
-                  Text('Nhấn vào đây', style: TextStyle(color: Colors.yellow.shade300, fontSize: 12)),
+                  Text('Nhấn vào đây',
+                      style: TextStyle(
+                          color: Colors.yellow.shade300, fontSize: 12)),
                 ],
               ),
             ],
@@ -1419,8 +1606,8 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
       ],
     );
   }
-  
-  // Step 2: Click Domain  
+
+  // Step 2: Click Domain
   Widget _buildStep2() {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -1431,7 +1618,9 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
             // Subject small
             Container(
               padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: Colors.orange.shade400, borderRadius: BorderRadius.circular(10)),
+              decoration: BoxDecoration(
+                  color: Colors.orange.shade400,
+                  borderRadius: BorderRadius.circular(10)),
               child: const Icon(Icons.school, color: Colors.white, size: 24),
             ),
             const Padding(
@@ -1467,28 +1656,40 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
       ],
     );
   }
-  
+
   Widget _domainBox(String text, bool highlight) {
     return Container(
       width: 130,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        gradient: highlight ? LinearGradient(colors: [Colors.blue.shade400, Colors.blue.shade600]) : null,
+        gradient: highlight
+            ? LinearGradient(
+                colors: [Colors.blue.shade400, Colors.blue.shade600])
+            : null,
         color: highlight ? null : Colors.blue.shade300,
         borderRadius: BorderRadius.circular(10),
-        boxShadow: highlight ? [BoxShadow(color: Colors.blue.withOpacity(0.5), blurRadius: 12)] : null,
+        boxShadow: highlight
+            ? [BoxShadow(color: Colors.blue.withOpacity(0.5), blurRadius: 12)]
+            : null,
       ),
       child: Row(
         children: [
           const Icon(Icons.category, color: Colors.white, size: 18),
           const SizedBox(width: 6),
-          Text(text, style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: highlight ? FontWeight.bold : FontWeight.normal)),
-          if (highlight) ...[const Spacer(), Icon(Icons.touch_app, color: Colors.yellow.shade300, size: 16)],
+          Text(text,
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: highlight ? FontWeight.bold : FontWeight.normal)),
+          if (highlight) ...[
+            const Spacer(),
+            Icon(Icons.touch_app, color: Colors.yellow.shade300, size: 16)
+          ],
         ],
       ),
     );
   }
-  
+
   // Step 3: Click Topic
   Widget _buildStep3() {
     return Column(
@@ -1499,7 +1700,9 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
           children: [
             Container(
               padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(color: Colors.blue.shade400, borderRadius: BorderRadius.circular(8)),
+              decoration: BoxDecoration(
+                  color: Colors.blue.shade400,
+                  borderRadius: BorderRadius.circular(8)),
               child: const Icon(Icons.category, color: Colors.white, size: 20),
             ),
             const Padding(
@@ -1521,12 +1724,15 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
             ),
             Container(
               padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: Colors.green.shade500, borderRadius: BorderRadius.circular(10)),
+              decoration: BoxDecoration(
+                  color: Colors.green.shade500,
+                  borderRadius: BorderRadius.circular(10)),
               child: const Column(
                 children: [
                   Icon(Icons.play_lesson, color: Colors.white, size: 28),
                   SizedBox(height: 4),
-                  Text('Bài học', style: TextStyle(color: Colors.white, fontSize: 10)),
+                  Text('Bài học',
+                      style: TextStyle(color: Colors.white, fontSize: 10)),
                 ],
               ),
             ),
@@ -1549,23 +1755,35 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
       ],
     );
   }
-  
+
   Widget _topicBox(String text, bool highlight) {
     return Container(
       width: 100,
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
-        gradient: highlight ? LinearGradient(colors: [Colors.teal.shade400, Colors.teal.shade600]) : null,
+        gradient: highlight
+            ? LinearGradient(
+                colors: [Colors.teal.shade400, Colors.teal.shade600])
+            : null,
         color: highlight ? null : Colors.teal.shade300,
         borderRadius: BorderRadius.circular(8),
-        boxShadow: highlight ? [BoxShadow(color: Colors.teal.withOpacity(0.5), blurRadius: 10)] : null,
+        boxShadow: highlight
+            ? [BoxShadow(color: Colors.teal.withOpacity(0.5), blurRadius: 10)]
+            : null,
       ),
       child: Row(
         children: [
           const Icon(Icons.topic, color: Colors.white, size: 14),
           const SizedBox(width: 4),
-          Text(text, style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: highlight ? FontWeight.bold : FontWeight.normal)),
-          if (highlight) ...[const Spacer(), Icon(Icons.touch_app, color: Colors.yellow.shade300, size: 14)],
+          Text(text,
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 11,
+                  fontWeight: highlight ? FontWeight.bold : FontWeight.normal)),
+          if (highlight) ...[
+            const Spacer(),
+            Icon(Icons.touch_app, color: Colors.yellow.shade300, size: 14)
+          ],
         ],
       ),
     );
@@ -1600,9 +1818,13 @@ class _OutlineItem extends StatelessWidget {
             child: Icon(icon, size: 24, color: color),
           ),
           const SizedBox(height: 10),
-          Text(value, style: AppTextStyles.numberMedium.copyWith(color: AppColors.textPrimary)),
+          Text(value,
+              style: AppTextStyles.numberMedium
+                  .copyWith(color: AppColors.textPrimary)),
           const SizedBox(height: 4),
-          Text(label, style: AppTextStyles.caption.copyWith(color: AppColors.textTertiary)),
+          Text(label,
+              style: AppTextStyles.caption
+                  .copyWith(color: AppColors.textTertiary)),
         ],
       ),
     );
@@ -1636,7 +1858,8 @@ class _MindMapButton extends StatelessWidget {
           color: isSelected ? color.withOpacity(0.15) : AppColors.bgSecondary,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? color.withOpacity(0.5) : AppColors.borderPrimary,
+            color:
+                isSelected ? color.withOpacity(0.5) : AppColors.borderPrimary,
             width: isSelected ? 2 : 1,
           ),
           boxShadow: isSelected
@@ -1655,9 +1878,13 @@ class _MindMapButton extends StatelessWidget {
               child: Icon(icon, color: color, size: 24),
             ),
             const SizedBox(height: 12),
-            Text(title, style: AppTextStyles.labelMedium.copyWith(color: isSelected ? color : AppColors.textPrimary)),
+            Text(title,
+                style: AppTextStyles.labelMedium.copyWith(
+                    color: isSelected ? color : AppColors.textPrimary)),
             const SizedBox(height: 4),
-            Text(subtitle, style: AppTextStyles.caption.copyWith(color: AppColors.textTertiary)),
+            Text(subtitle,
+                style: AppTextStyles.caption
+                    .copyWith(color: AppColors.textTertiary)),
           ],
         ),
       ),
@@ -1691,7 +1918,8 @@ class _CompactMindMapButton extends StatelessWidget {
           color: isSelected ? color.withOpacity(0.15) : AppColors.bgSecondary,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? color.withOpacity(0.5) : AppColors.borderPrimary,
+            color:
+                isSelected ? color.withOpacity(0.5) : AppColors.borderPrimary,
             width: isSelected ? 2 : 1,
           ),
           boxShadow: isSelected
@@ -1754,13 +1982,13 @@ class KnowledgeGraphPainter extends CustomPainter {
       final toId = edgeData['to'] as String;
 
       final fromNode = nodes.cast<Map<String, dynamic>>().firstWhere(
-        (n) => n['id'] == fromId,
-        orElse: () => <String, dynamic>{},
-      );
+            (n) => n['id'] == fromId,
+            orElse: () => <String, dynamic>{},
+          );
       final toNode = nodes.cast<Map<String, dynamic>>().firstWhere(
-        (n) => n['id'] == toId,
-        orElse: () => <String, dynamic>{},
-      );
+            (n) => n['id'] == toId,
+            orElse: () => <String, dynamic>{},
+          );
 
       if (fromNode.isNotEmpty && toNode.isNotEmpty) {
         final fromPos = fromNode['position'] as Map<String, dynamic>;
@@ -1784,4 +2012,3 @@ class KnowledgeGraphPainter extends CustomPainter {
     return oldDelegate.offsetX != offsetX || oldDelegate.offsetY != offsetY;
   }
 }
-

@@ -40,7 +40,8 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0.05, 0),
       end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _questionController, curve: Curves.easeOut));
+    ).animate(
+        CurvedAnimation(parent: _questionController, curve: Curves.easeOut));
 
     _startTest();
   }
@@ -61,10 +62,11 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
       final response = await apiService.startPlacementTest();
-      
+
       Map<String, dynamic>? question;
-      
-      if (response['questions'] != null && (response['questions'] as List).isNotEmpty) {
+
+      if (response['questions'] != null &&
+          (response['questions'] as List).isNotEmpty) {
         final questions = response['questions'] as List;
         final firstQuestion = questions[0] as Map<String, dynamic>;
         question = {
@@ -81,7 +83,8 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
           if (currentTestResponse['question'] != null) {
             question = currentTestResponse['question'];
             if (currentTestResponse['progress'] != null) {
-              _currentQuestionNumber = currentTestResponse['progress']['current'] ?? 1;
+              _currentQuestionNumber =
+                  currentTestResponse['progress']['current'] ?? 1;
               _totalQuestions = currentTestResponse['progress']['total'] ?? 10;
             }
           }
@@ -89,14 +92,14 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
           print('⚠️  Error getting current test: $e');
         }
       }
-      
+
       setState(() {
         _currentQuestion = question;
         _isLoading = false;
       });
-      
+
       _questionController.forward();
-      
+
       if (question == null) {
         setState(() {
           _error = 'Không thể tải câu hỏi. Vui lòng thử lại.';
@@ -114,7 +117,7 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
     if (_selectedAnswer == null || _isSubmitting) return;
 
     HapticFeedback.lightImpact();
-    
+
     setState(() {
       _isSubmitting = true;
     });
@@ -124,7 +127,8 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
       final response = await apiService.submitAnswer(_selectedAnswer!);
 
       if (response['progress'] != null) {
-        _currentQuestionNumber = response['progress']['current'] ?? _currentQuestionNumber + 1;
+        _currentQuestionNumber =
+            response['progress']['current'] ?? _currentQuestionNumber + 1;
         _totalQuestions = response['progress']['total'] ?? 10;
       } else {
         _currentQuestionNumber++;
@@ -170,19 +174,20 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
 
     while (retryCount < maxRetries && mounted) {
       await Future.delayed(retryDelay);
-      
+
       try {
         final response = await apiService.getCurrentTest();
-        
+
         if (response['question'] != null) {
           if (response['progress'] != null) {
             final progress = response['progress'] as Map<String, dynamic>;
-            _currentQuestionNumber = progress['current'] ?? _currentQuestionNumber;
+            _currentQuestionNumber =
+                progress['current'] ?? _currentQuestionNumber;
             _totalQuestions = progress['total'] ?? 10;
           } else {
             _currentQuestionNumber++;
           }
-          
+
           _questionController.reset();
           setState(() {
             _currentQuestion = response['question'];
@@ -194,10 +199,10 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
       } catch (e) {
         print('⚠️  Error polling for question: $e');
       }
-      
+
       retryCount++;
     }
-    
+
     if (mounted) {
       setState(() {
         _isLoadingNextQuestion = false;
@@ -221,10 +226,12 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
                 gradient: AppGradients.primary,
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(Icons.quiz_rounded, color: Colors.white, size: 20),
+              child:
+                  const Icon(Icons.quiz_rounded, color: Colors.white, size: 20),
             ),
             const SizedBox(width: 12),
-            Text('Placement Test', style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
+            Text('Placement Test',
+                style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
           ],
         ),
         leading: IconButton(
@@ -235,7 +242,8 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
               borderRadius: BorderRadius.circular(10),
               border: Border.all(color: AppColors.borderPrimary),
             ),
-            child: const Icon(Icons.arrow_back, color: AppColors.textPrimary, size: 20),
+            child: const Icon(Icons.arrow_back,
+                color: AppColors.textPrimary, size: 20),
           ),
           onPressed: () => Navigator.pop(context),
         ),
@@ -272,7 +280,8 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
           const SizedBox(height: 24),
           Text(
             'Đang chuẩn bị bài test...',
-            style: AppTextStyles.bodyLarge.copyWith(color: AppColors.textSecondary),
+            style: AppTextStyles.bodyLarge
+                .copyWith(color: AppColors.textSecondary),
           ),
         ],
       ),
@@ -292,7 +301,8 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
                 color: AppColors.errorNeon.withOpacity(0.15),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.error_outline_rounded, size: 48, color: AppColors.errorNeon),
+              child: const Icon(Icons.error_outline_rounded,
+                  size: 48, color: AppColors.errorNeon),
             ),
             const SizedBox(height: 24),
             Text(
@@ -302,7 +312,8 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
             const SizedBox(height: 8),
             Text(
               _error ?? '',
-              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+              style: AppTextStyles.bodyMedium
+                  .copyWith(color: AppColors.textSecondary),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -352,7 +363,9 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
                 width: double.infinity,
                 child: GamingButton(
                   text: _isSubmitting ? 'Đang gửi...' : 'Tiếp theo',
-                  onPressed: _selectedAnswer != null && !_isSubmitting ? _submitAnswer : null,
+                  onPressed: _selectedAnswer != null && !_isSubmitting
+                      ? _submitAnswer
+                      : null,
                   isLoading: _isSubmitting,
                   icon: Icons.arrow_forward_rounded,
                 ),
@@ -371,7 +384,10 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [AppColors.purpleNeon.withOpacity(0.15), AppColors.pinkNeon.withOpacity(0.1)],
+          colors: [
+            AppColors.purpleNeon.withOpacity(0.15),
+            AppColors.pinkNeon.withOpacity(0.1)
+          ],
         ),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.purpleNeon.withOpacity(0.3)),
@@ -387,7 +403,8 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
                 style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   gradient: AppGradients.primary,
                   borderRadius: BorderRadius.circular(12),
@@ -445,7 +462,7 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
       ),
       child: Row(
         children: [
-          SizedBox(
+          const SizedBox(
             width: 20,
             height: 20,
             child: CircularProgressIndicator(
@@ -456,7 +473,8 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
           const SizedBox(width: 12),
           Text(
             'Đang tải câu hỏi tiếp theo...',
-            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.warningNeon),
+            style:
+                AppTextStyles.bodyMedium.copyWith(color: AppColors.warningNeon),
           ),
         ],
       ),
@@ -535,14 +553,17 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
-                  color: isSelected ? Colors.white.withOpacity(0.2) : AppColors.bgSecondary,
+                  color: isSelected
+                      ? Colors.white.withOpacity(0.2)
+                      : AppColors.bgSecondary,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Center(
                   child: Text(
                     optionLetters[index],
                     style: AppTextStyles.labelLarge.copyWith(
-                      color: isSelected ? Colors.white : AppColors.textSecondary,
+                      color:
+                          isSelected ? Colors.white : AppColors.textSecondary,
                     ),
                   ),
                 ),
@@ -553,7 +574,8 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
                   option.toString(),
                   style: AppTextStyles.bodyMedium.copyWith(
                     color: isSelected ? Colors.white : AppColors.textPrimary,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                    fontWeight:
+                        isSelected ? FontWeight.w600 : FontWeight.normal,
                   ),
                 ),
               ),
@@ -564,7 +586,8 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
                     color: Colors.white.withOpacity(0.2),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.check_rounded, size: 16, color: Colors.white),
+                  child: const Icon(Icons.check_rounded,
+                      size: 16, color: Colors.white),
                 ),
             ],
           ),

@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'colors.dart';
-import 'text_styles.dart';
 
 /// Gamified Learning App Theme
-/// 
+///
 /// Cyberpunk Edgy with Gaming Typography
 /// Dark Mode with Neon Accents
 class AppTheme {
@@ -15,19 +14,17 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
-      
+
       // Colors
       scaffoldBackgroundColor: AppColors.bgPrimary,
       colorScheme: const ColorScheme.dark(
         primary: AppColors.purpleNeon,
         secondary: AppColors.cyanNeon,
         surface: AppColors.bgSecondary,
-        background: AppColors.bgPrimary,
         error: AppColors.errorNeon,
         onPrimary: Colors.white,
         onSecondary: Colors.white,
         onSurface: AppColors.textPrimary,
-        onBackground: AppColors.textPrimary,
         onError: Colors.white,
       ),
 
@@ -192,14 +189,14 @@ class AppTheme {
 
       // Switch
       switchTheme: SwitchThemeData(
-        thumbColor: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
+        thumbColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
             return AppColors.purpleNeon;
           }
           return AppColors.textTertiary;
         }),
-        trackColor: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
+        trackColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
             return AppColors.purpleNeon.withOpacity(0.5);
           }
           return AppColors.bgTertiary;
@@ -208,13 +205,13 @@ class AppTheme {
 
       // Checkbox
       checkboxTheme: CheckboxThemeData(
-        fillColor: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
+        fillColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
             return AppColors.purpleNeon;
           }
           return Colors.transparent;
         }),
-        checkColor: MaterialStateProperty.all(Colors.white),
+        checkColor: WidgetStateProperty.all(Colors.white),
         side: const BorderSide(color: AppColors.borderPrimary, width: 2),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(4),

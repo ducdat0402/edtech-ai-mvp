@@ -12,6 +12,7 @@ import { RewardSource } from '../user-currency/entities/reward-transaction.entit
 import { QuestsService } from '../quests/quests.service';
 import { QuestType } from '../quests/entities/quest.entity';
 import { LessonTypeContentsService } from '../lesson-type-contents/lesson-type-contents.service';
+import { PersonalMindMap, PersonalMindMapNode } from '../personal-mind-map/entities/personal-mind-map.entity';
 
 export interface RewardEntry {
   level: 'lesson_type' | 'lesson' | 'topic' | 'domain';
@@ -35,6 +36,8 @@ export class UserProgressService {
     private topicRepository: Repository<Topic>,
     @InjectRepository(Domain)
     private domainRepository: Repository<Domain>,
+    @InjectRepository(PersonalMindMap)
+    private personalMindMapRepository: Repository<PersonalMindMap>,
     private currencyService: UserCurrencyService,
     @Inject(forwardRef(() => QuestsService))
     private questsService: QuestsService,
@@ -200,7 +203,120 @@ export class UserProgressService {
 
     const savedProgress = await this.progressRepository.save(progress);
 
+    // Sync personal mind map (fire-and-forget, don't block response)
+    this.syncPersonalMindMap(userId, nodeId, savedProgress.isCompleted).catch((err) => {
+      console.error('Error syncing personal mind map:', err);
+    });
+
     return { progress: savedProgress, rewards, lessonCompleted, topicCompleted, domainCompleted };
+  }
+
+  /**
+   * Sync personal mind map node status based on UserProgress.
+   * When a lesson is completed in either roadmap, the personal mind map
+   * is updated automatically to keep both in sync.
+   */
+  private async syncPersonalMindMap(
+    userId: string,
+    nodeId: string,
+    isCompleted: boolean,
+  ): Promise<void> {
+    // Find all personal mind maps for this user
+    const mindMaps = await this.personalMindMapRepository.find({
+      where: { userId },
+    });
+
+    for (const mindMap of mindMaps) {
+      let changed = false;
+      const updatedNodes = mindMap.nodes.map((node: PersonalMindMapNode) => {
+        if (node.metadata?.linkedLearningNodeId === nodeId) {
+          const newStatus = isCompleted ? 'completed' : 'in_progress';
+          if (node.status !== newStatus) {
+            changed = true;
+            return { ...node, status: newStatus as PersonalMindMapNode['status'] };
+          }
+        }
+        return node;
+      });
+
+      if (changed) {
+        mindMap.nodes = updatedNodes;
+
+        // Auto-unlock next lesson in the same topic (milestone)
+        this.autoUnlockNextLesson(mindMap);
+
+        // Recalculate progress
+        mindMap.completedNodes = mindMap.nodes.filter(
+          (n: PersonalMindMapNode) => n.status === 'completed',
+        ).length;
+        mindMap.progressPercent =
+          mindMap.totalNodes > 0
+            ? (mindMap.completedNodes / mindMap.totalNodes) * 100
+            : 0;
+
+        await this.personalMindMapRepository.save(mindMap);
+      }
+    }
+  }
+
+  /**
+   * Auto-unlock the next not_started lesson within each milestone
+   * when the current lesson is completed.
+   */
+  private autoUnlockNextLesson(mindMap: PersonalMindMap): void {
+    // Group lessons by their parent (milestone/topic)
+    const milestoneNodes = mindMap.nodes.filter(
+      (n: PersonalMindMapNode) => n.level === 2, // milestones
+    );
+
+    for (const milestone of milestoneNodes) {
+      const childLessons = mindMap.nodes
+        .filter((n: PersonalMindMapNode) => n.parentId === milestone.id && n.level === 3)
+        .sort((a: PersonalMindMapNode, b: PersonalMindMapNode) => a.position.y - b.position.y);
+
+      // Find the first not_started lesson in this milestone
+      const hasInProgress = childLessons.some(
+        (n: PersonalMindMapNode) => n.status === 'in_progress',
+      );
+
+      if (!hasInProgress) {
+        const firstNotStarted = childLessons.find(
+          (n: PersonalMindMapNode) => n.status === 'not_started',
+        );
+        if (firstNotStarted) {
+          // Unlock it
+          const idx = mindMap.nodes.findIndex(
+            (n: PersonalMindMapNode) => n.id === firstNotStarted.id,
+          );
+          if (idx >= 0) {
+            mindMap.nodes[idx] = { ...mindMap.nodes[idx], status: 'in_progress' };
+          }
+
+          // Also ensure the parent milestone is in_progress if it was not_started
+          if (milestone.status === 'not_started') {
+            const mIdx = mindMap.nodes.findIndex(
+              (n: PersonalMindMapNode) => n.id === milestone.id,
+            );
+            if (mIdx >= 0) {
+              mindMap.nodes[mIdx] = { ...mindMap.nodes[mIdx], status: 'in_progress' };
+            }
+          }
+        } else {
+          // All lessons completed in this milestone -> mark milestone as completed
+          const allCompleted = childLessons.length > 0 && childLessons.every(
+            (n: PersonalMindMapNode) => n.status === 'completed',
+          );
+          if (allCompleted && milestone.status !== 'completed') {
+            const mIdx = mindMap.nodes.findIndex(
+              (n: PersonalMindMapNode) => n.id === milestone.id,
+            );
+            if (mIdx >= 0) {
+              mindMap.nodes[mIdx] = { ...mindMap.nodes[mIdx], status: 'completed' };
+            }
+          }
+        }
+      }
+    }
   }
 
   /**

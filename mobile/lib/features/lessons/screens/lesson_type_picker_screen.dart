@@ -12,9 +12,10 @@ class LessonTypePickerScreen extends StatefulWidget {
   final String? topicId;
   final String? preselectedType;
   final String? nodeId; // Existing node ID to add content to
-  final String? existingLessonNodeId; // ID of lesson node to check existing types
+  final String?
+      existingLessonNodeId; // ID of lesson node to check existing types
   final String? existingLessonType; // Current lesson type of the node
-  
+
   const LessonTypePickerScreen({
     super.key,
     required this.subjectId,
@@ -52,9 +53,9 @@ class _LessonTypePickerScreenState extends State<LessonTypePickerScreen> {
   Widget build(BuildContext context) {
     // If preselected and not yet navigated, show loading
     if (widget.preselectedType != null && !_autoNavigated) {
-      return Scaffold(
+      return const Scaffold(
         backgroundColor: AppColors.bgPrimary,
-        body: const Center(child: CircularProgressIndicator()),
+        body: Center(child: CircularProgressIndicator()),
       );
     }
     return Scaffold(
@@ -73,13 +74,17 @@ class _LessonTypePickerScreenState extends State<LessonTypePickerScreen> {
             if (widget.topicName != null) ...[
               Text(
                 'Tạo bài học cho: ${widget.topicName}',
-                style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+                style: const TextStyle(
+                    color: AppColors.textSecondary, fontSize: 14),
               ),
               const SizedBox(height: 16),
             ],
-            Text(
+            const Text(
               'Chọn dạng bài học bạn muốn tạo',
-              style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 24),
             Expanded(
@@ -93,7 +98,8 @@ class _LessonTypePickerScreenState extends State<LessonTypePickerScreen> {
                     context,
                     icon: Icons.quiz_outlined,
                     title: 'Hình ảnh\n(Quiz)',
-                    description: 'Câu hỏi trắc nghiệm kèm hình ảnh, swipe qua nhiều câu',
+                    description:
+                        'Câu hỏi trắc nghiệm kèm hình ảnh, swipe qua nhiều câu',
                     color: AppColors.purpleNeon,
                     onTap: () => _navigateToEditor(context, 'image_quiz'),
                   ),
@@ -109,7 +115,8 @@ class _LessonTypePickerScreenState extends State<LessonTypePickerScreen> {
                     context,
                     icon: Icons.play_circle_outline,
                     title: 'Video',
-                    description: 'Video bài giảng kèm tóm tắt và nội dung chính',
+                    description:
+                        'Video bài giảng kèm tóm tắt và nội dung chính',
                     color: AppColors.orangeNeon,
                     onTap: () => _navigateToEditor(context, 'video'),
                   ),
@@ -162,7 +169,7 @@ class _LessonTypePickerScreenState extends State<LessonTypePickerScreen> {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                 color: AppColors.textPrimary,
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
@@ -174,7 +181,7 @@ class _LessonTypePickerScreenState extends State<LessonTypePickerScreen> {
               textAlign: TextAlign.center,
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
+              style: const TextStyle(
                 color: AppColors.textSecondary,
                 fontSize: 11,
               ),
@@ -187,7 +194,8 @@ class _LessonTypePickerScreenState extends State<LessonTypePickerScreen> {
 
   void _navigateToEditor(BuildContext context, String type) {
     // Check if this lesson type already exists for this lesson node
-    if (widget.existingLessonType != null && widget.existingLessonType == type) {
+    if (widget.existingLessonType != null &&
+        widget.existingLessonType == type) {
       _showAlreadyExistsDialog(context, type);
       return;
     }
@@ -195,16 +203,36 @@ class _LessonTypePickerScreenState extends State<LessonTypePickerScreen> {
     Widget screen;
     switch (type) {
       case 'image_quiz':
-        screen = ImageQuizEditorScreen(subjectId: widget.subjectId, domainId: widget.domainId, topicName: widget.topicName, topicId: widget.topicId, nodeId: widget.nodeId);
+        screen = ImageQuizEditorScreen(
+            subjectId: widget.subjectId,
+            domainId: widget.domainId,
+            topicName: widget.topicName,
+            topicId: widget.topicId,
+            nodeId: widget.nodeId);
         break;
       case 'image_gallery':
-        screen = ImageGalleryEditorScreen(subjectId: widget.subjectId, domainId: widget.domainId, topicName: widget.topicName, topicId: widget.topicId, nodeId: widget.nodeId);
+        screen = ImageGalleryEditorScreen(
+            subjectId: widget.subjectId,
+            domainId: widget.domainId,
+            topicName: widget.topicName,
+            topicId: widget.topicId,
+            nodeId: widget.nodeId);
         break;
       case 'video':
-        screen = VideoEditorScreen(subjectId: widget.subjectId, domainId: widget.domainId, topicName: widget.topicName, topicId: widget.topicId, nodeId: widget.nodeId);
+        screen = VideoEditorScreen(
+            subjectId: widget.subjectId,
+            domainId: widget.domainId,
+            topicName: widget.topicName,
+            topicId: widget.topicId,
+            nodeId: widget.nodeId);
         break;
       case 'text':
-        screen = TextEditorScreen(subjectId: widget.subjectId, domainId: widget.domainId, topicName: widget.topicName, topicId: widget.topicId, nodeId: widget.nodeId);
+        screen = TextEditorScreen(
+            subjectId: widget.subjectId,
+            domainId: widget.domainId,
+            topicName: widget.topicName,
+            topicId: widget.topicId,
+            nodeId: widget.nodeId);
         break;
       default:
         return;
@@ -219,14 +247,17 @@ class _LessonTypePickerScreenState extends State<LessonTypePickerScreen> {
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.bgSecondary,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
+        title: const Row(
           children: [
             Icon(Icons.info_outline, color: AppColors.warningNeon, size: 28),
-            const SizedBox(width: 12),
-            const Expanded(
+            SizedBox(width: 12),
+            Expanded(
               child: Text(
                 'Dạng bài học đã tồn tại',
-                style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold),
               ),
             ),
           ],
@@ -240,16 +271,19 @@ class _LessonTypePickerScreenState extends State<LessonTypePickerScreen> {
               decoration: BoxDecoration(
                 color: AppColors.warningNeon.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.warningNeon.withOpacity(0.3)),
+                border:
+                    Border.all(color: AppColors.warningNeon.withOpacity(0.3)),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.check_circle, color: AppColors.successNeon, size: 20),
+                  const Icon(Icons.check_circle,
+                      color: AppColors.successNeon, size: 20),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       'Dạng bài học "$typeLabel" đã tồn tại và được phê duyệt.',
-                      style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
+                      style: const TextStyle(
+                          color: AppColors.textPrimary, fontSize: 14),
                     ),
                   ),
                 ],
@@ -258,18 +292,23 @@ class _LessonTypePickerScreenState extends State<LessonTypePickerScreen> {
             const SizedBox(height: 16),
             const Text(
               'Bạn có thể:',
-              style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w600, fontSize: 14),
+              style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14),
             ),
             const SizedBox(height: 8),
             _buildOption(Icons.edit_outlined, 'Chỉnh sửa dạng bài học này'),
             const SizedBox(height: 6),
-            _buildOption(Icons.add_circle_outline, 'Tạo dạng bài học khác còn thiếu'),
+            _buildOption(
+                Icons.add_circle_outline, 'Tạo dạng bài học khác còn thiếu'),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Đóng', style: TextStyle(color: AppColors.textSecondary)),
+            child: const Text('Đóng',
+                style: TextStyle(color: AppColors.textSecondary)),
           ),
         ],
       ),
@@ -284,7 +323,8 @@ class _LessonTypePickerScreenState extends State<LessonTypePickerScreen> {
         Expanded(
           child: Text(
             text,
-            style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+            style:
+                const TextStyle(color: AppColors.textSecondary, fontSize: 13),
           ),
         ),
       ],

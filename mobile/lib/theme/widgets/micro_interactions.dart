@@ -24,7 +24,8 @@ class ScaleOnTap extends StatefulWidget {
   State<ScaleOnTap> createState() => _ScaleOnTapState();
 }
 
-class _ScaleOnTapState extends State<ScaleOnTap> with SingleTickerProviderStateMixin {
+class _ScaleOnTapState extends State<ScaleOnTap>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final Animation<double> _scaleAnimation;
 
@@ -94,7 +95,8 @@ class PulseAnimation extends StatefulWidget {
   State<PulseAnimation> createState() => _PulseAnimationState();
 }
 
-class _PulseAnimationState extends State<PulseAnimation> with SingleTickerProviderStateMixin {
+class _PulseAnimationState extends State<PulseAnimation>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final Animation<double> _animation;
 
@@ -102,10 +104,11 @@ class _PulseAnimationState extends State<PulseAnimation> with SingleTickerProvid
   void initState() {
     super.initState();
     _controller = AnimationController(vsync: this, duration: widget.duration);
-    _animation = Tween<double>(begin: widget.minScale, end: widget.maxScale).animate(
+    _animation =
+        Tween<double>(begin: widget.minScale, end: widget.maxScale).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
-    
+
     if (widget.autoStart) {
       _controller.repeat(reverse: true);
     }
@@ -147,7 +150,8 @@ class GlowAnimation extends StatefulWidget {
   State<GlowAnimation> createState() => _GlowAnimationState();
 }
 
-class _GlowAnimationState extends State<GlowAnimation> with SingleTickerProviderStateMixin {
+class _GlowAnimationState extends State<GlowAnimation>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final Animation<double> _animation;
 
@@ -155,7 +159,8 @@ class _GlowAnimationState extends State<GlowAnimation> with SingleTickerProvider
   void initState() {
     super.initState();
     _controller = AnimationController(vsync: this, duration: widget.duration);
-    _animation = Tween<double>(begin: widget.minBlur, end: widget.maxBlur).animate(
+    _animation =
+        Tween<double>(begin: widget.minBlur, end: widget.maxBlur).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
     _controller.repeat(reverse: true);
@@ -254,7 +259,8 @@ class BounceIn extends StatefulWidget {
   State<BounceIn> createState() => _BounceInState();
 }
 
-class _BounceInState extends State<BounceIn> with SingleTickerProviderStateMixin {
+class _BounceInState extends State<BounceIn>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final Animation<double> _scaleAnimation;
   late final Animation<double> _fadeAnimation;
@@ -328,7 +334,8 @@ class _SlideInState extends State<SlideIn> with SingleTickerProviderStateMixin {
   void initState() {
     super.initState();
     _controller = AnimationController(vsync: this, duration: widget.duration);
-    _slideAnimation = Tween<Offset>(begin: widget.beginOffset, end: Offset.zero).animate(
+    _slideAnimation =
+        Tween<Offset>(begin: widget.beginOffset, end: Offset.zero).animate(
       CurvedAnimation(parent: _controller, curve: widget.curve),
     );
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
@@ -378,7 +385,8 @@ class XPGainAnimation extends StatefulWidget {
   State<XPGainAnimation> createState() => _XPGainAnimationState();
 }
 
-class _XPGainAnimationState extends State<XPGainAnimation> with SingleTickerProviderStateMixin {
+class _XPGainAnimationState extends State<XPGainAnimation>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final Animation<double> _fadeAnimation;
   late final Animation<double> _slideAnimation;
@@ -391,17 +399,21 @@ class _XPGainAnimationState extends State<XPGainAnimation> with SingleTickerProv
       vsync: this,
       duration: const Duration(milliseconds: 1500),
     );
-    
+
     _fadeAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0.6, 1.0, curve: Curves.easeOut)),
+      CurvedAnimation(
+          parent: _controller,
+          curve: const Interval(0.6, 1.0, curve: Curves.easeOut)),
     );
-    
+
     _slideAnimation = Tween<double>(begin: 0, end: -60).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeOut),
     );
-    
+
     _scaleAnimation = Tween<double>(begin: 0.5, end: 1.2).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0.0, 0.3, curve: Curves.elasticOut)),
+      CurvedAnimation(
+          parent: _controller,
+          curve: const Interval(0.0, 0.3, curve: Curves.elasticOut)),
     );
 
     HapticFeedback.mediumImpact();
@@ -428,7 +440,8 @@ class _XPGainAnimationState extends State<XPGainAnimation> with SingleTickerProv
             child: Opacity(
               opacity: _fadeAnimation.value,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
                   gradient: AppGradients.xpBar,
                   borderRadius: BorderRadius.circular(20),
@@ -442,11 +455,13 @@ class _XPGainAnimationState extends State<XPGainAnimation> with SingleTickerProv
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.star_rounded, color: Colors.white, size: 20),
+                    const Icon(Icons.star_rounded,
+                        color: Colors.white, size: 20),
                     const SizedBox(width: 6),
                     Text(
                       '+${widget.amount} XP',
-                      style: AppTextStyles.labelMedium.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+                      style: AppTextStyles.labelMedium.copyWith(
+                          color: Colors.white, fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
@@ -474,7 +489,8 @@ class CoinGainAnimation extends StatefulWidget {
   State<CoinGainAnimation> createState() => _CoinGainAnimationState();
 }
 
-class _CoinGainAnimationState extends State<CoinGainAnimation> with SingleTickerProviderStateMixin {
+class _CoinGainAnimationState extends State<CoinGainAnimation>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final Animation<double> _fadeAnimation;
   late final Animation<double> _slideAnimation;
@@ -487,17 +503,21 @@ class _CoinGainAnimationState extends State<CoinGainAnimation> with SingleTicker
       vsync: this,
       duration: const Duration(milliseconds: 1500),
     );
-    
+
     _fadeAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0.6, 1.0, curve: Curves.easeOut)),
+      CurvedAnimation(
+          parent: _controller,
+          curve: const Interval(0.6, 1.0, curve: Curves.easeOut)),
     );
-    
+
     _slideAnimation = Tween<double>(begin: 0, end: -60).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeOut),
     );
-    
+
     _scaleAnimation = Tween<double>(begin: 0.5, end: 1.2).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0.0, 0.3, curve: Curves.elasticOut)),
+      CurvedAnimation(
+          parent: _controller,
+          curve: const Interval(0.0, 0.3, curve: Curves.elasticOut)),
     );
 
     HapticFeedback.mediumImpact();
@@ -524,9 +544,11 @@ class _CoinGainAnimationState extends State<CoinGainAnimation> with SingleTicker
             child: Opacity(
               opacity: _fadeAnimation.value,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: [AppColors.coinGold, AppColors.coinShadow]),
+                  gradient: const LinearGradient(
+                      colors: [AppColors.coinGold, AppColors.coinShadow]),
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
@@ -538,11 +560,13 @@ class _CoinGainAnimationState extends State<CoinGainAnimation> with SingleTicker
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.monetization_on_rounded, color: Colors.white, size: 20),
+                    const Icon(Icons.monetization_on_rounded,
+                        color: Colors.white, size: 20),
                     const SizedBox(width: 6),
                     Text(
                       '+${widget.amount}',
-                      style: AppTextStyles.labelMedium.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+                      style: AppTextStyles.labelMedium.copyWith(
+                          color: Colors.white, fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),

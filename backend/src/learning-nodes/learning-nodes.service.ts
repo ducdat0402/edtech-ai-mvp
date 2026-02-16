@@ -5,22 +5,19 @@ import { LearningNode } from './entities/learning-node.entity';
 import { AiService } from '../ai/ai.service';
 import { DomainsService } from '../domains/domains.service';
 import { GenerationProgressService } from './generation-progress.service';
-import { UserPremium } from '../payment/entities/user-premium.entity';
-
-// Number of free nodes before requiring premium
-const FREE_NODES_LIMIT = 2;
+import { UnlockTransactionsService } from '../unlock-transactions/unlock-transactions.service';
 
 @Injectable()
 export class LearningNodesService {
   constructor(
     @InjectRepository(LearningNode)
     private nodeRepository: Repository<LearningNode>,
-    @InjectRepository(UserPremium)
-    private userPremiumRepository: Repository<UserPremium>,
     private aiService: AiService,
     @Inject(forwardRef(() => DomainsService))
     private domainsService: DomainsService,
     private progressService: GenerationProgressService,
+    @Inject(forwardRef(() => UnlockTransactionsService))
+    private unlockService: UnlockTransactionsService,
   ) {}
 
   async findBySubject(subjectId: string): Promise<LearningNode[]> {
@@ -31,24 +28,8 @@ export class LearningNodesService {
   }
 
   /**
-   * Check if user has active premium
-   */
-  private async checkUserPremium(userId: string): Promise<boolean> {
-    if (!userId) return false;
-    
-    const userPremium = await this.userPremiumRepository.findOne({
-      where: { userId },
-    });
-
-    if (!userPremium) return false;
-
-    const now = new Date();
-    return userPremium.isPremium && userPremium.premiumExpiresAt > now;
-  }
-
-  /**
-   * Get learning nodes with premium lock status
-   * First 2 nodes are free, rest require premium
+   * Get learning nodes with diamond unlock status
+   * Auto-unlocks first topic for free if user has no unlocks yet
    */
   async findBySubjectWithPremiumStatus(
     subjectId: string,
@@ -59,17 +40,26 @@ export class LearningNodesService {
       order: { order: 'ASC' },
     });
 
-    const isPremium = userId ? await this.checkUserPremium(userId) : false;
+    // Auto-unlock first topic if needed
+    if (userId) {
+      await this.unlockService.ensureFirstTopicUnlocked(userId, subjectId);
+    }
 
-    return nodes.map((node, index) => ({
+    // Get unlocked node IDs
+    const unlockedIds = userId
+      ? await this.unlockService.getUserUnlockedNodeIds(userId, subjectId)
+      : new Set<string>();
+
+    return nodes.map((node) => ({
       ...node,
-      isLocked: !isPremium && index >= FREE_NODES_LIMIT,
-      requiresPremium: index >= FREE_NODES_LIMIT,
+      isLocked: unlockedIds.size === 0 ? true : !unlockedIds.has(node.id),
+      requiresPremium: !unlockedIds.has(node.id),
     }));
   }
 
   /**
-   * Get learning nodes by domain with premium lock status
+   * Get learning nodes by domain with diamond unlock status
+   * Auto-unlocks first topic for free if user has no unlocks yet
    */
   async findByDomainWithPremiumStatus(
     domainId: string,
@@ -80,44 +70,41 @@ export class LearningNodesService {
       order: { order: 'ASC' },
     });
 
-    const isPremium = userId ? await this.checkUserPremium(userId) : false;
+    if (!userId || nodes.length === 0) {
+      return nodes.map((node) => ({
+        ...node,
+        isLocked: true,
+        requiresPremium: true,
+      }));
+    }
 
-    return nodes.map((node, index) => ({
+    // Auto-unlock first topic if needed
+    const subjectId = nodes[0].subjectId;
+    if (subjectId) {
+      await this.unlockService.ensureFirstTopicUnlocked(userId, subjectId);
+    }
+
+    const unlockedIds = await this.unlockService.getUserUnlockedNodeIds(userId, subjectId);
+
+    return nodes.map((node) => ({
       ...node,
-      isLocked: !isPremium && index >= FREE_NODES_LIMIT,
-      requiresPremium: index >= FREE_NODES_LIMIT,
+      isLocked: unlockedIds.size === 0 ? true : !unlockedIds.has(node.id),
+      requiresPremium: !unlockedIds.has(node.id),
     }));
   }
 
   /**
-   * Check if user can access a specific node
+   * Check if user can access a specific node (via diamond unlock)
    */
   async canAccessNode(nodeId: string, userId?: string): Promise<{ canAccess: boolean; requiresPremium: boolean }> {
-    // Find the node and its position in the subject
-    const node = await this.nodeRepository.findOne({ where: { id: nodeId } });
-    if (!node) {
-      return { canAccess: false, requiresPremium: false };
+    if (!userId) {
+      return { canAccess: false, requiresPremium: true };
     }
 
-    // Get all nodes in the same subject to determine position
-    const allNodes = await this.nodeRepository.find({
-      where: { subjectId: node.subjectId },
-      order: { order: 'ASC' },
-    });
-
-    const nodeIndex = allNodes.findIndex(n => n.id === nodeId);
-    
-    // First 2 nodes are always accessible
-    if (nodeIndex < FREE_NODES_LIMIT) {
-      return { canAccess: true, requiresPremium: false };
-    }
-
-    // Check premium for other nodes
-    const isPremium = userId ? await this.checkUserPremium(userId) : false;
-    
+    const result = await this.unlockService.canAccessNode(userId, nodeId);
     return {
-      canAccess: isPremium,
-      requiresPremium: true,
+      canAccess: result.canAccess,
+      requiresPremium: !result.canAccess,
     };
   }
 

@@ -51,12 +51,14 @@ class AchievementBadge extends StatelessWidget {
               margin: const EdgeInsets.all(3),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: isUnlocked ? AppColors.bgSecondary : AppColors.bgTertiary,
+                color:
+                    isUnlocked ? AppColors.bgSecondary : AppColors.bgTertiary,
               ),
               child: Center(
                 child: isUnlocked
                     ? Icon(icon, color: Colors.white, size: size * 0.45)
-                    : Icon(Icons.lock, color: AppColors.textDisabled, size: size * 0.35),
+                    : Icon(Icons.lock,
+                        color: AppColors.textDisabled, size: size * 0.35),
               ),
             ),
           ),
@@ -65,7 +67,8 @@ class AchievementBadge extends StatelessWidget {
           Text(
             title,
             style: AppTextStyles.labelMedium.copyWith(
-              color: isUnlocked ? AppColors.textPrimary : AppColors.textTertiary,
+              color:
+                  isUnlocked ? AppColors.textPrimary : AppColors.textTertiary,
               fontWeight: FontWeight.w600,
             ),
             textAlign: TextAlign.center,
@@ -77,7 +80,9 @@ class AchievementBadge extends StatelessWidget {
             Text(
               subtitle!,
               style: AppTextStyles.caption.copyWith(
-                color: isUnlocked ? AppColors.textSecondary : AppColors.textDisabled,
+                color: isUnlocked
+                    ? AppColors.textSecondary
+                    : AppColors.textDisabled,
               ),
               textAlign: TextAlign.center,
             ),
@@ -119,7 +124,9 @@ class AchievementCard extends StatelessWidget {
         color: AppColors.bgSecondary,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isUnlocked ? AppColors.purpleNeon.withOpacity(0.5) : AppColors.borderPrimary,
+          color: isUnlocked
+              ? AppColors.purpleNeon.withOpacity(0.5)
+              : AppColors.borderPrimary,
           width: isUnlocked ? 2 : 1,
         ),
         boxShadow: isUnlocked
@@ -146,12 +153,14 @@ class AchievementCard extends StatelessWidget {
               margin: const EdgeInsets.all(2),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: isUnlocked ? AppColors.bgSecondary : AppColors.bgTertiary,
+                color:
+                    isUnlocked ? AppColors.bgSecondary : AppColors.bgTertiary,
               ),
               child: Center(
                 child: isUnlocked
                     ? Icon(icon, color: Colors.white, size: 28)
-                    : Icon(Icons.lock, color: AppColors.textDisabled, size: 24),
+                    : const Icon(Icons.lock,
+                        color: AppColors.textDisabled, size: 24),
               ),
             ),
           ),
@@ -164,7 +173,9 @@ class AchievementCard extends StatelessWidget {
                 Text(
                   title,
                   style: AppTextStyles.bodyBold.copyWith(
-                    color: isUnlocked ? AppColors.textPrimary : AppColors.textSecondary,
+                    color: isUnlocked
+                        ? AppColors.textPrimary
+                        : AppColors.textSecondary,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -193,7 +204,8 @@ class AchievementCard extends StatelessWidget {
                           child: LinearProgressIndicator(
                             value: progress,
                             backgroundColor: AppColors.bgTertiary,
-                            valueColor: AlwaysStoppedAnimation(AppColors.purpleNeon),
+                            valueColor: const AlwaysStoppedAnimation(
+                                AppColors.purpleNeon),
                             minHeight: 4,
                           ),
                         ),
