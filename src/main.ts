@@ -29,8 +29,9 @@ export async function createApp() {
   });
 
   // Root health check for Render
-  app.getHttpAdapter().get('/', (req, res) => {
-    res.status(200).send({
+  const httpAdapter = app.getHttpAdapter();
+  httpAdapter.get('/', (_req: any, res: any) => {
+    res.status(200).json({
       status: 'ok',
       message: 'EdTech AI MVP API is running',
       version: '1.0',
