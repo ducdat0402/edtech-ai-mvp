@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, EntityManager, DataSource } from 'typeorm';
 import { UserCurrency } from './entities/user-currency.entity';
 import { RewardTransaction, RewardSource } from './entities/reward-transaction.entity';
 import { UsersService } from '../users/users.service';
@@ -14,6 +14,7 @@ export class UserCurrencyService {
     private rewardTransactionRepository: Repository<RewardTransaction>,
     @Inject(forwardRef(() => UsersService))
     private usersService: UsersService,
+    private dataSource: DataSource,
   ) {}
 
   // Level system constants
@@ -118,10 +119,36 @@ export class UserCurrencyService {
     return this.getOrCreate(userId);
   }
 
+  /**
+   * Add coins using atomic INCREMENT to prevent lost updates.
+   * Safe for concurrent access (no read-modify-write race condition).
+   */
   async addCoins(userId: string, amount: number): Promise<UserCurrency> {
-    const currency = await this.getOrCreate(userId);
-    currency.coins += amount;
-    return this.currencyRepository.save(currency);
+    // Ensure user currency record exists
+    await this.getOrCreate(userId);
+
+    // Atomic increment - no race condition possible
+    await this.currencyRepository
+      .createQueryBuilder()
+      .update(UserCurrency)
+      .set({ coins: () => `coins + ${Math.floor(amount)}` })
+      .where('userId = :userId', { userId })
+      .execute();
+
+    return this.getOrCreate(userId);
+  }
+
+  /**
+   * Add coins within an existing transaction (for ACID payment processing).
+   * Uses EntityManager from the transaction context.
+   */
+  async addCoinsTransactional(manager: EntityManager, userId: string, amount: number): Promise<void> {
+    await manager
+      .createQueryBuilder()
+      .update(UserCurrency)
+      .set({ coins: () => `coins + ${Math.floor(amount)}` })
+      .where('userId = :userId', { userId })
+      .execute();
   }
 
   async addXP(userId: string, amount: number): Promise<{
@@ -206,13 +233,28 @@ export class UserCurrencyService {
     return this.currencyRepository.save(currency);
   }
 
+  /**
+   * Deduct coins using atomic DECREMENT with CHECK (coins >= amount).
+   * Prevents race condition: if two requests try to deduct simultaneously,
+   * only one succeeds because the WHERE clause is evaluated atomically.
+   */
   async deductCoins(userId: string, amount: number): Promise<UserCurrency> {
-    const currency = await this.getOrCreate(userId);
-    if (currency.coins < amount) {
+    // Ensure user currency record exists
+    await this.getOrCreate(userId);
+
+    // Atomic decrement with balance check in a single SQL statement
+    const result = await this.currencyRepository
+      .createQueryBuilder()
+      .update(UserCurrency)
+      .set({ coins: () => `coins - ${Math.floor(amount)}` })
+      .where('userId = :userId AND coins >= :amount', { userId, amount: Math.floor(amount) })
+      .execute();
+
+    if (result.affected === 0) {
       throw new Error('Insufficient coins');
     }
-    currency.coins -= amount;
-    return this.currencyRepository.save(currency);
+
+    return this.getOrCreate(userId);
   }
 
   async hasEnoughCoins(userId: string, amount: number): Promise<boolean> {
@@ -245,6 +287,41 @@ export class UserCurrencyService {
     });
 
     return this.rewardTransactionRepository.save(transaction);
+  }
+
+  /**
+   * Log a reward transaction within an existing transaction context (for ACID payment processing).
+   */
+  async logRewardTransactional(
+    manager: EntityManager,
+    userId: string,
+    source: RewardSource,
+    rewards: {
+      xp?: number;
+      coins?: number;
+      shards?: Record<string, number>;
+    },
+    sourceId?: string,
+    sourceName?: string,
+  ): Promise<RewardTransaction> {
+    const transaction = manager.create(RewardTransaction, {
+      userId,
+      source,
+      sourceId,
+      sourceName,
+      xp: rewards.xp || 0,
+      coins: rewards.coins || 0,
+      shards: rewards.shards || {},
+    });
+
+    return manager.save(transaction);
+  }
+
+  /**
+   * Get DataSource for external transaction management
+   */
+  getDataSource(): DataSource {
+    return this.dataSource;
   }
 
   /**

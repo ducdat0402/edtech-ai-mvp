@@ -28,7 +28,7 @@ export class UserBehavior {
   @Column()
   userId: string;
 
-  @ManyToOne(() => LearningNode)
+  @ManyToOne(() => LearningNode, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'nodeId' })
   node: LearningNode;
 

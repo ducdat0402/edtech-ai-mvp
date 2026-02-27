@@ -6,7 +6,6 @@ import { Question } from './entities/question.entity';
 import { UsersService } from '../users/users.service';
 import { SubjectsService } from '../subjects/subjects.service';
 import { AiService } from '../ai/ai.service';
-import { SkillTreeService } from '../skill-tree/skill-tree.service';
 
 @Injectable()
 export class PlacementTestService {
@@ -19,8 +18,6 @@ export class PlacementTestService {
     @Inject(forwardRef(() => SubjectsService))
     private subjectsService: SubjectsService,
     private aiService: AiService,
-    @Inject(forwardRef(() => SkillTreeService))
-    private skillTreeService: SkillTreeService,
   ) {}
 
   async startTest(userId: string, subjectId?: string): Promise<PlacementTest> {
@@ -485,20 +482,7 @@ export class PlacementTestService {
         }
       }
 
-      // ✅ Tự động tạo skill tree cho môn học này (nếu có subjectId)
-      if (test.subjectId) {
-        try {
-          console.log(`🌳 Auto-generating skill tree for subjectId: ${test.subjectId}`);
-          await this.skillTreeService.generateSkillTree(userId, test.subjectId);
-          console.log(`✅ Skill tree generated successfully`);
-        } catch (error) {
-          console.error(`❌ Error auto-generating skill tree:`, error);
-          // Không throw error để không làm gián đoạn flow
-          // Skill tree có thể được tạo sau khi user vào skill tree screen
-        }
-      } else {
-        console.log(`⚠️  No subjectId found in test or onboarding, skipping skill tree generation`);
-      }
+      // Skill tree generation removed (tables dropped)
     }
 
     const savedTest = await this.testRepository.save(test);

@@ -78,6 +78,170 @@ export class AiService {
   }
 
   /**
+   * Generate an example for a lesson based on title, content, and example type.
+   * Returns { title, content } for the example.
+   */
+  async generateExample(
+    sectionTitle: string,
+    sectionContent: string,
+    exampleType: string,
+  ): Promise<{ title: string; content: string }> {
+    const exampleTypeDescriptions: Record<string, string> = {
+      real_world_scenario: 'Tình huống thực tế đã tồn tại (VD: BitTorrent, Bitcoin, Google Docs)',
+      everyday_analogy: 'So sánh với việc đời thường, dễ hiểu cho người mới (VD: Nhóm bạn ghi sổ chi tiêu)',
+      hypothetical_situation: 'Tình huống giả định có thể xảy ra để minh họa khái niệm',
+      technical_implementation: 'Ví dụ kỹ thuật cụ thể, có thể có code hoặc cấu hình',
+      step_by_step: 'Mô tả từng bước diễn ra của một quy trình (VD: Transaction flow)',
+      comparison: 'So sánh 2 cách tiếp cận hoặc 2 khái niệm (VD: Centralized vs Distributed)',
+      story_narrative: 'Kể chuyện có nhân vật để minh họa (VD: Alice muốn gửi tiền cho Bob...)',
+    };
+
+    const typeDesc = exampleTypeDescriptions[exampleType] || exampleType;
+
+    const prompt = `Bạn là một giáo viên giỏi. Hãy tạo MỘT ví dụ minh họa cho bài học sau:
+
+TIÊU ĐỀ BÀI HỌC: ${sectionTitle}
+
+NỘI DUNG BÀI HỌC:
+${sectionContent}
+
+LOẠI VÍ DỤ CẦN TẠO: ${typeDesc}
+
+YÊU CẦU:
+1. Ví dụ phải liên quan trực tiếp đến nội dung bài học
+2. Viết bằng tiếng Việt, dễ hiểu, sinh động
+3. Ví dụ phải đúng loại "${exampleType}" đã yêu cầu
+4. Nội dung ví dụ chi tiết, ít nhất 3-5 câu
+
+Trả về JSON:
+{
+  "title": "Tiêu đề ngắn gọn cho ví dụ",
+  "content": "Nội dung chi tiết của ví dụ"
+}
+
+CHỈ TRẢ VỀ JSON, KHÔNG CÓ GÌ KHÁC.`;
+
+    const response = await this.chatWithJsonMode([
+      { role: 'user', content: prompt },
+    ]);
+
+    try {
+      const parsed = JSON.parse(response);
+      return {
+        title: parsed.title || 'Ví dụ',
+        content: parsed.content || '',
+      };
+    } catch {
+      // If JSON parsing fails, use raw response
+      return {
+        title: 'Ví dụ minh họa',
+        content: response,
+      };
+    }
+  }
+
+  /**
+   * Validate, verify, and generate explanations for quiz answers.
+   * - Validates question quality and options
+   * - Verifies the correct answer
+   * - Generates educational explanations for each option
+   */
+  async generateQuizExplanations(
+    question: string,
+    options: Array<{ text: string }>,
+    correctAnswer: number,
+    context?: string,
+  ): Promise<{
+    validationIssues: string[];
+    suggestedCorrectAnswer: number | null;
+    suggestedCorrectReason: string | null;
+    explanations: Array<{ explanation: string }>;
+  }> {
+    const labels = ['A', 'B', 'C', 'D'];
+    const optionsList = options
+      .map((o, i) => `${labels[i]}. ${o.text}`)
+      .join('\n');
+
+    const prompt = `Bạn là một giáo viên giỏi. Nhiệm vụ: Kiểm tra và tạo lời giải thích cho câu hỏi quiz.
+
+CÂU HỎI:
+${question}
+
+ĐÁP ÁN:
+${optionsList}
+
+ĐÁP ÁN ĐÚNG HIỆN TẠI: ${labels[correctAnswer]}${context ? `\n\nNGỮ CẢNH BÀI HỌC: ${context}` : ''}
+
+NHIỆM VỤ:
+1. VALIDATE: Kiểm tra câu hỏi và đáp án:
+   - Câu hỏi có rõ ràng không?
+   - Các đáp án có bị trùng lặp không?
+   - Có đủ 4 đáp án khác biệt không?
+   - Đáp án có phù hợp với câu hỏi không?
+   → Liệt kê vấn đề nếu có (mảng rỗng nếu không có vấn đề)
+
+2. VERIFY: Kiểm tra đáp án đúng:
+   - Đáp án ${labels[correctAnswer]} có THỰC SỰ đúng không?
+   - Nếu có đáp án khác đúng hơn, đề xuất thay đổi
+   → suggestedCorrectAnswer: null nếu đồng ý, hoặc 0-3 nếu đề xuất khác
+   → suggestedCorrectReason: lý do đề xuất (null nếu đồng ý)
+
+3. GENERATE: Tạo lời giải thích cho TỪNG đáp án (A, B, C, D):
+   - Đáp án ĐÚNG: Bắt đầu bằng "Chính xác!" hoặc "Đúng rồi!" → giải thích TẠI SAO đúng (2-3 câu) → insight sâu hơn
+   - Đáp án SAI: Bắt đầu bằng "Chưa đúng lắm!" hoặc "Chưa chính xác!" → giải thích TẠI SAO sai (1-2 câu) → gợi ý hướng đúng
+   - Tone: friendly, educational, encouraging
+   - Độ dài: 50-150 từ mỗi explanation
+   - Viết bằng tiếng Việt
+
+Trả về JSON:
+{
+  "validationIssues": ["vấn đề 1", "vấn đề 2"],
+  "suggestedCorrectAnswer": null,
+  "suggestedCorrectReason": null,
+  "explanations": [
+    { "explanation": "Lời giải thích cho A..." },
+    { "explanation": "Lời giải thích cho B..." },
+    { "explanation": "Lời giải thích cho C..." },
+    { "explanation": "Lời giải thích cho D..." }
+  ]
+}
+
+CHỈ TRẢ VỀ JSON HỢP LỆ, KHÔNG CÓ GÌ KHÁC.`;
+
+    const response = await this.chatWithJsonMode([
+      { role: 'user', content: prompt },
+    ]);
+
+    try {
+      const parsed = JSON.parse(response);
+      return {
+        validationIssues: Array.isArray(parsed.validationIssues)
+          ? parsed.validationIssues
+          : [],
+        suggestedCorrectAnswer:
+          typeof parsed.suggestedCorrectAnswer === 'number' &&
+          parsed.suggestedCorrectAnswer >= 0 &&
+          parsed.suggestedCorrectAnswer <= 3
+            ? parsed.suggestedCorrectAnswer
+            : null,
+        suggestedCorrectReason: parsed.suggestedCorrectReason || null,
+        explanations: Array.isArray(parsed.explanations)
+          ? parsed.explanations.map((e: any) => ({
+              explanation: e?.explanation || '',
+            }))
+          : options.map(() => ({ explanation: '' })),
+      };
+    } catch {
+      return {
+        validationIssues: ['Không thể phân tích phản hồi từ AI'],
+        suggestedCorrectAnswer: null,
+        suggestedCorrectReason: null,
+        explanations: options.map(() => ({ explanation: '' })),
+      };
+    }
+  }
+
+  /**
    * Stream chat response from OpenAI
    * Returns an async generator that yields chunks of text
    */

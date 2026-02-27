@@ -3,23 +3,33 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserProgressService } from './user-progress.service';
 import { UserProgressController } from './user-progress.controller';
 import { UserProgress } from './entities/user-progress.entity';
+import { UserTopicProgress } from './entities/user-topic-progress.entity';
+import { UserDomainProgress } from './entities/user-domain-progress.entity';
 import { UserCurrencyModule } from '../user-currency/user-currency.module';
 import { LearningNode } from '../learning-nodes/entities/learning-node.entity';
-import { ContentItemsModule } from '../content-items/content-items.module';
 import { QuestsModule } from '../quests/quests.module';
-import { SkillTreeModule } from '../skill-tree/skill-tree.module';
+import { LessonTypeContentsModule } from '../lesson-type-contents/lesson-type-contents.module';
+import { Topic } from '../topics/entities/topic.entity';
+import { Domain } from '../domains/entities/domain.entity';
+import { PersonalMindMap } from '../personal-mind-map/entities/personal-mind-map.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserProgress, LearningNode]),
+    TypeOrmModule.forFeature([
+      UserProgress,
+      UserTopicProgress,
+      UserDomainProgress,
+      LearningNode,
+      Topic,
+      Domain,
+      PersonalMindMap,
+    ]),
     UserCurrencyModule,
-    ContentItemsModule,
     forwardRef(() => QuestsModule),
-    forwardRef(() => SkillTreeModule),
+    LessonTypeContentsModule,
   ],
   controllers: [UserProgressController],
   providers: [UserProgressService],
   exports: [UserProgressService],
 })
 export class UserProgressModule {}
-

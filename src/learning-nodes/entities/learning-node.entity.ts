@@ -5,14 +5,13 @@ import {
   PrimaryGeneratedColumn,
   Column,
   ManyToOne,
-  OneToMany,
   CreateDateColumn,
   UpdateDateColumn,
   JoinColumn,
 } from 'typeorm';
 import { Subject } from '../../subjects/entities/subject.entity';
 import { Domain } from '../../domains/entities/domain.entity';
-import { ContentItem } from '../../content-items/entities/content-item.entity';
+import { Topic } from '../../topics/entities/topic.entity';
 
 @Entity('learning_nodes')
 export class LearningNode {
@@ -31,7 +30,14 @@ export class LearningNode {
   domain: Domain | null;
 
   @Column({ nullable: true })
-  domainId: string | null; // Nullable để backward compatible với data cũ
+  domainId: string | null;
+
+  @ManyToOne(() => Topic, (topic) => topic.nodes, { nullable: true })
+  @JoinColumn({ name: 'topicId' })
+  topic: Topic | null;
+
+  @Column({ nullable: true })
+  topicId: string | null;
 
   @Column()
   title: string; // "Vệ Sĩ Mật Khẩu"
@@ -75,8 +81,37 @@ export class LearningNode {
   })
   difficulty: 'easy' | 'medium' | 'hard'; // Độ khó: dễ, trung bình, khó
 
-  @OneToMany(() => ContentItem, (item) => item.node)
-  contentItems: ContentItem[];
+  @Column({ type: 'int', default: 0 })
+  expReward: number; // EXP nhận được khi hoàn thành bài học
+
+  @Column({ type: 'int', default: 0 })
+  coinReward: number; // Coin nhận được khi hoàn thành bài học
+
+  // === NEW: 4 Lesson Types ===
+  @Column({
+    type: 'varchar',
+    length: 20,
+    nullable: true,
+    default: null,
+  })
+  lessonType: 'image_quiz' | 'image_gallery' | 'video' | 'text' | null;
+
+  @Column({ type: 'jsonb', nullable: true, default: null })
+  lessonData: Record<string, any> | null;
+  // image_quiz: { slides: [{ imageUrl, question, options: [{text, explanation}], correctAnswer, hint }] }
+  // image_gallery: { images: [{ url, description }] }
+  // video: { videoUrl, summary, keyPoints: [{title, description?, timestamp?}], keywords: [] }
+  // text: { sections: [{title, content, richContent?}], inlineQuizzes: [{afterSectionIndex, question, options, correctAnswer}], summary, learningObjectives: [] }
+
+  @Column({ type: 'jsonb', nullable: true, default: null })
+  endQuiz: {
+    questions: Array<{
+      question: string;
+      options: Array<{ text: string; explanation: string }>;
+      correctAnswer: number;
+    }>;
+    passingScore: number;
+  } | null;
 
   @CreateDateColumn()
   createdAt: Date;

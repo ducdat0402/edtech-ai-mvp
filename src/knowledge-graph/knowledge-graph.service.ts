@@ -281,6 +281,40 @@ export class KnowledgeGraphService {
   }
 
   /**
+   * Update a knowledge node's name (and optionally description)
+   */
+  async updateNodeByEntity(
+    entityId: string,
+    type: NodeType,
+    data: { name?: string; description?: string },
+  ): Promise<KnowledgeNode | null> {
+    const node = await this.nodeRepository.findOne({
+      where: { entityId, type },
+    });
+    if (!node) return null;
+
+    if (data.name) node.name = data.name;
+    if (data.description !== undefined) node.description = data.description;
+    return this.nodeRepository.save(node);
+  }
+
+  /**
+   * Delete a knowledge node and its edges by entity ID and type
+   */
+  async deleteNodeByEntity(entityId: string, type: NodeType): Promise<boolean> {
+    const node = await this.nodeRepository.findOne({
+      where: { entityId, type },
+    });
+    if (!node) return false;
+
+    // Delete associated edges first
+    await this.edgeRepository.delete({ fromNodeId: node.id });
+    await this.edgeRepository.delete({ toNodeId: node.id });
+    await this.nodeRepository.remove(node);
+    return true;
+  }
+
+  /**
    * Get mind map for a subject (nodes and edges)
    */
   async getMindMapForSubject(subjectId: string): Promise<{

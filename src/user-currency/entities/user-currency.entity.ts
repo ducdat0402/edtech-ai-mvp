@@ -2,6 +2,7 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
+  VersionColumn,
   OneToOne,
   JoinColumn,
   CreateDateColumn,
@@ -22,7 +23,7 @@ export class UserCurrency {
   userId: string;
 
   @Column({ type: 'int', default: 0 })
-  coins: number; // Tiền tệ học thuật
+  coins: number; // Kim cương (diamonds)
 
   @Column({ type: 'int', default: 0 })
   xp: number; // Total experience points
@@ -38,6 +39,10 @@ export class UserCurrency {
 
   @Column({ type: 'jsonb', default: {} })
   shards: Record<string, number>; // { "ai-shard": 5, "security-shard": 3 }
+
+  // Optimistic locking - prevents lost updates on concurrent modifications
+  @VersionColumn()
+  version: number;
 
   @CreateDateColumn()
   createdAt: Date;

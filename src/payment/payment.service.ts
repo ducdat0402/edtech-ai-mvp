@@ -1,8 +1,11 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, LessThan } from 'typeorm';
+import { Repository, LessThan, DataSource } from 'typeorm';
 import { Payment, PaymentStatus } from './entities/payment.entity';
 import { UserPremium } from './entities/user-premium.entity';
+import { UserCurrency } from '../user-currency/entities/user-currency.entity';
+import { UserCurrencyService } from '../user-currency/user-currency.service';
+import { RewardTransaction, RewardSource } from '../user-currency/entities/reward-transaction.entity';
 import { ConfigService } from '@nestjs/config';
 
 // SePay webhook payload interface
@@ -29,14 +32,20 @@ export interface BankInfo {
   accountName: string;
 }
 
-// Payment packages
+// Diamond payment packages
 export interface PaymentPackage {
   id: string;
   name: string;
   price: number;
-  durationDays: number;
+  diamonds: number;       // Base diamonds
+  bonusDiamonds: number;  // Bonus diamonds
+  totalDiamonds: number;  // diamonds + bonusDiamonds
+  bonusPercent: number;    // Bonus percentage (0, 20, 40, 50)
+  pricePerDiamond: number; // Price per diamond (VND)
+  discount: string;        // Discount label ("", "-13%", "-25%", "-30%")
   description: string;
-  features: string[];
+  badge: string;           // "", "Phổ biến nhất", "Tiết kiệm", "Best Deal"
+  isPopular: boolean;
 }
 
 @Injectable()
@@ -50,42 +59,60 @@ export class PaymentService {
 
   private readonly packages: PaymentPackage[] = [
     {
-      id: 'premium_1month',
-      name: 'Premium 1 Tháng',
-      price: 50000,
-      durationDays: 30,
-      description: 'Trải nghiệm đầy đủ tính năng trong 1 tháng',
-      features: [
-        'Không giới hạn quiz',
-        'Truy cập tất cả bài học',
-        'Không quảng cáo',
-        'Hỗ trợ ưu tiên',
-      ],
+      id: 'diamond_starter',
+      name: 'Starter',
+      price: 19000,
+      diamonds: 200,
+      bonusDiamonds: 0,
+      totalDiamonds: 200,
+      bonusPercent: 0,
+      pricePerDiamond: 95,
+      discount: '',
+      description: 'Bắt đầu hành trình học tập',
+      badge: '',
+      isPopular: false,
     },
     {
-      id: 'premium_3months',
-      name: 'Premium 3 Tháng',
-      price: 120000,
-      durationDays: 90,
-      description: 'Tiết kiệm 20% so với gói 1 tháng',
-      features: [
-        'Tất cả tính năng Premium',
-        'Tiết kiệm 20%',
-        'Badge độc quyền',
-      ],
+      id: 'diamond_popular',
+      name: 'Popular',
+      price: 79000,
+      diamonds: 800,
+      bonusDiamonds: 200,
+      totalDiamonds: 1000,
+      bonusPercent: 25,
+      pricePerDiamond: 79,
+      discount: '-17%',
+      description: 'Gói được chọn nhiều nhất',
+      badge: 'Phổ biến nhất',
+      isPopular: true,
     },
     {
-      id: 'premium_1year',
-      name: 'Premium 1 Năm',
-      price: 400000,
-      durationDays: 365,
-      description: 'Tiết kiệm 33% - Đầu tư cho tương lai',
-      features: [
-        'Tất cả tính năng Premium',
-        'Tiết kiệm 33%',
-        'Badge độc quyền',
-        'Ưu tiên tính năng mới',
-      ],
+      id: 'diamond_pro',
+      name: 'Pro',
+      price: 199000,
+      diamonds: 1500,
+      bonusDiamonds: 1000,
+      totalDiamonds: 2500,
+      bonusPercent: 67,
+      pricePerDiamond: 80,
+      discount: '-16%',
+      description: 'Best Value - Giá trị tốt nhất',
+      badge: 'Best Value',
+      isPopular: false,
+    },
+    {
+      id: 'diamond_premium',
+      name: 'Premium',
+      price: 399000,
+      diamonds: 3000,
+      bonusDiamonds: 3000,
+      totalDiamonds: 6000,
+      bonusPercent: 100,
+      pricePerDiamond: 67,
+      discount: '-29%',
+      description: 'Siêu tiết kiệm cho người học nghiêm túc',
+      badge: 'Siêu tiết kiệm',
+      isPopular: false,
     },
   ];
 
@@ -94,7 +121,9 @@ export class PaymentService {
     private paymentRepository: Repository<Payment>,
     @InjectRepository(UserPremium)
     private userPremiumRepository: Repository<UserPremium>,
+    private userCurrencyService: UserCurrencyService,
     private configService: ConfigService,
+    private dataSource: DataSource,
   ) {}
 
   // Get all available packages
@@ -114,7 +143,16 @@ export class PaymentService {
     return `ED${timestamp}${random}`;
   }
 
-  // Create a new payment order
+  /**
+   * Create a new payment order (ACID transaction).
+   *
+   * Uses a transaction to atomically:
+   * 1. Cancel any existing pending payment for this user
+   * 2. Create the new payment record
+   *
+   * This prevents race conditions where a user rapidly creates multiple payments
+   * and ends up with more than one 'pending' payment.
+   */
   async createPayment(
     userId: string,
     packageId: string,
@@ -129,53 +167,63 @@ export class PaymentService {
       throw new BadRequestException('Gói thanh toán không tồn tại');
     }
 
-    // Check for existing pending payment
-    const existingPending = await this.paymentRepository.findOne({
-      where: {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      // 1. Find and cancel existing pending payment (within transaction)
+      const existingPending = await queryRunner.manager.findOne(Payment, {
+        where: { userId, status: 'pending' as PaymentStatus },
+        lock: { mode: 'pessimistic_write' },
+      });
+
+      if (existingPending) {
+        existingPending.status = 'cancelled';
+        await queryRunner.manager.save(existingPending);
+      }
+
+      // 2. Create new payment (within same transaction)
+      const paymentCode = this.generatePaymentCode();
+      const expiresAt = new Date();
+      expiresAt.setHours(expiresAt.getHours() + 24); // 24 hours to pay
+
+      const payment = queryRunner.manager.create(Payment, {
         userId,
+        paymentCode,
+        packageName: pkg.name,
+        amount: pkg.price,
+        description: `${pkg.totalDiamonds} kim cương (${pkg.diamonds}+${pkg.bonusDiamonds} bonus)`,
+        diamondAmount: pkg.totalDiamonds,
+        durationDays: 0,
         status: 'pending',
-      },
-    });
+        expiresAt,
+      });
 
-    if (existingPending) {
-      // Cancel old pending payment
-      existingPending.status = 'cancelled';
-      await this.paymentRepository.save(existingPending);
+      const savedPayment = await queryRunner.manager.save(payment);
+
+      // 3. Commit: both cancel + create succeed together
+      await queryRunner.commitTransaction();
+
+      // Generate QR content (VietQR format) - outside transaction, no DB writes
+      const qrContent = this.generateVietQRContent(pkg.price, paymentCode);
+
+      return {
+        payment: savedPayment,
+        bankInfo: this.bankInfo,
+        qrContent,
+        package: pkg,
+      };
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
     }
-
-    // Create new payment
-    const paymentCode = this.generatePaymentCode();
-    const expiresAt = new Date();
-    expiresAt.setHours(expiresAt.getHours() + 24); // 24 hours to pay
-
-    const payment = this.paymentRepository.create({
-      userId,
-      paymentCode,
-      packageName: pkg.name,
-      amount: pkg.price,
-      description: pkg.description,
-      durationDays: pkg.durationDays,
-      status: 'pending',
-      expiresAt,
-    });
-
-    await this.paymentRepository.save(payment);
-
-    // Generate QR content (VietQR format)
-    const qrContent = this.generateVietQRContent(pkg.price, paymentCode);
-
-    return {
-      payment,
-      bankInfo: this.bankInfo,
-      qrContent,
-      package: pkg,
-    };
   }
 
   // Generate VietQR content string
   private generateVietQRContent(amount: number, content: string): string {
-    // VietQR URL format for QR code
-    // https://img.vietqr.io/image/{bankCode}-{accountNumber}-compact.png?amount={amount}&addInfo={content}
     const bankCode = 'MB';
     const accountNumber = this.bankInfo.accountNumber;
     return `https://img.vietqr.io/image/${bankCode}-${accountNumber}-compact2.png?amount=${amount}&addInfo=${encodeURIComponent(content)}&accountName=${encodeURIComponent(this.bankInfo.accountName)}`;
@@ -202,47 +250,43 @@ export class PaymentService {
     });
   }
 
-  // Get user's premium status
-  async getPremiumStatus(userId: string): Promise<{
-    isPremium: boolean;
-    expiresAt: Date | null;
-    daysRemaining: number;
+  // Get user's diamond balance (from currency system)
+  async getDiamondBalance(userId: string): Promise<{
+    diamonds: number;
+    level: number;
+    xp: number;
   }> {
-    let userPremium = await this.userPremiumRepository.findOne({
-      where: { userId },
-    });
-
-    if (!userPremium) {
-      return {
-        isPremium: false,
-        expiresAt: null,
-        daysRemaining: 0,
-      };
-    }
-
-    // Check if premium has expired
-    const now = new Date();
-    if (userPremium.premiumExpiresAt && userPremium.premiumExpiresAt < now) {
-      userPremium.isPremium = false;
-      await this.userPremiumRepository.save(userPremium);
-    }
-
-    const daysRemaining = userPremium.premiumExpiresAt
-      ? Math.max(0, Math.ceil((userPremium.premiumExpiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)))
-      : 0;
-
+    const currency = await this.userCurrencyService.getOrCreate(userId);
     return {
-      isPremium: userPremium.isPremium,
-      expiresAt: userPremium.premiumExpiresAt,
-      daysRemaining,
+      diamonds: currency.coins,
+      level: currency.level,
+      xp: currency.xp,
     };
   }
 
-  // Handle SePay webhook
+  /**
+   * Handle SePay webhook with full ACID guarantees:
+   *
+   * - Atomicity: All operations (update payment + add coins + log reward) are in ONE transaction.
+   *   If any step fails, everything rolls back.
+   *
+   * - Consistency: Payment status and coin balance are always consistent.
+   *   A payment can only transition from 'pending' → 'paid' once.
+   *
+   * - Isolation: PESSIMISTIC_WRITE lock on the payment row prevents duplicate processing
+   *   even if SePay sends the webhook multiple times concurrently.
+   *
+   * - Durability: PostgreSQL commits the transaction to WAL before returning.
+   *
+   * Additional safeguard: transactionId has a UNIQUE constraint in the database,
+   * so even if the lock somehow fails, duplicate inserts are rejected.
+   */
   async handleSepayWebhook(
     payload: SepayWebhookPayload,
     apiKey: string,
   ): Promise<{ success: boolean; message: string }> {
+    // === Pre-validation (outside transaction - no DB writes) ===
+
     // Verify API key
     const expectedApiKey = this.configService.get<string>('SEPAY_WEBHOOK_API_KEY');
     if (apiKey !== `Apikey ${expectedApiKey}`) {
@@ -255,94 +299,127 @@ export class PaymentService {
     // Extract payment code from content
     const content = payload.content || '';
     const paymentCodeMatch = content.match(/ED[A-Z0-9]+/i);
-    
+
     if (!paymentCodeMatch) {
       console.log('⚠️ No payment code found in content:', content);
       return { success: false, message: 'No payment code found' };
     }
 
     const paymentCode = paymentCodeMatch[0].toUpperCase();
+    const sepayTransactionId = payload.id.toString();
     console.log('🔍 Looking for payment code:', paymentCode);
 
-    // Find pending payment
-    const payment = await this.paymentRepository.findOne({
-      where: {
-        paymentCode,
-        status: 'pending',
-      },
+    // === Idempotency check: has this SePay transaction already been processed? ===
+    const alreadyProcessed = await this.paymentRepository.findOne({
+      where: { transactionId: sepayTransactionId },
     });
-
-    if (!payment) {
-      console.log('⚠️ Payment not found or not pending:', paymentCode);
-      return { success: false, message: 'Payment not found' };
+    if (alreadyProcessed) {
+      console.log('ℹ️ Webhook already processed (idempotency), transactionId:', sepayTransactionId);
+      return { success: true, message: 'Already processed' };
     }
 
-    // Verify amount
-    if (payload.transferAmount < payment.amount) {
-      console.log(`⚠️ Amount mismatch: received ${payload.transferAmount}, expected ${payment.amount}`);
-      return { success: false, message: 'Amount mismatch' };
-    }
+    // === ACID Transaction: all-or-nothing ===
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction('SERIALIZABLE');
 
-    // Update payment status
-    payment.status = 'paid';
-    payment.transactionId = payload.id.toString();
-    payment.bankReference = payload.referenceCode;
-    payment.paidAt = new Date();
-    await this.paymentRepository.save(payment);
-
-    console.log('✅ Payment marked as paid:', payment.id);
-
-    // Activate premium for user
-    await this.activatePremium(payment.userId, payment.durationDays, payment.id);
-
-    console.log('✅ Premium activated for user:', payment.userId);
-
-    return { success: true, message: 'Payment processed successfully' };
-  }
-
-  // Activate premium for user
-  private async activatePremium(
-    userId: string,
-    durationDays: number,
-    paymentId: string,
-  ): Promise<void> {
-    let userPremium = await this.userPremiumRepository.findOne({
-      where: { userId },
-    });
-
-    const now = new Date();
-    let newExpiresAt: Date;
-
-    if (userPremium) {
-      // Extend existing premium
-      if (userPremium.isPremium && userPremium.premiumExpiresAt > now) {
-        // Add days to existing expiry
-        newExpiresAt = new Date(userPremium.premiumExpiresAt);
-      } else {
-        // Start fresh from now
-        newExpiresAt = new Date();
-      }
-      newExpiresAt.setDate(newExpiresAt.getDate() + durationDays);
-
-      userPremium.isPremium = true;
-      userPremium.premiumExpiresAt = newExpiresAt;
-      userPremium.totalDaysPurchased += durationDays;
-      userPremium.lastPaymentId = paymentId;
-    } else {
-      // Create new premium record
-      newExpiresAt = new Date();
-      newExpiresAt.setDate(newExpiresAt.getDate() + durationDays);
-
-      userPremium = this.userPremiumRepository.create({
-        userId,
-        isPremium: true,
-        premiumExpiresAt: newExpiresAt,
-        totalDaysPurchased: durationDays,
-        lastPaymentId: paymentId,
+    try {
+      // 1. Find and LOCK the payment row (PESSIMISTIC_WRITE prevents concurrent processing)
+      const payment = await queryRunner.manager.findOne(Payment, {
+        where: {
+          paymentCode,
+          status: 'pending' as PaymentStatus,
+        },
+        lock: { mode: 'pessimistic_write' },
       });
-    }
 
-    await this.userPremiumRepository.save(userPremium);
+      if (!payment) {
+        await queryRunner.rollbackTransaction();
+        console.log('⚠️ Payment not found or not pending:', paymentCode);
+        return { success: false, message: 'Payment not found or already processed' };
+      }
+
+      // 2. Verify transfer amount
+      if (payload.transferAmount < payment.amount) {
+        await queryRunner.rollbackTransaction();
+        console.log(`⚠️ Amount mismatch: received ${payload.transferAmount}, expected ${payment.amount}`);
+        return { success: false, message: 'Amount mismatch' };
+      }
+
+      // 3. Update payment status (within transaction)
+      payment.status = 'paid';
+      payment.transactionId = sepayTransactionId;
+      payment.bankReference = payload.referenceCode;
+      payment.paidAt = new Date();
+      await queryRunner.manager.save(payment);
+
+      console.log('✅ Payment marked as paid:', payment.id);
+
+      // 4. Add diamonds using atomic increment (within same transaction)
+      const diamondAmount = payment.diamondAmount || 0;
+      if (diamondAmount > 0) {
+        // Ensure user currency exists
+        const existingCurrency = await queryRunner.manager.findOne(UserCurrency, {
+          where: { userId: payment.userId },
+        });
+
+        if (!existingCurrency) {
+          // Create user currency if not exists
+          const newCurrency = queryRunner.manager.create(UserCurrency, {
+            userId: payment.userId,
+            coins: diamondAmount,
+            xp: 0,
+            level: 1,
+            currentStreak: 0,
+            shards: {},
+          });
+          await queryRunner.manager.save(newCurrency);
+        } else {
+          // Atomic increment within transaction
+          await queryRunner.manager
+            .createQueryBuilder()
+            .update(UserCurrency)
+            .set({ coins: () => `coins + ${Math.floor(diamondAmount)}` })
+            .where('userId = :userId', { userId: payment.userId })
+            .execute();
+        }
+
+        // 5. Log reward transaction (within same transaction)
+        const rewardLog = queryRunner.manager.create(RewardTransaction, {
+          userId: payment.userId,
+          source: RewardSource.PURCHASE,
+          sourceId: payment.id,
+          sourceName: `Mua ${diamondAmount} kim cương - Gói ${payment.packageName}`,
+          xp: 0,
+          coins: diamondAmount,
+          shards: {},
+        });
+        await queryRunner.manager.save(rewardLog);
+
+        console.log(`💎 Added ${diamondAmount} diamonds to user ${payment.userId}`);
+      }
+
+      // === COMMIT: All operations succeed together ===
+      await queryRunner.commitTransaction();
+      console.log('🔒 Transaction committed successfully for payment:', payment.id);
+
+      return { success: true, message: 'Payment processed successfully' };
+    } catch (error) {
+      // === ROLLBACK: If anything fails, everything is reverted ===
+      await queryRunner.rollbackTransaction();
+
+      // Check if it's a unique constraint violation (duplicate transactionId)
+      if (error.code === '23505') {
+        console.log('ℹ️ Duplicate transaction detected (unique constraint), already processed');
+        return { success: true, message: 'Already processed' };
+      }
+
+      console.error('❌ Payment processing failed, transaction rolled back:', error);
+      return { success: false, message: 'Payment processing failed' };
+    } finally {
+      // Always release the query runner
+      await queryRunner.release();
+    }
   }
 
   /**
@@ -355,6 +432,7 @@ export class PaymentService {
       paymentCode: string;
       amount: number;
       packageName: string;
+      diamondAmount: number;
       createdAt: Date;
       expiresAt: Date;
     };
@@ -378,6 +456,7 @@ export class PaymentService {
         paymentCode: payment.paymentCode,
         amount: Number(payment.amount),
         packageName: payment.packageName,
+        diamondAmount: payment.diamondAmount,
         createdAt: payment.createdAt,
         expiresAt: payment.expiresAt,
       },

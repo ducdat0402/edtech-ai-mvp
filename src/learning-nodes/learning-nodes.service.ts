@@ -3,27 +3,21 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { LearningNode } from './entities/learning-node.entity';
 import { AiService } from '../ai/ai.service';
-import { ContentItem } from '../content-items/entities/content-item.entity';
 import { DomainsService } from '../domains/domains.service';
 import { GenerationProgressService } from './generation-progress.service';
-import { UserPremium } from '../payment/entities/user-premium.entity';
-
-// Number of free nodes before requiring premium
-const FREE_NODES_LIMIT = 2;
+import { UnlockTransactionsService } from '../unlock-transactions/unlock-transactions.service';
 
 @Injectable()
 export class LearningNodesService {
   constructor(
     @InjectRepository(LearningNode)
     private nodeRepository: Repository<LearningNode>,
-    @InjectRepository(ContentItem)
-    private contentItemRepository: Repository<ContentItem>,
-    @InjectRepository(UserPremium)
-    private userPremiumRepository: Repository<UserPremium>,
     private aiService: AiService,
     @Inject(forwardRef(() => DomainsService))
     private domainsService: DomainsService,
     private progressService: GenerationProgressService,
+    @Inject(forwardRef(() => UnlockTransactionsService))
+    private unlockService: UnlockTransactionsService,
   ) {}
 
   async findBySubject(subjectId: string): Promise<LearningNode[]> {
@@ -34,24 +28,8 @@ export class LearningNodesService {
   }
 
   /**
-   * Check if user has active premium
-   */
-  private async checkUserPremium(userId: string): Promise<boolean> {
-    if (!userId) return false;
-    
-    const userPremium = await this.userPremiumRepository.findOne({
-      where: { userId },
-    });
-
-    if (!userPremium) return false;
-
-    const now = new Date();
-    return userPremium.isPremium && userPremium.premiumExpiresAt > now;
-  }
-
-  /**
-   * Get learning nodes with premium lock status
-   * First 2 nodes are free, rest require premium
+   * Get learning nodes with diamond unlock status
+   * Auto-unlocks first topic for free if user has no unlocks yet
    */
   async findBySubjectWithPremiumStatus(
     subjectId: string,
@@ -62,17 +40,26 @@ export class LearningNodesService {
       order: { order: 'ASC' },
     });
 
-    const isPremium = userId ? await this.checkUserPremium(userId) : false;
+    // Auto-unlock first topic if needed
+    if (userId) {
+      await this.unlockService.ensureFirstTopicUnlocked(userId, subjectId);
+    }
 
-    return nodes.map((node, index) => ({
+    // Get unlocked node IDs
+    const unlockedIds = userId
+      ? await this.unlockService.getUserUnlockedNodeIds(userId, subjectId)
+      : new Set<string>();
+
+    return nodes.map((node) => ({
       ...node,
-      isLocked: !isPremium && index >= FREE_NODES_LIMIT,
-      requiresPremium: index >= FREE_NODES_LIMIT,
+      isLocked: unlockedIds.size === 0 ? true : !unlockedIds.has(node.id),
+      requiresPremium: !unlockedIds.has(node.id),
     }));
   }
 
   /**
-   * Get learning nodes by domain with premium lock status
+   * Get learning nodes by domain with diamond unlock status
+   * Auto-unlocks first topic for free if user has no unlocks yet
    */
   async findByDomainWithPremiumStatus(
     domainId: string,
@@ -83,44 +70,41 @@ export class LearningNodesService {
       order: { order: 'ASC' },
     });
 
-    const isPremium = userId ? await this.checkUserPremium(userId) : false;
+    if (!userId || nodes.length === 0) {
+      return nodes.map((node) => ({
+        ...node,
+        isLocked: true,
+        requiresPremium: true,
+      }));
+    }
 
-    return nodes.map((node, index) => ({
+    // Auto-unlock first topic if needed
+    const subjectId = nodes[0].subjectId;
+    if (subjectId) {
+      await this.unlockService.ensureFirstTopicUnlocked(userId, subjectId);
+    }
+
+    const unlockedIds = await this.unlockService.getUserUnlockedNodeIds(userId, subjectId);
+
+    return nodes.map((node) => ({
       ...node,
-      isLocked: !isPremium && index >= FREE_NODES_LIMIT,
-      requiresPremium: index >= FREE_NODES_LIMIT,
+      isLocked: unlockedIds.size === 0 ? true : !unlockedIds.has(node.id),
+      requiresPremium: !unlockedIds.has(node.id),
     }));
   }
 
   /**
-   * Check if user can access a specific node
+   * Check if user can access a specific node (via diamond unlock)
    */
   async canAccessNode(nodeId: string, userId?: string): Promise<{ canAccess: boolean; requiresPremium: boolean }> {
-    // Find the node and its position in the subject
-    const node = await this.nodeRepository.findOne({ where: { id: nodeId } });
-    if (!node) {
-      return { canAccess: false, requiresPremium: false };
+    if (!userId) {
+      return { canAccess: false, requiresPremium: true };
     }
 
-    // Get all nodes in the same subject to determine position
-    const allNodes = await this.nodeRepository.find({
-      where: { subjectId: node.subjectId },
-      order: { order: 'ASC' },
-    });
-
-    const nodeIndex = allNodes.findIndex(n => n.id === nodeId);
-    
-    // First 2 nodes are always accessible
-    if (nodeIndex < FREE_NODES_LIMIT) {
-      return { canAccess: true, requiresPremium: false };
-    }
-
-    // Check premium for other nodes
-    const isPremium = userId ? await this.checkUserPremium(userId) : false;
-    
+    const result = await this.unlockService.canAccessNode(userId, nodeId);
     return {
-      canAccess: isPremium,
-      requiresPremium: true,
+      canAccess: result.canAccess,
+      requiresPremium: !result.canAccess,
     };
   }
 
@@ -134,10 +118,20 @@ export class LearningNodesService {
     });
   }
 
+  /**
+   * Lấy tất cả nodes của một topic
+   */
+  async findByTopic(topicId: string): Promise<LearningNode[]> {
+    return this.nodeRepository.find({
+      where: { topicId },
+      order: { order: 'ASC' },
+    });
+  }
+
   async findById(id: string): Promise<LearningNode | null> {
     return this.nodeRepository.findOne({
       where: { id },
-      relations: ['subject', 'contentItems'],
+      relations: ['subject', 'topic'],
     });
   }
 
@@ -305,72 +299,8 @@ export class LearningNodesService {
         await this.nodeRepository.save(savedNode);
       }
 
-      // Tạo Concepts
-      for (let i = 0; i < nodeData.concepts.length; i++) {
-        const concept = this.contentItemRepository.create({
-          nodeId: savedNode.id,
-          type: 'concept',
-          title: nodeData.concepts[i].title,
-          content: nodeData.concepts[i].content,
-          order: i + 1,
-          rewards: { xp: 10, coin: 1 },
-        });
-        await this.contentItemRepository.save(concept);
-      }
-
-      // Tạo Examples (AI đã tạo sẵn)
-      if (nodeData.examples && nodeData.examples.length > 0) {
-        for (let i = 0; i < nodeData.examples.length; i++) {
-          const example = this.contentItemRepository.create({
-            nodeId: savedNode.id,
-            type: 'example',
-            title: nodeData.examples[i].title,
-            content: nodeData.examples[i].content,
-            order: i + 1,
-            rewards: { xp: 15, coin: 2 },
-          });
-          await this.contentItemRepository.save(example);
-        }
-      }
-
-      // Tạo Hidden Reward (CHỈ 1 phần thưởng)
-      if (nodeData.hiddenRewards && nodeData.hiddenRewards.length > 0) {
-        // Chỉ lấy phần thưởng đầu tiên
-        const reward = this.contentItemRepository.create({
-          nodeId: savedNode.id,
-          type: 'hidden_reward',
-          title: nodeData.hiddenRewards[0].title,
-          content: nodeData.hiddenRewards[0].content,
-          order: 50, // Sau examples, trước boss quiz
-          rewards: { xp: 5, coin: 5 },
-        });
-        await this.contentItemRepository.save(reward);
-      }
-
-      // Tạo Boss Quiz (AI đã tạo sẵn với nội dung chất lượng)
-      const bossQuiz = this.contentItemRepository.create({
-        nodeId: savedNode.id,
-        type: 'boss_quiz',
-        title: `Boss Quiz: ${nodeData.title}`,
-        content: `Kiểm tra kiến thức về ${nodeData.title}`,
-        order: 100,
-        quizData: {
-          question: nodeData.bossQuiz.question,
-          options: nodeData.bossQuiz.options,
-          correctAnswer: nodeData.bossQuiz.correctAnswer,
-          explanation: nodeData.bossQuiz.explanation,
-        },
-        rewards: { xp: 50, coin: 10 },
-      });
-      await this.contentItemRepository.save(bossQuiz);
-
-      const totalItems = nodeData.concepts.length + 
-                        (nodeData.examples?.length || 0) + 
-                        (nodeData.hiddenRewards?.length || 0) + 
-                        1; // boss quiz
       const domainInfo = domainId ? ` [Domain: ${domainName}]` : '';
-      const rewardCount = nodeData.hiddenRewards && nodeData.hiddenRewards.length > 0 ? 1 : 0; // CHỈ 1 phần thưởng
-      console.log(`✅ Created node: ${nodeData.title}${domainInfo} (${nodeData.concepts.length} concepts, ${nodeData.examples?.length || 0} examples, ${rewardCount} reward, 1 quiz)`);
+      console.log(`✅ Created node: ${nodeData.title}${domainInfo}`);
     }
 
     const domainsCreated = domainCache.size;
@@ -466,66 +396,7 @@ export class LearningNodesService {
 
     const savedNode = await this.nodeRepository.save(node);
 
-    // Create Concepts
-    for (let i = 0; i < nodeData.concepts.length; i++) {
-      const concept = this.contentItemRepository.create({
-        nodeId: savedNode.id,
-        type: 'concept',
-        title: nodeData.concepts[i].title,
-        content: nodeData.concepts[i].content,
-        order: i + 1,
-        rewards: { xp: 10, coin: 1 },
-      });
-      await this.contentItemRepository.save(concept);
-    }
-
-    // Create Examples
-    if (nodeData.examples && nodeData.examples.length > 0) {
-      for (let i = 0; i < nodeData.examples.length; i++) {
-        const example = this.contentItemRepository.create({
-          nodeId: savedNode.id,
-          type: 'example',
-          title: nodeData.examples[i].title,
-          content: nodeData.examples[i].content,
-          order: i + 1,
-          rewards: { xp: 15, coin: 2 },
-        });
-        await this.contentItemRepository.save(example);
-      }
-    }
-
-    // Create Hidden Reward (CHỈ 1 phần thưởng)
-    if (nodeData.hiddenRewards && nodeData.hiddenRewards.length > 0) {
-      // Chỉ lấy phần thưởng đầu tiên
-      const reward = this.contentItemRepository.create({
-        nodeId: savedNode.id,
-        type: 'hidden_reward',
-        title: nodeData.hiddenRewards[0].title,
-        content: nodeData.hiddenRewards[0].content,
-        order: 50, // Sau examples, trước boss quiz
-        rewards: { xp: 5, coin: 5 },
-      });
-      await this.contentItemRepository.save(reward);
-    }
-
-    // Create Boss Quiz
-    const bossQuiz = this.contentItemRepository.create({
-      nodeId: savedNode.id,
-      type: 'boss_quiz',
-      title: `Boss Quiz: ${nodeData.title}`,
-      content: `Kiểm tra kiến thức về ${nodeData.title}`,
-      order: 100,
-      quizData: {
-        question: nodeData.bossQuiz.question,
-        options: nodeData.bossQuiz.options,
-        correctAnswer: nodeData.bossQuiz.correctAnswer,
-        explanation: nodeData.bossQuiz.explanation,
-      },
-      rewards: { xp: 50, coin: 10 },
-    });
-    await this.contentItemRepository.save(bossQuiz);
-
-    console.log(`✅ Created single node: ${nodeData.title} (${nodeData.concepts.length} concepts, ${nodeData.examples?.length || 0} examples)`);
+    console.log(`✅ Created single node: ${nodeData.title}`);
     return savedNode;
   }
 }

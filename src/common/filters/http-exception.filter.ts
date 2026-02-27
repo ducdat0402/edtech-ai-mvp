@@ -50,17 +50,12 @@ export class AllExceptionsFilter implements ExceptionFilter {
       request.url.includes('robots.txt') ||
       request.url.includes('.ico');
 
-    // Log error details (always log 500 errors for debugging)
-    if (status >= 500) {
-      console.error('❌ Server Error:', {
-        status,
-        path: request.url,
-        method: request.method,
-        error: exception instanceof Error ? exception.message : String(exception),
-        stack: exception instanceof Error ? exception.stack : undefined,
-      });
-    } else if (process.env.NODE_ENV === 'development' && !isCommonBrowserRequest) {
-      if (status === 404) {
+    // Log error in development (skip common browser requests)
+    if (process.env.NODE_ENV === 'development' && !isCommonBrowserRequest) {
+      if (status >= 500) {
+        console.error('Exception:', exception);
+      } else if (status === 404 && !isCommonBrowserRequest) {
+        // Only log 404 if it's not a common browser request
         console.warn(`404 Not Found: ${request.method} ${request.url}`);
       }
     }
