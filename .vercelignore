@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+backend/node_modules/
+mobile/node_modules/
+
+# Build outputs
+backend/dist/
+backend/build/
+*.tsbuildinfo
+
+# Mobile app (không cần deploy)
+mobile/
+
+# Uploads (dùng Cloudinary)
+backend/uploads/
+
+# Development files
+.env.local
+.env.*.local
+*.log
+
+# Testing
+coverage/
+.nyc_output/
+
+# Temp files
+temp/
+tmp/
+*.tmp

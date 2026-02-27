@@ -39,7 +39,7 @@ dependencies:
   uuid: ^4.2.1
   json_annotation: ^4.8.1
   image_picker: ^1.0.7
-  image_cropper: ^5.0.1
+  image_cropper: ^8.0.2
   video_player: ^2.8.2
   url_launcher: ^6.2.5
   flutter_quill: ^10.5.0

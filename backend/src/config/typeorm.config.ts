@@ -36,6 +36,15 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
     return {
       type: 'postgres',
       url: this.configService.get<string>('DATABASE_URL'),
+      ssl: {
+        rejectUnauthorized: false, // thêm cái này
+        requestCert: false,        // thêm cái này
+      },
+      extra: {
+        ssl: {
+          rejectUnauthorized: false, // thêm cái này nữa
+        },
+      },
       entities: [
         User,
         Subject,
