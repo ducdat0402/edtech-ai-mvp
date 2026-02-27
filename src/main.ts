@@ -28,6 +28,16 @@ export async function createApp() {
     credentials: true,
   });
 
+  // Root health check for Render (before global prefix)
+  app.getHttpAdapter().get('/', (req, res) => {
+    res.json({
+      status: 'ok',
+      message: 'EdTech AI MVP API is running',
+      version: '1.0',
+      docs: '/api/v1/docs',
+    });
+  });
+
   app.setGlobalPrefix('api/v1');
 
   const config = new DocumentBuilder()
