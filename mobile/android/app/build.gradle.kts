@@ -5,6 +5,14 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+configurations.all {
+    resolutionStrategy.eachDependency {
+        if (requested.group == "org.jetbrains.kotlin" && requested.name.startsWith("kotlin-stdlib")) {
+            useVersion("2.1.0")
+        }
+    }
+}
+
 android {
     namespace = "com.edtech.edtech_mobile"
     compileSdk = 36
