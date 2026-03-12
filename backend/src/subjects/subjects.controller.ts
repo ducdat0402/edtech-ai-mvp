@@ -32,8 +32,8 @@ export class SubjectsController {
           ...subject,
           isUnlocked: status.isUnlocked,
           canUnlock: status.canUnlock,
-          requiredCoins: status.requiredCoins,
-          userCoins: status.userCoins,
+          requiredDiamonds: status.requiredDiamonds,
+          userDiamonds: status.userDiamonds,
         };
       }),
     );
