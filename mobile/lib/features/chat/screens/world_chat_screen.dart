@@ -56,11 +56,11 @@ class _WorldChatScreenState extends State<WorldChatScreen> {
             .map((m) => Map<String, dynamic>.from(m))
             .toList();
         setState(() {
-          _messages = msgs;
+          _messages = _mergeMessages(_messages, msgs);
           _onlineCount = data['onlineCount'] as int? ?? 0;
           _isLoading = false;
-          if (msgs.isNotEmpty) {
-            _lastMessageTime = msgs.last['createdAt'] as String?;
+          if (_messages.isNotEmpty) {
+            _lastMessageTime = _messages.last['createdAt'] as String?;
           }
         });
         _scrollToBottom();
@@ -81,9 +81,11 @@ class _WorldChatScreenState extends State<WorldChatScreen> {
 
       if (mounted && newMsgs.isNotEmpty) {
         setState(() {
-          _messages.addAll(newMsgs);
+          _messages = _mergeMessages(_messages, newMsgs);
           _onlineCount = data['onlineCount'] as int? ?? _onlineCount;
-          _lastMessageTime = newMsgs.last['createdAt'] as String?;
+          if (_messages.isNotEmpty) {
+            _lastMessageTime = _messages.last['createdAt'] as String?;
+          }
         });
         _scrollToBottom();
       }
@@ -116,8 +118,13 @@ class _WorldChatScreenState extends State<WorldChatScreen> {
 
       if (mounted) {
         setState(() {
-          _messages.add(Map<String, dynamic>.from(msg));
-          _lastMessageTime = msg['createdAt'] as String?;
+          _messages = _mergeMessages(
+            _messages,
+            [Map<String, dynamic>.from(msg)],
+          );
+          if (_messages.isNotEmpty) {
+            _lastMessageTime = _messages.last['createdAt'] as String?;
+          }
           _isSending = false;
         });
         _scrollToBottom();
@@ -133,6 +140,39 @@ class _WorldChatScreenState extends State<WorldChatScreen> {
         );
       }
     }
+  }
+
+  List<Map<String, dynamic>> _mergeMessages(
+    List<Map<String, dynamic>> existing,
+    List<Map<String, dynamic>> incoming,
+  ) {
+    if (incoming.isEmpty) return existing;
+
+    final seenIds = <String>{};
+    final result = <Map<String, dynamic>>[];
+
+    for (final m in existing) {
+      final id = m['id'] as String?;
+      if (id != null) {
+        seenIds.add(id);
+      }
+      result.add(m);
+    }
+
+    for (final m in incoming) {
+      final id = m['id'] as String?;
+      if (id != null && seenIds.contains(id)) continue;
+      if (id != null) seenIds.add(id);
+      result.add(m);
+    }
+
+    result.sort((a, b) {
+      final ta = DateTime.tryParse(a['createdAt'] as String? ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0);
+      final tb = DateTime.tryParse(b['createdAt'] as String? ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0);
+      return ta.compareTo(tb);
+    });
+
+    return result;
   }
 
   String _extractError(dynamic e) {
