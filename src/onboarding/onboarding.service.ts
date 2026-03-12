@@ -270,6 +270,33 @@ export class OnboardingService {
     }
   }
 
+  async completeOnboarding(userId: string, data: Record<string, any>) {
+    const onboardingData = {
+      nickname: data.nickname,
+      subjects: data.subjects,
+      subjectIds: data.subjectIds,
+      currentLevel: data.currentLevel,
+      targetGoal: data.targetGoal,
+      goals: data.goals,
+      dailyTime: data.dailyTime,
+      completedAt: new Date().toISOString(),
+    };
+
+    await this.usersService.updateOnboardingData(userId, onboardingData);
+
+    if (data.nickname) {
+      await this.usersService.updateProfile(userId, {
+        fullName: data.nickname,
+      });
+    }
+
+    return {
+      success: true,
+      message: 'Onboarding completed',
+      data: onboardingData,
+    };
+  }
+
   /**
    * Get chat result after streaming completes
    */

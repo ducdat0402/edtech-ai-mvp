@@ -55,5 +55,10 @@ export class OnboardingController {
       body?.sessionId,
     );
   }
+
+  @Post('complete')
+  async complete(@Request() req, @Body() body: Record<string, any>) {
+    return this.onboardingService.completeOnboarding(req.user.id, body);
+  }
 }
 
