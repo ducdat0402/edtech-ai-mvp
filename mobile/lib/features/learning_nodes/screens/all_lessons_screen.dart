@@ -176,7 +176,14 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            // Nếu còn route phía sau thì pop bình thường, nếu không thì về Dashboard
+            if (Navigator.canPop(context)) {
+              Navigator.pop(context);
+            } else {
+              context.go('/dashboard');
+            }
+          },
         ),
         actions: [
           IconButton(

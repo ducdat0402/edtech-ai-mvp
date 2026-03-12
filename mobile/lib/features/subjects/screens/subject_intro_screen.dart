@@ -436,7 +436,13 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
             child: const Icon(Icons.arrow_back,
                 color: AppColors.textPrimary, size: 20),
           ),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            if (Navigator.canPop(context)) {
+              Navigator.pop(context);
+            } else {
+              context.go('/dashboard');
+            }
+          },
         ),
         actions: [
           if (_showTutorial)

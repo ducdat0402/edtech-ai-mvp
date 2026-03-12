@@ -112,21 +112,13 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
         duration: const Duration(milliseconds: 400),
         curve: Curves.easeInOut,
       );
-    } else {
-      _completeOnboarding();
+    } else if (_currentPage == 4) {
+      // Save onboarding data then show choice slide
+      _saveOnboardingAndShowChoice();
     }
   }
 
-  void _previousPage() {
-    if (_currentPage > 0) {
-      _pageController.previousPage(
-        duration: const Duration(milliseconds: 400),
-        curve: Curves.easeInOut,
-      );
-    }
-  }
-
-  Future<void> _completeOnboarding() async {
+  Future<void> _saveOnboardingAndShowChoice() async {
     if (_isSaving) return;
     setState(() => _isSaving = true);
     HapticFeedback.mediumImpact();
@@ -152,15 +144,10 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
       await apiService.completeOnboarding(data);
 
       if (mounted) {
-        // Redirect to first selected subject to try first lesson
-        final firstSubjectId = _selectedSubjectIds.isNotEmpty
-            ? _selectedSubjectIds.first
-            : null;
-        if (firstSubjectId != null) {
-          context.go('/subjects/$firstSubjectId/all-lessons?openFirst=1');
-        } else {
-          context.go('/dashboard');
-        }
+        _pageController.nextPage(
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeInOut,
+        );
       }
     } catch (e) {
       if (mounted) {
@@ -173,6 +160,45 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
+  void _previousPage() {
+    if (_currentPage > 0) {
+      _pageController.previousPage(
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  void _goToTryLesson() {
+    HapticFeedback.mediumImpact();
+    final firstSubjectId = _selectedSubjectIds.isNotEmpty
+        ? _selectedSubjectIds.first
+        : null;
+    if (firstSubjectId != null) {
+      context.go('/subjects/$firstSubjectId/all-lessons?openFirst=1');
+    } else {
+      context.go('/dashboard');
+    }
+  }
+
+  void _goToPersonalizedPath() {
+    HapticFeedback.mediumImpact();
+    final firstSubjectId = _selectedSubjectIds.isNotEmpty
+        ? _selectedSubjectIds.first
+        : null;
+    if (firstSubjectId != null) {
+      final subjectName = _subjects
+          .where((s) => s['id'] == firstSubjectId)
+          .map((s) => s['name'] as String)
+          .firstOrNull;
+      context.go(
+        '/subjects/$firstSubjectId/learning-path-choice?name=${Uri.encodeComponent(subjectName ?? '')}&force=true',
+      );
+    } else {
+      context.go('/dashboard');
     }
   }
 
@@ -198,6 +224,7 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
                     _buildLevelSlide(),
                     _buildGoalsSlide(),
                     _buildDailyTimeSlide(),
+                    _buildChoiceSlide(),
                   ],
                 ),
               ),
@@ -210,11 +237,12 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
   }
 
   Widget _buildHeader() {
+    final isChoiceSlide = _currentPage == 5;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       child: Row(
         children: [
-          if (_currentPage > 0)
+          if (_currentPage > 0 && !isChoiceSlide)
             GestureDetector(
               onTap: _previousPage,
               child: Container(
@@ -231,24 +259,29 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
           else
             const SizedBox(width: 36),
           const Spacer(),
-          Text(
-            '${_currentPage + 1} / 5',
-            style: AppTextStyles.labelMedium.copyWith(color: AppColors.textTertiary),
-          ),
-          const Spacer(),
-          GestureDetector(
-            onTap: () => context.go('/dashboard'),
-            child: Text(
-              'Bỏ qua',
+          if (!isChoiceSlide)
+            Text(
+              '${_currentPage + 1} / 5',
               style: AppTextStyles.labelMedium.copyWith(color: AppColors.textTertiary),
             ),
-          ),
+          const Spacer(),
+          if (!isChoiceSlide)
+            GestureDetector(
+              onTap: () => context.go('/dashboard'),
+              child: Text(
+                'Bỏ qua',
+                style: AppTextStyles.labelMedium.copyWith(color: AppColors.textTertiary),
+              ),
+            )
+          else
+            const SizedBox(width: 36),
         ],
       ),
     );
   }
 
   Widget _buildProgressBar() {
+    if (_currentPage == 5) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
@@ -272,17 +305,18 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
   }
 
   Widget _buildBottomButtons() {
+    if (_currentPage == 5) return const SizedBox.shrink();
     final isLastPage = _currentPage == 4;
     return Container(
       padding: const EdgeInsets.all(20),
       child: SizedBox(
         width: double.infinity,
         child: GamingButton(
-          text: isLastPage ? 'Bắt đầu học' : 'Tiếp tục',
+          text: isLastPage ? 'Hoàn thành' : 'Tiếp tục',
           onPressed: _canProceed ? _nextPage : null,
           gradient: _canProceed ? (isLastPage ? AppGradients.success : AppGradients.primary) : null,
           glowColor: _canProceed ? (isLastPage ? AppColors.successNeon : AppColors.pinkNeon) : null,
-          icon: isLastPage ? Icons.rocket_launch_rounded : Icons.arrow_forward_rounded,
+          icon: isLastPage ? Icons.check_circle_rounded : Icons.arrow_forward_rounded,
           isLoading: _isSaving,
         ),
       ),
@@ -596,6 +630,147 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
             }).toList(),
           ),
         ],
+      ),
+    );
+  }
+
+  // ─── Slide 6: Choice (try lesson or personalized path) ───
+
+  Widget _buildChoiceSlide() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        children: [
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: AppGradients.success,
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.successNeon.withOpacity(0.3),
+                  blurRadius: 24,
+                ),
+              ],
+            ),
+            child: const Icon(Icons.check_rounded, color: Colors.white, size: 40),
+          ),
+          const SizedBox(height: 20),
+          AppTextStyles.gradientText(
+            'Tuyệt vời!',
+            AppTextStyles.h2,
+            AppGradients.success,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Thông tin đã được lưu. Bạn muốn bắt đầu như thế nào?',
+            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 40),
+
+          // Option 1: Try a lesson
+          _buildChoiceCard(
+            icon: Icons.play_circle_filled_rounded,
+            title: 'Học thử 1 bài',
+            subtitle: 'Trải nghiệm nhanh một bài học để làm quen',
+            gradient: [AppColors.cyanNeon, AppColors.purpleNeon],
+            onTap: _goToTryLesson,
+          ),
+          const SizedBox(height: 16),
+
+          // Option 2: Create personalized path
+          _buildChoiceCard(
+            icon: Icons.route_rounded,
+            title: 'Tạo lộ trình cá nhân',
+            subtitle: 'Thiết kế lộ trình phù hợp qua câu hỏi hoặc chat AI',
+            gradient: [AppColors.pinkNeon, AppColors.orangeNeon],
+            onTap: _goToPersonalizedPath,
+          ),
+          const SizedBox(height: 24),
+
+          // Skip to dashboard
+          TextButton(
+            onPressed: () => context.go('/dashboard'),
+            child: Text(
+              'Vào trang chính',
+              style: AppTextStyles.labelMedium.copyWith(
+                color: AppColors.textTertiary,
+                decoration: TextDecoration.underline,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChoiceCard({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required List<Color> gradient,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: AppColors.bgSecondary,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: gradient[0].withOpacity(0.3)),
+          boxShadow: [
+            BoxShadow(
+              color: gradient[0].withOpacity(0.1),
+              blurRadius: 16,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(colors: gradient),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Icon(icon, color: Colors.white, size: 28),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: AppTextStyles.bodyBold.copyWith(
+                      color: AppColors.textPrimary,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Icon(
+              Icons.arrow_forward_ios_rounded,
+              color: gradient[0],
+              size: 18,
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -89,7 +89,7 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
             content: const Text(
               'Bạn cần hoàn thành đủ 4 dạng bài trong bài này để được tính 1 streak.',
             ),
-            backgroundColor: AppColors.streakOrange.withOpacity(0.9),
+            backgroundColor: AppColors.orangeNeon.withOpacity(0.9),
             duration: const Duration(seconds: 4),
           ),
         );
@@ -224,13 +224,13 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.streakOrange.withOpacity(0.12),
+        color: AppColors.orangeNeon.withOpacity(0.12),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.streakOrange.withOpacity(0.35)),
+        border: Border.all(color: AppColors.orangeNeon.withOpacity(0.35)),
       ),
       child: Row(
         children: [
-          Icon(Icons.local_fire_department_rounded, color: AppColors.streakOrange, size: 24),
+          Icon(Icons.local_fire_department_rounded, color: AppColors.orangeNeon, size: 24),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
