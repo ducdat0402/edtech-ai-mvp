@@ -64,7 +64,8 @@ class _RegisterScreenState extends State<RegisterScreen>
 
       if (result['success'] == true) {
         if (mounted) {
-          context.go('/dashboard');
+          // Sau khi đăng ký lần đầu, chuyển sang onboarding chatbot
+          context.go('/onboarding');
         }
       } else {
         String errorMessage = result['message'] ?? 'Registration failed';
