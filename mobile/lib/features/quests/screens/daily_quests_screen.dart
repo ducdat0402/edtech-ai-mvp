@@ -5,6 +5,7 @@ import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/widgets/bottom_nav_bar.dart';
 import 'package:edtech_mobile/core/widgets/error_widget.dart';
 import 'package:edtech_mobile/core/widgets/empty_state.dart';
+import 'package:edtech_mobile/features/chat/widgets/chat_bubble.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 
 class DailyQuestsScreen extends StatefulWidget {
@@ -127,17 +128,22 @@ class _DailyQuestsScreenState extends State<DailyQuestsScreen>
           ),
         ],
       ),
-      body: _isLoading
-          ? _buildLoadingState()
-          : _error != null
-              ? AppErrorWidget(message: _error!, onRetry: _loadQuests)
-              : TabBarView(
-                  controller: _tabController,
-                  children: [
-                    _buildDailyQuestsTab(),
-                    _buildHistoryTab(),
-                  ],
-                ),
+      body: Stack(
+        children: [
+          _isLoading
+              ? _buildLoadingState()
+              : _error != null
+                  ? AppErrorWidget(message: _error!, onRetry: _loadQuests)
+                  : TabBarView(
+                      controller: _tabController,
+                      children: [
+                        _buildDailyQuestsTab(),
+                        _buildHistoryTab(),
+                      ],
+                    ),
+          const FloatingChatBubble(),
+        ],
+      ),
       bottomNavigationBar: const BottomNavBar(currentIndex: 1),
     );
   }

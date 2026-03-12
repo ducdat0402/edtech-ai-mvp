@@ -4,6 +4,7 @@ import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/widgets/bottom_nav_bar.dart';
 import 'package:edtech_mobile/core/widgets/error_widget.dart';
 import 'package:edtech_mobile/core/widgets/empty_state.dart';
+import 'package:edtech_mobile/features/chat/widgets/chat_bubble.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 
 class LeaderboardScreen extends StatefulWidget {
@@ -157,26 +158,31 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
           ),
         ],
       ),
-      body: _isLoading
-          ? _buildLoadingState()
-          : _error != null
-              ? AppErrorWidget(message: _error!, onRetry: _loadData)
-              : Column(
-                  children: [
-                    if (_myRank != null) _buildMyRankCard(),
-                    Expanded(
-                      child: TabBarView(
-                        controller: _tabController,
-                        children: [
-                          _buildLeaderboardList(_globalData),
-                          _buildLeaderboardList(_weeklyData),
-                          if (widget.subjectId != null)
-                            _buildLeaderboardList(_subjectData),
-                        ],
-                      ),
+      body: Stack(
+        children: [
+          _isLoading
+              ? _buildLoadingState()
+              : _error != null
+                  ? AppErrorWidget(message: _error!, onRetry: _loadData)
+                  : Column(
+                      children: [
+                        if (_myRank != null) _buildMyRankCard(),
+                        Expanded(
+                          child: TabBarView(
+                            controller: _tabController,
+                            children: [
+                              _buildLeaderboardList(_globalData),
+                              _buildLeaderboardList(_weeklyData),
+                              if (widget.subjectId != null)
+                                _buildLeaderboardList(_subjectData),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+          const FloatingChatBubble(),
+        ],
+      ),
       bottomNavigationBar: const BottomNavBar(currentIndex: 2),
     );
   }

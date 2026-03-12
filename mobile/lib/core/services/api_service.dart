@@ -834,4 +834,23 @@ class ApiService {
     );
     return response.data;
   }
+
+  // =====================
+  // World Chat APIs
+  // =====================
+
+  Future<Map<String, dynamic>> getChatMessages({int limit = 30, String? after}) async {
+    String url = '/world-chat/messages?limit=$limit';
+    if (after != null) url += '&after=$after';
+    final response = await _apiClient.get(url);
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> sendChatMessage(String message) async {
+    final response = await _apiClient.post(
+      '/world-chat/send',
+      data: {'message': message},
+    );
+    return response.data;
+  }
 }

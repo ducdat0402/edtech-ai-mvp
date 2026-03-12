@@ -8,6 +8,7 @@ import 'package:edtech_mobile/core/widgets/bottom_nav_bar.dart';
 import 'package:edtech_mobile/core/widgets/error_widget.dart';
 import 'package:edtech_mobile/core/widgets/skeleton_loader.dart';
 import 'package:edtech_mobile/theme/theme.dart';
+import 'package:edtech_mobile/features/chat/widgets/chat_bubble.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -116,7 +117,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ],
       ),
-      body: _isLoading
+      body: Stack(
+        children: [
+          _isLoading
           ? _buildSkeletonLoader()
           : _error != null
               ? AppErrorWidget(
@@ -133,37 +136,34 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Stats Cards (includes Level and Stats)
                             _buildStatsSection(_dashboardData!['stats'] ?? {}),
                             const SizedBox(height: 24),
 
-                            // Onboarding Banner (if not complete)
                             _buildOnboardingBanner(),
                             const SizedBox(height: 24),
 
-                            // Quick Actions
                             _buildQuickActions(),
                             const SizedBox(height: 24),
 
-                            // Subjects list (moved up)
                             _buildSubjectsSection(
                               'Môn học',
                               _dashboardData!['subjects'] ?? [],
                             ),
                             const SizedBox(height: 24),
 
-                            // Current Learning (nodes in progress)
                             _buildCurrentLearningSection(
                                 _dashboardData!['currentLearningNodes'] ?? []),
                             const SizedBox(height: 24),
 
-                            // Daily Quests
                             _buildQuestsSection(
                                 _dashboardData!['dailyQuests'] ?? []),
                           ],
                         ),
                       ),
                     ),
+          const FloatingChatBubble(),
+        ],
+      ),
       bottomNavigationBar: const BottomNavBar(currentIndex: 0),
     );
   }

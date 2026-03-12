@@ -6,6 +6,7 @@ import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/services/auth_service.dart';
 import 'package:edtech_mobile/core/widgets/bottom_nav_bar.dart';
 import 'package:edtech_mobile/core/widgets/error_widget.dart';
+import 'package:edtech_mobile/features/chat/widgets/chat_bubble.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -216,19 +217,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ],
       ),
-      body: _isLoading
-          ? _buildLoadingState()
-          : _error != null
-              ? AppErrorWidget(message: _error!, onRetry: _loadProfile)
-              : _profileData == null
-                  ? const Center(
-                      child: Text('No data available',
-                          style: AppTextStyles.bodyMedium))
-                  : RefreshIndicator(
-                      onRefresh: _loadProfile,
-                      color: _accentColor,
-                      child: _buildContent(),
-                    ),
+      body: Stack(
+        children: [
+          _isLoading
+              ? _buildLoadingState()
+              : _error != null
+                  ? AppErrorWidget(message: _error!, onRetry: _loadProfile)
+                  : _profileData == null
+                      ? const Center(
+                          child: Text('No data available',
+                              style: AppTextStyles.bodyMedium))
+                      : RefreshIndicator(
+                          onRefresh: _loadProfile,
+                          color: _accentColor,
+                          child: _buildContent(),
+                        ),
+          const FloatingChatBubble(),
+        ],
+      ),
       bottomNavigationBar: const BottomNavBar(currentIndex: 3),
     );
   }

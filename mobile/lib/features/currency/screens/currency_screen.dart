@@ -6,6 +6,7 @@ import 'package:edtech_mobile/core/widgets/error_widget.dart';
 import 'package:edtech_mobile/core/widgets/empty_state.dart';
 import 'package:edtech_mobile/features/currency/screens/rewards_history_screen.dart';
 import 'package:edtech_mobile/features/achievements/screens/achievements_screen.dart';
+import 'package:edtech_mobile/features/chat/widgets/chat_bubble.dart';
 
 class CurrencyScreen extends StatefulWidget {
   const CurrencyScreen({super.key});
@@ -59,14 +60,19 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
           ),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _error != null
-              ? AppErrorWidget(
-                  message: _error!,
-                  onRetry: _loadCurrency,
-                )
-              : _buildContent(),
+      body: Stack(
+        children: [
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : _error != null
+                  ? AppErrorWidget(
+                      message: _error!,
+                      onRetry: _loadCurrency,
+                    )
+                  : _buildContent(),
+          const FloatingChatBubble(),
+        ],
+      ),
       bottomNavigationBar: const BottomNavBar(currentIndex: 2),
     );
   }

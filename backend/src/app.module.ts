@@ -28,6 +28,7 @@ import { UploadsModule } from './uploads/uploads.module';
 import { LessonTypeContentsModule } from './lesson-type-contents/lesson-type-contents.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { ShopModule } from './shop/shop.module';
+import { WorldChatModule } from './world-chat/world-chat.module';
 import { TypeOrmConfigService } from './config/typeorm.config';
 
 @Module({
@@ -66,6 +67,7 @@ import { TypeOrmConfigService } from './config/typeorm.config';
     LessonTypeContentsModule,
     AnalyticsModule,
     ShopModule,
+    WorldChatModule,
   ],
 })
 export class AppModule {}
