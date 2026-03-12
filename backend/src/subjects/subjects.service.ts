@@ -10,6 +10,10 @@ import { UnlockTransactionsService } from '../unlock-transactions/unlock-transac
 
 @Injectable()
 export class SubjectsService {
+  private _subjectsCache: Subject[] | null = null;
+  private _cacheTimestamp = 0;
+  private readonly CACHE_TTL = 60000; // 60 seconds
+
   constructor(
     @InjectRepository(Subject)
     private subjectRepository: Repository<Subject>,
@@ -24,17 +28,27 @@ export class SubjectsService {
     private unlockService: UnlockTransactionsService,
   ) {}
 
+  private invalidateCache() {
+    this._subjectsCache = null;
+    this._cacheTimestamp = 0;
+  }
+
   async findByTrack(track: 'explorer' | 'scholar'): Promise<Subject[]> {
-    return this.subjectRepository.find({
-      where: { track },
-      order: { createdAt: 'ASC' },
-    });
+    const all = await this.findAll();
+    return all.filter(s => s.track === track);
   }
 
   async findAll(): Promise<Subject[]> {
-    return this.subjectRepository.find({
+    const now = Date.now();
+    if (this._subjectsCache && (now - this._cacheTimestamp) < this.CACHE_TTL) {
+      return this._subjectsCache;
+    }
+    const subjects = await this.subjectRepository.find({
       order: { createdAt: 'ASC' },
     });
+    this._subjectsCache = subjects;
+    this._cacheTimestamp = now;
+    return subjects;
   }
 
   async findById(id: string): Promise<Subject | null> {
@@ -48,14 +62,10 @@ export class SubjectsService {
    * Tìm subject theo tên (case-insensitive)
    */
   async findByName(name: string): Promise<Subject | null> {
-    const allSubjects = [
-      ...(await this.findByTrack('explorer')),
-      ...(await this.findByTrack('scholar')),
-    ];
-    
-    return allSubjects.find(
-      s => s.name.toLowerCase() === name.toLowerCase()
-    ) || null;
+    return this.subjectRepository
+      .createQueryBuilder('s')
+      .where('LOWER(s.name) = LOWER(:name)', { name })
+      .getOne();
   }
 
   /**
@@ -83,7 +93,9 @@ export class SubjectsService {
       },
     });
 
-    return await this.subjectRepository.save(newSubject);
+    const saved = await this.subjectRepository.save(newSubject);
+    this.invalidateCache();
+    return saved;
   }
 
   /**
@@ -133,18 +145,18 @@ export class SubjectsService {
       throw new BadRequestException('Subject not found');
     }
     Object.assign(subject, data);
-    return this.subjectRepository.save(subject);
+    const saved = await this.subjectRepository.save(subject);
+    this.invalidateCache();
+    return saved;
   }
 
-  /**
-   * Delete a subject
-   */
   async delete(id: string): Promise<void> {
     const subject = await this.findById(id);
     if (!subject) {
       throw new BadRequestException('Subject not found');
     }
     await this.subjectRepository.remove(subject);
+    this.invalidateCache();
   }
 
   // Fog of War: Chỉ hiện nodes đã unlock

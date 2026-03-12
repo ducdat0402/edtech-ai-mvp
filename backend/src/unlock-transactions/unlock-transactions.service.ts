@@ -498,32 +498,33 @@ export class UnlockTransactionsService {
   ): Promise<{ canAccess: boolean; nodeInfo?: any }> {
     if (!userId) return { canAccess: false };
 
-    const node = await this.nodeRepository.findOne({ where: { id: nodeId } });
+    const node = await this.nodeRepository.findOne({
+      where: { id: nodeId },
+      select: ['id', 'subjectId', 'domainId', 'topicId'],
+    });
     if (!node) return { canAccess: false };
 
-    // Check subject-level unlock
-    if (node.subjectId) {
-      const subjectUnlock = await this.unlockRepository.findOne({
-        where: { userId, unlockLevel: 'subject', subjectId: node.subjectId },
-      });
-      if (subjectUnlock) return { canAccess: true };
-    }
+    // Single query: check all unlock levels at once
+    const unlock = await this.unlockRepository
+      .createQueryBuilder('u')
+      .where('u.userId = :userId', { userId })
+      .andWhere(
+        '(u.unlockLevel = :subject AND u.subjectId = :subjectId) OR ' +
+        '(u.unlockLevel = :domain AND u.domainId = :domainId) OR ' +
+        '(u.unlockLevel = :topic AND u.topicId = :topicId)',
+        {
+          subject: 'subject',
+          domain: 'domain',
+          topic: 'topic',
+          subjectId: node.subjectId || '',
+          domainId: node.domainId || '',
+          topicId: node.topicId || '',
+        },
+      )
+      .limit(1)
+      .getOne();
 
-    // Check domain-level unlock
-    if (node.domainId) {
-      const domainUnlock = await this.unlockRepository.findOne({
-        where: { userId, unlockLevel: 'domain', domainId: node.domainId },
-      });
-      if (domainUnlock) return { canAccess: true };
-    }
-
-    // Check topic-level unlock
-    if (node.topicId) {
-      const topicUnlock = await this.unlockRepository.findOne({
-        where: { userId, unlockLevel: 'topic', topicId: node.topicId },
-      });
-      if (topicUnlock) return { canAccess: true };
-    }
+    if (unlock) return { canAccess: true };
 
     return {
       canAccess: false,
@@ -545,7 +546,8 @@ export class UnlockTransactionsService {
     subjectId: string,
   ): Promise<Set<string>> {
     const unlocks = await this.unlockRepository.find({
-      where: { userId },
+      where: { userId, subjectId },
+      select: ['unlockLevel', 'subjectId', 'domainId', 'topicId'],
     });
 
     // Check subject-level unlock
