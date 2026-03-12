@@ -32,8 +32,9 @@ export class UserCurrencyService {
         currency = this.currencyRepository.create({
           userId,
           coins: 0,
+          diamonds: 0,
           xp: 0,
-          level: 1, // Mặc định level 1
+          level: 1,
           currentStreak: 0,
           shards: {},
         });
@@ -51,10 +52,10 @@ export class UserCurrencyService {
     }
 
     if (!currency) {
-      // Fallback an toàn – không nên xảy ra, nhưng tránh trả về null
       currency = this.currencyRepository.create({
         userId,
         coins: 0,
+        diamonds: 0,
         xp: 0,
         level: 1,
         currentStreak: 0,
@@ -176,6 +177,45 @@ export class UserCurrencyService {
       .set({ coins: () => `coins + ${Math.floor(amount)}` })
       .where('userId = :userId', { userId })
       .execute();
+  }
+
+  async addDiamonds(userId: string, amount: number): Promise<UserCurrency> {
+    await this.getOrCreate(userId);
+    await this.currencyRepository
+      .createQueryBuilder()
+      .update(UserCurrency)
+      .set({ diamonds: () => `diamonds + ${Math.floor(amount)}` })
+      .where('userId = :userId', { userId })
+      .execute();
+    return this.getOrCreate(userId);
+  }
+
+  async addDiamondsTransactional(manager: EntityManager, userId: string, amount: number): Promise<void> {
+    await manager
+      .createQueryBuilder()
+      .update(UserCurrency)
+      .set({ diamonds: () => `diamonds + ${Math.floor(amount)}` })
+      .where('userId = :userId', { userId })
+      .execute();
+  }
+
+  async deductDiamonds(userId: string, amount: number): Promise<UserCurrency> {
+    await this.getOrCreate(userId);
+    const result = await this.currencyRepository
+      .createQueryBuilder()
+      .update(UserCurrency)
+      .set({ diamonds: () => `diamonds - ${Math.floor(amount)}` })
+      .where('userId = :userId AND diamonds >= :amount', { userId, amount: Math.floor(amount) })
+      .execute();
+    if (result.affected === 0) {
+      throw new Error('Insufficient diamonds');
+    }
+    return this.getOrCreate(userId);
+  }
+
+  async hasEnoughDiamonds(userId: string, amount: number): Promise<boolean> {
+    const currency = await this.getOrCreate(userId);
+    return currency.diamonds >= amount;
   }
 
   async addXP(userId: string, amount: number): Promise<{

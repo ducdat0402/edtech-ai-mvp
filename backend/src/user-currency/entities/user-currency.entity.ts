@@ -23,10 +23,13 @@ export class UserCurrency {
   userId: string;
 
   @Column({ type: 'int', default: 0 })
-  coins: number; // Kim cương (diamonds)
+  coins: number;
 
   @Column({ type: 'int', default: 0 })
-  xp: number; // Total experience points
+  diamonds: number;
+
+  @Column({ type: 'int', default: 0 })
+  xp: number;
 
   @Column({ type: 'int', default: 1 })
   level: number; // Current level (starts at 1)

@@ -194,10 +194,10 @@ export class SubjectsService {
     const currency = await this.currencyService.getCurrency(userId);
     const requiredCoins = subject.unlockConditions?.minCoin || 20;
 
-    if (currency.coins < requiredCoins) {
+    if ((currency.diamonds ?? 0) < requiredCoins) {
       return {
         canAccess: false,
-        reason: 'Insufficient coins',
+        reason: 'Insufficient diamonds',
         requiredCoins,
       };
     }
@@ -231,10 +231,10 @@ export class SubjectsService {
 
     return {
       subject,
-      isUnlocked: hasProgress || subject.track === 'explorer', // Explorer luôn mở
-      canUnlock: currency.coins >= requiredCoins,
-      requiredCoins,
-      userCoins: currency.coins,
+      isUnlocked: hasProgress || subject.track === 'explorer',
+      canUnlock: (currency.diamonds ?? 0) >= requiredCoins,
+      requiredDiamonds: requiredCoins,
+      userDiamonds: currency.diamonds ?? 0,
     };
   }
 

@@ -258,7 +258,7 @@ export class PaymentService {
   }> {
     const currency = await this.userCurrencyService.getOrCreate(userId);
     return {
-      diamonds: currency.coins,
+      diamonds: currency.diamonds ?? 0,
       level: currency.level,
       xp: currency.xp,
     };
@@ -364,10 +364,10 @@ export class PaymentService {
         });
 
         if (!existingCurrency) {
-          // Create user currency if not exists
           const newCurrency = queryRunner.manager.create(UserCurrency, {
             userId: payment.userId,
-            coins: diamondAmount,
+            coins: 0,
+            diamonds: diamondAmount,
             xp: 0,
             level: 1,
             currentStreak: 0,
@@ -375,11 +375,10 @@ export class PaymentService {
           });
           await queryRunner.manager.save(newCurrency);
         } else {
-          // Atomic increment within transaction
           await queryRunner.manager
             .createQueryBuilder()
             .update(UserCurrency)
-            .set({ coins: () => `coins + ${Math.floor(diamondAmount)}` })
+            .set({ diamonds: () => `diamonds + ${Math.floor(diamondAmount)}` })
             .where('userId = :userId', { userId: payment.userId })
             .execute();
         }

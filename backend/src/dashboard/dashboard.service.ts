@@ -111,7 +111,8 @@ export class DashboardService {
         totalNodesCount,
         isUnlocked: totalNodesCount > 0 || subject.track === 'explorer',
         canUnlock: true,
-        requiredCoins: subject.unlockConditions?.minCoin || 0,
+        requiredDiamonds: subject.unlockConditions?.minCoin || 0,
+        userDiamonds: currency.diamonds ?? 0,
         userCoins: currency.coins,
       });
 
@@ -134,6 +135,7 @@ export class DashboardService {
     const totalXP = currency.xp;
     const currentStreak = currency.currentStreak;
     const totalCoins = currency.coins;
+    const totalDiamonds = currency.diamonds ?? 0;
     const currentLevel = currency.level || 1;
     const levelInfo = this.currencyService.getLevelInfo(totalXP, currentLevel);
 
@@ -142,6 +144,7 @@ export class DashboardService {
         totalXP,
         currentStreak,
         totalCoins,
+        totalDiamonds,
         totalNodesCompleted,
         shards: currency.shards,
         level: currentLevel,

@@ -248,13 +248,13 @@ export class LearningNodesController {
     }
 
     // Check and deduct diamonds
-    const hasEnough = await this.userCurrencyService.hasEnoughCoins(userId, AI_COST.GENERATE_EXAMPLE);
+    const hasEnough = await this.userCurrencyService.hasEnoughDiamonds(userId, AI_COST.GENERATE_EXAMPLE);
     if (!hasEnough) {
       throw new BadRequestException(
         `Không đủ kim cương. Cần ${AI_COST.GENERATE_EXAMPLE} 💎 để sử dụng tính năng này.`,
       );
     }
-    await this.userCurrencyService.deductCoins(userId, AI_COST.GENERATE_EXAMPLE);
+    await this.userCurrencyService.deductDiamonds(userId, AI_COST.GENERATE_EXAMPLE);
 
     return this.aiService.generateExample(title.trim(), content.trim(), exampleType);
   }
@@ -303,13 +303,13 @@ export class LearningNodesController {
     }
 
     // Check and deduct diamonds
-    const hasEnough = await this.userCurrencyService.hasEnoughCoins(userId, AI_COST.GENERATE_QUIZ_EXPLANATIONS);
+    const hasEnough = await this.userCurrencyService.hasEnoughDiamonds(userId, AI_COST.GENERATE_QUIZ_EXPLANATIONS);
     if (!hasEnough) {
       throw new BadRequestException(
         `Không đủ kim cương. Cần ${AI_COST.GENERATE_QUIZ_EXPLANATIONS} 💎 để sử dụng tính năng này.`,
       );
     }
-    await this.userCurrencyService.deductCoins(userId, AI_COST.GENERATE_QUIZ_EXPLANATIONS);
+    await this.userCurrencyService.deductDiamonds(userId, AI_COST.GENERATE_QUIZ_EXPLANATIONS);
 
     return this.aiService.generateQuizExplanations(
       question.trim(),

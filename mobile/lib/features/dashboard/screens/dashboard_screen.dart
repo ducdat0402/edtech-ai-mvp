@@ -145,6 +145,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             _buildQuickActions(),
                             const SizedBox(height: 24),
 
+                            // Subjects list (moved up)
+                            _buildSubjectsSection(
+                              'Môn học',
+                              _dashboardData!['subjects'] ?? [],
+                            ),
+                            const SizedBox(height: 24),
+
                             // Current Learning (nodes in progress)
                             _buildCurrentLearningSection(
                                 _dashboardData!['currentLearningNodes'] ?? []),
@@ -153,13 +160,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             // Daily Quests
                             _buildQuestsSection(
                                 _dashboardData!['dailyQuests'] ?? []),
-                            const SizedBox(height: 24),
-
-                            // All Subjects
-                            _buildSubjectsSection(
-                              'Môn học',
-                              _dashboardData!['subjects'] ?? [],
-                            ),
                           ],
                         ),
                       ),
@@ -193,12 +193,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final xpForNextLevel = levelInfo?['xpForNextLevel'] as int? ?? 100;
     final totalXP = stats['totalXP'] as int? ?? 0;
     final coins = stats['totalCoins'] ?? stats['coins'] ?? 0;
+    final diamonds = stats['totalDiamonds'] ?? stats['diamonds'] ?? 0;
     final streak = stats['currentStreak'] ?? stats['streak'] ?? 0;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Level Card using new widget
         GestureDetector(
           onTap: () => _showLevelTitlesDialog(),
           child: LevelCard(
@@ -211,32 +211,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
         const SizedBox(height: 20),
 
-        // Stats Row with new widgets
         Row(
           children: [
-            // XP Display
-            Expanded(
-              child: _buildStatCard(
-                icon: Icons.star_rounded,
-                label: 'XP',
-                value: totalXP,
-                color: AppColors.xpGold,
-                onTap: () => context.push('/currency'),
-              ),
-            ),
-            const SizedBox(width: 12),
-            // Coins Display
             Expanded(
               child: _buildStatCard(
                 icon: Icons.monetization_on_rounded,
                 label: 'Coins',
                 value: coins is int ? coins : 0,
                 color: AppColors.coinGold,
-                onTap: () => context.push('/currency'),
+                onTap: () => context.push('/shop'),
               ),
             ),
             const SizedBox(width: 12),
-            // Streak Display
+            Expanded(
+              child: _buildStatCard(
+                icon: Icons.diamond_rounded,
+                label: 'Kim cương',
+                value: diamonds is int ? diamonds : 0,
+                color: AppColors.cyanNeon,
+                onTap: () => context.push('/payment'),
+              ),
+            ),
+            const SizedBox(width: 12),
             Expanded(
               child: _buildStatCard(
                 icon: Icons.local_fire_department_rounded,
@@ -508,6 +504,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ],
         ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _ActionCard(
+                icon: Icons.storefront_rounded,
+                label: 'Cửa hàng',
+                color: AppColors.orangeNeon,
+                onTap: () => context.push('/shop'),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _ActionCard(
+                icon: Icons.diamond_rounded,
+                label: 'Mua Kim cương',
+                color: AppColors.pinkNeon,
+                onTap: () => context.push('/payment'),
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Expanded(child: SizedBox()),
+          ],
+        ),
       ],
     );
   }
@@ -700,8 +720,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
         Row(
           children: [
             Text(title, style: AppTextStyles.h3),
+            const Spacer(),
+            // Search button
+            IconButton(
+              icon: const Icon(Icons.search, color: AppColors.textSecondary),
+              tooltip: 'Tìm môn học',
+              onPressed: () => _showSubjectSearchDialog(subjects),
+            ),
             if (_isContributor) ...[
-              const Spacer(),
+              const SizedBox(width: 4),
               GestureDetector(
                 onTap: () => context.push('/contributor/my-contributions'),
                 child: Row(
@@ -852,6 +879,103 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ),
       ],
+    );
+  }
+
+  Future<void> _showSubjectSearchDialog(List<dynamic> subjects) async {
+    final searchController = TextEditingController();
+    List<dynamic> filtered = List<dynamic>.from(subjects);
+
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            void applyAndSetState() {
+              final q = searchController.text.toLowerCase().trim();
+              filtered = q.isEmpty
+                  ? List<dynamic>.from(subjects)
+                  : subjects
+                      .where((s) =>
+                          (s['name'] as String? ?? '')
+                              .toLowerCase()
+                              .contains(q) ||
+                          (s['description'] as String? ?? '')
+                              .toLowerCase()
+                              .contains(q))
+                      .toList();
+              setState(() {});
+            }
+
+            return AlertDialog(
+              title: const Text('Tìm môn học'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: searchController,
+                    autofocus: true,
+                    decoration: const InputDecoration(
+                      hintText: 'Nhập tên hoặc mô tả môn học',
+                      prefixIcon: Icon(Icons.search),
+                    ),
+                    onChanged: (_) => applyAndSetState(),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.maxFinite,
+                    height: 260,
+                    child: filtered.isEmpty
+                        ? const Center(
+                            child: Text('Không tìm thấy môn phù hợp'),
+                          )
+                        : ListView.builder(
+                            itemCount: filtered.length,
+                            itemBuilder: (context, index) {
+                              final subject = filtered[index];
+                              final subjectId = subject['id'] as String?;
+                              final name =
+                                  subject['name'] as String? ?? 'Môn học';
+                              final description =
+                                  subject['description'] as String?;
+                              final metadata = subject['metadata']
+                                  as Map<String, dynamic>?;
+                              final icon =
+                                  metadata?['icon'] as String? ?? '📚';
+
+                              return ListTile(
+                                leading: Text(icon,
+                                    style: const TextStyle(fontSize: 24)),
+                                title: Text(name),
+                                subtitle: description != null
+                                    ? Text(
+                                        description,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      )
+                                    : null,
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  if (subjectId != null) {
+                                    context.push('/subjects/$subjectId/intro');
+                                  }
+                                },
+                              );
+                            },
+                          ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Đóng'),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 

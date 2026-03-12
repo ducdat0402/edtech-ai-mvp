@@ -142,25 +142,99 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
       };
 
       await apiService.completeOnboarding(data);
-
-      if (mounted) {
-        _pageController.nextPage(
-          duration: const Duration(milliseconds: 400),
-          curve: Curves.easeInOut,
-        );
-      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Có lỗi xảy ra: $e'),
-            backgroundColor: AppColors.errorGlow,
+            content: Text(
+              'Lưu thông tin bị lỗi, nhưng bạn vẫn có thể tiếp tục: $e',
+            ),
+            backgroundColor: AppColors.orangeNeon,
           ),
         );
       }
-    } finally {
-      if (mounted) setState(() => _isSaving = false);
     }
+
+    if (!mounted) return;
+    setState(() => _isSaving = false);
+
+    // Sau khi lưu xong, hiện popup cho user chọn: học thử 1 bài hoặc tạo lộ trình cá nhân
+    await _showOnboardingChoiceSheet();
+  }
+
+  Future<void> _showOnboardingChoiceSheet() async {
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return Container(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+          decoration: const BoxDecoration(
+            color: AppColors.bgPrimary,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                      color: AppColors.bgTertiary,
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  ),
+                ),
+                Text(
+                  'Bắt đầu như thế nào?',
+                  style: AppTextStyles.h4.copyWith(
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Bạn có thể học thử 1 bài trước, hoặc để AI thiết kế lộ trình cá nhân cho bạn.',
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                // Option 1: Try a lesson
+                _buildChoiceCard(
+                  icon: Icons.play_circle_filled_rounded,
+                  title: 'Học thử 1 bài',
+                  subtitle: 'Trải nghiệm nhanh một bài học để làm quen',
+                  gradient: [AppColors.cyanNeon, AppColors.purpleNeon],
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _goToTryLesson();
+                  },
+                ),
+                const SizedBox(height: 12),
+                // Option 2: Personalized path
+                _buildChoiceCard(
+                  icon: Icons.route_rounded,
+                  title: 'Tạo lộ trình cá nhân',
+                  subtitle:
+                      'Thiết kế lộ trình thông qua trả lời câu hỏi hoặc chat với AI',
+                  gradient: [AppColors.pinkNeon, AppColors.orangeNeon],
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _goToPersonalizedPath();
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   void _previousPage() {

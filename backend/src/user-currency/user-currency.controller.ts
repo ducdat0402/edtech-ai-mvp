@@ -15,6 +15,7 @@ export class UserCurrencyController {
     
     return {
       coins: currency.coins,
+      diamonds: currency.diamonds ?? 0,
       xp: currency.xp,
       level: currency.level || 1,
       levelInfo: {

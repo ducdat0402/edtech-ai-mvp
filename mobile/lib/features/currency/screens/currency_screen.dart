@@ -80,6 +80,7 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
     }
 
     final coins = _currencyData!['coins'] as int? ?? 0;
+    final diamonds = _currencyData!['diamonds'] as int? ?? 0;
     final xp = _currencyData!['xp'] as int? ?? 0;
     final streak = _currencyData!['currentStreak'] as int? ?? 0;
     final shards = _currencyData!['shards'] as Map<String, dynamic>? ?? {};
@@ -90,23 +91,30 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Header Card với tổng quan
-          _buildHeaderCard(coins, xp, streak),
+          _buildHeaderCard(coins, diamonds, xp, streak),
           
           const SizedBox(height: 24),
-          
-          // Coins Card
+
           _buildCurrencyCard(
             title: 'Coins',
             value: coins.toString(),
             icon: Icons.monetization_on,
             color: Colors.amber,
-            description: 'Tiền tệ học thuật',
+            description: 'Kiếm qua học tập, dùng trong Cửa hàng',
           ),
-          
+
           const SizedBox(height: 16),
-          
-          // XP Card
+
+          _buildCurrencyCard(
+            title: 'Kim cương',
+            value: diamonds.toString(),
+            icon: Icons.diamond,
+            color: Colors.cyanAccent.shade400,
+            description: 'Mở khóa nội dung & tính năng AI',
+          ),
+
+          const SizedBox(height: 16),
+
           _buildCurrencyCard(
             title: 'Experience Points (XP)',
             value: xp.toString(),
@@ -170,7 +178,7 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
     );
   }
 
-  Widget _buildHeaderCard(int coins, int xp, int streak) {
+  Widget _buildHeaderCard(int coins, int diamonds, int xp, int streak) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -207,6 +215,12 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
                 value: coins.toString(),
                 label: 'Coins',
                 color: Colors.amber,
+              ),
+              _buildStatItem(
+                icon: Icons.diamond,
+                value: diamonds.toString(),
+                label: 'Kim cương',
+                color: Colors.cyanAccent,
               ),
               _buildStatItem(
                 icon: Icons.star,
@@ -558,8 +572,9 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
                   const SizedBox(height: 4),
                   Text(
                     '• Hoàn thành bài học để nhận XP và Coins\n'
-                    '• Học đều đặn để tăng Streak\n'
-                    '• Thu thập Shards từ các bài học đặc biệt',
+                    '• Coins dùng để mua vật phẩm trong Cửa hàng\n'
+                    '• Kim cương dùng để mở khóa nội dung & AI\n'
+                    '• Học đều đặn để tăng Streak',
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.blue.shade700,

@@ -312,16 +312,15 @@ export class UnlockTransactionsService {
 
     if (price > 0) {
       try {
-        await this.currencyService.deductCoins(userId, price);
+        await this.currencyService.deductDiamonds(userId, price);
       } catch {
         const currency = await this.currencyService.getCurrency(userId);
         throw new BadRequestException(
-          `Không đủ kim cương. Cần ${price} 💎, bạn có ${currency.coins} 💎.`,
+          `Không đủ kim cương. Cần ${price} 💎, bạn có ${currency.diamonds ?? 0} 💎.`,
         );
       }
     }
 
-    // Create unlock record
     const unlock = this.unlockRepository.create({
       userId,
       unlockLevel: 'subject',
@@ -386,11 +385,11 @@ export class UnlockTransactionsService {
 
     if (price > 0) {
       try {
-        await this.currencyService.deductCoins(userId, price);
+        await this.currencyService.deductDiamonds(userId, price);
       } catch {
         const currency = await this.currencyService.getCurrency(userId);
         throw new BadRequestException(
-          `Không đủ kim cương. Cần ${price} 💎, bạn có ${currency.coins} 💎.`,
+          `Không đủ kim cương. Cần ${price} 💎, bạn có ${currency.diamonds ?? 0} 💎.`,
         );
       }
     }
@@ -455,13 +454,12 @@ export class UnlockTransactionsService {
     const lessonsCount = topicNodes.length;
     const price = lessonsCount * DIAMOND_PER_LESSON; // no discount
 
-    // Atomic deduct
     try {
-      await this.currencyService.deductCoins(userId, price);
+      await this.currencyService.deductDiamonds(userId, price);
     } catch {
       const currency = await this.currencyService.getCurrency(userId);
       throw new BadRequestException(
-        `Không đủ kim cương. Cần ${price} 💎, bạn có ${currency.coins} 💎.`,
+        `Không đủ kim cương. Cần ${price} 💎, bạn có ${currency.diamonds ?? 0} 💎.`,
       );
     }
 
