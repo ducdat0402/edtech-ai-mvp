@@ -8,10 +8,13 @@ import 'package:edtech_mobile/theme/text_styles.dart';
 
 class AllLessonsScreen extends StatefulWidget {
   final String subjectId;
+  /// When true, after load open the first lesson's types screen for onboarding flow.
+  final bool openFirstLesson;
 
   const AllLessonsScreen({
     super.key,
     required this.subjectId,
+    this.openFirstLesson = false,
   });
 
   @override
@@ -31,8 +34,28 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
   // Track expanded state
   final Set<String> _expandedDomains = {};
   final Set<String> _expandedTopics = {};
+  bool _hasOpenedFirstLesson = false;
 
   bool get _isContributor => _userRole == 'contributor' || _userRole == 'admin';
+
+  /// Opens the first available lesson (first domain -> first topic -> first node) for onboarding flow.
+  void _openFirstLessonIfPossible() {
+    if (_hasOpenedFirstLesson || _domains.isEmpty) return;
+    _hasOpenedFirstLesson = true;
+    final domain = _domains.first;
+    final topics = domain['_topics'] as List<Map<String, dynamic>>? ?? [];
+    if (topics.isEmpty) return;
+    final topic = topics.first;
+    final nodes = (topic['learningNodes'] as List<dynamic>?)?.cast<Map<String, dynamic>>() ?? [];
+    if (nodes.isEmpty) return;
+    final lesson = nodes.first;
+    final nodeId = lesson['id'] as String?;
+    final title = lesson['title'] as String? ?? 'Bài học';
+    if (nodeId == null) return;
+    context.push('/lessons/$nodeId/types', extra: {'title': title}).then((_) {
+      if (mounted) _loadData();
+    });
+  }
 
   @override
   void initState() {
@@ -78,6 +101,13 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
           _domains = domains;
           _isLoading = false;
         });
+        // After onboarding: open first lesson for first-time experience
+        if (widget.openFirstLesson && domains.isNotEmpty) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            _openFirstLessonIfPossible();
+          });
+        }
       }
     } catch (e) {
       if (mounted) {

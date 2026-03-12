@@ -152,7 +152,15 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
       await apiService.completeOnboarding(data);
 
       if (mounted) {
-        context.go('/dashboard');
+        // Redirect to first selected subject to try first lesson
+        final firstSubjectId = _selectedSubjectIds.isNotEmpty
+            ? _selectedSubjectIds.first
+            : null;
+        if (firstSubjectId != null) {
+          context.go('/subjects/$firstSubjectId/all-lessons?openFirst=1');
+        } else {
+          context.go('/dashboard');
+        }
       }
     } catch (e) {
       if (mounted) {

@@ -27,23 +27,50 @@ export class UserCurrencyService {
     });
 
     if (!currency) {
+      try {
+        // Tạo bản ghi mới lần đầu
+        currency = this.currencyRepository.create({
+          userId,
+          coins: 0,
+          xp: 0,
+          level: 1, // Mặc định level 1
+          currentStreak: 0,
+          shards: {},
+        });
+        currency = await this.currencyRepository.save(currency);
+      } catch (e: any) {
+        // Trường hợp race condition: một request khác vừa tạo record với cùng userId
+        if (e && e.code === '23505') {
+          currency = await this.currencyRepository.findOne({
+            where: { userId },
+          });
+        } else {
+          throw e;
+        }
+      }
+    }
+
+    if (!currency) {
+      // Fallback an toàn – không nên xảy ra, nhưng tránh trả về null
       currency = this.currencyRepository.create({
         userId,
         coins: 0,
         xp: 0,
-        level: 1, // Mặc định level 1
+        level: 1,
         currentStreak: 0,
         shards: {},
       });
       currency = await this.currencyRepository.save(currency);
-    } else {
-      // Luôn tính lại level từ XP để đảm bảo chính xác
-      const calculatedLevel = this.calculateLevelFromXP(currency.xp);
-      if (currency.level !== calculatedLevel) {
-        console.log(`🔄 Syncing level for user ${userId}: ${currency.level} → ${calculatedLevel} (XP: ${currency.xp})`);
-        currency.level = calculatedLevel;
-        await this.currencyRepository.save(currency);
-      }
+    }
+
+    // Luôn tính lại level từ XP để đảm bảo chính xác
+    const calculatedLevel = this.calculateLevelFromXP(currency.xp);
+    if (currency.level !== calculatedLevel) {
+      console.log(
+        `🔄 Syncing level for user ${userId}: ${currency.level} → ${calculatedLevel} (XP: ${currency.xp})`,
+      );
+      currency.level = calculatedLevel;
+      await this.currencyRepository.save(currency);
     }
 
     return currency;

@@ -78,9 +78,22 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
       'lessonData': lessonData,
       'title': widget.title,
       'endQuiz': endQuiz,
-    }).then((_) {
-      // Refresh progress when returning from lesson
-      if (mounted) _loadData();
+    }).then((_) async {
+      if (!mounted) return;
+      await _loadData();
+      if (!mounted) return;
+      // Remind that full lesson (all 4 types) counts as 1 streak
+      if (!_isLessonComplete) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text(
+              'Bạn cần hoàn thành đủ 4 dạng bài trong bài này để được tính 1 streak.',
+            ),
+            backgroundColor: AppColors.streakOrange.withOpacity(0.9),
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
     });
   }
 
@@ -181,6 +194,11 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Streak hint when lesson not fully complete
+          if (!_isLessonComplete && totalCount > 0) ...[
+            _buildStreakHintBanner(),
+            const SizedBox(height: 16),
+          ],
           // Progress header
           _buildProgressHeader(completedCount, totalCount),
           const SizedBox(height: 24),
@@ -196,6 +214,33 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
             const SizedBox(height: 20),
             _buildCompletionBanner(),
           ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStreakHintBanner() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppColors.streakOrange.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.streakOrange.withOpacity(0.35)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.local_fire_department_rounded, color: AppColors.streakOrange, size: 24),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              'Hoàn thành đủ 4 dạng bài trong bài này để được tính 1 streak.',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
         ],
       ),
     );

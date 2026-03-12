@@ -139,7 +139,11 @@ final GoRouter appRouter = GoRouter(
       path: '/subjects/:id/all-lessons',
       builder: (context, state) {
         final subjectId = state.pathParameters['id']!;
-        return AllLessonsScreen(subjectId: subjectId);
+        final openFirstLesson = state.uri.queryParameters['openFirst'] == '1';
+        return AllLessonsScreen(
+          subjectId: subjectId,
+          openFirstLesson: openFirstLesson,
+        );
       },
     ),
     GoRoute(
