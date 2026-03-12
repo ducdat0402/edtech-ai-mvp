@@ -31,7 +31,8 @@
     "create-admin": "ts-node -r tsconfig-paths/register scripts/create-admin.ts",
     "test:db": "node scripts/test-connection.js",
     "check-cloudinary": "ts-node -r tsconfig-paths/register scripts/check-cloudinary.ts",
-    "migrate:content-formats": "ts-node -r tsconfig-paths/register scripts/migrate-content-formats.ts"
+    "migrate:content-formats": "ts-node -r tsconfig-paths/register scripts/migrate-content-formats.ts",
+    "seed:advanced-subject-lessons": "ts-node -r tsconfig-paths/register src/seed/seed-advanced-subject-lessons.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
