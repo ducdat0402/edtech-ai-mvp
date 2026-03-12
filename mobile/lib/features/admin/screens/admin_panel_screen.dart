@@ -15,6 +15,7 @@ import 'package:edtech_mobile/features/lessons/screens/image_gallery_lesson_scre
 import 'package:edtech_mobile/features/lessons/screens/video_lesson_screen.dart';
 import 'package:edtech_mobile/features/lessons/screens/text_lesson_screen.dart';
 import 'package:edtech_mobile/theme/theme.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:io';
 
@@ -38,14 +39,19 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
   String? _error;
   late TabController _tabController;
 
+  Map<String, dynamic>? _analyticsData;
+  bool _isLoadingAnalytics = false;
+  String _analyticsPeriod = '30d';
+
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 5, vsync: this);
     _loadPendingEdits();
     _loadAllContentItems();
     _loadEditHistory();
     _loadPendingContributions();
+    _loadAnalytics();
   }
 
   @override
@@ -188,6 +194,17 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
           );
         }
       }
+    }
+  }
+
+  Future<void> _loadAnalytics() async {
+    setState(() => _isLoadingAnalytics = true);
+    try {
+      final apiService = Provider.of<ApiService>(context, listen: false);
+      final data = await apiService.getAnalyticsOverview(period: _analyticsPeriod);
+      if (mounted) setState(() { _analyticsData = data; _isLoadingAnalytics = false; });
+    } catch (e) {
+      if (mounted) setState(() => _isLoadingAnalytics = false);
     }
   }
 
@@ -583,6 +600,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
             Tab(text: 'Duyệt đóng góp', icon: Icon(Icons.volunteer_activism)),
             Tab(text: 'Quản lý bài học', icon: Icon(Icons.article_rounded)),
             Tab(text: 'Lịch sử', icon: Icon(Icons.history_rounded)),
+            Tab(text: 'Analytics', icon: Icon(Icons.analytics_rounded)),
           ],
         ),
         actions: [
@@ -596,8 +614,10 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                 _loadPendingContributions();
               } else if (_tabController.index == 2) {
                 _loadAllContentItems();
-              } else {
+              } else if (_tabController.index == 3) {
                 _loadEditHistory();
+              } else {
+                _loadAnalytics();
               }
             },
             tooltip: 'Làm mới',
@@ -611,6 +631,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
           _buildPendingContributionsTab(),
           _buildContentItemsTab(),
           _buildHistoryTab(),
+          _buildAnalyticsTab(),
         ],
       ),
     );
@@ -1777,6 +1798,364 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
     } else {
       return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
     }
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // ANALYTICS TAB
+  // ═══════════════════════════════════════════════════════════════
+
+  Widget _buildAnalyticsTab() {
+    if (_isLoadingAnalytics) {
+      return const Center(child: CircularProgressIndicator(color: AppColors.purpleNeon));
+    }
+    if (_analyticsData == null) {
+      return Center(
+        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+          const Icon(Icons.analytics_outlined, size: 64, color: AppColors.textTertiary),
+          const SizedBox(height: 16),
+          Text('Không thể tải dữ liệu', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textTertiary)),
+          const SizedBox(height: 16),
+          ElevatedButton(onPressed: _loadAnalytics, style: ElevatedButton.styleFrom(backgroundColor: AppColors.purpleNeon), child: const Text('Thử lại')),
+        ]),
+      );
+    }
+    final users = _analyticsData!['users'] as Map<String, dynamic>? ?? {};
+    final learning = _analyticsData!['learning'] as Map<String, dynamic>? ?? {};
+    final revenue = _analyticsData!['revenue'] as Map<String, dynamic>? ?? {};
+    final engagement = _analyticsData!['engagement'] as Map<String, dynamic>? ?? {};
+    final content = _analyticsData!['content'] as Map<String, dynamic>? ?? {};
+
+    return RefreshIndicator(
+      onRefresh: _loadAnalytics,
+      color: AppColors.purpleNeon,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(16),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          _buildPeriodSelector(),
+          const SizedBox(height: 16),
+          _buildAnalyticsSectionTitle('User Metrics', Icons.people_rounded, AppColors.purpleNeon),
+          const SizedBox(height: 12),
+          _buildUserMetricsCards(users),
+          const SizedBox(height: 8),
+          _buildRoleDistributionChart(users),
+          const SizedBox(height: 24),
+          _buildAnalyticsSectionTitle('Learning Metrics', Icons.school_rounded, AppColors.cyanNeon),
+          const SizedBox(height: 12),
+          _buildLearningMetricsCards(learning),
+          const SizedBox(height: 8),
+          _buildSubjectCompletionChart(learning),
+          const SizedBox(height: 24),
+          _buildAnalyticsSectionTitle('Revenue', Icons.diamond_rounded, AppColors.xpGold),
+          const SizedBox(height: 12),
+          _buildRevenueMetricsCards(revenue),
+          const SizedBox(height: 8),
+          _buildRevenueByPackageChart(revenue),
+          const SizedBox(height: 24),
+          _buildAnalyticsSectionTitle('Engagement', Icons.local_fire_department_rounded, AppColors.streakOrange),
+          const SizedBox(height: 12),
+          _buildEngagementMetricsCards(engagement),
+          const SizedBox(height: 8),
+          _buildStreakDistributionChart(engagement),
+          const SizedBox(height: 24),
+          _buildAnalyticsSectionTitle('Content', Icons.library_books_rounded, AppColors.successNeon),
+          const SizedBox(height: 12),
+          _buildContentMetricsCards(content),
+          const SizedBox(height: 8),
+          _buildTopContributorsTable(content),
+          const SizedBox(height: 40),
+        ]),
+      ),
+    );
+  }
+
+  Widget _buildPeriodSelector() {
+    return Row(
+      children: ['7d', '30d', '90d'].map((p) {
+        final isActive = _analyticsPeriod == p;
+        final label = p == '7d' ? '7 ngày' : p == '30d' ? '30 ngày' : '90 ngày';
+        return Padding(
+          padding: const EdgeInsets.only(right: 8),
+          child: GestureDetector(
+            onTap: () { setState(() => _analyticsPeriod = p); _loadAnalytics(); },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                gradient: isActive ? AppGradients.purplePink : null,
+                color: isActive ? null : AppColors.bgSecondary,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: isActive ? AppColors.purpleNeon : AppColors.borderPrimary),
+              ),
+              child: Text(label, style: AppTextStyles.labelMedium.copyWith(color: isActive ? Colors.white : AppColors.textSecondary)),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildAnalyticsSectionTitle(String title, IconData icon, Color color) {
+    return Row(children: [
+      Icon(icon, color: color, size: 22),
+      const SizedBox(width: 8),
+      Text(title, style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary, fontSize: 16)),
+    ]);
+  }
+
+  Widget _buildAnalyticsStatCard(String label, String value, {Color? color, IconData? icon}) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(color: AppColors.bgSecondary, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.borderPrimary)),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          if (icon != null) Icon(icon, color: color ?? AppColors.textTertiary, size: 18),
+          if (icon != null) const SizedBox(height: 6),
+          Text(value, style: AppTextStyles.numberMedium.copyWith(color: color ?? AppColors.textPrimary, fontSize: 20)),
+          const SizedBox(height: 4),
+          Text(label, style: AppTextStyles.caption.copyWith(color: AppColors.textTertiary)),
+        ]),
+      ),
+    );
+  }
+
+  Widget _buildUserMetricsCards(Map<String, dynamic> users) {
+    return Column(children: [
+      Row(children: [
+        _buildAnalyticsStatCard('Tổng users', '${users['totalUsers'] ?? 0}', icon: Icons.people, color: AppColors.purpleNeon),
+        const SizedBox(width: 8),
+        _buildAnalyticsStatCard('Mới hôm nay', '${users['newUsersToday'] ?? 0}', icon: Icons.person_add, color: AppColors.successNeon),
+        const SizedBox(width: 8),
+        _buildAnalyticsStatCard('Mới trong kỳ', '${users['newUsersPeriod'] ?? 0}', icon: Icons.trending_up, color: AppColors.cyanNeon),
+      ]),
+      const SizedBox(height: 8),
+      Row(children: [
+        _buildAnalyticsStatCard('DAU', '${users['dau'] ?? 0}', icon: Icons.today, color: AppColors.orangeNeon),
+        const SizedBox(width: 8),
+        _buildAnalyticsStatCard('MAU', '${users['mau'] ?? 0}', icon: Icons.calendar_month, color: AppColors.pinkNeon),
+        const SizedBox(width: 8),
+        _buildAnalyticsStatCard('Retention', '${users['retentionRate'] ?? 0}%', icon: Icons.replay, color: AppColors.warningNeon),
+      ]),
+    ]);
+  }
+
+  Widget _buildRoleDistributionChart(Map<String, dynamic> users) {
+    final dist = List<Map<String, dynamic>>.from(users['roleDistribution'] ?? []);
+    if (dist.isEmpty) return const SizedBox.shrink();
+    final colors = [AppColors.purpleNeon, AppColors.cyanNeon, AppColors.orangeNeon];
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(color: AppColors.bgSecondary, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.borderPrimary)),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text('Phân bổ vai trò', style: AppTextStyles.labelLarge),
+        const SizedBox(height: 12),
+        SizedBox(height: 160, child: Row(children: [
+          Expanded(child: PieChart(PieChartData(
+            sectionsSpace: 2, centerSpaceRadius: 30,
+            sections: List.generate(dist.length, (i) {
+              final count = int.tryParse('${dist[i]['count']}') ?? 0;
+              return PieChartSectionData(value: count.toDouble(), color: colors[i % colors.length], title: '$count',
+                titleStyle: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold), radius: 40);
+            }),
+          ))),
+          const SizedBox(width: 16),
+          Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: List.generate(dist.length, (i) {
+            return Padding(padding: const EdgeInsets.symmetric(vertical: 4), child: Row(children: [
+              Container(width: 12, height: 12, decoration: BoxDecoration(color: colors[i % colors.length], borderRadius: BorderRadius.circular(3))),
+              const SizedBox(width: 8),
+              Text('${dist[i]['role']}', style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary)),
+            ]));
+          })),
+        ])),
+      ]),
+    );
+  }
+
+  Widget _buildLearningMetricsCards(Map<String, dynamic> learning) {
+    return Column(children: [
+      Row(children: [
+        _buildAnalyticsStatCard('Bài hoàn thành', '${learning['completedNodes'] ?? 0}', icon: Icons.check_circle, color: AppColors.successNeon),
+        const SizedBox(width: 8),
+        _buildAnalyticsStatCard('Tỉ lệ', '${learning['completionRate'] ?? 0}%', icon: Icons.pie_chart, color: AppColors.cyanNeon),
+        const SizedBox(width: 8),
+        _buildAnalyticsStatCard('TB tiến độ', '${learning['avgProgress'] ?? 0}%', icon: Icons.speed, color: AppColors.orangeNeon),
+      ]),
+      const SizedBox(height: 8),
+      Row(children: [
+        _buildAnalyticsStatCard('Gần đây', '${learning['recentCompletions'] ?? 0}', icon: Icons.new_releases, color: AppColors.warningNeon),
+        const SizedBox(width: 8),
+        _buildAnalyticsStatCard('Tổng tiến trình', '${learning['totalProgress'] ?? 0}', icon: Icons.timeline, color: AppColors.purpleNeon),
+        const SizedBox(width: 8),
+        const Expanded(child: SizedBox()),
+      ]),
+    ]);
+  }
+
+  Widget _buildSubjectCompletionChart(Map<String, dynamic> learning) {
+    final data = List<Map<String, dynamic>>.from(learning['completionsBySubject'] ?? []);
+    if (data.isEmpty) return const SizedBox.shrink();
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(color: AppColors.bgSecondary, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.borderPrimary)),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text('Hoàn thành theo môn', style: AppTextStyles.labelLarge),
+        const SizedBox(height: 16),
+        SizedBox(height: 200, child: BarChart(BarChartData(
+          alignment: BarChartAlignment.spaceAround,
+          barTouchData: BarTouchData(enabled: true),
+          titlesData: FlTitlesData(show: true,
+            topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 32)),
+            bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, getTitlesWidget: (value, meta) {
+              final idx = value.toInt();
+              if (idx >= 0 && idx < data.length) {
+                final name = '${data[idx]['subject']}'.length > 8 ? '${data[idx]['subject']}'.substring(0, 8) : '${data[idx]['subject']}';
+                return Padding(padding: const EdgeInsets.only(top: 8), child: Text(name, style: const TextStyle(color: AppColors.textTertiary, fontSize: 10)));
+              }
+              return const Text('');
+            })),
+          ),
+          borderData: FlBorderData(show: false),
+          gridData: const FlGridData(show: false),
+          barGroups: List.generate(data.length, (i) {
+            final completed = double.tryParse('${data[i]['completed']}') ?? 0;
+            final total = double.tryParse('${data[i]['total']}') ?? 0;
+            return BarChartGroupData(x: i, barRods: [
+              BarChartRodData(toY: total, color: AppColors.bgTertiary, width: 16, borderRadius: BorderRadius.circular(4)),
+              BarChartRodData(toY: completed, color: AppColors.cyanNeon, width: 16, borderRadius: BorderRadius.circular(4)),
+            ]);
+          }),
+        ))),
+      ]),
+    );
+  }
+
+  Widget _buildRevenueMetricsCards(Map<String, dynamic> revenue) {
+    final totalRevenue = double.tryParse('${revenue['totalRevenue']}') ?? 0;
+    final formatted = totalRevenue >= 1000000 ? '${(totalRevenue / 1000000).toStringAsFixed(1)}M' : totalRevenue >= 1000 ? '${(totalRevenue / 1000).toStringAsFixed(0)}K' : '${totalRevenue.toInt()}';
+    return Column(children: [
+      Row(children: [
+        _buildAnalyticsStatCard('Doanh thu', '${formatted}đ', icon: Icons.monetization_on, color: AppColors.xpGold),
+        const SizedBox(width: 8),
+        _buildAnalyticsStatCard('Diamonds', '${revenue['totalDiamondsSold'] ?? 0}', icon: Icons.diamond, color: AppColors.cyanNeon),
+        const SizedBox(width: 8),
+        _buildAnalyticsStatCard('Giao dịch', '${revenue['paidCount'] ?? 0}', icon: Icons.receipt, color: AppColors.purpleNeon),
+      ]),
+      const SizedBox(height: 8),
+      Row(children: [
+        _buildAnalyticsStatCard('Người mua', '${revenue['payingUsers'] ?? 0}', icon: Icons.person, color: AppColors.successNeon),
+        const SizedBox(width: 8),
+        _buildAnalyticsStatCard('ARPU', '${revenue['arpu'] ?? 0}đ', icon: Icons.trending_up, color: AppColors.orangeNeon),
+        const SizedBox(width: 8),
+        _buildAnalyticsStatCard('Gần đây', '${revenue['recentPayments'] ?? 0}', icon: Icons.new_releases, color: AppColors.warningNeon),
+      ]),
+    ]);
+  }
+
+  Widget _buildRevenueByPackageChart(Map<String, dynamic> revenue) {
+    final data = List<Map<String, dynamic>>.from(revenue['revenueByPackage'] ?? []);
+    if (data.isEmpty) return const SizedBox.shrink();
+    final colors = [AppColors.xpGold, AppColors.purpleNeon, AppColors.cyanNeon, AppColors.pinkNeon];
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(color: AppColors.bgSecondary, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.borderPrimary)),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text('Doanh thu theo gói', style: AppTextStyles.labelLarge),
+        const SizedBox(height: 12),
+        ...List.generate(data.length, (i) {
+          final pkg = data[i];
+          final rev = double.tryParse('${pkg['revenue']}') ?? 0;
+          final count = int.tryParse('${pkg['count']}') ?? 0;
+          return Padding(padding: const EdgeInsets.only(bottom: 8), child: Row(children: [
+            Container(width: 12, height: 12, decoration: BoxDecoration(color: colors[i % colors.length], borderRadius: BorderRadius.circular(3))),
+            const SizedBox(width: 8),
+            Expanded(child: Text('${pkg['package']}', style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary))),
+            Text('$count lượt', style: AppTextStyles.bodySmall.copyWith(color: AppColors.textTertiary)),
+            const SizedBox(width: 12),
+            Text('${rev.toInt().toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+$)'), (m) => '${m[1]},')}đ',
+              style: AppTextStyles.bodySmall.copyWith(color: colors[i % colors.length], fontWeight: FontWeight.bold)),
+          ]));
+        }),
+      ]),
+    );
+  }
+
+  Widget _buildEngagementMetricsCards(Map<String, dynamic> engagement) {
+    return Row(children: [
+      _buildAnalyticsStatCard('TB Streak', '${(double.tryParse('${engagement['avgStreak']}') ?? 0).toStringAsFixed(1)}', icon: Icons.local_fire_department, color: AppColors.streakOrange),
+      const SizedBox(width: 8),
+      _buildAnalyticsStatCard('Max Streak', '${engagement['maxStreak'] ?? 0}', icon: Icons.whatshot, color: AppColors.errorNeon),
+      const SizedBox(width: 8),
+      const Expanded(child: SizedBox()),
+    ]);
+  }
+
+  Widget _buildStreakDistributionChart(Map<String, dynamic> engagement) {
+    final data = List<Map<String, dynamic>>.from(engagement['streakDistribution'] ?? []);
+    if (data.isEmpty) return const SizedBox.shrink();
+    final colors = [AppColors.textTertiary, AppColors.cyanNeon, AppColors.successNeon, AppColors.orangeNeon, AppColors.errorNeon];
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(color: AppColors.bgSecondary, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.borderPrimary)),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text('Phân bổ streak', style: AppTextStyles.labelLarge),
+        const SizedBox(height: 12),
+        SizedBox(height: 160, child: PieChart(PieChartData(
+          sectionsSpace: 2, centerSpaceRadius: 30,
+          sections: List.generate(data.length, (i) {
+            final count = int.tryParse('${data[i]['count']}') ?? 0;
+            return PieChartSectionData(value: count.toDouble(), color: colors[i % colors.length], title: '$count',
+              titleStyle: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold), radius: 40);
+          }),
+        ))),
+        const SizedBox(height: 12),
+        Wrap(spacing: 12, runSpacing: 4, children: List.generate(data.length, (i) {
+          return Row(mainAxisSize: MainAxisSize.min, children: [
+            Container(width: 10, height: 10, decoration: BoxDecoration(color: colors[i % colors.length], borderRadius: BorderRadius.circular(2))),
+            const SizedBox(width: 4),
+            Text('${data[i]['range']}', style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary)),
+          ]);
+        })),
+      ]),
+    );
+  }
+
+  Widget _buildContentMetricsCards(Map<String, dynamic> content) {
+    return Row(children: [
+      _buildAnalyticsStatCard('Tổng môn', '${content['totalSubjects'] ?? 0}', icon: Icons.book, color: AppColors.purpleNeon),
+      const SizedBox(width: 8),
+      _buildAnalyticsStatCard('Tổng bài học', '${content['totalNodes'] ?? 0}', icon: Icons.library_books, color: AppColors.cyanNeon),
+      const SizedBox(width: 8),
+      _buildAnalyticsStatCard('Đóng góp mới', '${content['recentContributions'] ?? 0}', icon: Icons.add_circle, color: AppColors.successNeon),
+    ]);
+  }
+
+  Widget _buildTopContributorsTable(Map<String, dynamic> content) {
+    final contributors = List<Map<String, dynamic>>.from(content['topContributors'] ?? []);
+    if (contributors.isEmpty) return const SizedBox.shrink();
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(color: AppColors.bgSecondary, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.borderPrimary)),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text('Top Contributors', style: AppTextStyles.labelLarge),
+        const SizedBox(height: 12),
+        ...List.generate(contributors.length > 5 ? 5 : contributors.length, (i) {
+          final c = contributors[i];
+          final name = c['name'] ?? c['email'] ?? 'Unknown';
+          final total = int.tryParse('${c['contributions']}') ?? 0;
+          final approved = int.tryParse('${c['approved']}') ?? 0;
+          return Padding(padding: const EdgeInsets.only(bottom: 8), child: Row(children: [
+            Container(width: 24, height: 24, decoration: BoxDecoration(
+              color: i == 0 ? AppColors.xpGold : i == 1 ? AppColors.rankSilver : i == 2 ? AppColors.rankBronze : AppColors.bgTertiary,
+              borderRadius: BorderRadius.circular(12),
+            ), child: Center(child: Text('${i + 1}', style: TextStyle(color: i < 3 ? Colors.black : AppColors.textSecondary, fontSize: 12, fontWeight: FontWeight.bold)))),
+            const SizedBox(width: 10),
+            Expanded(child: Text('$name', style: AppTextStyles.bodySmall.copyWith(color: AppColors.textPrimary), overflow: TextOverflow.ellipsis)),
+            Text('$approved/$total', style: AppTextStyles.bodySmall.copyWith(color: AppColors.successNeon)),
+          ]));
+        }),
+      ]),
+    );
   }
 }
 

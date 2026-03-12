@@ -85,6 +85,7 @@ class ApiConstants {
   static const String onboardingChat = '/onboarding/chat';
   static const String onboardingStatus = '/onboarding/status';
   static const String resetOnboarding = '/onboarding/reset';
+  static const String onboardingComplete = '/onboarding/complete';
 
   // Unlock (Diamond-based)
   static String unlockPricing(String subjectId) => '/unlock/pricing/$subjectId';
@@ -156,6 +157,9 @@ class ApiConstants {
   static String pendingContributionDetail(String id) => '/pending-contributions/$id';
   static String approvePendingContribution(String id) => '/pending-contributions/$id/approve';
   static String rejectPendingContribution(String id) => '/pending-contributions/$id/reject';
+
+  // Analytics (Admin only)
+  static const String analyticsOverview = '/analytics/overview';
 
   // Payment (Diamond purchase)
   static const String paymentPackages = '/payment/packages';

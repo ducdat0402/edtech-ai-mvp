@@ -26,6 +26,7 @@ import { AdaptiveTestModule } from './adaptive-test/adaptive-test.module';
 import { PendingContributionsModule } from './pending-contributions/pending-contributions.module';
 import { UploadsModule } from './uploads/uploads.module';
 import { LessonTypeContentsModule } from './lesson-type-contents/lesson-type-contents.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 import { TypeOrmConfigService } from './config/typeorm.config';
 
 @Module({
@@ -62,6 +63,7 @@ import { TypeOrmConfigService } from './config/typeorm.config';
     PendingContributionsModule,
     UploadsModule,
     LessonTypeContentsModule,
+    AnalyticsModule,
   ],
 })
 export class AppModule {}

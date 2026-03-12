@@ -407,6 +407,14 @@ class ApiService {
     return response.data;
   }
 
+  Future<Map<String, dynamic>> completeOnboarding(Map<String, dynamic> data) async {
+    final response = await _apiClient.post(
+      ApiConstants.onboardingComplete,
+      data: data,
+    );
+    return response.data;
+  }
+
   // Placement Test Analysis
   Future<Map<String, dynamic>> getTestAnalysis(String testId) async {
     final response = await _apiClient.get(
@@ -709,6 +717,15 @@ class ApiService {
     final response = await _apiClient.put(
       ApiConstants.rejectPendingContribution(id),
       data: note != null ? {'note': note} : {},
+    );
+    return response.data;
+  }
+
+  // Analytics (Admin)
+  Future<Map<String, dynamic>> getAnalyticsOverview({String period = '30d'}) async {
+    final response = await _apiClient.get(
+      ApiConstants.analyticsOverview,
+      queryParameters: {'period': period},
     );
     return response.data;
   }
