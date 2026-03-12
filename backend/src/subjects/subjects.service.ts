@@ -213,8 +213,8 @@ export class SubjectsService {
     subject: Subject;
     isUnlocked: boolean;
     canUnlock: boolean;
-    requiredCoins?: number;
-    userCoins?: number;
+    requiredDiamonds?: number;
+    userDiamonds?: number;
   }> {
     const subject = await this.findById(subjectId);
     if (!subject) {
