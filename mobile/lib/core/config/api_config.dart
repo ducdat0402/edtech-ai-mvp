@@ -13,8 +13,10 @@ class ApiConfig {
   // Example: http://192.168.1.100:3000/api/v1
 
   // static const String baseUrl = 'http://26.213.113.234:3000/api/v1'; // Your current IP
+
+//  static const String baseUrl = 'http://localhost:3000/api/v1';
   static const String baseUrl =
-      'https://edtech-ai-backend-tbq7.onrender.com/api/v1';
+   'https://edtech-ai-backend-tbq7.onrender.com/api/v1';
 
   // Option 4: If 10.0.2.2 doesn't work, try localhost
   // static const String baseUrl = 'http://localhost:3000/api/v1';

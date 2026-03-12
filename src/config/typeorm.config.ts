@@ -33,17 +33,27 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
   constructor(private configService: ConfigService) {}
 
   createTypeOrmOptions(): TypeOrmModuleOptions {
+    const isProduction = this.configService.get<string>('NODE_ENV') !== 'development';
+
     return {
       type: 'postgres',
       url: this.configService.get<string>('DATABASE_URL'),
       ssl: {
-        rejectUnauthorized: false, // thêm cái này
-        requestCert: false,        // thêm cái này
+        rejectUnauthorized: false,
+        requestCert: false,
       },
       extra: {
         ssl: {
-          rejectUnauthorized: false, // thêm cái này nữa
+          rejectUnauthorized: false,
         },
+        max: isProduction ? 10 : 5,
+        min: isProduction ? 2 : 1,
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 10000,
+        statement_timeout: 30000,
+      },
+      cache: {
+        duration: 30000,
       },
       entities: [
         User,
@@ -73,8 +83,8 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
         UserTopicProgress,
         UserDomainProgress,
       ],
-      synchronize: this.configService.get<string>('NODE_ENV') === 'development',
-      logging: this.configService.get<string>('NODE_ENV') === 'development',
+      synchronize: !isProduction || this.configService.get<string>('ENABLE_SYNC') === 'true',
+      logging: !isProduction ? ['error', 'warn'] : ['error'],
     };
   }
 }
