@@ -27,6 +27,7 @@ import { LessonTypeContent } from '../lesson-type-contents/entities/lesson-type-
 import { LessonTypeContentVersion } from '../lesson-type-contents/entities/lesson-type-content-version.entity';
 import { UserTopicProgress } from '../user-progress/entities/user-topic-progress.entity';
 import { UserDomainProgress } from '../user-progress/entities/user-domain-progress.entity';
+import { UserItem } from '../shop/entities/user-item.entity';
 
 @Injectable()
 export class TypeOrmConfigService implements TypeOrmOptionsFactory {
@@ -82,6 +83,7 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
         LessonTypeContentVersion,
         UserTopicProgress,
         UserDomainProgress,
+        UserItem,
       ],
       synchronize: !isProduction || this.configService.get<string>('ENABLE_SYNC') === 'true',
       logging: !isProduction ? ['error', 'warn'] : ['error'],

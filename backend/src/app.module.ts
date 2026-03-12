@@ -27,6 +27,7 @@ import { PendingContributionsModule } from './pending-contributions/pending-cont
 import { UploadsModule } from './uploads/uploads.module';
 import { LessonTypeContentsModule } from './lesson-type-contents/lesson-type-contents.module';
 import { AnalyticsModule } from './analytics/analytics.module';
+import { ShopModule } from './shop/shop.module';
 import { TypeOrmConfigService } from './config/typeorm.config';
 
 @Module({
@@ -64,6 +65,7 @@ import { TypeOrmConfigService } from './config/typeorm.config';
     UploadsModule,
     LessonTypeContentsModule,
     AnalyticsModule,
+    ShopModule,
   ],
 })
 export class AppModule {}

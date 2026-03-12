@@ -804,4 +804,34 @@ class ApiService {
     final response = await _apiClient.get(ApiConstants.checkNodeAccess(nodeId));
     return response.data;
   }
+
+  // =====================
+  // Shop APIs
+  // =====================
+
+  Future<Map<String, dynamic>> getShopItems() async {
+    final response = await _apiClient.get('/shop/items');
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> getShopInventory() async {
+    final response = await _apiClient.get('/shop/inventory');
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> purchaseShopItem(String itemId, {int quantity = 1}) async {
+    final response = await _apiClient.post(
+      '/shop/purchase',
+      data: {'itemId': itemId, 'quantity': quantity},
+    );
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> useShopItem(String itemId) async {
+    final response = await _apiClient.post(
+      '/shop/use',
+      data: {'itemId': itemId},
+    );
+    return response.data;
+  }
 }
