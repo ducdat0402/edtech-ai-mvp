@@ -557,6 +557,8 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
     final totalCoins = topic['totalCoins'] as int? ?? 0;
     final learningNodes =
         (topic['learningNodes'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+    learningNodes.sort((a, b) =>
+        (a['order'] as int? ?? 0).compareTo(b['order'] as int? ?? 0));
 
     return Container(
       margin: const EdgeInsets.only(bottom: 6),

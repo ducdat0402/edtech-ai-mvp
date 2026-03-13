@@ -848,12 +848,23 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
   /// Learner view: chỉ hiện level 1 (root) và level 2 (topics/milestones)
   /// Không hiện level 3 (learning nodes) - cần hoàn thành bài tập để unlock
   Widget _buildLearnerMindMapList(List<dynamic> allNodes) {
-    // Lấy level 2 nodes (topics/milestones)
+    // Lấy level 2 nodes (topics/milestones) và sắp xếp theo position.y rồi position.x
     final topicNodes = allNodes.where((n) {
       final node = n as Map<String, dynamic>;
       final level = node['level'] as int? ?? 3;
       return level == 2;
     }).toList();
+
+    topicNodes.sort((a, b) {
+      final posA = (a as Map<String, dynamic>)['position'] as Map<String, dynamic>?;
+      final posB = (b as Map<String, dynamic>)['position'] as Map<String, dynamic>?;
+      final yA = (posA?['y'] as num?)?.toDouble() ?? 0.0;
+      final yB = (posB?['y'] as num?)?.toDouble() ?? 0.0;
+      if (yA != yB) return yA.compareTo(yB);
+      final xA = (posA?['x'] as num?)?.toDouble() ?? 0.0;
+      final xB = (posB?['x'] as num?)?.toDouble() ?? 0.0;
+      return xA.compareTo(xB);
+    });
 
     if (topicNodes.isEmpty) {
       return const Center(
@@ -883,24 +894,29 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
         final metadata = topic['metadata'] as Map<String, dynamic>?;
         final icon = metadata?['icon'] as String? ?? '📁';
 
-        // Đếm số bài học con (level 3) thuộc topic này
-        final childLessons = allNodes.where((n) {
+        // Đếm số bài học con (level 3) thuộc topic này, sắp xếp theo position
+        final childLessonsRaw = allNodes.where((n) {
           final node = n as Map<String, dynamic>;
           return node['parentId'] == topicId && (node['level'] as int? ?? 3) == 3;
         }).toList();
+        final childLessons = List<Map<String, dynamic>>.from(childLessonsRaw);
+        childLessons.sort((a, b) {
+          final posA = a['position'] as Map<String, dynamic>?;
+          final posB = b['position'] as Map<String, dynamic>?;
+          final yA = (posA?['y'] as num?)?.toDouble() ?? 0.0;
+          final yB = (posB?['y'] as num?)?.toDouble() ?? 0.0;
+          if (yA != yB) return yA.compareTo(yB);
+          final xA = (posA?['x'] as num?)?.toDouble() ?? 0.0;
+          final xB = (posB?['x'] as num?)?.toDouble() ?? 0.0;
+          return xA.compareTo(xB);
+        });
 
-        final completedLessons = childLessons.where((n) {
-          final node = n as Map<String, dynamic>;
-          return node['status'] == 'completed';
-        }).length;
+        final completedLessons = childLessons.where((n) => n['status'] == 'completed').length;
 
         final totalLessons = childLessons.length;
 
         // Check diamond lock status from backend
-        final allLessonsLocked = childLessons.every((l) {
-          final lesson = l as Map<String, dynamic>;
-          return lesson['isLocked'] == true && lesson['status'] != 'completed';
-        });
+        final allLessonsLocked = childLessons.every((l) => l['isLocked'] == true && l['status'] != 'completed');
 
         Color statusColor;
         IconData statusIcon;

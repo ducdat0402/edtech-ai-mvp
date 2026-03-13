@@ -293,10 +293,12 @@ export class SubjectsService {
     await this.unlockService.ensureFirstTopicUnlocked(userId, subjectId);
     const unlockedNodeIds = await this.unlockService.getUserUnlockedNodeIds(userId, subjectId);
 
-    // Get domains for this subject
+    // Get domains for this subject (already sorted by order in findBySubject)
     let domains = [];
     try {
       domains = await this.domainsService.findBySubject(subjectId);
+      // Ensure domains are sorted by order (in case relation load order differs)
+      domains = [...domains].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
     } catch (e) {
       // domains service might fail if no domains exist
     }
@@ -341,8 +343,8 @@ export class SubjectsService {
 
       edges.push({ from: subjectNodeId, to: domainNodeId });
 
-      // Level 3: Topic nodes (from topics table)
-      const topics = domain.topics || [];
+      // Level 3: Topic nodes (from topics table) - sort by order so display order is correct
+      const topics = [...(domain.topics || [])].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
       let topicIndex = 0;
       let domainAllTopicsCompleted = topics.length > 0;
 
@@ -351,8 +353,10 @@ export class SubjectsService {
         const topicXPos = xPos - 50 + (topicIndex % 3) * 100;
         const topicYPos = yPos + 130 + Math.floor(topicIndex / 3) * 100;
 
-        // Get learning nodes for this topic and calculate completion
-        const topicNodes = allNodes.filter((n) => n.topicId === topic.id);
+        // Get learning nodes for this topic (sorted by order) and calculate completion
+        const topicNodes = allNodes
+          .filter((n) => n.topicId === topic.id)
+          .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
         const topicCompletedNodes = topicNodes.filter((n) =>
           completedNodeIds.includes(n.id),
         );
@@ -387,7 +391,7 @@ export class SubjectsService {
           completedLessons: topicCompletedNodes.length,
           totalXp: topicTotalXp,
           totalCoins: topicTotalCoins,
-          // Include learning nodes under this topic with lock status
+          // Include learning nodes under this topic with lock status (already sorted by order above)
           learningNodes: topicNodes.map((n) => ({
             id: n.id,
             title: n.title,
