@@ -438,72 +438,49 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
   Widget _buildChatView() {
     return Column(
       children: [
-        // Header với thông tin môn học và trạng thái
-        Container(
-          padding: const EdgeInsets.all(12),
-          color: Colors.purple.shade50,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (_subjectInfo != null) ...[
-                Row(
-                  children: [
-                    const Icon(Icons.school, color: Colors.purple, size: 20),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        _subjectInfo!['name'] as String? ?? 'Môn học',
-                        style: TextStyle(
-                          color: Colors.purple.shade700,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
-                    Text(
-                      '${_subjectInfo!['totalLessons'] ?? 0} bài học',
-                      style: TextStyle(
-                        color: Colors.purple.shade500,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-              ],
-              Row(
-                children: [
-                  const Icon(Icons.psychology, color: Colors.purple, size: 20),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      _canGenerate
-                          ? '✅ Đã đủ thông tin! Bạn có thể tạo lộ trình.'
-                          : '🔄 Đang thu thập thông tin từ bạn...',
-                      style: TextStyle(
-                        color: Colors.purple.shade700,
-                        fontSize: 13,
-                      ),
+        // Header với thông tin môn học
+        if (_subjectInfo != null)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            color: Colors.purple.shade50,
+            child: Row(
+              children: [
+                const Icon(Icons.school, color: Colors.purple, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    _subjectInfo!['name'] as String? ?? 'Môn học',
+                    style: TextStyle(
+                      color: Colors.purple.shade700,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
                     ),
                   ),
-                  if (_canGenerate)
-                    TextButton.icon(
-                      onPressed: _isGenerating ? null : _generateMindMap,
-                      icon: _isGenerating
-                          ? const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.auto_awesome, size: 18),
-                      label:
-                          Text(_isGenerating ? 'Đang tạo...' : 'Tạo lộ trình'),
-                    ),
-                ],
-              ),
-            ],
+                ),
+                Text(
+                  '${_subjectInfo!['totalLessons'] ?? 0} bài học',
+                  style: TextStyle(color: Colors.purple.shade500, fontSize: 12),
+                ),
+              ],
+            ),
           ),
-        ),
+        if (!_canGenerate)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            color: Colors.orange.shade50,
+            child: Row(
+              children: [
+                const Icon(Icons.psychology, color: Colors.orange, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    '🔄 Đang thu thập thông tin từ bạn...',
+                    style: TextStyle(color: Colors.orange.shade700, fontSize: 13),
+                  ),
+                ),
+              ],
+            ),
+          ),
         // Chat messages
         Expanded(
           child: ListView.builder(
@@ -521,52 +498,118 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
             },
           ),
         ),
-        // Input
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 10,
-                offset: const Offset(0, -2),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _chatController,
-                  decoration: InputDecoration(
-                    hintText: 'Nhập tin nhắn...',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(24),
-                      borderSide: BorderSide.none,
-                    ),
-                    filled: true,
-                    fillColor: Colors.grey.shade100,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 12,
-                    ),
-                  ),
-                  onSubmitted: (_) => _sendMessage(),
-                ),
-              ),
-              const SizedBox(width: 8),
-              IconButton(
-                onPressed: _isSending ? null : _sendMessage,
-                icon: Icon(
-                  Icons.send,
-                  color: _isSending ? Colors.grey : Colors.purple,
-                ),
-              ),
-            ],
-          ),
-        ),
+        // Bottom area: big generate button OR text input
+        if (_canGenerate)
+          _buildGenerateButton()
+        else
+          _buildChatInput(),
       ],
+    );
+  }
+
+  Widget _buildGenerateButton() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
+      decoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.green.shade50,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.green.shade600, size: 18),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Đã đủ thông tin! Nhấn nút bên dưới để tạo lộ trình.',
+                    style: TextStyle(color: Colors.green.shade700, fontSize: 13),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            height: 56,
+            child: ElevatedButton.icon(
+              onPressed: _isGenerating ? null : _generateMindMap,
+              icon: _isGenerating
+                  ? const SizedBox(
+                      width: 20, height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    )
+                  : const Icon(Icons.auto_awesome, color: Colors.white, size: 24),
+              label: Text(
+                _isGenerating ? 'Đang tạo lộ trình...' : 'Tạo lộ trình ngay!',
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.deepPurple,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                elevation: 4,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChatInput() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              controller: _chatController,
+              style: const TextStyle(color: Colors.black87, fontSize: 15),
+              decoration: InputDecoration(
+                hintText: 'Nhập tin nhắn...',
+                hintStyle: TextStyle(color: Colors.grey.shade500),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(24),
+                  borderSide: BorderSide.none,
+                ),
+                filled: true,
+                fillColor: Colors.grey.shade100,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              ),
+              onSubmitted: (_) => _sendMessage(),
+            ),
+          ),
+          const SizedBox(width: 8),
+          IconButton(
+            onPressed: _isSending ? null : _sendMessage,
+            icon: Icon(Icons.send, color: _isSending ? Colors.grey : Colors.purple),
+          ),
+        ],
+      ),
     );
   }
 

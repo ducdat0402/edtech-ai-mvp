@@ -14,40 +14,63 @@ class OnboardingChatScreen extends StatefulWidget {
 
 class _OnboardingChatScreenState extends State<OnboardingChatScreen>
     with TickerProviderStateMixin {
+  static const _totalSlides = 6;
+
   final PageController _pageController = PageController();
   int _currentPage = 0;
   bool _isSaving = false;
 
   final TextEditingController _nicknameController = TextEditingController();
 
-  List<Map<String, dynamic>> _subjects = [];
-  final Set<String> _selectedSubjectIds = {};
-  bool _loadingSubjects = false;
+  // Slide 2: Acquisition
+  String? _selectedAcquisition;
+  final List<Map<String, String>> _acquisitionOptions = [
+    {'id': 'friend', 'label': 'Bạn bè giới thiệu', 'icon': '👥'},
+    {'id': 'social', 'label': 'Mạng xã hội (TikTok, FB...)', 'icon': '📱'},
+    {'id': 'search', 'label': 'Tìm kiếm trên Google', 'icon': '🔍'},
+    {'id': 'school', 'label': 'Trường học / Giáo viên', 'icon': '🏫'},
+    {'id': 'ad', 'label': 'Quảng cáo', 'icon': '📢'},
+    {'id': 'other', 'label': 'Khác', 'icon': '💡'},
+  ];
 
-  String? _selectedLevel;
+  // Slide 3: User segment
+  String? _selectedSegment;
+  final List<Map<String, String>> _segmentOptions = [
+    {'id': 'student_hs', 'label': 'Học sinh (cấp 2, cấp 3)', 'icon': '🎒', 'desc': 'Đang đi học phổ thông'},
+    {'id': 'student_uni', 'label': 'Sinh viên đại học', 'icon': '🎓', 'desc': 'Đang học đại học / cao đẳng'},
+    {'id': 'worker', 'label': 'Người đi làm', 'icon': '💼', 'desc': 'Đã đi làm, muốn nâng cao'},
+    {'id': 'self_learner', 'label': 'Tự học', 'icon': '📚', 'desc': 'Học vì đam mê cá nhân'},
+    {'id': 'parent', 'label': 'Phụ huynh', 'icon': '👨‍👩‍👧', 'desc': 'Tìm hiểu cho con em'},
+    {'id': 'other', 'label': 'Khác', 'icon': '🌟', 'desc': ''},
+  ];
+
+  // Slide 4: Learning goal
   final List<String> _selectedGoals = [];
-  String? _selectedDailyTime;
-
-  final List<Map<String, String>> _levels = [
-    {'id': 'beginner', 'label': 'Mới bắt đầu', 'icon': '🌱', 'desc': 'Chưa biết gì về môn này'},
-    {'id': 'intermediate', 'label': 'Biết chút ít', 'icon': '📚', 'desc': 'Đã học cơ bản'},
-    {'id': 'advanced', 'label': 'Khá vững', 'icon': '🚀', 'desc': 'Nắm tốt kiến thức'},
+  final List<Map<String, String>> _goalOptions = [
+    {'id': 'exam', 'label': 'Thi cử', 'icon': '📝'},
+    {'id': 'work', 'label': 'Phục vụ công việc', 'icon': '💻'},
+    {'id': 'hobby', 'label': 'Sở thích cá nhân', 'icon': '🎯'},
+    {'id': 'skill_up', 'label': 'Nâng cao kỹ năng', 'icon': '📈'},
+    {'id': 'career', 'label': 'Chuẩn bị phỏng vấn / chuyển nghề', 'icon': '🚀'},
+    {'id': 'explore', 'label': 'Khám phá kiến thức mới', 'icon': '🔬'},
   ];
 
-  final List<String> _goalOptions = [
-    'Ôn thi',
-    'Nâng cao kiến thức',
-    'Học từ đầu',
-    'Luyện tập thêm',
-    'Chuẩn bị phỏng vấn',
-    'Đam mê cá nhân',
+  // Slide 5: Engagement expectation
+  String? _selectedEngagement;
+  final List<Map<String, String>> _engagementOptions = [
+    {'id': '5min', 'label': '5 phút / ngày', 'tag': 'Đơn giản', 'icon': '⚡'},
+    {'id': '10min', 'label': '10 phút / ngày', 'tag': 'Bình thường', 'icon': '🕐'},
+    {'id': '15min', 'label': '15 phút / ngày', 'tag': 'Có cố gắng', 'icon': '💪'},
+    {'id': '20min', 'label': '20 phút / ngày', 'tag': 'Kỷ luật', 'icon': '🔥'},
+    {'id': '30min_plus', 'label': '> 30 phút / ngày', 'tag': 'Nghiêm túc', 'icon': '🏆'},
   ];
 
-  final List<Map<String, String>> _timeOptions = [
-    {'id': 'under_15', 'label': '< 15 phút', 'icon': '⚡'},
-    {'id': '15_30', 'label': '15 - 30 phút', 'icon': '⏰'},
-    {'id': '30_60', 'label': '30 - 60 phút', 'icon': '🔥'},
-    {'id': 'over_60', 'label': '> 60 phút', 'icon': '💪'},
+  // Slide 6: Notification preference
+  String? _selectedNotification;
+  final List<Map<String, String>> _notificationOptions = [
+    {'id': 'yes_daily', 'label': 'Có, nhắc tôi mỗi ngày', 'icon': '🔔', 'desc': 'Nhận thông báo nhắc học kèm câu nói truyền cảm hứng'},
+    {'id': 'yes_sometimes', 'label': 'Thỉnh thoảng thôi', 'icon': '🔕', 'desc': 'Chỉ nhắc khi tôi lâu không vào học'},
+    {'id': 'no', 'label': 'Không, cảm ơn', 'icon': '❌', 'desc': 'Tôi sẽ tự nhớ'},
   ];
 
   late AnimationController _fadeController;
@@ -62,7 +85,6 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
     );
     _fadeAnimation = CurvedAnimation(parent: _fadeController, curve: Curves.easeIn);
     _fadeController.forward();
-    _loadSubjects();
   }
 
   @override
@@ -73,48 +95,36 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
     super.dispose();
   }
 
-  Future<void> _loadSubjects() async {
-    setState(() => _loadingSubjects = true);
-    try {
-      final apiService = Provider.of<ApiService>(context, listen: false);
-      final explorer = await apiService.getExplorerSubjects();
-      final scholar = await apiService.getScholarSubjects();
-      setState(() {
-        _subjects = [...explorer, ...scholar].cast<Map<String, dynamic>>();
-        _loadingSubjects = false;
-      });
-    } catch (e) {
-      setState(() => _loadingSubjects = false);
-    }
-  }
-
   bool get _canProceed {
     switch (_currentPage) {
-      case 0:
-        return _nicknameController.text.trim().isNotEmpty;
-      case 1:
-        return _selectedSubjectIds.isNotEmpty;
-      case 2:
-        return _selectedLevel != null;
-      case 3:
-        return _selectedGoals.isNotEmpty;
-      case 4:
-        return _selectedDailyTime != null;
-      default:
-        return false;
+      case 0: return _nicknameController.text.trim().isNotEmpty;
+      case 1: return _selectedAcquisition != null;
+      case 2: return _selectedSegment != null;
+      case 3: return _selectedGoals.isNotEmpty;
+      case 4: return _selectedEngagement != null;
+      case 5: return _selectedNotification != null;
+      default: return false;
     }
   }
 
   void _nextPage() {
-    if (_currentPage < 4) {
+    if (_currentPage < _totalSlides - 1) {
       HapticFeedback.lightImpact();
       _pageController.nextPage(
         duration: const Duration(milliseconds: 400),
         curve: Curves.easeInOut,
       );
-    } else if (_currentPage == 4) {
-      // Save onboarding data then show choice slide
+    } else if (_currentPage == _totalSlides - 1) {
       _saveOnboardingAndShowChoice();
+    }
+  }
+
+  void _previousPage() {
+    if (_currentPage > 0) {
+      _pageController.previousPage(
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+      );
     }
   }
 
@@ -125,30 +135,21 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
 
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
-
-      final selectedSubjectNames = _subjects
-          .where((s) => _selectedSubjectIds.contains(s['id']))
-          .map((s) => s['name'] as String)
-          .toList();
-
       final data = {
         'nickname': _nicknameController.text.trim(),
-        'subjects': selectedSubjectNames,
-        'subjectIds': _selectedSubjectIds.toList(),
-        'currentLevel': _selectedLevel,
-        'targetGoal': _selectedGoals.join(', '),
+        'acquisition': _selectedAcquisition,
+        'userSegment': _selectedSegment,
         'goals': _selectedGoals,
-        'dailyTime': _selectedDailyTime,
+        'targetGoal': _selectedGoals.join(', '),
+        'engagementLevel': _selectedEngagement,
+        'notificationPreference': _selectedNotification,
       };
-
       await apiService.completeOnboarding(data);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              'Lưu thông tin bị lỗi, nhưng bạn vẫn có thể tiếp tục: $e',
-            ),
+            content: Text('Lưu thông tin bị lỗi, nhưng bạn vẫn có thể tiếp tục.'),
             backgroundColor: AppColors.orangeNeon,
           ),
         );
@@ -157,8 +158,6 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
 
     if (!mounted) return;
     setState(() => _isSaving = false);
-
-    // Sau khi lưu xong, hiện popup cho user chọn: học thử 1 bài hoặc tạo lộ trình cá nhân
     await _showOnboardingChoiceSheet();
   }
 
@@ -166,6 +165,8 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
     await showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
+      isDismissible: false,
+      enableDrag: false,
       isScrollControlled: true,
       builder: (ctx) {
         return Container(
@@ -182,8 +183,7 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
               children: [
                 Center(
                   child: Container(
-                    width: 40,
-                    height: 4,
+                    width: 40, height: 4,
                     margin: const EdgeInsets.only(bottom: 16),
                     decoration: BoxDecoration(
                       color: AppColors.bgTertiary,
@@ -191,21 +191,13 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
                     ),
                   ),
                 ),
-                Text(
-                  'Bắt đầu như thế nào?',
-                  style: AppTextStyles.h4.copyWith(
-                    color: AppColors.textPrimary,
-                  ),
-                ),
+                Text('Bắt đầu như thế nào?', style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
                 const SizedBox(height: 8),
                 Text(
-                  'Bạn có thể học thử 1 bài trước, hoặc để AI thiết kế lộ trình cá nhân cho bạn.',
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
+                  'Chọn cách bạn muốn bắt đầu, sau đó chọn môn học.',
+                  style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
                 ),
                 const SizedBox(height: 20),
-                // Option 1: Try a lesson
                 _buildChoiceCard(
                   icon: Icons.play_circle_filled_rounded,
                   title: 'Học thử 1 bài',
@@ -213,21 +205,29 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
                   gradient: [AppColors.cyanNeon, AppColors.purpleNeon],
                   onTap: () {
                     Navigator.pop(ctx);
-                    _goToTryLesson();
+                    _showSubjectPicker('try_lesson');
                   },
                 ),
                 const SizedBox(height: 12),
-                // Option 2: Personalized path
                 _buildChoiceCard(
                   icon: Icons.route_rounded,
                   title: 'Tạo lộ trình cá nhân',
-                  subtitle:
-                      'Thiết kế lộ trình thông qua trả lời câu hỏi hoặc chat với AI',
+                  subtitle: 'Thiết kế lộ trình thông qua câu hỏi hoặc chat với AI',
                   gradient: [AppColors.pinkNeon, AppColors.orangeNeon],
                   onTap: () {
                     Navigator.pop(ctx);
-                    _goToPersonalizedPath();
+                    _showSubjectPicker('personalized_path');
                   },
+                ),
+                const SizedBox(height: 16),
+                Center(
+                  child: TextButton(
+                    onPressed: () {
+                      Navigator.pop(ctx);
+                      context.go('/dashboard');
+                    },
+                    child: Text('Vào trang chính', style: AppTextStyles.labelMedium.copyWith(color: AppColors.textTertiary, decoration: TextDecoration.underline)),
+                  ),
                 ),
               ],
             ),
@@ -237,50 +237,188 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
     );
   }
 
-  void _previousPage() {
-    if (_currentPage > 0) {
-      _pageController.previousPage(
-        duration: const Duration(milliseconds: 400),
-        curve: Curves.easeInOut,
-      );
+  Future<void> _showSubjectPicker(String mode) async {
+    List<Map<String, dynamic>> subjects = [];
+    bool loading = true;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isDismissible: false,
+      enableDrag: false,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) {
+            if (loading) {
+              _loadSubjectsForPicker().then((loaded) {
+                if (ctx.mounted) {
+                  setSheetState(() {
+                    subjects = loaded;
+                    loading = false;
+                  });
+                }
+              });
+            }
+
+            return Container(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(ctx).size.height * 0.7,
+              ),
+              decoration: const BoxDecoration(
+                color: AppColors.bgPrimary,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: SafeArea(
+                top: false,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40, height: 4,
+                        margin: const EdgeInsets.only(bottom: 16),
+                        decoration: BoxDecoration(color: AppColors.bgTertiary, borderRadius: BorderRadius.circular(999)),
+                      ),
+                    ),
+                    Text(
+                      mode == 'try_lesson' ? 'Chọn môn học để thử' : 'Chọn môn học để tạo lộ trình',
+                      style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+                    ),
+                    const SizedBox(height: 4),
+                    Text('Chọn 1 môn bạn muốn bắt đầu', style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary)),
+                    const SizedBox(height: 16),
+                    if (loading)
+                      const Padding(
+                        padding: EdgeInsets.all(40),
+                        child: Center(child: CircularProgressIndicator(color: AppColors.cyanNeon)),
+                      )
+                    else
+                      Flexible(
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: subjects.length,
+                          itemBuilder: (_, index) {
+                            final s = subjects[index];
+                            final name = s['name'] as String? ?? '';
+                            final metadata = s['metadata'] as Map<String, dynamic>?;
+                            final icon = metadata?['icon'] as String? ?? '📖';
+                            final desc = s['description'] as String? ?? '';
+
+                            return GestureDetector(
+                              onTap: () {
+                                Navigator.pop(ctx);
+                                _navigateAfterChoice(mode, s['id'] as String, name);
+                              },
+                              child: Container(
+                                margin: const EdgeInsets.only(bottom: 10),
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: AppColors.bgSecondary,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: AppColors.borderPrimary),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Text(icon, style: const TextStyle(fontSize: 28)),
+                                    const SizedBox(width: 14),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(name, style: AppTextStyles.bodyBold.copyWith(color: AppColors.textPrimary)),
+                                          if (desc.isNotEmpty)
+                                            Text(desc, style: AppTextStyles.caption.copyWith(color: AppColors.textTertiary), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                        ],
+                                      ),
+                                    ),
+                                    Icon(Icons.arrow_forward_ios_rounded, color: AppColors.textTertiary, size: 16),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> _loadSubjectsForPicker() async {
+    try {
+      final apiService = Provider.of<ApiService>(context, listen: false);
+      final explorer = await apiService.getExplorerSubjects();
+      final scholar = await apiService.getScholarSubjects();
+      return [...explorer, ...scholar].cast<Map<String, dynamic>>();
+    } catch (_) {
+      return [];
     }
   }
 
-  void _goToTryLesson() {
+  void _navigateAfterChoice(String mode, String subjectId, String subjectName) {
     HapticFeedback.mediumImpact();
-    final firstSubjectId = _selectedSubjectIds.isNotEmpty
-        ? _selectedSubjectIds.first
-        : null;
-    if (firstSubjectId != null) {
-      context.go('/subjects/$firstSubjectId/all-lessons?openFirst=1');
+    if (mode == 'try_lesson') {
+      context.go('/subjects/$subjectId/all-lessons?openFirst=1');
     } else {
-      context.go('/dashboard');
-    }
-  }
-
-  void _goToPersonalizedPath() {
-    HapticFeedback.mediumImpact();
-    final firstSubjectId = _selectedSubjectIds.isNotEmpty
-        ? _selectedSubjectIds.first
-        : null;
-    if (firstSubjectId != null) {
-      final subjectName = _subjects
-          .where((s) => s['id'] == firstSubjectId)
-          .map((s) => s['name'] as String)
-          .firstOrNull;
       context.go(
-        '/subjects/$firstSubjectId/learning-path-choice?name=${Uri.encodeComponent(subjectName ?? '')}&force=true',
+        '/subjects/$subjectId/learning-path-choice?name=${Uri.encodeComponent(subjectName)}&force=true',
       );
-    } else {
-      context.go('/dashboard');
     }
+  }
+
+  // ─── Build ───
+
+  Future<bool> _onWillPop() async {
+    if (_currentPage > 0) {
+      _previousPage();
+      return false;
+    }
+    final shouldLeave = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.bgSecondary,
+        title: Text('Thoát giới thiệu?', style: TextStyle(color: AppColors.textPrimary)),
+        content: Text(
+          'Thông tin bạn đã nhập sẽ không được lưu. Bạn có chắc muốn thoát?',
+          style: TextStyle(color: AppColors.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Ở lại'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Thoát', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+    return shouldLeave ?? false;
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.bgPrimary,
-      body: SafeArea(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        final shouldPop = await _onWillPop();
+        if (shouldPop && context.mounted) {
+          context.go('/login');
+        }
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.bgPrimary,
+        body: SafeArea(
         child: FadeTransition(
           opacity: _fadeAnimation,
           child: Column(
@@ -293,12 +431,12 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
                   physics: const NeverScrollableScrollPhysics(),
                   onPageChanged: (page) => setState(() => _currentPage = page),
                   children: [
-                    _buildWelcomeSlide(),
-                    _buildSubjectsSlide(),
-                    _buildLevelSlide(),
+                    _buildNicknameSlide(),
+                    _buildAcquisitionSlide(),
+                    _buildSegmentSlide(),
                     _buildGoalsSlide(),
-                    _buildDailyTimeSlide(),
-                    _buildChoiceSlide(),
+                    _buildEngagementSlide(),
+                    _buildNotificationSlide(),
                   ],
                 ),
               ),
@@ -307,16 +445,16 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
           ),
         ),
       ),
+      ),
     );
   }
 
   Widget _buildHeader() {
-    final isChoiceSlide = _currentPage == 5;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       child: Row(
         children: [
-          if (_currentPage > 0 && !isChoiceSlide)
+          if (_currentPage > 0)
             GestureDetector(
               onTap: _previousPage,
               child: Container(
@@ -326,40 +464,28 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(color: AppColors.borderPrimary),
                 ),
-                child: const Icon(Icons.arrow_back_rounded,
-                    color: AppColors.textSecondary, size: 20),
+                child: const Icon(Icons.arrow_back_rounded, color: AppColors.textSecondary, size: 20),
               ),
             )
           else
             const SizedBox(width: 36),
           const Spacer(),
-          if (!isChoiceSlide)
-            Text(
-              '${_currentPage + 1} / 5',
-              style: AppTextStyles.labelMedium.copyWith(color: AppColors.textTertiary),
-            ),
+          Text(
+            '${_currentPage + 1} / $_totalSlides',
+            style: AppTextStyles.labelMedium.copyWith(color: AppColors.textTertiary),
+          ),
           const Spacer(),
-          if (!isChoiceSlide)
-            GestureDetector(
-              onTap: () => context.go('/dashboard'),
-              child: Text(
-                'Bỏ qua',
-                style: AppTextStyles.labelMedium.copyWith(color: AppColors.textTertiary),
-              ),
-            )
-          else
-            const SizedBox(width: 36),
+          const SizedBox(width: 36),
         ],
       ),
     );
   }
 
   Widget _buildProgressBar() {
-    if (_currentPage == 5) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
-        children: List.generate(5, (index) {
+        children: List.generate(_totalSlides, (index) {
           final isActive = index <= _currentPage;
           return Expanded(
             child: AnimatedContainer(
@@ -379,8 +505,7 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
   }
 
   Widget _buildBottomButtons() {
-    if (_currentPage == 5) return const SizedBox.shrink();
-    final isLastPage = _currentPage == 4;
+    final isLastPage = _currentPage == _totalSlides - 1;
     return Container(
       padding: const EdgeInsets.all(20),
       child: SizedBox(
@@ -397,36 +522,25 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
     );
   }
 
-  // ─── Slide 1: Welcome ───
+  // ─── Slide 1: Nickname ───
 
-  Widget _buildWelcomeSlide() {
+  Widget _buildNicknameSlide() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
         children: [
           const SizedBox(height: 40),
           Container(
-            width: 100,
-            height: 100,
+            width: 100, height: 100,
             decoration: BoxDecoration(
               gradient: AppGradients.primary,
               borderRadius: BorderRadius.circular(30),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.purpleNeon.withOpacity(0.4),
-                  blurRadius: 30,
-                  spreadRadius: 5,
-                ),
-              ],
+              boxShadow: [BoxShadow(color: AppColors.purpleNeon.withOpacity(0.4), blurRadius: 30, spreadRadius: 5)],
             ),
             child: const Icon(Icons.waving_hand_rounded, size: 50, color: Colors.white),
           ),
           const SizedBox(height: 32),
-          AppTextStyles.gradientText(
-            'Chào mừng bạn!',
-            AppTextStyles.h2,
-            AppGradients.primary,
-          ),
+          AppTextStyles.gradientText('Chào mừng bạn!', AppTextStyles.h2, AppGradients.primary),
           const SizedBox(height: 12),
           Text(
             'Mình sẽ giúp bạn cá nhân hóa trải nghiệm học tập.\nHãy cho mình biết tên bạn nhé!',
@@ -458,139 +572,164 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
     );
   }
 
-  // ─── Slide 2: Subjects ───
+  // ─── Slide 2: Acquisition ───
 
-  Widget _buildSubjectsSlide() {
+  Widget _buildAcquisitionSlide() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
         children: [
           const SizedBox(height: 20),
-          const Icon(Icons.school_rounded, size: 48, color: AppColors.cyanNeon),
+          const Icon(Icons.campaign_rounded, size: 48, color: AppColors.cyanNeon),
           const SizedBox(height: 16),
-          AppTextStyles.gradientText(
-            'Bạn muốn học gì?',
-            AppTextStyles.h3,
-            AppGradients.cyan,
-          ),
+          AppTextStyles.gradientText('Bạn biết đến app từ đâu?', AppTextStyles.h3, AppGradients.cyan),
           const SizedBox(height: 8),
-          Text(
-            'Chọn một hoặc nhiều môn học bạn quan tâm',
-            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
-          ),
-          const SizedBox(height: 24),
-          if (_loadingSubjects)
-            const Padding(
-              padding: EdgeInsets.all(40),
-              child: CircularProgressIndicator(color: AppColors.cyanNeon),
-            )
-          else if (_subjects.isEmpty)
-            Padding(
-              padding: const EdgeInsets.all(40),
-              child: Text(
-                'Chưa có môn học nào',
-                style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textTertiary),
-              ),
-            )
-          else
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: _subjects.map((subject) {
-                final id = subject['id'] as String;
-                final name = subject['name'] as String? ?? 'Unknown';
-                final isSelected = _selectedSubjectIds.contains(id);
-                final metadata = subject['metadata'] as Map<String, dynamic>?;
-                final icon = metadata?['icon'] as String?;
-
-                return GestureDetector(
-                  onTap: () {
-                    HapticFeedback.selectionClick();
-                    setState(() {
-                      if (isSelected) {
-                        _selectedSubjectIds.remove(id);
-                      } else {
-                        _selectedSubjectIds.add(id);
-                      }
-                    });
-                  },
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                    decoration: BoxDecoration(
-                      gradient: isSelected ? AppGradients.purplePink : null,
-                      color: isSelected ? null : AppColors.bgSecondary,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: isSelected ? AppColors.purpleNeon : AppColors.borderPrimary,
-                        width: isSelected ? 2 : 1,
-                      ),
-                      boxShadow: isSelected
-                          ? [BoxShadow(color: AppColors.purpleNeon.withOpacity(0.3), blurRadius: 12)]
-                          : null,
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (icon != null) ...[
-                          Text(icon, style: const TextStyle(fontSize: 20)),
-                          const SizedBox(width: 8),
-                        ],
-                        Text(
-                          name,
-                          style: AppTextStyles.bodyBold.copyWith(
-                            color: isSelected ? Colors.white : AppColors.textPrimary,
-                          ),
-                        ),
-                        if (isSelected) ...[
-                          const SizedBox(width: 8),
-                          const Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
-                        ],
-                      ],
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
+          Text('Giúp mình cải thiện để tiếp cận nhiều người hơn', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+          const SizedBox(height: 32),
+          ..._acquisitionOptions.map((opt) {
+            final isSelected = _selectedAcquisition == opt['id'];
+            return _buildSingleSelectOption(
+              icon: opt['icon']!,
+              label: opt['label']!,
+              isSelected: isSelected,
+              onTap: () => setState(() => _selectedAcquisition = opt['id']),
+              gradient: AppGradients.cyan,
+              activeColor: AppColors.cyanNeon,
+            );
+          }),
         ],
       ),
     );
   }
 
-  // ─── Slide 3: Level ───
+  // ─── Slide 3: User Segment ───
 
-  Widget _buildLevelSlide() {
+  Widget _buildSegmentSlide() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
         children: [
           const SizedBox(height: 20),
-          const Icon(Icons.trending_up_rounded, size: 48, color: AppColors.orangeNeon),
+          const Icon(Icons.people_rounded, size: 48, color: AppColors.purpleNeon),
           const SizedBox(height: 16),
-          AppTextStyles.gradientText(
-            'Trình độ hiện tại?',
-            AppTextStyles.h3,
-            AppGradients.pinkOrange,
-          ),
+          AppTextStyles.gradientText('Bạn là ai?', AppTextStyles.h3, AppGradients.purplePink),
           const SizedBox(height: 8),
-          Text(
-            'Giúp mình hiểu bạn đang ở đâu nhé',
-            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
-          ),
+          Text('Để mình cá nhân hóa nội dung phù hợp nhất', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
           const SizedBox(height: 32),
-          ...List.generate(_levels.length, (index) {
-            final level = _levels[index];
-            final isSelected = _selectedLevel == level['id'];
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: GestureDetector(
+          ..._segmentOptions.map((opt) {
+            final isSelected = _selectedSegment == opt['id'];
+            return _buildDetailedOption(
+              icon: opt['icon']!,
+              label: opt['label']!,
+              desc: opt['desc']!,
+              isSelected: isSelected,
+              onTap: () => setState(() => _selectedSegment = opt['id']),
+              gradient: AppGradients.purplePink,
+              activeColor: AppColors.purpleNeon,
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  // ─── Slide 4: Learning Goals ───
+
+  Widget _buildGoalsSlide() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        children: [
+          const SizedBox(height: 20),
+          const Icon(Icons.flag_rounded, size: 48, color: AppColors.successNeon),
+          const SizedBox(height: 16),
+          AppTextStyles.gradientText('Bạn học để làm gì?', AppTextStyles.h3, AppGradients.success),
+          const SizedBox(height: 8),
+          Text('Chọn một hoặc nhiều mục tiêu của bạn', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+          const SizedBox(height: 32),
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: _goalOptions.map((opt) {
+              final isSelected = _selectedGoals.contains(opt['id']);
+              return GestureDetector(
                 onTap: () {
                   HapticFeedback.selectionClick();
-                  setState(() => _selectedLevel = level['id']);
+                  setState(() {
+                    if (isSelected) {
+                      _selectedGoals.remove(opt['id']);
+                    } else {
+                      _selectedGoals.add(opt['id']!);
+                    }
+                  });
                 },
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                  decoration: BoxDecoration(
+                    gradient: isSelected ? AppGradients.success : null,
+                    color: isSelected ? null : AppColors.bgSecondary,
+                    borderRadius: BorderRadius.circular(30),
+                    border: Border.all(
+                      color: isSelected ? AppColors.successNeon : AppColors.borderPrimary,
+                      width: isSelected ? 2 : 1,
+                    ),
+                    boxShadow: isSelected
+                        ? [BoxShadow(color: AppColors.successNeon.withOpacity(0.3), blurRadius: 12)]
+                        : null,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(opt['icon']!, style: const TextStyle(fontSize: 18)),
+                      const SizedBox(width: 8),
+                      Text(
+                        opt['label']!,
+                        style: AppTextStyles.bodyBold.copyWith(
+                          color: isSelected ? Colors.white : AppColors.textPrimary,
+                        ),
+                      ),
+                      if (isSelected) ...[
+                        const SizedBox(width: 8),
+                        const Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
+                      ],
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─── Slide 5: Engagement Expectation ───
+
+  Widget _buildEngagementSlide() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        children: [
+          const SizedBox(height: 20),
+          const Icon(Icons.schedule_rounded, size: 48, color: AppColors.orangeNeon),
+          const SizedBox(height: 16),
+          AppTextStyles.gradientText('Bạn muốn học mỗi ngày bao lâu?', AppTextStyles.h3, AppGradients.pinkOrange),
+          const SizedBox(height: 8),
+          Text('Mình sẽ điều chỉnh bài học phù hợp', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+          const SizedBox(height: 32),
+          ..._engagementOptions.map((opt) {
+            final isSelected = _selectedEngagement == opt['id'];
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: GestureDetector(
+                onTap: () {
+                  HapticFeedback.selectionClick();
+                  setState(() => _selectedEngagement = opt['id']);
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                   decoration: BoxDecoration(
                     gradient: isSelected ? AppGradients.pinkOrange : null,
                     color: isSelected ? null : AppColors.bgSecondary,
@@ -605,26 +744,14 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
                   ),
                   child: Row(
                     children: [
-                      Text(level['icon']!, style: const TextStyle(fontSize: 32)),
-                      const SizedBox(width: 16),
+                      Text(opt['icon']!, style: const TextStyle(fontSize: 28)),
+                      const SizedBox(width: 14),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              level['label']!,
-                              style: AppTextStyles.bodyBold.copyWith(
-                                color: isSelected ? Colors.white : AppColors.textPrimary,
-                                fontSize: 16,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              level['desc']!,
-                              style: AppTextStyles.bodySmall.copyWith(
-                                color: isSelected ? Colors.white70 : AppColors.textTertiary,
-                              ),
-                            ),
+                            Text(opt['label']!, style: AppTextStyles.bodyBold.copyWith(color: isSelected ? Colors.white : AppColors.textPrimary, fontSize: 15)),
+                            Text(opt['tag']!, style: TextStyle(color: isSelected ? Colors.white70 : AppColors.textTertiary, fontSize: 13)),
                           ],
                         ),
                       ),
@@ -641,141 +768,150 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
     );
   }
 
-  // ─── Slide 4: Goals ───
+  // ─── Slide 6: Notification Preference ───
 
-  Widget _buildGoalsSlide() {
+  Widget _buildNotificationSlide() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
         children: [
           const SizedBox(height: 20),
-          const Icon(Icons.flag_rounded, size: 48, color: AppColors.successNeon),
+          const Icon(Icons.notifications_active_rounded, size: 48, color: AppColors.coinGold),
           const SizedBox(height: 16),
-          AppTextStyles.gradientText(
-            'Mục tiêu học tập?',
-            AppTextStyles.h3,
-            AppGradients.success,
-          ),
+          AppTextStyles.gradientText('Nhắc học mỗi ngày?', AppTextStyles.h3, AppGradients.streak),
           const SizedBox(height: 8),
           Text(
-            'Chọn một hoặc nhiều mục tiêu của bạn',
+            'Mỗi thông báo sẽ kèm một câu nói truyền cảm hứng\ngiúp bạn duy trì động lực học tập.',
+            textAlign: TextAlign.center,
             style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: 32),
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            children: _goalOptions.map((goal) {
-              final isSelected = _selectedGoals.contains(goal);
-              return GestureDetector(
-                onTap: () {
-                  HapticFeedback.selectionClick();
-                  setState(() {
-                    if (isSelected) {
-                      _selectedGoals.remove(goal);
-                    } else {
-                      _selectedGoals.add(goal);
-                    }
-                  });
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                  decoration: BoxDecoration(
-                    gradient: isSelected ? AppGradients.success : null,
-                    color: isSelected ? null : AppColors.bgSecondary,
-                    borderRadius: BorderRadius.circular(30),
-                    border: Border.all(
-                      color: isSelected ? AppColors.successNeon : AppColors.borderPrimary,
-                      width: isSelected ? 2 : 1,
-                    ),
-                    boxShadow: isSelected
-                        ? [BoxShadow(color: AppColors.successNeon.withOpacity(0.3), blurRadius: 12)]
-                        : null,
-                  ),
+          ..._notificationOptions.map((opt) {
+            final isSelected = _selectedNotification == opt['id'];
+            return _buildDetailedOption(
+              icon: opt['icon']!,
+              label: opt['label']!,
+              desc: opt['desc']!,
+              isSelected: isSelected,
+              onTap: () => setState(() => _selectedNotification = opt['id']),
+              gradient: AppGradients.streak,
+              activeColor: AppColors.coinGold,
+            );
+          }),
+          const SizedBox(height: 20),
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: AppColors.coinGold.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: AppColors.coinGold.withOpacity(0.2)),
+            ),
+            child: Row(
+              children: [
+                const Text('💬', style: TextStyle(fontSize: 20)),
+                const SizedBox(width: 10),
+                Expanded(
                   child: Text(
-                    goal,
-                    style: AppTextStyles.bodyBold.copyWith(
-                      color: isSelected ? Colors.white : AppColors.textPrimary,
-                    ),
+                    '"Kỷ luật là cầu nối giữa mục tiêu và thành tựu." – Jim Rohn',
+                    style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary, fontStyle: FontStyle.italic),
                   ),
                 ),
-              );
-            }).toList(),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  // ─── Slide 6: Choice (try lesson or personalized path) ───
+  // ─── Shared Widgets ───
 
-  Widget _buildChoiceSlide() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        children: [
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: AppGradients.success,
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.successNeon.withOpacity(0.3),
-                  blurRadius: 24,
-                ),
-              ],
-            ),
-            child: const Icon(Icons.check_rounded, color: Colors.white, size: 40),
+  Widget _buildSingleSelectOption({
+    required String icon,
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+    required Gradient gradient,
+    required Color activeColor,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.selectionClick();
+          onTap();
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          decoration: BoxDecoration(
+            gradient: isSelected ? gradient : null,
+            color: isSelected ? null : AppColors.bgSecondary,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: isSelected ? activeColor : AppColors.borderPrimary, width: isSelected ? 2 : 1),
+            boxShadow: isSelected ? [BoxShadow(color: activeColor.withOpacity(0.3), blurRadius: 12)] : null,
           ),
-          const SizedBox(height: 20),
-          AppTextStyles.gradientText(
-            'Tuyệt vời!',
-            AppTextStyles.h2,
-            AppGradients.success,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Thông tin đã được lưu. Bạn muốn bắt đầu như thế nào?',
-            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 40),
-
-          // Option 1: Try a lesson
-          _buildChoiceCard(
-            icon: Icons.play_circle_filled_rounded,
-            title: 'Học thử 1 bài',
-            subtitle: 'Trải nghiệm nhanh một bài học để làm quen',
-            gradient: [AppColors.cyanNeon, AppColors.purpleNeon],
-            onTap: _goToTryLesson,
-          ),
-          const SizedBox(height: 16),
-
-          // Option 2: Create personalized path
-          _buildChoiceCard(
-            icon: Icons.route_rounded,
-            title: 'Tạo lộ trình cá nhân',
-            subtitle: 'Thiết kế lộ trình phù hợp qua câu hỏi hoặc chat AI',
-            gradient: [AppColors.pinkNeon, AppColors.orangeNeon],
-            onTap: _goToPersonalizedPath,
-          ),
-          const SizedBox(height: 24),
-
-          // Skip to dashboard
-          TextButton(
-            onPressed: () => context.go('/dashboard'),
-            child: Text(
-              'Vào trang chính',
-              style: AppTextStyles.labelMedium.copyWith(
-                color: AppColors.textTertiary,
-                decoration: TextDecoration.underline,
+          child: Row(
+            children: [
+              Text(icon, style: const TextStyle(fontSize: 24)),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text(label, style: AppTextStyles.bodyBold.copyWith(color: isSelected ? Colors.white : AppColors.textPrimary)),
               ),
-            ),
+              if (isSelected)
+                const Icon(Icons.check_circle_rounded, color: Colors.white, size: 22),
+            ],
           ),
-        ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDetailedOption({
+    required String icon,
+    required String label,
+    required String desc,
+    required bool isSelected,
+    required VoidCallback onTap,
+    required Gradient gradient,
+    required Color activeColor,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.selectionClick();
+          onTap();
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            gradient: isSelected ? gradient : null,
+            color: isSelected ? null : AppColors.bgSecondary,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: isSelected ? activeColor : AppColors.borderPrimary, width: isSelected ? 2 : 1),
+            boxShadow: isSelected ? [BoxShadow(color: activeColor.withOpacity(0.3), blurRadius: 16)] : null,
+          ),
+          child: Row(
+            children: [
+              Text(icon, style: const TextStyle(fontSize: 30)),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(label, style: AppTextStyles.bodyBold.copyWith(color: isSelected ? Colors.white : AppColors.textPrimary, fontSize: 15)),
+                    if (desc.isNotEmpty)
+                      Text(desc, style: TextStyle(color: isSelected ? Colors.white70 : AppColors.textTertiary, fontSize: 13)),
+                  ],
+                ),
+              ),
+              if (isSelected)
+                const Icon(Icons.check_circle_rounded, color: Colors.white, size: 24),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -796,23 +932,13 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
           color: AppColors.bgSecondary,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: gradient[0].withOpacity(0.3)),
-          boxShadow: [
-            BoxShadow(
-              color: gradient[0].withOpacity(0.1),
-              blurRadius: 16,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          boxShadow: [BoxShadow(color: gradient[0].withOpacity(0.1), blurRadius: 16, offset: const Offset(0, 4))],
         ),
         child: Row(
           children: [
             Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(colors: gradient),
-                borderRadius: BorderRadius.circular(16),
-              ),
+              width: 56, height: 56,
+              decoration: BoxDecoration(gradient: LinearGradient(colors: gradient), borderRadius: BorderRadius.circular(16)),
               child: Icon(icon, color: Colors.white, size: 28),
             ),
             const SizedBox(width: 16),
@@ -820,103 +946,16 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title,
-                    style: AppTextStyles.bodyBold.copyWith(
-                      color: AppColors.textPrimary,
-                      fontSize: 16,
-                    ),
-                  ),
+                  Text(title, style: AppTextStyles.bodyBold.copyWith(color: AppColors.textPrimary, fontSize: 16)),
                   const SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
+                  Text(subtitle, style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary)),
                 ],
               ),
             ),
             const SizedBox(width: 8),
-            Icon(
-              Icons.arrow_forward_ios_rounded,
-              color: gradient[0],
-              size: 18,
-            ),
+            Icon(Icons.arrow_forward_ios_rounded, color: gradient[0], size: 18),
           ],
         ),
-      ),
-    );
-  }
-
-  // ─── Slide 5: Daily Time ───
-
-  Widget _buildDailyTimeSlide() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        children: [
-          const SizedBox(height: 20),
-          const Icon(Icons.schedule_rounded, size: 48, color: AppColors.warningNeon),
-          const SizedBox(height: 16),
-          AppTextStyles.gradientText(
-            'Thời gian học mỗi ngày?',
-            AppTextStyles.h3,
-            AppGradients.warning,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Mình sẽ điều chỉnh bài học phù hợp với bạn',
-            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
-          ),
-          const SizedBox(height: 32),
-          ...List.generate(_timeOptions.length, (index) {
-            final option = _timeOptions[index];
-            final isSelected = _selectedDailyTime == option['id'];
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: GestureDetector(
-                onTap: () {
-                  HapticFeedback.selectionClick();
-                  setState(() => _selectedDailyTime = option['id']);
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    gradient: isSelected ? AppGradients.streak : null,
-                    color: isSelected ? null : AppColors.bgSecondary,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: isSelected ? AppColors.warningNeon : AppColors.borderPrimary,
-                      width: isSelected ? 2 : 1,
-                    ),
-                    boxShadow: isSelected
-                        ? [BoxShadow(color: AppColors.warningNeon.withOpacity(0.3), blurRadius: 16)]
-                        : null,
-                  ),
-                  child: Row(
-                    children: [
-                      Text(option['icon']!, style: const TextStyle(fontSize: 32)),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Text(
-                          option['label']!,
-                          style: AppTextStyles.bodyBold.copyWith(
-                            color: isSelected ? Colors.white : AppColors.textPrimary,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                      if (isSelected)
-                        const Icon(Icons.check_circle_rounded, color: Colors.white, size: 24),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          }),
-        ],
       ),
     );
   }

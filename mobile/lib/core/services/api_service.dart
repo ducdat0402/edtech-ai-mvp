@@ -853,4 +853,14 @@ class ApiService {
     );
     return response.data;
   }
+
+  // Daily motivation / notifications
+  Future<Map<String, dynamic>?> getDailyMotivation() async {
+    try {
+      final response = await _apiClient.get('/notifications/daily-motivation');
+      return Map<String, dynamic>.from(response.data);
+    } catch (_) {
+      return null;
+    }
+  }
 }

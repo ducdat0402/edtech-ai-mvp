@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { UserCurrencyModule } from './user-currency/user-currency.module';
@@ -29,6 +30,7 @@ import { LessonTypeContentsModule } from './lesson-type-contents/lesson-type-con
 import { AnalyticsModule } from './analytics/analytics.module';
 import { ShopModule } from './shop/shop.module';
 import { WorldChatModule } from './world-chat/world-chat.module';
+import { NotificationsModule } from './notifications/notifications.module';
 import { TypeOrmConfigService } from './config/typeorm.config';
 
 @Module({
@@ -40,6 +42,7 @@ import { TypeOrmConfigService } from './config/typeorm.config';
     TypeOrmModule.forRootAsync({
       useClass: TypeOrmConfigService,
     }),
+    ScheduleModule.forRoot(),
     AuthModule,
     UsersModule,
     UserCurrencyModule,
@@ -68,6 +71,7 @@ import { TypeOrmConfigService } from './config/typeorm.config';
     AnalyticsModule,
     ShopModule,
     WorldChatModule,
+    NotificationsModule,
   ],
 })
 export class AppModule {}

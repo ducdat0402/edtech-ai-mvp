@@ -279,6 +279,10 @@ export class OnboardingService {
       targetGoal: data.targetGoal,
       goals: data.goals,
       dailyTime: data.dailyTime,
+      acquisition: data.acquisition,
+      userSegment: data.userSegment,
+      engagementLevel: data.engagementLevel,
+      notificationPreference: data.notificationPreference,
       completedAt: new Date().toISOString(),
     };
 

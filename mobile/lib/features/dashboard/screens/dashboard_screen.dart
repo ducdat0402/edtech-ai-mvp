@@ -19,6 +19,7 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   Map<String, dynamic>? _dashboardData;
+  Map<String, dynamic>? _motivation;
   bool _isLoading = true;
   String? _error;
   String _userRole = 'user';
@@ -37,11 +38,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
       final results = await Future.wait([
         apiService.getDashboard(),
         apiService.getUserProfile(),
+        apiService.getDailyMotivation(),
       ]);
       setState(() {
         _dashboardData = results[0];
-        final profile = results[1];
-        _userRole = profile['role'] as String? ?? 'user';
+        _userRole = results[1]?['role'] as String? ?? 'user';
+        _motivation = results[2];
         _isLoading = false;
       });
     } catch (e) {
@@ -138,6 +140,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           children: [
                             _buildStatsSection(_dashboardData!['stats'] ?? {}),
                             const SizedBox(height: 24),
+
+                            if (_motivation != null && _motivation!['quote'] != null)
+                              ...[
+                                _buildMotivationCard(_motivation!),
+                                const SizedBox(height: 24),
+                              ],
 
                             _buildOnboardingBanner(),
                             const SizedBox(height: 24),
@@ -454,6 +462,70 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
             ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMotivationCard(Map<String, dynamic> data) {
+    final quote = data['quote'] as String? ?? '';
+    final author = data['quoteAuthor'] as String? ?? '';
+    final body = data['body'] as String? ?? '';
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColors.purpleNeon.withOpacity(0.15),
+            AppColors.cyanNeon.withOpacity(0.08),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.purpleNeon.withOpacity(0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (body.isNotEmpty) ...[
+            Text(
+              body,
+              style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+            ),
+            const SizedBox(height: 10),
+          ],
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('💬', style: const TextStyle(fontSize: 18)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '"$quote"',
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: AppColors.textPrimary,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                    if (author.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(
+                          '— $author',
+                          style: AppTextStyles.caption.copyWith(color: AppColors.textTertiary),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
