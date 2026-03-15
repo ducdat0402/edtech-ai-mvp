@@ -23,8 +23,16 @@ export async function createApp() {
     }),
   );
 
+  const corsOrigin = process.env.CORS_ORIGIN || '*';
+  const allowedOrigins = corsOrigin === '*' ? [] : corsOrigin.split(',').map((s) => s.trim()).filter(Boolean);
   app.enableCors({
-    origin: process.env.CORS_ORIGIN || '*',
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.length === 0) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      if (/^https?:\/\/localhost(:\d+)?$/.test(origin)) return callback(null, true);
+      callback(null, false);
+    },
     credentials: true,
   });
 
