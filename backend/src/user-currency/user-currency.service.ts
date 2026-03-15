@@ -28,7 +28,6 @@ export class UserCurrencyService {
 
     if (!currency) {
       try {
-        // Tạo bản ghi mới lần đầu
         currency = this.currencyRepository.create({
           userId,
           coins: 0,
@@ -40,28 +39,18 @@ export class UserCurrencyService {
         });
         currency = await this.currencyRepository.save(currency);
       } catch (e: any) {
-        // Trường hợp race condition: một request khác vừa tạo record với cùng userId
+        // Race condition: record vừa được tạo bởi request khác (unique constraint trên userId)
         if (e && e.code === '23505') {
           currency = await this.currencyRepository.findOne({
             where: { userId },
           });
-        } else {
-          throw e;
         }
+        if (!currency) throw e;
       }
     }
 
     if (!currency) {
-      currency = this.currencyRepository.create({
-        userId,
-        coins: 0,
-        diamonds: 0,
-        xp: 0,
-        level: 1,
-        currentStreak: 0,
-        shards: {},
-      });
-      currency = await this.currencyRepository.save(currency);
+      throw new Error(`UserCurrency not found for userId ${userId}`);
     }
 
     // Luôn tính lại level từ XP để đảm bảo chính xác
