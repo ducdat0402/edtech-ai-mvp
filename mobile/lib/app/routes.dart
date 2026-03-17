@@ -45,6 +45,7 @@ import 'package:edtech_mobile/features/shop/screens/shop_screen.dart';
 import 'package:edtech_mobile/features/friends/screens/friends_screen.dart';
 import 'package:edtech_mobile/features/dm/screens/conversations_screen.dart';
 import 'package:edtech_mobile/features/dm/screens/chat_room_screen.dart';
+import 'package:edtech_mobile/features/auth/screens/forgot_password_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/login',
@@ -56,6 +57,10 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/register',
       builder: (context, state) => const RegisterScreen(),
+    ),
+    GoRoute(
+      path: '/forgot-password',
+      builder: (context, state) => const ForgotPasswordScreen(),
     ),
     GoRoute(
       path: '/dashboard',

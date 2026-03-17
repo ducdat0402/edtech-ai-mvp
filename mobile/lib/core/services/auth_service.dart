@@ -202,6 +202,67 @@ class AuthService {
     }
   }
 
+  Future<Map<String, dynamic>> googleLogin({required String idToken}) async {
+    try {
+      final response = await _apiClient.post(
+        '/auth/google',
+        data: {'idToken': idToken},
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final responseData = response.data;
+        Map<String, dynamic> dataMap;
+        if (responseData is Map<String, dynamic>) {
+          dataMap = responseData;
+        } else if (responseData is String) {
+          try {
+            dataMap = jsonDecode(responseData) as Map<String, dynamic>;
+          } catch (_) {
+            return {'success': false, 'message': 'Invalid response format'};
+          }
+        } else {
+          return {'success': false, 'message': 'Unexpected response format'};
+        }
+
+        final token = dataMap['accessToken'] ?? dataMap['access_token'];
+        if (token != null && token.toString().isNotEmpty) {
+          await _apiClient.saveToken(token.toString());
+          return {
+            'success': true,
+            'token': token.toString(),
+            'user': dataMap['user'] ?? dataMap,
+          };
+        }
+        return {'success': false, 'message': 'No token received'};
+      }
+      return {'success': false, 'message': 'Google login failed'};
+    } catch (e) {
+      if (e is DioException && e.response != null) {
+        final data = e.response!.data;
+        final msg = data is Map ? (data['message'] ?? 'Google login failed') : 'Google login failed';
+        return {'success': false, 'message': msg.toString()};
+      }
+      return {'success': false, 'message': e.toString()};
+    }
+  }
+
+  Future<Map<String, dynamic>> forgotPassword({required String email}) async {
+    try {
+      final response = await _apiClient.post(
+        '/auth/forgot-password',
+        data: {'email': email},
+      );
+      return {'success': true, 'message': response.data['message'] ?? 'Email đã được gửi'};
+    } catch (e) {
+      if (e is DioException && e.response != null) {
+        final data = e.response!.data;
+        final msg = data is Map ? (data['message'] ?? 'Có lỗi xảy ra') : 'Có lỗi xảy ra';
+        return {'success': false, 'message': msg.toString()};
+      }
+      return {'success': false, 'message': 'Không kết nối được server'};
+    }
+  }
+
   Future<void> logout() async {
     await _apiClient.clearToken();
   }

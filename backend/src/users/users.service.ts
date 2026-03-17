@@ -91,6 +91,44 @@ export class UsersService {
     return this.usersRepository.save(user);
   }
 
+  async findOrCreateGoogleUser(email: string, fullName?: string): Promise<User> {
+    let user = await this.findByEmail(email);
+    if (user) {
+      if (user.authProvider !== 'google') {
+        user.authProvider = 'google';
+        user = await this.usersRepository.save(user);
+      }
+      return user;
+    }
+    const randomPass = await bcrypt.hash(Math.random().toString(36), 10);
+    const newUser = this.usersRepository.create({
+      email,
+      password: randomPass,
+      fullName: fullName || email.split('@')[0],
+      authProvider: 'google',
+    });
+    return this.usersRepository.save(newUser);
+  }
+
+  async setResetToken(userId: string, token: string, expires: Date): Promise<void> {
+    await this.usersRepository.update(userId, {
+      resetPasswordToken: token,
+      resetPasswordExpires: expires,
+    });
+  }
+
+  async findByResetToken(token: string): Promise<User | null> {
+    return this.usersRepository.findOne({ where: { resetPasswordToken: token } });
+  }
+
+  async updatePassword(userId: string, hashedPassword: string): Promise<void> {
+    await this.usersRepository.update(userId, {
+      password: hashedPassword,
+      resetPasswordToken: null,
+      resetPasswordExpires: null,
+    });
+  }
+
   async switchRole(
     userId: string,
     targetRole: 'user' | 'contributor',

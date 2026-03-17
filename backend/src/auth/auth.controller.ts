@@ -18,6 +18,21 @@ export class AuthController {
     return this.authService.login(loginDto);
   }
 
+  @Post('google')
+  async googleLogin(@Body() body: { idToken: string }) {
+    return this.authService.googleLogin(body.idToken);
+  }
+
+  @Post('forgot-password')
+  async forgotPassword(@Body() body: { email: string }) {
+    return this.authService.forgotPassword(body.email);
+  }
+
+  @Post('reset-password')
+  async resetPassword(@Body() body: { token: string; newPassword: string }) {
+    return this.authService.resetPassword(body.token, body.newPassword);
+  }
+
   @Get('verify')
   async verify(@Headers('authorization') authHeader: string) {
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -33,4 +48,3 @@ export class AuthController {
     return req.user;
   }
 }
-

@@ -52,6 +52,9 @@ dependencies:
   # Tutorial / Onboarding Overlay
   tutorial_coach_mark: ^1.2.11
 
+  # Google Sign-In
+  google_sign_in: ^6.2.1
+
   # Realtime
   socket_io_client: ^2.0.3+1
 

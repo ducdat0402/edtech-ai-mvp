@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:edtech_mobile/core/services/auth_service.dart';
 import 'package:go_router/go_router.dart';
 import 'package:edtech_mobile/theme/theme.dart';
@@ -17,6 +18,7 @@ class _LoginScreenState extends State<LoginScreen>
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
+  bool _isGoogleLoading = false;
   bool _obscurePassword = true;
   String? _errorMessage;
 
@@ -104,15 +106,14 @@ class _LoginScreenState extends State<LoginScreen>
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Logo with neon glow
                       _buildLogo(),
                       const SizedBox(height: 48),
-
-                      // Login Card
                       _buildLoginCard(),
-                      const SizedBox(height: 24),
-
-                      // Register Link
+                      const SizedBox(height: 16),
+                      _buildGoogleSignIn(),
+                      const SizedBox(height: 16),
+                      _buildForgotPasswordLink(),
+                      const SizedBox(height: 16),
                       _buildRegisterLink(),
                     ],
                   ),
@@ -377,6 +378,107 @@ class _LoginScreenState extends State<LoginScreen>
           validator: validator,
         ),
       ],
+    );
+  }
+
+  Future<void> _handleGoogleSignIn() async {
+    setState(() {
+      _isGoogleLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final googleSignIn = GoogleSignIn(scopes: ['email', 'profile']);
+      final account = await googleSignIn.signIn();
+      if (account == null) {
+        setState(() => _isGoogleLoading = false);
+        return;
+      }
+
+      final auth = await account.authentication;
+      final idToken = auth.idToken;
+      if (idToken == null) {
+        setState(() {
+          _errorMessage = 'Không lấy được token từ Google';
+          _isGoogleLoading = false;
+        });
+        return;
+      }
+
+      final authService = Provider.of<AuthService>(context, listen: false);
+      final result = await authService.googleLogin(idToken: idToken);
+
+      if (result['success'] == true) {
+        if (mounted) context.go('/dashboard');
+      } else {
+        setState(() {
+          _errorMessage = result['message'] ?? 'Google login failed';
+          _isGoogleLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Lỗi đăng nhập Google: ${e.toString()}';
+        _isGoogleLoading = false;
+      });
+    }
+  }
+
+  Widget _buildGoogleSignIn() {
+    return GestureDetector(
+      onTap: _isGoogleLoading ? null : _handleGoogleSignIn,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        decoration: BoxDecoration(
+          color: AppColors.bgSecondary,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.borderPrimary),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (_isGoogleLoading)
+              const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.textPrimary),
+              )
+            else ...[
+              const Text(
+                'G',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Đăng nhập bằng Google',
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildForgotPasswordLink() {
+    return Center(
+      child: GestureDetector(
+        onTap: () => context.push('/forgot-password'),
+        child: Text(
+          'Quên mật khẩu?',
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: AppColors.purpleNeon,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
     );
   }
 

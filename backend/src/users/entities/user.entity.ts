@@ -39,7 +39,16 @@ export class User {
   placementTestLevel: string;
 
   @Column({ type: 'varchar', default: 'user' })
-  role: 'user' | 'contributor' | 'admin'; // Role: user (learner), contributor, admin
+  role: 'user' | 'contributor' | 'admin';
+
+  @Column({ type: 'varchar', default: 'local' })
+  authProvider: 'local' | 'google';
+
+  @Column({ type: 'varchar', nullable: true })
+  resetPasswordToken: string | null;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  resetPasswordExpires: Date | null;
 
   @CreateDateColumn()
   createdAt: Date;
