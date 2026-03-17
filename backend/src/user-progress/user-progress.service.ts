@@ -13,6 +13,8 @@ import { QuestsService } from '../quests/quests.service';
 import { QuestType } from '../quests/entities/quest.entity';
 import { LessonTypeContentsService } from '../lesson-type-contents/lesson-type-contents.service';
 import { PersonalMindMap, PersonalMindMapNode } from '../personal-mind-map/entities/personal-mind-map.entity';
+import { FriendsService } from '../friends/friends.service';
+import { FriendActivityType } from '../friends/entities/friend-activity.entity';
 
 export interface RewardEntry {
   level: 'lesson_type' | 'lesson' | 'topic' | 'domain';
@@ -42,6 +44,8 @@ export class UserProgressService {
     @Inject(forwardRef(() => QuestsService))
     private questsService: QuestsService,
     private lessonTypeContentsService: LessonTypeContentsService,
+    @Inject(forwardRef(() => FriendsService))
+    private friendsService: FriendsService,
   ) {}
 
   async getOrCreate(userId: string, nodeId: string): Promise<UserProgress> {
@@ -198,6 +202,27 @@ export class UserProgressService {
         );
       } catch (error) {
         console.error('Error updating quest progress:', error);
+      }
+
+      // Log friend activity (fire-and-forget)
+      const node2 = await this.nodeRepository.findOne({ where: { id: nodeId } });
+      this.friendsService
+        .logActivity(userId, FriendActivityType.LESSON_COMPLETED, {
+          nodeId,
+          nodeName: node2?.title || '',
+        })
+        .catch((e) => console.error('Error logging friend activity:', e));
+
+      if (topicCompleted) {
+        const topic2 = node2?.topicId
+          ? await this.topicRepository.findOne({ where: { id: node2.topicId } })
+          : null;
+        this.friendsService
+          .logActivity(userId, FriendActivityType.SUBJECT_COMPLETED, {
+            topicId: node2?.topicId,
+            topicName: topic2?.name || '',
+          })
+          .catch((e) => console.error('Error logging friend activity:', e));
       }
     }
 

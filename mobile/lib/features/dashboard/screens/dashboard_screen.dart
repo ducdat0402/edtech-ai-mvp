@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/services/auth_service.dart';
+import 'package:edtech_mobile/core/services/tutorial_service.dart';
+import 'package:edtech_mobile/core/tutorial/tutorial_helper.dart';
 import 'package:edtech_mobile/core/widgets/bottom_nav_bar.dart';
 import 'package:edtech_mobile/core/widgets/error_widget.dart';
 import 'package:edtech_mobile/core/widgets/skeleton_loader.dart';
@@ -11,7 +13,10 @@ import 'package:edtech_mobile/theme/theme.dart';
 import 'package:edtech_mobile/features/chat/widgets/chat_bubble.dart';
 
 class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({super.key});
+  /// Bắt buộc hiện hướng dẫn lần đầu (khi về từ onboarding / tạo lộ trình mà chưa hoàn thành).
+  final bool showTutorial;
+
+  const DashboardScreen({super.key, this.showTutorial = false});
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
@@ -24,12 +29,74 @@ class _DashboardScreenState extends State<DashboardScreen> {
   String? _error;
   String _userRole = 'user';
 
+  // Tutorial keys
+  final _levelCardKey = GlobalKey();
+  final _statsRowKey = GlobalKey();
+  final _quickActionsKey = GlobalKey();
+  final _subjectsKey = GlobalKey();
+  final _bottomNavKey = GlobalKey();
+
   bool get _isContributor => _userRole == 'contributor';
 
   @override
   void initState() {
     super.initState();
     _loadDashboard();
+  }
+
+  void _showDashboardTutorial() {
+    if (!mounted || _dashboardData == null) return;
+
+    final targets = [
+      TutorialHelper.buildTarget(
+        key: _levelCardKey,
+        title: 'Level & Kinh nghiệm',
+        description: 'Đây là cấp độ hiện tại của bạn. Hoàn thành bài học để nhận XP và lên level!',
+        icon: Icons.military_tech,
+        stepLabel: 'Bước 1/5',
+      ),
+      TutorialHelper.buildTarget(
+        key: _statsRowKey,
+        title: 'Tài nguyên của bạn',
+        description: 'Coins để mua vật phẩm, Kim cương để mở khoá bài học, Streak theo dõi chuỗi học liên tiếp.',
+        icon: Icons.account_balance_wallet,
+        stepLabel: 'Bước 2/5',
+      ),
+      TutorialHelper.buildTarget(
+        key: _subjectsKey,
+        title: 'Danh sách môn học',
+        description: 'Chọn một môn học để bắt đầu. Vuốt ngang để xem thêm các môn khác.',
+        icon: Icons.school,
+        stepLabel: 'Bước 3/5',
+        align: ContentAlign.top,
+      ),
+      TutorialHelper.buildTarget(
+        key: _quickActionsKey,
+        title: 'Truy cập nhanh',
+        description: 'Quests hằng ngày, Bảng xếp hạng, Ví tiền, Cửa hàng... tất cả ở đây!',
+        icon: Icons.flash_on,
+        stepLabel: 'Bước 4/5',
+        align: ContentAlign.top,
+      ),
+      TutorialHelper.buildTarget(
+        key: _bottomNavKey,
+        title: 'Thanh điều hướng',
+        description: 'Di chuyển nhanh giữa Dashboard, Nhiệm vụ, Bảng xếp hạng và Hồ sơ cá nhân.',
+        icon: Icons.navigation,
+        stepLabel: 'Bước 5/5',
+        align: ContentAlign.top,
+      ),
+    ];
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      TutorialHelper.showTutorial(
+        context: context,
+        tutorialId: TutorialService.dashboardTutorial,
+        targets: targets,
+        force: widget.showTutorial,
+      );
+    });
   }
 
   Future<void> _loadDashboard() async {
@@ -46,6 +113,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         _motivation = results[2];
         _isLoading = false;
       });
+      _showDashboardTutorial();
     } catch (e) {
       setState(() {
         _error = e.toString();
@@ -153,9 +221,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             _buildQuickActions(),
                             const SizedBox(height: 24),
 
-                            _buildSubjectsSection(
-                              'Môn học',
-                              _dashboardData!['subjects'] ?? [],
+                            KeyedSubtree(
+                              key: _subjectsKey,
+                              child: _buildSubjectsSection(
+                                'Môn học',
+                                _dashboardData!['subjects'] ?? [],
+                              ),
                             ),
                             const SizedBox(height: 24),
 
@@ -172,7 +243,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const FloatingChatBubble(),
         ],
       ),
-      bottomNavigationBar: const BottomNavBar(currentIndex: 0),
+      bottomNavigationBar: KeyedSubtree(
+        key: _bottomNavKey,
+        child: const BottomNavBar(currentIndex: 0),
+      ),
     );
   }
 
@@ -208,6 +282,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         GestureDetector(
+          key: _levelCardKey,
           onTap: () => _showLevelTitlesDialog(),
           child: LevelCard(
             level: level,
@@ -220,6 +295,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         const SizedBox(height: 20),
 
         Row(
+          key: _statsRowKey,
           children: [
             Expanded(
               child: _buildStatCard(
@@ -539,6 +615,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildQuickActions() {
     return Column(
+      key: _quickActionsKey,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(

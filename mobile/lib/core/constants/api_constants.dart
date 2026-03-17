@@ -158,6 +158,21 @@ class ApiConstants {
   static String approvePendingContribution(String id) => '/pending-contributions/$id/approve';
   static String rejectPendingContribution(String id) => '/pending-contributions/$id/reject';
 
+  // Friends
+  static const String friends = '/friends';
+  static const String friendRequests = '/friends/requests';
+  static const String friendPendingCount = '/friends/pending-count';
+  static const String friendSearch = '/friends/search';
+  static const String friendSuggestions = '/friends/suggestions';
+  static const String friendActivities = '/friends/activities';
+  static String sendFriendRequest(String userId) => '/friends/request/$userId';
+  static String acceptFriendRequest(String friendshipId) => '/friends/accept/$friendshipId';
+  static String rejectFriendRequest(String friendshipId) => '/friends/reject/$friendshipId';
+  static String cancelFriendRequest(String friendshipId) => '/friends/cancel/$friendshipId';
+  static String unfriend(String friendshipId) => '/friends/$friendshipId';
+  static String blockUser(String userId) => '/friends/block/$userId';
+  static String unblockUser(String userId) => '/friends/block/$userId';
+
   // Analytics (Admin only)
   static const String analyticsOverview = '/analytics/overview';
 

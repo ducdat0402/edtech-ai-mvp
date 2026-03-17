@@ -5,11 +5,13 @@ import { UserCurrencyController } from './user-currency.controller';
 import { UserCurrency } from './entities/user-currency.entity';
 import { RewardTransaction } from './entities/reward-transaction.entity';
 import { UsersModule } from '../users/users.module';
+import { FriendsModule } from '../friends/friends.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([UserCurrency, RewardTransaction]),
     forwardRef(() => UsersModule),
+    forwardRef(() => FriendsModule),
   ],
   controllers: [UserCurrencyController],
   providers: [UserCurrencyService],

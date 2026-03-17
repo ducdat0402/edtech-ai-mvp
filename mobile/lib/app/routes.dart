@@ -42,6 +42,7 @@ import 'package:edtech_mobile/features/lessons/screens/end_quiz_screen.dart';
 import 'package:edtech_mobile/features/lessons/screens/lesson_types_overview_screen.dart';
 import 'package:edtech_mobile/features/subjects/screens/unlock_subject_screen.dart';
 import 'package:edtech_mobile/features/shop/screens/shop_screen.dart';
+import 'package:edtech_mobile/features/friends/screens/friends_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/login',
@@ -56,7 +57,10 @@ final GoRouter appRouter = GoRouter(
     ),
     GoRoute(
       path: '/dashboard',
-      builder: (context, state) => const DashboardScreen(),
+      builder: (context, state) {
+        final showTutorial = state.uri.queryParameters['showTutorial'] == '1';
+        return DashboardScreen(showTutorial: showTutorial);
+      },
     ),
     GoRoute(
       path: '/onboarding',
@@ -188,6 +192,10 @@ final GoRouter appRouter = GoRouter(
         final subjectId = state.uri.queryParameters['subjectId'];
         return LeaderboardScreen(subjectId: subjectId);
       },
+    ),
+    GoRoute(
+      path: '/friends',
+      builder: (context, state) => const FriendsScreen(),
     ),
     GoRoute(
       path: '/currency',

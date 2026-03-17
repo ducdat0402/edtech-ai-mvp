@@ -8,6 +8,8 @@ import { RewardSource } from '../user-currency/entities/reward-transaction.entit
 import { UserProgressService } from '../user-progress/user-progress.service';
 import { QuestsService } from '../quests/quests.service';
 import { UsersService } from '../users/users.service';
+import { FriendsService } from '../friends/friends.service';
+import { FriendActivityType } from '../friends/entities/friend-activity.entity';
 
 @Injectable()
 export class AchievementsService {
@@ -23,6 +25,8 @@ export class AchievementsService {
     private questsService: QuestsService,
     @Inject(forwardRef(() => UsersService))
     private usersService: UsersService,
+    @Inject(forwardRef(() => FriendsService))
+    private friendsService: FriendsService,
   ) {}
 
   /**
@@ -90,7 +94,6 @@ export class AchievementsService {
       throw new Error(`Achievement not found: ${achievementId}`);
     }
 
-    // Create user achievement
     const userAchievement = this.userAchievementRepository.create({
       userId,
       achievementId,
@@ -98,7 +101,16 @@ export class AchievementsService {
       rewardsClaimed: false,
     });
 
-    return this.userAchievementRepository.save(userAchievement);
+    const saved = await this.userAchievementRepository.save(userAchievement);
+
+    this.friendsService
+      .logActivity(userId, FriendActivityType.ACHIEVEMENT_UNLOCKED, {
+        achievementId: achievement.id,
+        achievementName: achievement.name,
+      })
+      .catch((e) => console.error('Error logging friend activity:', e));
+
+    return saved;
   }
 
   /**

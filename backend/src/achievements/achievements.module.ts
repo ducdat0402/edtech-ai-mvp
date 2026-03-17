@@ -8,6 +8,7 @@ import { UserCurrencyModule } from '../user-currency/user-currency.module';
 import { UserProgressModule } from '../user-progress/user-progress.module';
 import { QuestsModule } from '../quests/quests.module';
 import { UsersModule } from '../users/users.module';
+import { FriendsModule } from '../friends/friends.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { UsersModule } from '../users/users.module';
     forwardRef(() => UserProgressModule),
     forwardRef(() => QuestsModule),
     forwardRef(() => UsersModule),
+    forwardRef(() => FriendsModule),
   ],
   controllers: [AchievementsController],
   providers: [AchievementsService],

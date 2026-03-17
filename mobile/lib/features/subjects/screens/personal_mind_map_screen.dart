@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
+import 'package:edtech_mobile/core/services/tutorial_service.dart';
+import 'package:edtech_mobile/core/tutorial/tutorial_helper.dart';
 import 'package:go_router/go_router.dart';
 
 class PersonalMindMapScreen extends StatefulWidget {
@@ -21,7 +23,12 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
   Map<String, dynamic>? _mindMapData;
   String? _error;
 
-  // Chat state - chat riêng cho từng môn học
+  // Tutorial keys
+  final _progressHeaderKey = GlobalKey();
+  final _topicCardsKey = GlobalKey();
+  final _welcomeButtonKey = GlobalKey();
+
+  // Chat state
   bool _isChatMode = false;
   List<Map<String, String>> _chatMessages = [];
   final TextEditingController _chatController = TextEditingController();
@@ -58,12 +65,14 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
           _mindMapData = mindMapResult['mindMap'] as Map<String, dynamic>?;
           _isLoading = false;
         });
+        _showMindMapTutorial();
       } else {
         setState(() {
           _exists = false;
           _mindMapData = null;
           _isLoading = false;
         });
+        _showWelcomeTutorial();
       }
     } catch (e) {
       setState(() {
@@ -71,6 +80,54 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
         _isLoading = false;
       });
     }
+  }
+
+  void _showWelcomeTutorial() {
+    if (!mounted) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      TutorialHelper.showTutorial(
+        context: context,
+        tutorialId: '${TutorialService.personalMindMapTutorial}_welcome',
+        targets: [
+          TutorialHelper.buildTarget(
+            key: _welcomeButtonKey,
+            title: 'Tạo lộ trình cá nhân',
+            description: 'Nhấn nút này để chat với AI và tạo lộ trình học tập phù hợp với bạn!',
+            icon: Icons.route,
+            stepLabel: 'Bắt đầu',
+          ),
+        ],
+      );
+    });
+  }
+
+  void _showMindMapTutorial() {
+    if (!mounted || _mindMapData == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      TutorialHelper.showTutorial(
+        context: context,
+        tutorialId: TutorialService.personalMindMapTutorial,
+        targets: [
+          TutorialHelper.buildTarget(
+            key: _progressHeaderKey,
+            title: 'Tiến độ học tập',
+            description: 'Theo dõi mục tiêu và tiến độ hoàn thành. Nhấn "Tạo lại" nếu muốn thay đổi lộ trình.',
+            icon: Icons.trending_up,
+            stepLabel: 'Bước 1/2',
+          ),
+          TutorialHelper.buildTarget(
+            key: _topicCardsKey,
+            title: 'Danh sách chủ đề',
+            description: 'Nhấn vào từng chủ đề để xem bài học bên trong. Hoàn thành tất cả để đạt mục tiêu!',
+            icon: Icons.list_alt,
+            stepLabel: 'Bước 2/2',
+            align: ContentAlign.top,
+          ),
+        ],
+      );
+    });
   }
 
   /// Bắt đầu chat để tạo lộ trình - HỎI DỰA TRÊN NỘI DUNG MÔN HỌC
@@ -381,6 +438,7 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
           const SizedBox(height: 40),
           // Start button
           SizedBox(
+            key: _welcomeButtonKey,
             width: double.infinity,
             height: 56,
             child: ElevatedButton(
@@ -742,8 +800,8 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
 
     return Column(
       children: [
-        // Progress header
         Container(
+          key: _progressHeaderKey,
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -837,8 +895,8 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
             ],
           ),
         ),
-        // Mind map list view - Chỉ hiện tới topic (level 2)
         Expanded(
+          key: _topicCardsKey,
           child: _buildLearnerMindMapList(nodes),
         ),
       ],

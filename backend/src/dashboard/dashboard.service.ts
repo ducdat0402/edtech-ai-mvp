@@ -134,6 +134,7 @@ export class DashboardService {
     const totalNodesCompleted = completedNodeIds.length;
     const totalXP = currency.xp;
     const currentStreak = currency.currentStreak;
+    const maxStreak = currency.maxStreak ?? 0;
     const totalCoins = currency.coins;
     const totalDiamonds = currency.diamonds ?? 0;
     const currentLevel = currency.level || 1;
@@ -143,6 +144,7 @@ export class DashboardService {
       stats: {
         totalXP,
         currentStreak,
+        maxStreak,
         totalCoins,
         totalDiamonds,
         totalNodesCompleted,

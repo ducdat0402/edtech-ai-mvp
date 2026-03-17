@@ -3,6 +3,7 @@ export 'gaming_button.dart';
 export 'glass_card.dart';
 export 'xp_bar.dart';
 export 'streak_counter.dart';
+export 'streak_week_card.dart';
 export 'coin_display.dart';
 export 'achievement_badge.dart';
 export 'level_display.dart';

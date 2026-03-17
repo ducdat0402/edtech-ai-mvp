@@ -24,6 +24,7 @@ export class UserCurrencyController {
         progress: levelInfo.progress,
       },
       currentStreak: currency.currentStreak,
+      maxStreak: currency.maxStreak ?? 0,
       shards: currency.shards,
       lastActiveDate: currency.lastActiveDate,
     };

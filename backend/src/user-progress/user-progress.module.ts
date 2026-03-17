@@ -9,6 +9,7 @@ import { UserCurrencyModule } from '../user-currency/user-currency.module';
 import { LearningNode } from '../learning-nodes/entities/learning-node.entity';
 import { QuestsModule } from '../quests/quests.module';
 import { LessonTypeContentsModule } from '../lesson-type-contents/lesson-type-contents.module';
+import { FriendsModule } from '../friends/friends.module';
 import { Topic } from '../topics/entities/topic.entity';
 import { Domain } from '../domains/entities/domain.entity';
 import { PersonalMindMap } from '../personal-mind-map/entities/personal-mind-map.entity';
@@ -27,6 +28,7 @@ import { PersonalMindMap } from '../personal-mind-map/entities/personal-mind-map
     UserCurrencyModule,
     forwardRef(() => QuestsModule),
     LessonTypeContentsModule,
+    forwardRef(() => FriendsModule),
   ],
   controllers: [UserProgressController],
   providers: [UserProgressService],

@@ -29,6 +29,9 @@ import { UserTopicProgress } from '../user-progress/entities/user-topic-progress
 import { UserDomainProgress } from '../user-progress/entities/user-domain-progress.entity';
 import { UserItem } from '../shop/entities/user-item.entity';
 import { ChatMessage } from '../world-chat/entities/chat-message.entity';
+import { Friendship } from '../friends/entities/friendship.entity';
+import { UserBlock } from '../friends/entities/user-block.entity';
+import { FriendActivity } from '../friends/entities/friend-activity.entity';
 
 @Injectable()
 export class TypeOrmConfigService implements TypeOrmOptionsFactory {
@@ -86,6 +89,9 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
         UserDomainProgress,
         UserItem,
         ChatMessage,
+        Friendship,
+        UserBlock,
+        FriendActivity,
       ],
       synchronize: !isProduction || this.configService.get<string>('ENABLE_SYNC') === 'true',
       logging: !isProduction ? ['error', 'warn'] : ['error'],

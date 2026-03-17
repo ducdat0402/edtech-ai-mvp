@@ -49,6 +49,9 @@ dependencies:
   media_kit_video: ^1.2.9
   media_kit_libs_windows_video: ^1.0.11
   
+  # Tutorial / Onboarding Overlay
+  tutorial_coach_mark: ^1.2.11
+
   # Charts
   fl_chart: ^0.70.2
 

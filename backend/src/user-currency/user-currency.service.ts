@@ -4,6 +4,8 @@ import { Repository, EntityManager, DataSource } from 'typeorm';
 import { UserCurrency } from './entities/user-currency.entity';
 import { RewardTransaction, RewardSource } from './entities/reward-transaction.entity';
 import { UsersService } from '../users/users.service';
+import { FriendsService } from '../friends/friends.service';
+import { FriendActivityType } from '../friends/entities/friend-activity.entity';
 
 @Injectable()
 export class UserCurrencyService {
@@ -14,6 +16,8 @@ export class UserCurrencyService {
     private rewardTransactionRepository: Repository<RewardTransaction>,
     @Inject(forwardRef(() => UsersService))
     private usersService: UsersService,
+    @Inject(forwardRef(() => FriendsService))
+    private friendsService: FriendsService,
     private dataSource: DataSource,
   ) {}
 
@@ -35,6 +39,7 @@ export class UserCurrencyService {
           xp: 0,
           level: 1,
           currentStreak: 0,
+          maxStreak: 0,
           shards: {},
         });
         currency = await this.currencyRepository.save(currency);
@@ -229,11 +234,18 @@ export class UserCurrencyService {
     
     const savedCurrency = await this.currencyRepository.save(currency);
     
-    // Also update User.totalXP for leaderboard (async, don't wait)
     this.usersService.addXP(userId, amount).catch((error) => {
       console.error('Error updating User.totalXP:', error);
-      // Don't throw, just log
     });
+
+    if (leveledUp) {
+      this.friendsService
+        .logActivity(userId, FriendActivityType.LEVEL_UP, {
+          oldLevel,
+          newLevel,
+        })
+        .catch((e: any) => console.error('Error logging friend activity:', e));
+    }
     
     return {
       currency: savedCurrency,
@@ -272,21 +284,33 @@ export class UserCurrencyService {
     yesterday.setDate(yesterday.getDate() - 1);
 
     if (!lastActive) {
-      // First time
       currency.currentStreak = 1;
     } else if (lastActive.getTime() === today.getTime()) {
-      // Already updated today
-      // Do nothing
+      // Already updated today – no change
     } else if (lastActive.getTime() === yesterday.getTime()) {
-      // Consecutive day
       currency.currentStreak += 1;
     } else {
-      // Streak broken
       currency.currentStreak = 1;
     }
 
+    const maxStreak = currency.maxStreak ?? 0;
+    if (currency.currentStreak > maxStreak) {
+      currency.maxStreak = currency.currentStreak;
+    }
+
     currency.lastActiveDate = today;
-    return this.currencyRepository.save(currency);
+    const saved = await this.currencyRepository.save(currency);
+
+    const milestones = [3, 7, 14, 30, 60, 100, 365];
+    if (milestones.includes(currency.currentStreak)) {
+      this.friendsService
+        .logActivity(userId, FriendActivityType.STREAK_MILESTONE, {
+          streak: currency.currentStreak,
+        })
+        .catch((e: any) => console.error('Error logging friend activity:', e));
+    }
+
+    return saved;
   }
 
   /**

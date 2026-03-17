@@ -37,6 +37,9 @@ export class UserCurrency {
   @Column({ type: 'int', default: 0 })
   currentStreak: number;
 
+  @Column({ type: 'int', default: 0 })
+  maxStreak: number;
+
   @Column({ type: 'date', nullable: true })
   lastActiveDate: Date;
 

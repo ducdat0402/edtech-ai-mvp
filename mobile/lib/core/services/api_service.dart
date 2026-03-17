@@ -854,6 +854,84 @@ class ApiService {
     return response.data;
   }
 
+  // =====================
+  // Friends APIs
+  // =====================
+
+  Future<List<dynamic>> getFriends() async {
+    final response = await _apiClient.get(ApiConstants.friends);
+    return List<Map<String, dynamic>>.from(response.data);
+  }
+
+  Future<Map<String, dynamic>> getFriendRequests() async {
+    final response = await _apiClient.get(ApiConstants.friendRequests);
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> getFriendPendingCount() async {
+    final response = await _apiClient.get(ApiConstants.friendPendingCount);
+    return response.data;
+  }
+
+  Future<List<dynamic>> searchUsers(String query, {int limit = 20}) async {
+    final response = await _apiClient.get(
+      ApiConstants.friendSearch,
+      queryParameters: {'q': query, 'limit': limit},
+    );
+    return List<Map<String, dynamic>>.from(response.data);
+  }
+
+  Future<List<dynamic>> getFriendSuggestions({int limit = 20}) async {
+    final response = await _apiClient.get(
+      ApiConstants.friendSuggestions,
+      queryParameters: {'limit': limit},
+    );
+    return List<Map<String, dynamic>>.from(response.data);
+  }
+
+  Future<Map<String, dynamic>> getFriendActivities({int page = 1, int limit = 20}) async {
+    final response = await _apiClient.get(
+      ApiConstants.friendActivities,
+      queryParameters: {'page': page, 'limit': limit},
+    );
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> sendFriendRequest(String userId) async {
+    final response = await _apiClient.post(ApiConstants.sendFriendRequest(userId));
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> acceptFriendRequest(String friendshipId) async {
+    final response = await _apiClient.post(ApiConstants.acceptFriendRequest(friendshipId));
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> rejectFriendRequest(String friendshipId) async {
+    final response = await _apiClient.post(ApiConstants.rejectFriendRequest(friendshipId));
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> cancelFriendRequest(String friendshipId) async {
+    final response = await _apiClient.post(ApiConstants.cancelFriendRequest(friendshipId));
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> unfriend(String friendshipId) async {
+    final response = await _apiClient.delete(ApiConstants.unfriend(friendshipId));
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> blockUser(String userId) async {
+    final response = await _apiClient.post(ApiConstants.blockUser(userId));
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> unblockUser(String userId) async {
+    final response = await _apiClient.delete(ApiConstants.unblockUser(userId));
+    return response.data;
+  }
+
   // Daily motivation / notifications
   Future<Map<String, dynamic>?> getDailyMotivation() async {
     try {

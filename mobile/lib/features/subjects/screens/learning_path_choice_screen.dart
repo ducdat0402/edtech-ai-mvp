@@ -112,7 +112,13 @@ class _LearningPathChoiceScreenState extends State<LearningPathChoiceScreen> {
             child: const Icon(Icons.arrow_back,
                 color: AppColors.textPrimary, size: 20),
           ),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            if (widget.forceShowChoice) {
+              context.go('/dashboard?showTutorial=1');
+            } else {
+              Navigator.pop(context);
+            }
+          },
         ),
       ),
       body: SingleChildScrollView(

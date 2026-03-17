@@ -7,6 +7,7 @@ import 'package:edtech_mobile/core/widgets/empty_state.dart';
 import 'package:edtech_mobile/features/currency/screens/rewards_history_screen.dart';
 import 'package:edtech_mobile/features/achievements/screens/achievements_screen.dart';
 import 'package:edtech_mobile/features/chat/widgets/chat_bubble.dart';
+import 'package:edtech_mobile/theme/theme.dart';
 
 class CurrencyScreen extends StatefulWidget {
   const CurrencyScreen({super.key});
@@ -89,6 +90,7 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
     final diamonds = _currencyData!['diamonds'] as int? ?? 0;
     final xp = _currencyData!['xp'] as int? ?? 0;
     final streak = _currencyData!['currentStreak'] as int? ?? 0;
+    final maxStreak = _currencyData!['maxStreak'] as int? ?? 0;
     final shards = _currencyData!['shards'] as Map<String, dynamic>? ?? {};
     final lastActiveDate = _currencyData!['lastActiveDate'] as String?;
 
@@ -131,8 +133,12 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
           
           const SizedBox(height: 16),
           
-          // Streak Card
-          _buildStreakCard(streak, lastActiveDate),
+          // Streak Card - chuỗi ngày học (tuần + countdown)
+          StreakWeekCard(
+            currentStreak: streak,
+            maxStreak: maxStreak,
+            lastActiveDate: lastActiveDate,
+          ),
           
           const SizedBox(height: 24),
           
@@ -337,96 +343,6 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
     );
   }
 
-  Widget _buildStreakCard(int streak, String? lastActiveDate) {
-    final streakColor = streak > 0 ? Colors.orange : Colors.grey;
-    final streakMessage = streak > 0
-        ? 'Giữ vững chuỗi ngày học tập của bạn!'
-        : 'Bắt đầu chuỗi ngày học tập ngay hôm nay!';
-
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          gradient: LinearGradient(
-            colors: [
-              streakColor.withOpacity(0.1),
-              streakColor.withOpacity(0.05),
-            ],
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: streakColor.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                Icons.local_fire_department,
-                color: streakColor,
-                size: 32,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Chuỗi ngày học tập',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    streakMessage,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-                  if (lastActiveDate != null) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      'Hoạt động lần cuối: ${_formatDate(lastActiveDate)}',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.grey.shade500,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: streakColor,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                '$streak ngày',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildShardsSection(Map<String, dynamic> shards) {
     final shardEntries = shards.entries.toList();
 
@@ -593,16 +509,6 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
         ),
       ),
     );
-  }
-
-  String _formatDate(String? dateString) {
-    if (dateString == null) return 'N/A';
-    try {
-      final date = DateTime.parse(dateString);
-      return '${date.day}/${date.month}/${date.year}';
-    } catch (e) {
-      return dateString;
-    }
   }
 
   String _formatShardName(String name) {

@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/services/auth_service.dart';
+import 'package:edtech_mobile/core/services/tutorial_service.dart';
+import 'package:edtech_mobile/core/tutorial/tutorial_helper.dart';
 import 'package:edtech_mobile/core/widgets/bottom_nav_bar.dart';
 import 'package:edtech_mobile/core/widgets/error_widget.dart';
 import 'package:edtech_mobile/features/chat/widgets/chat_bubble.dart';
@@ -24,10 +26,53 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _isSwitchingRole = false;
   String? _error;
 
+  // Tutorial keys
+  final _statsRowKey = GlobalKey();
+  final _roleSwitcherKey = GlobalKey();
+  final _menuCardsKey = GlobalKey();
+
   @override
   void initState() {
     super.initState();
     _loadProfile();
+  }
+
+  void _showProfileTutorial() {
+    if (!mounted || _profileData == null) return;
+
+    final targets = [
+      TutorialHelper.buildTarget(
+        key: _statsRowKey,
+        title: 'Thống kê của bạn',
+        description: 'Xem XP tích lũy, Coins kiếm được và chuỗi Streak.',
+        icon: Icons.bar_chart,
+        stepLabel: 'Bước 1/3',
+      ),
+      TutorialHelper.buildTarget(
+        key: _roleSwitcherKey,
+        title: 'Chuyển vai trò',
+        description: 'Learner để học bài, Contributor để đóng góp nội dung cho cộng đồng.',
+        icon: Icons.swap_horiz,
+        stepLabel: 'Bước 2/3',
+      ),
+      TutorialHelper.buildTarget(
+        key: _menuCardsKey,
+        title: 'Menu chức năng',
+        description: 'Nhật ký hành trình, đóng góp của bạn, mua kim cương và hơn thế nữa!',
+        icon: Icons.menu,
+        stepLabel: 'Bước 3/3',
+        align: ContentAlign.top,
+      ),
+    ];
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      TutorialHelper.showTutorial(
+        context: context,
+        tutorialId: TutorialService.profileTutorial,
+        targets: targets,
+      );
+    });
   }
 
   Future<void> _loadProfile() async {
@@ -46,6 +91,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _dashboardStats = results[2]['stats'];
         _isLoading = false;
       });
+      _showProfileTutorial();
     } catch (e) {
       setState(() {
         _error = e.toString();
@@ -235,7 +281,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const FloatingChatBubble(),
         ],
       ),
-      bottomNavigationBar: const BottomNavBar(currentIndex: 3),
+      bottomNavigationBar: const BottomNavBar(currentIndex: 4),
     );
   }
 
@@ -317,15 +363,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           const SizedBox(height: 16),
 
-          // Role Switcher (not for admin)
-          if (!_isAdmin) _buildRoleSwitcher(),
+          if (!_isAdmin)
+            KeyedSubtree(
+              key: _roleSwitcherKey,
+              child: _buildRoleSwitcher(),
+            ),
           const SizedBox(height: 24),
 
-          // Stats Row
-          _buildStatsRow(stats, currency),
+          KeyedSubtree(
+            key: _statsRowKey,
+            child: _buildStatsRow(stats, currency),
+          ),
           const SizedBox(height: 24),
 
-          // Admin Panel Button (only for admin)
           if (_isAdmin)
             _buildMenuCard(
               icon: Icons.admin_panel_settings,
@@ -346,24 +396,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onTap: () => context.push('/contributor/my-contributions'),
             ),
 
-          // Journey Log Button
-          _buildMenuCard(
-            icon: Icons.history_edu,
-            title: 'Nhật ký hành trình',
-            subtitle: _isContributor
-                ? 'Lịch sử đóng góp & chỉnh sửa'
-                : 'Lịch sử học tập',
-            color: _accentColor,
-            onTap: () => context.go('/profile/journey'),
-          ),
+          Column(
+            key: _menuCardsKey,
+            children: [
+              _buildMenuCard(
+                icon: Icons.history_edu,
+                title: 'Nhật ký hành trình',
+                subtitle: _isContributor
+                    ? 'Lịch sử đóng góp & chỉnh sửa'
+                    : 'Lịch sử học tập',
+                color: _accentColor,
+                onTap: () => context.go('/profile/journey'),
+              ),
 
-          // Premium/Payment Button
-          _buildMenuCard(
-            icon: Icons.workspace_premium,
-            title: 'Nhận kim cương',
-            subtitle: 'Mở khóa chức năng nâng cao',
-            color: AppColors.coinGold,
-            onTap: () => context.push('/payment'),
+              _buildMenuCard(
+                icon: Icons.workspace_premium,
+                title: 'Nhận kim cương',
+                subtitle: 'Mở khóa chức năng nâng cao',
+                color: AppColors.coinGold,
+                onTap: () => context.push('/payment'),
+              ),
+            ],
           ),
 
           // Profile Info Card

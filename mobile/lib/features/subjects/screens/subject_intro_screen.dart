@@ -2,8 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
+import 'package:edtech_mobile/core/services/tutorial_service.dart';
+import 'package:edtech_mobile/core/tutorial/tutorial_helper.dart';
 import 'package:edtech_mobile/core/utils/navigation_helper.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 
@@ -23,40 +24,77 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
   Map<String, dynamic>? _introData;
   bool _isLoading = true;
   String? _error;
-  int _currentTutorialStep = 0;
-  bool _showTutorial = false;
-  bool _dontShowAgain = false;
   String _userRole = 'user';
 
   bool get _isContributor => _userRole == 'contributor' || _userRole == 'admin';
 
   // Mind map interaction state
-  int _currentLevel = 1; // 1 = Subject, 2 = Domains, 3 = Topics
-  String? _selectedSubjectNodeId; // Selected subject node
-  String? _selectedDomainNodeId; // Selected domain node
+  int _currentLevel = 1;
+  String? _selectedSubjectNodeId;
+  String? _selectedDomainNodeId;
 
-  static const String _tutorialPrefKey = 'mindmap_tutorial_done';
+  // Tutorial keys
+  final _courseOutlineKey = GlobalKey();
+  final _mindMapButtonsKey = GlobalKey();
+  final _knowledgeGraphKey = GlobalKey();
+  final _domainsListKey = GlobalKey();
 
   @override
   void initState() {
     super.initState();
-    _checkTutorialPref();
     _loadSubjectIntro();
   }
 
-  Future<void> _checkTutorialPref() async {
-    final prefs = await SharedPreferences.getInstance();
-    final done = prefs.getBool(_tutorialPrefKey) ?? false;
-    if (!done && mounted) {
-      setState(() => _showTutorial = true);
-    }
-  }
+  void _showSubjectIntroTutorial() {
+    if (!mounted || _introData == null) return;
 
-  Future<void> _saveTutorialPref() async {
-    if (_dontShowAgain) {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool(_tutorialPrefKey, true);
+    final targets = <TargetFocus>[];
+
+    targets.add(TutorialHelper.buildTarget(
+      key: _courseOutlineKey,
+      title: 'Tổng quan khóa học',
+      description: 'Xem số lượng bài học, topic và domain của môn học.',
+      icon: Icons.info_outline,
+      stepLabel: 'Bước 1/4',
+    ));
+
+    targets.add(TutorialHelper.buildTarget(
+      key: _mindMapButtonsKey,
+      title: 'Chế độ xem',
+      description: 'Mind map: bản đồ kiến thức, Lộ trình: danh sách bài học, Cá nhân: tạo lộ trình riêng.',
+      icon: Icons.view_module,
+      stepLabel: 'Bước 2/4',
+    ));
+
+    targets.add(TutorialHelper.buildTarget(
+      key: _knowledgeGraphKey,
+      title: 'Bản đồ kiến thức',
+      description: 'Nhấn vào node để mở rộng: Môn học → Domain → Topic. Khám phá cấu trúc kiến thức!',
+      icon: Icons.account_tree,
+      stepLabel: 'Bước 3/4',
+      align: ContentAlign.top,
+    ));
+
+    final domains = _introData?['subject']?['domains'] as List<dynamic>?;
+    if (domains != null && domains.isNotEmpty) {
+      targets.add(TutorialHelper.buildTarget(
+        key: _domainsListKey,
+        title: 'Các chương học',
+        description: 'Nhấn vào từng chương để xem chi tiết bài học bên trong.',
+        icon: Icons.library_books,
+        stepLabel: 'Bước 4/4',
+        align: ContentAlign.top,
+      ));
     }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      TutorialHelper.showTutorial(
+        context: context,
+        tutorialId: TutorialService.subjectIntroTutorial,
+        targets: targets,
+      );
+    });
   }
 
   Future<void> _loadSubjectIntro() async {
@@ -72,44 +110,12 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
         _userRole = profile['role'] as String? ?? 'user';
         _isLoading = false;
       });
+      _showSubjectIntroTutorial();
     } catch (e) {
       setState(() {
         _error = e.toString();
         _isLoading = false;
       });
-    }
-  }
-
-  void _nextTutorialStep() {
-    if (_introData == null) return;
-    final steps = _introData!['tutorialSteps'] as List;
-    if (_currentTutorialStep < steps.length - 1) {
-      setState(() {
-        _currentTutorialStep++;
-      });
-    } else {
-      setState(() {
-        _showTutorial = false;
-      });
-    }
-  }
-
-  void _skipTutorial() {
-    _saveTutorialPref();
-    setState(() => _showTutorial = false);
-  }
-
-  void _nextStep() {
-    if (_currentTutorialStep < 2) {
-      setState(() => _currentTutorialStep++);
-    } else {
-      _skipTutorial();
-    }
-  }
-
-  void _prevStep() {
-    if (_currentTutorialStep > 0) {
-      setState(() => _currentTutorialStep--);
     }
   }
 
@@ -444,15 +450,7 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
             }
           },
         ),
-        actions: [
-          if (_showTutorial)
-            TextButton(
-              onPressed: _skipTutorial,
-              child: Text('Bỏ qua',
-                  style: AppTextStyles.labelMedium
-                      .copyWith(color: AppColors.cyanNeon)),
-            ),
-        ],
+        actions: const [],
       ),
       body: _isLoading
           ? Center(
@@ -498,47 +496,44 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
                       child: Text('Không có dữ liệu',
                           style: AppTextStyles.bodyMedium
                               .copyWith(color: AppColors.textSecondary)))
-                  : Stack(
-                      children: [
-                        // Main content
-                        SingleChildScrollView(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Subject header
-                              _buildSubjectHeader(),
-                              const SizedBox(height: 24),
+                  : SingleChildScrollView(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildSubjectHeader(),
+                          const SizedBox(height: 24),
 
-                              // Course outline
-                              _buildCourseOutline(),
-                              const SizedBox(height: 16),
-
-                              // Unlock button (diamond)
-                              if (!_isContributor) _buildUnlockBanner(),
-                              const SizedBox(height: 16),
-
-                              // Mind map buttons
-                              _buildMindMapButtons(),
-
-                              // Mind map (knowledge graph)
-                              _buildKnowledgeGraphContent(),
-                              const SizedBox(height: 24),
-
-                              // Domains list
-                              _buildDomainsList(),
-                              const SizedBox(height: 24),
-
-                              // Contributor: nút vào mind map editor
-                              if (_isContributor)
-                                _buildContributorQuickAccess(),
-                            ],
+                          KeyedSubtree(
+                            key: _courseOutlineKey,
+                            child: _buildCourseOutline(),
                           ),
-                        ),
+                          const SizedBox(height: 16),
 
-                        // Tutorial overlay
-                        if (_showTutorial) _buildTutorialOverlay(),
-                      ],
+                          if (!_isContributor) _buildUnlockBanner(),
+                          const SizedBox(height: 16),
+
+                          KeyedSubtree(
+                            key: _mindMapButtonsKey,
+                            child: _buildMindMapButtons(),
+                          ),
+
+                          KeyedSubtree(
+                            key: _knowledgeGraphKey,
+                            child: _buildKnowledgeGraphContent(),
+                          ),
+                          const SizedBox(height: 24),
+
+                          KeyedSubtree(
+                            key: _domainsListKey,
+                            child: _buildDomainsList(),
+                          ),
+                          const SizedBox(height: 24),
+
+                          if (_isContributor)
+                            _buildContributorQuickAccess(),
+                        ],
+                      ),
                     ),
     );
   }
@@ -1444,356 +1439,6 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
     );
   }
 
-  Widget _buildTutorialOverlay() {
-    final isLast = _currentTutorialStep == 2;
-
-    return Container(
-      color: Colors.black.withOpacity(0.9),
-      child: SafeArea(
-        child: Column(
-          children: [
-            // Header with skip button
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Bước ${_currentTutorialStep + 1}/3',
-                    style: TextStyle(
-                        color: Colors.white.withOpacity(0.7), fontSize: 14),
-                  ),
-                  TextButton(
-                    onPressed: _skipTutorial,
-                    child: const Text('Bỏ qua',
-                        style: TextStyle(color: Colors.white70)),
-                  ),
-                ],
-              ),
-            ),
-
-            // Title
-            const Text(
-              'Hướng dẫn sử dụng Mind Map',
-              style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 24),
-
-            // Illustration
-            Expanded(child: _buildIllustration()),
-
-            // Checkbox for last step
-            if (isLast)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Checkbox(
-                      value: _dontShowAgain,
-                      onChanged: (v) =>
-                          setState(() => _dontShowAgain = v ?? false),
-                      fillColor: WidgetStateProperty.all(Colors.orange),
-                    ),
-                    const Text('Không hiển thị lại',
-                        style: TextStyle(color: Colors.white70)),
-                  ],
-                ),
-              ),
-
-            // Navigation
-            Padding(
-              padding: const EdgeInsets.all(24),
-              child: Row(
-                children: [
-                  if (_currentTutorialStep > 0)
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: _prevStep,
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.white,
-                          side: const BorderSide(color: Colors.white54),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                        ),
-                        child: const Text('Quay lại'),
-                      ),
-                    ),
-                  if (_currentTutorialStep > 0) const SizedBox(width: 16),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: _nextStep,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                      child: Text(isLast ? 'Bắt đầu!' : 'Tiếp theo'),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildIllustration() {
-    switch (_currentTutorialStep) {
-      case 0:
-        return _buildStep1();
-      case 1:
-        return _buildStep2();
-      case 2:
-        return _buildStep3();
-      default:
-        return const SizedBox.shrink();
-    }
-  }
-
-  // Step 1: Click Subject
-  Widget _buildStep1() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        // Subject node illustration
-        Container(
-          width: 180,
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-                colors: [Colors.orange.shade400, Colors.orange.shade600]),
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(color: Colors.orange.withOpacity(0.5), blurRadius: 20)
-            ],
-          ),
-          child: Column(
-            children: [
-              const Icon(Icons.school, color: Colors.white, size: 48),
-              const SizedBox(height: 8),
-              const Text('Môn học',
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold)),
-              const SizedBox(height: 4),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.touch_app,
-                      color: Colors.yellow.shade300, size: 20),
-                  const SizedBox(width: 4),
-                  Text('Nhấn vào đây',
-                      style: TextStyle(
-                          color: Colors.yellow.shade300, fontSize: 12)),
-                ],
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 32),
-        Container(
-          margin: const EdgeInsets.symmetric(horizontal: 32),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: const Text(
-            'Nhấn vào node Môn học để mở rộng và xem các Domain (lĩnh vực) bên trong',
-            style: TextStyle(color: Colors.white, fontSize: 15),
-            textAlign: TextAlign.center,
-          ),
-        ),
-      ],
-    );
-  }
-
-  // Step 2: Click Domain
-  Widget _buildStep2() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Subject small
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                  color: Colors.orange.shade400,
-                  borderRadius: BorderRadius.circular(10)),
-              child: const Icon(Icons.school, color: Colors.white, size: 24),
-            ),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8),
-              child: Icon(Icons.arrow_forward, color: Colors.white54),
-            ),
-            // Domains
-            Column(
-              children: [
-                _domainBox('Domain 1', false),
-                const SizedBox(height: 8),
-                _domainBox('Domain 2', true),
-                const SizedBox(height: 8),
-                _domainBox('Domain 3', false),
-              ],
-            ),
-          ],
-        ),
-        const SizedBox(height: 32),
-        Container(
-          margin: const EdgeInsets.symmetric(horizontal: 32),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: const Text(
-            'Nhấn vào Domain để xem các Topic (chủ đề) bên trong',
-            style: TextStyle(color: Colors.white, fontSize: 15),
-            textAlign: TextAlign.center,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _domainBox(String text, bool highlight) {
-    return Container(
-      width: 130,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        gradient: highlight
-            ? LinearGradient(
-                colors: [Colors.blue.shade400, Colors.blue.shade600])
-            : null,
-        color: highlight ? null : Colors.blue.shade300,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: highlight
-            ? [BoxShadow(color: Colors.blue.withOpacity(0.5), blurRadius: 12)]
-            : null,
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.category, color: Colors.white, size: 18),
-          const SizedBox(width: 6),
-          Text(text,
-              style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: highlight ? FontWeight.bold : FontWeight.normal)),
-          if (highlight) ...[
-            const Spacer(),
-            Icon(Icons.touch_app, color: Colors.yellow.shade300, size: 16)
-          ],
-        ],
-      ),
-    );
-  }
-
-  // Step 3: Click Topic
-  Widget _buildStep3() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                  color: Colors.blue.shade400,
-                  borderRadius: BorderRadius.circular(8)),
-              child: const Icon(Icons.category, color: Colors.white, size: 20),
-            ),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 6),
-              child: Icon(Icons.arrow_forward, color: Colors.white54, size: 20),
-            ),
-            Column(
-              children: [
-                _topicBox('Topic 1', false),
-                const SizedBox(height: 6),
-                _topicBox('Topic 2', true),
-                const SizedBox(height: 6),
-                _topicBox('Topic 3', false),
-              ],
-            ),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 6),
-              child: Icon(Icons.arrow_forward, color: Colors.white54, size: 20),
-            ),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                  color: Colors.green.shade500,
-                  borderRadius: BorderRadius.circular(10)),
-              child: const Column(
-                children: [
-                  Icon(Icons.play_lesson, color: Colors.white, size: 28),
-                  SizedBox(height: 4),
-                  Text('Bài học',
-                      style: TextStyle(color: Colors.white, fontSize: 10)),
-                ],
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 32),
-        Container(
-          margin: const EdgeInsets.symmetric(horizontal: 32),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: const Text(
-            'Nhấn vào Topic để xem danh sách bài học và bắt đầu học!',
-            style: TextStyle(color: Colors.white, fontSize: 15),
-            textAlign: TextAlign.center,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _topicBox(String text, bool highlight) {
-    return Container(
-      width: 100,
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      decoration: BoxDecoration(
-        gradient: highlight
-            ? LinearGradient(
-                colors: [Colors.teal.shade400, Colors.teal.shade600])
-            : null,
-        color: highlight ? null : Colors.teal.shade300,
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: highlight
-            ? [BoxShadow(color: Colors.teal.withOpacity(0.5), blurRadius: 10)]
-            : null,
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.topic, color: Colors.white, size: 14),
-          const SizedBox(width: 4),
-          Text(text,
-              style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 11,
-                  fontWeight: highlight ? FontWeight.bold : FontWeight.normal)),
-          if (highlight) ...[
-            const Spacer(),
-            Icon(Icons.touch_app, color: Colors.yellow.shade300, size: 14)
-          ],
-        ],
-      ),
-    );
-  }
 }
 
 class _OutlineItem extends StatelessWidget {
