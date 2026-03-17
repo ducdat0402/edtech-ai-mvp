@@ -173,6 +173,11 @@ class ApiConstants {
   static String blockUser(String userId) => '/friends/block/$userId';
   static String unblockUser(String userId) => '/friends/block/$userId';
 
+  // Direct messages (DM)
+  static const String dmConversations = '/dm/conversations';
+  static String dmConversation(String peerId) => '/dm/conversation/$peerId';
+  static String dmMarkRead(String peerId) => '/dm/conversation/$peerId/read';
+
   // Analytics (Admin only)
   static const String analyticsOverview = '/analytics/overview';
 

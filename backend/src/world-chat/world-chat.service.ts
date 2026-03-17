@@ -1,6 +1,6 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, LessThan, MoreThan } from 'typeorm';
+import { Repository } from 'typeorm';
 import { ChatMessage } from './entities/chat-message.entity';
 import { UserCurrencyService } from '../user-currency/user-currency.service';
 
@@ -22,6 +22,7 @@ export class WorldChatService {
     userId: string,
     username: string,
     message: string,
+    replyToId?: string | null,
   ): Promise<ChatMessage> {
     const trimmed = message.trim();
     if (!trimmed || trimmed.length === 0) {
@@ -46,14 +47,27 @@ export class WorldChatService {
       userLevel = currency.level || 1;
     } catch {}
 
+    if (replyToId) {
+      const replyTo = await this.chatRepository.findOne({ where: { id: replyToId } });
+      if (!replyTo) throw new BadRequestException('Tin nhắn cần trả lời không tồn tại');
+    }
+
     const chatMessage = this.chatRepository.create({
       userId,
       username,
       message: trimmed,
       userLevel,
+      replyToId: replyToId || null,
     });
 
     return this.chatRepository.save(chatMessage);
+  }
+
+  async deleteMessage(messageId: string, userId: string): Promise<void> {
+    const msg = await this.chatRepository.findOne({ where: { id: messageId } });
+    if (!msg) throw new NotFoundException('Tin nhắn không tồn tại');
+    if (msg.userId !== userId) throw new ForbiddenException('Chỉ xóa được tin nhắn của mình');
+    await this.chatRepository.remove(msg);
   }
 
   async getMessages(options?: {
@@ -68,6 +82,7 @@ export class WorldChatService {
 
     const qb = this.chatRepository
       .createQueryBuilder('msg')
+      .leftJoinAndSelect('msg.replyTo', 'replyTo')
       .orderBy('msg.createdAt', 'DESC')
       .take(limit);
 

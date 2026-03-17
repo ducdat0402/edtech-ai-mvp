@@ -43,6 +43,8 @@ import 'package:edtech_mobile/features/lessons/screens/lesson_types_overview_scr
 import 'package:edtech_mobile/features/subjects/screens/unlock_subject_screen.dart';
 import 'package:edtech_mobile/features/shop/screens/shop_screen.dart';
 import 'package:edtech_mobile/features/friends/screens/friends_screen.dart';
+import 'package:edtech_mobile/features/dm/screens/conversations_screen.dart';
+import 'package:edtech_mobile/features/dm/screens/chat_room_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/login',
@@ -196,6 +198,19 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/friends',
       builder: (context, state) => const FriendsScreen(),
+    ),
+    GoRoute(
+      path: '/dm/conversations',
+      builder: (context, state) => const ConversationsScreen(),
+    ),
+    GoRoute(
+      path: '/dm/chat/:peerId',
+      builder: (context, state) {
+        final peerId = state.pathParameters['peerId']!;
+        final extra = state.extra as Map<String, dynamic>?;
+        final peerName = extra?['peerName'] as String? ?? 'User';
+        return ChatRoomScreen(peerId: peerId, peerName: peerName);
+      },
     ),
     GoRoute(
       path: '/currency',

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Query, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Body, Query, Param, UseGuards, Request } from '@nestjs/common';
 import { WorldChatService } from './world-chat.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
@@ -26,14 +26,21 @@ export class WorldChatController {
   @Post('send')
   async sendMessage(
     @Request() req,
-    @Body() body: { message: string },
+    @Body() body: { message: string; replyToId?: string },
   ) {
-    const username = req.user.username || req.user.email?.split('@')[0] || 'Anonymous';
+    const username = req.user.fullName || req.user.email?.split('@')[0] || 'Anonymous';
     const msg = await this.chatService.sendMessage(
       req.user.id,
       username,
       body.message,
+      body.replyToId,
     );
     return msg;
+  }
+
+  @Delete('messages/:id')
+  async deleteMessage(@Request() req, @Param('id') messageId: string) {
+    await this.chatService.deleteMessage(messageId, req.user.id);
+    return { success: true };
   }
 }

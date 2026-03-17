@@ -32,6 +32,7 @@ import { ShopModule } from './shop/shop.module';
 import { WorldChatModule } from './world-chat/world-chat.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { FriendsModule } from './friends/friends.module';
+import { DmModule } from './direct-message/dm.module';
 import { TypeOrmConfigService } from './config/typeorm.config';
 
 @Module({
@@ -74,6 +75,7 @@ import { TypeOrmConfigService } from './config/typeorm.config';
     WorldChatModule,
     NotificationsModule,
     FriendsModule,
+    DmModule,
   ],
 })
 export class AppModule {}

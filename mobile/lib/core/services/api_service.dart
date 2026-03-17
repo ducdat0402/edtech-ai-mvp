@@ -846,12 +846,16 @@ class ApiService {
     return response.data;
   }
 
-  Future<Map<String, dynamic>> sendChatMessage(String message) async {
+  Future<Map<String, dynamic>> sendChatMessage(String message, {String? replyToId}) async {
     final response = await _apiClient.post(
       '/world-chat/send',
-      data: {'message': message},
+      data: {'message': message, if (replyToId != null) 'replyToId': replyToId},
     );
     return response.data;
+  }
+
+  Future<void> deleteWorldChatMessage(String messageId) async {
+    await _apiClient.delete('/world-chat/messages/$messageId');
   }
 
   // =====================
@@ -930,6 +934,35 @@ class ApiService {
   Future<Map<String, dynamic>> unblockUser(String userId) async {
     final response = await _apiClient.delete(ApiConstants.unblockUser(userId));
     return response.data;
+  }
+
+  // Direct messages (DM)
+  Future<List<dynamic>> getDmConversations() async {
+    final response = await _apiClient.get(ApiConstants.dmConversations);
+    return List<Map<String, dynamic>>.from(response.data);
+  }
+
+  Future<Map<String, dynamic>> getDmConversation(
+    String peerId, {
+    int? limit,
+    String? before,
+  }) async {
+    final response = await _apiClient.get(
+      ApiConstants.dmConversation(peerId),
+      queryParameters: {
+        if (limit != null) 'limit': limit,
+        if (before != null) 'before': before,
+      },
+    );
+    return response.data;
+  }
+
+  Future<void> markDmAsRead(String peerId) async {
+    await _apiClient.post(ApiConstants.dmMarkRead(peerId));
+  }
+
+  Future<void> deleteDmMessage(String messageId) async {
+    await _apiClient.delete('/dm/message/$messageId');
   }
 
   // Daily motivation / notifications

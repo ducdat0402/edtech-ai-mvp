@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/widgets/bottom_nav_bar.dart';
 import 'package:edtech_mobile/core/widgets/empty_state.dart';
@@ -92,6 +93,10 @@ class _FriendsScreenState extends State<FriendsScreen>
         backgroundColor: AppColors.bgSecondary,
         title: const Text('Ban be', style: TextStyle(color: AppColors.textPrimary)),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.chat_rounded, color: AppColors.textPrimary),
+            onPressed: () => context.push('/dm/conversations'),
+          ),
           IconButton(
             icon: const Icon(Icons.search_rounded, color: AppColors.textPrimary),
             onPressed: _showSearchDialog,
@@ -230,13 +235,25 @@ class _FriendsScreenState extends State<FriendsScreen>
             ],
           ],
         ),
-        trailing: PopupMenuButton<String>(
-          icon: const Icon(Icons.more_vert, color: AppColors.textSecondary),
-          color: AppColors.bgTertiary,
-          onSelected: (value) => _handleFriendAction(value, friend),
-          itemBuilder: (_) => [
-            const PopupMenuItem(value: 'unfriend', child: Text('Huy ket ban', style: TextStyle(color: AppColors.errorNeon))),
-            const PopupMenuItem(value: 'block', child: Text('Chan nguoi dung', style: TextStyle(color: AppColors.errorNeon))),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.chat_bubble_outline_rounded, color: AppColors.cyanNeon),
+              onPressed: () {
+                final id = friend['id'] as String?;
+                if (id != null) context.push('/dm/chat/$id', extra: {'peerName': name});
+              },
+            ),
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.more_vert, color: AppColors.textSecondary),
+              color: AppColors.bgTertiary,
+              onSelected: (value) => _handleFriendAction(value, friend),
+              itemBuilder: (_) => [
+                const PopupMenuItem(value: 'unfriend', child: Text('Huy ket ban', style: TextStyle(color: AppColors.errorNeon))),
+                const PopupMenuItem(value: 'block', child: Text('Chan nguoi dung', style: TextStyle(color: AppColors.errorNeon))),
+              ],
+            ),
           ],
         ),
       ),

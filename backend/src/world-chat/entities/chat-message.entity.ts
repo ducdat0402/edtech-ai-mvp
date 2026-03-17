@@ -30,6 +30,13 @@ export class ChatMessage {
   @Column({ type: 'int', default: 0 })
   userLevel: number;
 
+  @Column({ nullable: true })
+  replyToId: string | null;
+
+  @ManyToOne(() => ChatMessage, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'replyToId' })
+  replyTo: ChatMessage | null;
+
   @Index()
   @CreateDateColumn()
   createdAt: Date;

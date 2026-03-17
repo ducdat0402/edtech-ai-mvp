@@ -32,6 +32,7 @@ import { ChatMessage } from '../world-chat/entities/chat-message.entity';
 import { Friendship } from '../friends/entities/friendship.entity';
 import { UserBlock } from '../friends/entities/user-block.entity';
 import { FriendActivity } from '../friends/entities/friend-activity.entity';
+import { DirectMessage } from '../direct-message/entities/direct-message.entity';
 
 @Injectable()
 export class TypeOrmConfigService implements TypeOrmOptionsFactory {
@@ -92,6 +93,7 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
         Friendship,
         UserBlock,
         FriendActivity,
+        DirectMessage,
       ],
       synchronize: !isProduction || this.configService.get<string>('ENABLE_SYNC') === 'true',
       logging: !isProduction ? ['error', 'warn'] : ['error'],

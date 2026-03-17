@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:edtech_mobile/core/api/api_client.dart';
 import 'package:edtech_mobile/core/services/auth_service.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
+import 'package:edtech_mobile/core/services/dm_socket_service.dart';
 import 'package:edtech_mobile/app/routes.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 
@@ -15,12 +16,14 @@ class EdTechApp extends StatelessWidget {
     final apiClient = ApiClient();
     final authService = AuthService(apiClient);
     final apiService = ApiService(apiClient);
+    final dmSocketService = DmSocketService();
 
     return MultiProvider(
       providers: [
         Provider<ApiClient>.value(value: apiClient),
         Provider<AuthService>.value(value: authService),
         Provider<ApiService>.value(value: apiService),
+        Provider<DmSocketService>.value(value: dmSocketService),
       ],
       child: MaterialApp.router(
         title: 'EdTech AI MVP',

@@ -18,6 +18,14 @@ class ApiConfig {
   static const String baseUrl =
    'https://edtech-ai-backend-tbq7.onrender.com/api/v1';
 
+  /// Base URL without /api/v1 (for Socket.IO)
+  static String get serverUrl {
+    final u = baseUrl;
+    if (u.endsWith('/api/v1')) return u.substring(0, u.length - 7);
+    if (u.endsWith('/api/v1/')) return u.substring(0, u.length - 8);
+    return u;
+  }
+
   // Option 4: If 10.0.2.2 doesn't work, try localhost
   // static const String baseUrl = 'http://localhost:3000/api/v1';
 }
