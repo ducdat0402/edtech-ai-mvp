@@ -259,7 +259,8 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                       const SizedBox(height: 8),
                       ElevatedButton.icon(
                         onPressed: () {
-                          final userAchievementId = data['id'] as String?;
+                          final userAchievementId =
+                              data['userAchievementId'] as String?;
                           if (userAchievementId != null) {
                             _claimRewards(userAchievementId);
                           }

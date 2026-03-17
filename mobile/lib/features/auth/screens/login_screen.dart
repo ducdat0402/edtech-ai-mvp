@@ -1,9 +1,12 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:edtech_mobile/core/services/auth_service.dart';
 import 'package:go_router/go_router.dart';
 import 'package:edtech_mobile/theme/theme.dart';
+import 'package:edtech_mobile/features/auth/utils/google_js_stub.dart'
+    if (dart.library.html) 'package:edtech_mobile/features/auth/utils/google_js_web.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -110,8 +113,10 @@ class _LoginScreenState extends State<LoginScreen>
                       const SizedBox(height: 48),
                       _buildLoginCard(),
                       const SizedBox(height: 16),
-                      _buildGoogleSignIn(),
-                      const SizedBox(height: 16),
+                        if (_showGoogleOnThisPlatform && !_isWindowsDesktop) ...[
+                        _buildGoogleSignIn(),
+                        const SizedBox(height: 16),
+                      ],
                       _buildForgotPasswordLink(),
                       const SizedBox(height: 16),
                       _buildRegisterLink(),
@@ -381,6 +386,15 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
+  bool get _isWindowsDesktop =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.windows;
+
+  bool get _showGoogleOnThisPlatform =>
+      (!kIsWeb &&
+          (defaultTargetPlatform == TargetPlatform.android ||
+              defaultTargetPlatform == TargetPlatform.iOS)) ||
+      kIsWeb;
+
   Future<void> _handleGoogleSignIn() async {
     setState(() {
       _isGoogleLoading = true;
@@ -388,33 +402,63 @@ class _LoginScreenState extends State<LoginScreen>
     });
 
     try {
-      final googleSignIn = GoogleSignIn(scopes: ['email', 'profile']);
-      final account = await googleSignIn.signIn();
-      if (account == null) {
-        setState(() => _isGoogleLoading = false);
-        return;
-      }
-
-      final auth = await account.authentication;
-      final idToken = auth.idToken;
-      if (idToken == null) {
-        setState(() {
-          _errorMessage = 'Không lấy được token từ Google';
-          _isGoogleLoading = false;
-        });
-        return;
-      }
-
       final authService = Provider.of<AuthService>(context, listen: false);
-      final result = await authService.googleLogin(idToken: idToken);
 
-      if (result['success'] == true) {
-        if (mounted) context.go('/dashboard');
+      if (kIsWeb) {
+        const clientId =
+            '472848673350-3cdph27sao6jrinaem7fftkvrr2cjrha.apps.googleusercontent.com';
+
+        startGoogleJsSignIn(
+          clientId,
+          (idToken) async {
+            final result = await authService.googleLogin(idToken: idToken);
+            if (!mounted) return;
+            if (result['success'] == true) {
+              context.go('/dashboard');
+            } else {
+              setState(() {
+                _errorMessage =
+                    result['message'] ?? 'Google login failed (web)';
+                _isGoogleLoading = false;
+              });
+            }
+          },
+          (message) {
+            if (!mounted) return;
+            setState(() {
+              _errorMessage = message;
+              _isGoogleLoading = false;
+            });
+          },
+        );
       } else {
-        setState(() {
-          _errorMessage = result['message'] ?? 'Google login failed';
-          _isGoogleLoading = false;
-        });
+        final googleSignIn = GoogleSignIn(scopes: ['email', 'profile']);
+        final account = await googleSignIn.signIn();
+        if (account == null) {
+          setState(() => _isGoogleLoading = false);
+          return;
+        }
+
+        final auth = await account.authentication;
+        final idToken = auth.idToken;
+        if (idToken == null) {
+          setState(() {
+            _errorMessage = 'Không lấy được token từ Google';
+            _isGoogleLoading = false;
+          });
+          return;
+        }
+
+        final result = await authService.googleLogin(idToken: idToken);
+
+        if (result['success'] == true) {
+          if (mounted) context.go('/dashboard');
+        } else {
+          setState(() {
+            _errorMessage = result['message'] ?? 'Google login failed';
+            _isGoogleLoading = false;
+          });
+        }
       }
     } catch (e) {
       setState(() {
