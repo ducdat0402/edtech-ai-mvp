@@ -432,7 +432,14 @@ class _LoginScreenState extends State<LoginScreen>
           },
         );
       } else {
-        final googleSignIn = GoogleSignIn(scopes: ['email', 'profile']);
+        // On mobile platforms we need serverClientId (web client ID)
+        // to receive a valid ID token for backend verification.
+        const webClientId =
+            '472848673350-3cdph27sao6jrinaem7fftkvrr2cjrha.apps.googleusercontent.com';
+        final googleSignIn = GoogleSignIn(
+          scopes: ['email', 'profile'],
+          serverClientId: webClientId,
+        );
         final account = await googleSignIn.signIn();
         if (account == null) {
           setState(() => _isGoogleLoading = false);
