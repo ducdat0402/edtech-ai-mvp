@@ -178,6 +178,13 @@ class ApiConstants {
   static String dmConversation(String peerId) => '/dm/conversation/$peerId';
   static String dmMarkRead(String peerId) => '/dm/conversation/$peerId/read';
 
+  // Weekly Rewards
+  static const String weeklyRankings = '/weekly-rewards/rankings';
+  static const String weeklyRewardHistory = '/weekly-rewards/history';
+  static const String weeklyBadges = '/weekly-rewards/badges';
+  static const String weeklyUnnotified = '/weekly-rewards/unnotified';
+  static const String weeklyDistribute = '/weekly-rewards/distribute';
+
   // Analytics (Admin only)
   static const String analyticsOverview = '/analytics/overview';
 

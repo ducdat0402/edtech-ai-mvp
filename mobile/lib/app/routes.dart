@@ -46,6 +46,7 @@ import 'package:edtech_mobile/features/friends/screens/friends_screen.dart';
 import 'package:edtech_mobile/features/dm/screens/conversations_screen.dart';
 import 'package:edtech_mobile/features/dm/screens/chat_room_screen.dart';
 import 'package:edtech_mobile/features/auth/screens/forgot_password_screen.dart';
+import 'package:edtech_mobile/features/leaderboard/screens/weekly_rewards_history_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/login',
@@ -199,6 +200,10 @@ final GoRouter appRouter = GoRouter(
         final subjectId = state.uri.queryParameters['subjectId'];
         return LeaderboardScreen(subjectId: subjectId);
       },
+    ),
+    GoRoute(
+      path: '/weekly-rewards-history',
+      builder: (context, state) => const WeeklyRewardsHistoryScreen(),
     ),
     GoRoute(
       path: '/friends',

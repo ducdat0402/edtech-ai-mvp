@@ -33,6 +33,8 @@ import { Friendship } from '../friends/entities/friendship.entity';
 import { UserBlock } from '../friends/entities/user-block.entity';
 import { FriendActivity } from '../friends/entities/friend-activity.entity';
 import { DirectMessage } from '../direct-message/entities/direct-message.entity';
+import { UserBadge } from '../weekly-rewards/entities/user-badge.entity';
+import { WeeklyRewardHistory } from '../weekly-rewards/entities/weekly-reward-history.entity';
 
 @Injectable()
 export class TypeOrmConfigService implements TypeOrmOptionsFactory {
@@ -94,6 +96,8 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
         UserBlock,
         FriendActivity,
         DirectMessage,
+        UserBadge,
+        WeeklyRewardHistory,
       ],
       synchronize: !isProduction || this.configService.get<string>('ENABLE_SYNC') === 'true',
       logging: !isProduction ? ['error', 'warn'] : ['error'],

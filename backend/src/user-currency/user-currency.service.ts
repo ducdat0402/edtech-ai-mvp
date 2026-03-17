@@ -222,8 +222,8 @@ export class UserCurrencyService {
     const oldLevel = currency.level || 1;
     
     currency.xp += amount;
-    
-    // Tính level mới dựa trên tổng XP
+    currency.weeklyXp = (currency.weeklyXp || 0) + amount;
+
     const newLevel = this.calculateLevelFromXP(currency.xp);
     const leveledUp = newLevel > oldLevel;
     

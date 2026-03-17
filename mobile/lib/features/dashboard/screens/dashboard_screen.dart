@@ -114,12 +114,84 @@ class _DashboardScreenState extends State<DashboardScreen> {
         _isLoading = false;
       });
       _showDashboardTutorial();
+      _checkWeeklyRewards(apiService);
     } catch (e) {
       setState(() {
         _error = e.toString();
         _isLoading = false;
       });
     }
+  }
+
+  Future<void> _checkWeeklyRewards(ApiService api) async {
+    try {
+      final rewards = await api.getUnnotifiedRewards();
+      if (!mounted || rewards.isEmpty) return;
+      final r = rewards.first as Map<String, dynamic>;
+      final rank = r['rank'] ?? 0;
+      final diamonds = r['diamondsAwarded'] ?? 0;
+      final badge = r['badgeCode'];
+      final week = r['weekCode'] ?? '';
+
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: AppColors.bgSecondary,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Row(
+            children: [
+              const Icon(Icons.emoji_events_rounded, color: Colors.amber, size: 28),
+              const SizedBox(width: 8),
+              const Expanded(child: Text('Phần thưởng tuần!')),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Chúc mừng! Bạn đạt hạng #$rank tuần $week',
+                style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.diamond_rounded, color: Colors.lightBlueAccent, size: 24),
+                  const SizedBox(width: 6),
+                  Text('+$diamonds', style: AppTextStyles.h3.copyWith(color: Colors.lightBlueAccent)),
+                ],
+              ),
+              if (badge != null) ...[
+                const SizedBox(height: 8),
+                const Icon(Icons.workspace_premium_rounded, color: Colors.amber, size: 32),
+                Text('Huy hiệu: ${badge.toString().replaceAll('_', ' ')}',
+                    style: AppTextStyles.bodySmall.copyWith(color: Colors.amber)),
+              ],
+              if (rewards.length > 1)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text('và ${rewards.length - 1} phần thưởng khác...',
+                      style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary)),
+                ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                context.push('/weekly-rewards-history');
+              },
+              child: const Text('Xem chi tiết'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Tuyệt vời!'),
+            ),
+          ],
+        ),
+      );
+    } catch (_) {}
   }
 
   Future<void> _handleLogout() async {
@@ -636,45 +708,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
             const SizedBox(width: 12),
             Expanded(
               child: _ActionCard(
-                icon: Icons.leaderboard_rounded,
-                label: 'Leaderboard',
-                color: AppColors.purpleNeon,
-                onTap: () => context.push('/leaderboard'),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _ActionCard(
                 icon: Icons.account_balance_wallet_rounded,
                 label: 'Currency',
                 color: AppColors.coinGold,
                 onTap: () => context.push('/currency'),
               ),
             ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _ActionCard(
-                icon: Icons.storefront_rounded,
-                label: 'Cửa hàng',
-                color: AppColors.orangeNeon,
-                onTap: () => context.push('/shop'),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _ActionCard(
-                icon: Icons.diamond_rounded,
-                label: 'Mua Kim cương',
-                color: AppColors.pinkNeon,
-                onTap: () => context.push('/payment'),
-              ),
-            ),
-            const SizedBox(width: 12),
-            const Expanded(child: SizedBox()),
           ],
         ),
       ],

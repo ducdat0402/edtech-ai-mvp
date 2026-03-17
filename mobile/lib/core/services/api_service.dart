@@ -286,6 +286,33 @@ class ApiService {
     return response.data;
   }
 
+  // Weekly Rewards
+  Future<Map<String, dynamic>> getWeeklyRankings({int limit = 50}) async {
+    final response = await _apiClient.get(
+      ApiConstants.weeklyRankings,
+      queryParameters: {'limit': limit},
+    );
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> getWeeklyRewardHistory({int limit = 20, int offset = 0}) async {
+    final response = await _apiClient.get(
+      ApiConstants.weeklyRewardHistory,
+      queryParameters: {'limit': limit, 'offset': offset},
+    );
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> getWeeklyBadges() async {
+    final response = await _apiClient.get(ApiConstants.weeklyBadges);
+    return response.data;
+  }
+
+  Future<List<dynamic>> getUnnotifiedRewards() async {
+    final response = await _apiClient.get(ApiConstants.weeklyUnnotified);
+    return response.data is List ? response.data : [];
+  }
+
   // Placement Test
   Future<Map<String, dynamic>> startPlacementTest({String? subjectId}) async {
     final response = await _apiClient.post(

@@ -43,8 +43,11 @@ export class UserCurrency {
   @Column({ type: 'date', nullable: true })
   lastActiveDate: Date;
 
+  @Column({ type: 'int', default: 0 })
+  weeklyXp: number;
+
   @Column({ type: 'jsonb', default: {} })
-  shards: Record<string, number>; // { "ai-shard": 5, "security-shard": 3 }
+  shards: Record<string, number>;
 
   // Optimistic locking - prevents lost updates on concurrent modifications
   @VersionColumn()

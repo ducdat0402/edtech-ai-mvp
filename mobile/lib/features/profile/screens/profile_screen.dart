@@ -22,6 +22,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Map<String, dynamic>? _profileData;
   Map<String, dynamic>? _currencyData;
   Map<String, dynamic>? _dashboardStats;
+  List<dynamic> _badgeCollection = [];
   bool _isLoading = true;
   bool _isSwitchingRole = false;
   String? _error;
@@ -83,12 +84,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
         apiService.getUserProfile(),
         apiService.getCurrency(),
         apiService.getDashboard(),
+        apiService.getWeeklyBadges().catchError((_) => <String, dynamic>{}),
       ]);
 
       setState(() {
         _profileData = results[0];
         _currencyData = results[1];
         _dashboardStats = results[2]['stats'];
+        final badgesData = results[3] as Map<String, dynamic>? ?? {};
+        _badgeCollection = badgesData['collection'] as List? ?? [];
         _isLoading = false;
       });
       _showProfileTutorial();
@@ -376,6 +380,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           const SizedBox(height: 24),
 
+          if (_badgeCollection.isNotEmpty) ...[
+            _buildBadgeCollectionSection(),
+            const SizedBox(height: 24),
+          ],
+
           if (_isAdmin)
             _buildMenuCard(
               icon: Icons.admin_panel_settings,
@@ -634,6 +643,61 @@ class _ProfileScreenState extends State<ProfileScreen> {
             label: 'Streak',
             value: '${stats['streak'] ?? currency['currentStreak'] ?? 0}',
             color: AppColors.streakOrange,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBadgeCollectionSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.workspace_premium_rounded, color: Colors.amber, size: 20),
+            const SizedBox(width: 8),
+            Text('Huy hiệu', style: AppTextStyles.labelLarge.copyWith(color: AppColors.textPrimary)),
+            const Spacer(),
+            GestureDetector(
+              onTap: () => context.push('/weekly-rewards-history'),
+              child: Text('Xem tất cả', style: AppTextStyles.caption.copyWith(color: _accentColor)),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 80,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: _badgeCollection.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 10),
+            itemBuilder: (_, i) {
+              final b = _badgeCollection[i] as Map<String, dynamic>;
+              final count = b['count'] ?? 1;
+              return Container(
+                width: 70,
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: _bgSecondary,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: Colors.amber.withOpacity(0.3)),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(b['iconUrl'] ?? '🏅', style: const TextStyle(fontSize: 24)),
+                    const SizedBox(height: 4),
+                    if (count > 1)
+                      Text('${count}x',
+                          style: AppTextStyles.caption.copyWith(
+                              color: Colors.amber, fontWeight: FontWeight.bold)),
+                    Text(b['name'] ?? '', maxLines: 1, overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary, fontSize: 9)),
+                  ],
+                ),
+              );
+            },
           ),
         ),
       ],
