@@ -264,8 +264,9 @@ class _FriendsScreenState extends State<FriendsScreen>
                   color: AppColors.cyanNeon),
               onPressed: () {
                 final id = friend['id'] as String?;
-                if (id != null)
+                if (id != null) {
                   context.push('/dm/chat/$id', extra: {'peerName': name});
+                }
               },
             ),
             PopupMenuButton<String>(

@@ -198,14 +198,14 @@ class _LearningPathChoiceScreenState extends State<LearningPathChoiceScreen> {
             const SizedBox(height: 28),
 
             Text(
-              'Bổ sung cho lộ trình (Coach AI)',
+              'Theo dõi & gợi ý trên lộ trình đã tạo (Coach AI)',
               style: AppTextStyles.labelLarge.copyWith(
                 color: AppColors.textSecondary,
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              'Gắn với môn này: xem tiến độ/quiz, gợi ý ITS/DRL và tạo kế hoạch học ngắn hạn — không thay thế chat hay bài test phía trên.',
+              'Dùng tiến độ/quiz để phân tích và xếp lịch ôn — chỉ trong các bài đã có trên lộ trình cá nhân (sau chat/placement), không tạo lộ trình chủ đề mới.',
               style: AppTextStyles.bodySmall.copyWith(
                 color: AppColors.textTertiary,
                 height: 1.4,
@@ -215,11 +215,11 @@ class _LearningPathChoiceScreenState extends State<LearningPathChoiceScreen> {
 
             _buildOptionCard(
               context,
-              title: 'Coach AI / Kế hoạch học',
+              title: 'Coach AI / Kế hoạch ôn',
               subtitle:
-                  'Theo dõi & gợi ý dựa trên hành vi học (quiz, bài học)',
+                  'Phân tích tiến độ & quiz trên đúng lộ trình bạn đã tạo',
               description:
-                  'Mở cùng môn đã chọn: phân tích lỗi quiz, điểm mạnh/yếu, gợi ý bước tiếp theo và kế hoạch 7–14 ngày (LangChain). Dùng song song với lộ trình chủ đề từ chat hoặc bài kiểm tra.',
+                  'Gợi ý DRL/ITS và kế hoạch ngắn hạn chỉ gồm các bài đã nằm trên personal mind map (chat/placement). Không sinh lộ trình chủ đề mới — bổ sung cho hai lựa chọn phía trên.',
               icon: Icons.insights_rounded,
               gradient: [AppColors.orangeNeon, AppColors.pinkNeon],
               duration: '2–5 phút',

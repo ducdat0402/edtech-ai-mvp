@@ -9,6 +9,7 @@ import { AiAgentsController } from './ai-agents.controller';
 import { UserProgressModule } from '../user-progress/user-progress.module';
 import { AiModule } from '../ai/ai.module';
 import { LearningNodesModule } from '../learning-nodes/learning-nodes.module';
+import { PersonalMindMapModule } from '../personal-mind-map/personal-mind-map.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { LearningNodesModule } from '../learning-nodes/learning-nodes.module';
     UserProgressModule,
     AiModule,
     LearningNodesModule,
+    PersonalMindMapModule,
   ],
   controllers: [AiAgentsController],
   providers: [UserBehaviorService, DrlService, ItsService, LangChainService],

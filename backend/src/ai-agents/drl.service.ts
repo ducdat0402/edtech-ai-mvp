@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { UserBehaviorService } from './user-behavior.service';
 import { UserProgressService } from '../user-progress/user-progress.service';
 import { LearningNodesService } from '../learning-nodes/learning-nodes.service';
+import { PersonalMindMapService } from '../personal-mind-map/personal-mind-map.service';
 
 /**
  * Deep Reinforcement Learning Service
@@ -25,6 +26,7 @@ export class DrlService {
     private behaviorService: UserBehaviorService,
     private progressService: UserProgressService,
     private learningNodesService: LearningNodesService,
+    private personalMindMapService: PersonalMindMapService,
   ) {}
 
   /**
@@ -48,10 +50,22 @@ export class DrlService {
         subjectId,
       );
 
+      const { orderedLearningNodeIds } =
+        await this.personalMindMapService.getPersonalPathLearningState(
+          userId,
+          subjectId,
+        );
+      const onPersonalPath = new Set(orderedLearningNodeIds);
+
       // Filter nodes (simplified - no KG prerequisites)
-      const candidateNodes = subjectLearningNodes.filter(
+      let candidateNodes = subjectLearningNodes.filter(
         (n) => n.id !== currentNodeId,
       );
+
+      // Chỉ gợi ý trong lộ trình cá nhân (placement / chat) khi đã có bài gắn trên map
+      if (onPersonalPath.size > 0) {
+        candidateNodes = candidateNodes.filter((n) => onPersonalPath.has(n.id));
+      }
 
       if (candidateNodes.length === 0) return null;
 

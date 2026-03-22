@@ -42,9 +42,9 @@
 
 ---
 
-## Phase 4 — ✅ LangChain lộ trình + analytics tổng hợp
+## Phase 4 — ✅ LangChain kế hoạch ôn + analytics (trong lộ trình cá nhân)
 
-**Mục tiêu:** Gom DRL/ITS/hành vi qua **LangChain roadmap** và hiển thị **recommendations + error patterns + strengths/weaknesses**.
+**Mục tiêu:** Gom DRL/ITS/hành vi để **phân tích** và **xếp kế hoạch ôn ngắn hạn**; các bước DRL / fallback LangChain **chỉ chọn `learningNodeId` đã nằm trên personal mind map** (chat/placement). Nếu chưa có map hoặc chưa gắn bài → fallback như cũ (cả môn).
 
 | API | `ApiService` |
 |-----|----------------|
@@ -56,11 +56,11 @@
 
 **UI:** màn `AiLearningCoachScreen` — route `/subjects/:id/ai-coach`.
 
-- **Luồng chính theo mục tiêu sản phẩm:** gắn với **lộ trình cá nhân** — màn **Chọn cách tạo lộ trình** (`LearningPathChoiceScreen`, mục *Bổ sung cho lộ trình / Coach AI*) và màn **Lộ trình của bạn** (`PersonalMindMapScreen`: banner + menu ⋮).
-- **Lối tắt:** icon **biểu đồ** trên AppBar **Danh sách chương** (`DomainsListScreen`) và Quick Action **Coach AI** trên **Dashboard**.
+- **Luồng chính:** **Chọn cách tạo lộ trình** / **Lộ trình của bạn** — Coach là lớp *theo dõi + gợi ý* trên map đã có, không thay chat/placement.
+- **Lối tắt:** icon **biểu đồ** (`DomainsListScreen`) và Quick Action **Coach AI** (`Dashboard`).
 
 - Chọn **7 / 14 / 30 ngày** (mặc định 14; 30 ngày có thể rất chậm do vòng lặp backend).
-- Ô mục tiêu → **Tạo lộ trình AI** → hiển thị `summary`, `confidence`, danh sách bước (mở `/nodes/:id`).
+- Ô mục tiêu → **Tạo kế hoạch ôn (AI)** → `summary`, `confidence`, các bước **chỉ trong** lộ trình cá nhân (mở `/nodes/:id`).
 - Phần trên: nhịp học, lỗi quiz, số bài mạnh/yếu, gợi ý ITS.
 
 ---

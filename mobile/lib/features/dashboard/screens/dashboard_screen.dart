@@ -720,7 +720,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               children: [
                 Text(
                   'Chọn môn — Coach AI',
-                  style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+                  style:
+                      AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
                 ),
                 const SizedBox(height: 8),
                 Text(

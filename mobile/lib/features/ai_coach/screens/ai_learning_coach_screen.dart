@@ -42,7 +42,7 @@ class _AiLearningCoachScreenState extends State<AiLearningCoachScreen> {
   void initState() {
     super.initState();
     _queryController.text =
-        'Tôi muốn có lộ trình học đều, ưu tiên ôn phần đang yếu và chuẩn bị kiểm tra.';
+        'Ưu tiên các bài trên lộ trình của tôi: học đều, ôn phần yếu, chuẩn bị kiểm tra.';
     _loadInsightData();
   }
 
@@ -94,7 +94,11 @@ class _AiLearningCoachScreenState extends State<AiLearningCoachScreen> {
     final q = _queryController.text.trim();
     if (q.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Nhập mục tiêu / mong muốn học tập')),
+        const SnackBar(
+          content: Text(
+            'Nhập mục tiêu (ưu tiên trong phạm vi lộ trình đã tạo)',
+          ),
+        ),
       );
       return;
     }
@@ -147,7 +151,7 @@ class _AiLearningCoachScreenState extends State<AiLearningCoachScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
-              'Chưa tạo được bước lộ trình — thử giảm số ngày hoặc học thêm vài bài để có dữ liệu.',
+              'Chưa tạo được bước nào — có thể chưa có lộ trình cá nhân (chat/placement) hoặc thử giảm số ngày.',
             ),
           ),
         );
@@ -160,7 +164,7 @@ class _AiLearningCoachScreenState extends State<AiLearningCoachScreen> {
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Lỗi tạo lộ trình: $e'),
+          content: Text('Lỗi tạo kế hoạch: $e'),
           backgroundColor: AppColors.errorNeon,
         ),
       );
@@ -203,9 +207,10 @@ class _AiLearningCoachScreenState extends State<AiLearningCoachScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Coach AI — LangChain + DRL + ITS',
+                    'Theo dõi tiến độ & gợi ý trên lộ trình cá nhân (chat/placement). '
+                    'Không tạo lộ trình chủ đề mới — chỉ sắp xếp/ôn trong các bài đã có trên map.',
                     style: AppTextStyles.bodySmall
-                        .copyWith(color: AppColors.textTertiary),
+                        .copyWith(color: AppColors.textTertiary, height: 1.35),
                   ),
                   const SizedBox(height: 12),
                   if (!cloud) ...[
@@ -398,12 +403,13 @@ class _AiLearningCoachScreenState extends State<AiLearningCoachScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Tạo lộ trình theo mục tiêu',
+          'Kế hoạch ôn trong N ngày (trên lộ trình của bạn)',
           style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
         ),
         const SizedBox(height: 8),
         Text(
-          'Backend gọi DRL + ITS theo từng ngày; 30 ngày có thể rất chậm.',
+          'Chỉ các bài đã nằm trên personal mind map (sau chat/placement). '
+            'DRL + ITS theo ngày; 30 ngày có thể rất chậm.',
           style: AppTextStyles.caption.copyWith(color: AppColors.textTertiary),
         ),
         const SizedBox(height: 12),
@@ -448,8 +454,8 @@ class _AiLearningCoachScreenState extends State<AiLearningCoachScreen> {
         const SizedBox(height: 16),
         GamingButton(
           text: _generatingRoadmap
-              ? 'Đang tạo lộ trình… (có thể 30–90s)'
-              : 'Tạo lộ trình AI',
+              ? 'Đang tạo kế hoạch… (có thể 30–90s)'
+              : 'Tạo kế hoạch ôn (AI)',
           onPressed: _generatingRoadmap ? null : _generateRoadmap,
           icon: Icons.auto_graph_rounded,
         ),

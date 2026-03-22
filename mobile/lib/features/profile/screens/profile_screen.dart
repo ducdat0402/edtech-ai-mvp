@@ -53,14 +53,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
       TutorialHelper.buildTarget(
         key: _roleSwitcherKey,
         title: 'Chuyển vai trò',
-        description: 'Learner để học bài, Contributor để đóng góp nội dung cho cộng đồng.',
+        description:
+            'Learner để học bài, Contributor để đóng góp nội dung cho cộng đồng.',
         icon: Icons.swap_horiz,
         stepLabel: 'Bước 2/3',
       ),
       TutorialHelper.buildTarget(
         key: _menuCardsKey,
         title: 'Menu chức năng',
-        description: 'Nhật ký hành trình, đóng góp của bạn, mua kim cương và hơn thế nữa!',
+        description:
+            'Nhật ký hành trình, đóng góp của bạn, mua kim cương và hơn thế nữa!',
         icon: Icons.menu,
         stepLabel: 'Bước 3/3',
         align: ContentAlign.top,
@@ -418,7 +420,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 color: _accentColor,
                 onTap: () => context.go('/profile/journey'),
               ),
-
               _buildMenuCard(
                 icon: Icons.workspace_premium,
                 title: 'Nhận kim cương',
@@ -469,7 +470,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             children: [
               Row(
                 children: [
-                  Icon(Icons.privacy_tip_outlined, color: _accentColor, size: 22),
+                  Icon(Icons.privacy_tip_outlined,
+                      color: _accentColor, size: 22),
                   const SizedBox(width: 8),
                   Text(
                     'AI & quyền riêng tư',
@@ -723,13 +725,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
       children: [
         Row(
           children: [
-            const Icon(Icons.workspace_premium_rounded, color: Colors.amber, size: 20),
+            const Icon(Icons.workspace_premium_rounded,
+                color: Colors.amber, size: 20),
             const SizedBox(width: 8),
-            Text('Huy hiệu', style: AppTextStyles.labelLarge.copyWith(color: AppColors.textPrimary)),
+            Text('Huy hiệu',
+                style: AppTextStyles.labelLarge
+                    .copyWith(color: AppColors.textPrimary)),
             const Spacer(),
             GestureDetector(
               onTap: () => context.push('/weekly-rewards-history'),
-              child: Text('Xem tất cả', style: AppTextStyles.caption.copyWith(color: _accentColor)),
+              child: Text('Xem tất cả',
+                  style: AppTextStyles.caption.copyWith(color: _accentColor)),
             ),
           ],
         ),
@@ -754,14 +760,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(b['iconUrl'] ?? '🏅', style: const TextStyle(fontSize: 24)),
+                    Text(b['iconUrl'] ?? '🏅',
+                        style: const TextStyle(fontSize: 24)),
                     const SizedBox(height: 4),
                     if (count > 1)
                       Text('${count}x',
                           style: AppTextStyles.caption.copyWith(
-                              color: Colors.amber, fontWeight: FontWeight.bold)),
-                    Text(b['name'] ?? '', maxLines: 1, overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary, fontSize: 9)),
+                              color: Colors.amber,
+                              fontWeight: FontWeight.bold)),
+                    Text(b['name'] ?? '',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.caption.copyWith(
+                            color: AppColors.textSecondary, fontSize: 9)),
                   ],
                 ),
               );

@@ -349,7 +349,7 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
                     children: [
                       Icon(Icons.insights, size: 20, color: Colors.deepPurple),
                       SizedBox(width: 8),
-                      Text('Coach AI / Kế hoạch học'),
+                      Text('Coach AI (trên lộ trình này)'),
                     ],
                   ),
                 ),
@@ -927,7 +927,7 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Coach AI / Kế hoạch học',
+                          'Coach AI — theo dõi trên lộ trình này',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             color: Colors.deepPurple.shade900,
@@ -936,7 +936,7 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'Gợi ý theo quiz & tiến độ — bổ sung cho lộ trình chủ đề của bạn',
+                          'Phân tích quiz & tiến độ; gợi ý/ôn chỉ trong các bài đã có trên map',
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.deepPurple.shade700,

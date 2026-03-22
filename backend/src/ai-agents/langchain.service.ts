@@ -3,6 +3,8 @@ import { AiService } from '../ai/ai.service';
 import { DrlService } from './drl.service';
 import { ItsService } from './its.service';
 import { LearningNodesService } from '../learning-nodes/learning-nodes.service';
+import { PersonalMindMapService } from '../personal-mind-map/personal-mind-map.service';
+import { LearningNode } from '../learning-nodes/entities/learning-node.entity';
 
 /**
 
@@ -22,6 +24,7 @@ export class LangChainService {
     private drlService: DrlService,
     private itsService: ItsService,
     private learningNodesService: LearningNodesService,
+    private personalMindMapService: PersonalMindMapService,
   ) {}
 
   /**
@@ -56,6 +59,20 @@ export class LangChainService {
         subjectId,
       );
 
+      const { orderedLearningNodeIds, lastCompletedLearningNodeId } =
+        await this.personalMindMapService.getPersonalPathLearningState(
+          userId,
+          subjectId,
+        );
+
+      /** Thứ tự ưu tiên cho fallback: chỉ các bài trên lộ trình cá nhân (nếu có) */
+      const pathOrderedNodes: LearningNode[] =
+        orderedLearningNodeIds.length > 0
+          ? orderedLearningNodeIds
+              .map((id) => subjectLearningNodes.find((n) => n.id === id))
+              .filter((n): n is LearningNode => n != null)
+          : subjectLearningNodes;
+
       // Step 3: Get user's current state
       const recommendations = await this.itsService.getPersonalizedRecommendations(
         userId,
@@ -71,7 +88,8 @@ export class LangChainService {
         reason: string;
       }> = [];
 
-      let currentNodeId: string | null = null;
+      // Neo từ bài đã hoàn thành gần nhất trên lộ trình cá nhân → DRL gợi ý bước kế **trên cùng lộ trình**
+      let currentNodeId: string | null = lastCompletedLearningNodeId;
       const visitedNodes = new Set<string>();
 
       for (let day = 1; day <= days; day++) {
@@ -123,8 +141,8 @@ export class LangChainService {
           }
         }
 
-        // Fallback: Use subject learning nodes or recommendations
-        const fallbackNode = subjectLearningNodes.find(
+        // Fallback: theo thứ tự lộ trình cá nhân (hoặc cả môn nếu chưa có map)
+        const fallbackNode = pathOrderedNodes.find(
           (n) => !visitedNodes.has(n.id),
         );
 

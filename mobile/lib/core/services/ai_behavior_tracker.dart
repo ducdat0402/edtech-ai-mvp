@@ -53,7 +53,8 @@ class AiBehaviorTracker {
         action: 'view',
         context: {
           'screen': screenName,
-          if (lessonType != null && lessonType.isNotEmpty) 'lessonType': lessonType,
+          if (lessonType != null && lessonType.isNotEmpty)
+            'lessonType': lessonType,
         },
       );
     });
