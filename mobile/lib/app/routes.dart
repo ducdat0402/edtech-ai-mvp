@@ -47,6 +47,7 @@ import 'package:edtech_mobile/features/dm/screens/conversations_screen.dart';
 import 'package:edtech_mobile/features/dm/screens/chat_room_screen.dart';
 import 'package:edtech_mobile/features/auth/screens/forgot_password_screen.dart';
 import 'package:edtech_mobile/features/leaderboard/screens/weekly_rewards_history_screen.dart';
+import 'package:edtech_mobile/features/ai_coach/screens/ai_learning_coach_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/login',
@@ -156,6 +157,19 @@ final GoRouter appRouter = GoRouter(
         return AllLessonsScreen(
           subjectId: subjectId,
           openFirstLesson: openFirstLesson,
+        );
+      },
+    ),
+    GoRoute(
+      path: '/subjects/:id/ai-coach',
+      builder: (context, state) {
+        final subjectId = state.pathParameters['id']!;
+        final extra = state.extra as Map<String, dynamic>?;
+        final subjectName = extra?['subjectName'] as String? ??
+            state.uri.queryParameters['name'];
+        return AiLearningCoachScreen(
+          subjectId: subjectId,
+          subjectName: subjectName,
         );
       },
     ),

@@ -57,7 +57,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
   void _updateTimeLeft() {
     final now = DateTime.now();
     final daysTillMonday = (DateTime.monday - now.weekday) % 7;
-    final nextMonday = DateTime(now.year, now.month, now.day + (daysTillMonday == 0 ? 7 : daysTillMonday));
+    final nextMonday = DateTime(now.year, now.month,
+        now.day + (daysTillMonday == 0 ? 7 : daysTillMonday));
     setState(() {
       _timeLeft = nextMonday.difference(now);
     });
@@ -70,7 +71,10 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
   }
 
   Future<void> _loadData() async {
-    setState(() { _isLoading = true; _error = null; });
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
     try {
       final api = Provider.of<ApiService>(context, listen: false);
       try {
@@ -79,7 +83,10 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
       await _loadDataForTab(_tabController.index);
       setState(() => _isLoading = false);
     } catch (e) {
-      setState(() { _error = e.toString(); _isLoading = false; });
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
     }
   }
 
@@ -95,8 +102,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
           break;
         case 2:
           if (widget.subjectId != null) {
-            _subjectData = await api.getSubjectLeaderboard(
-                widget.subjectId!, limit: 50, page: 1);
+            _subjectData = await api.getSubjectLeaderboard(widget.subjectId!,
+                limit: 50, page: 1);
           }
           break;
       }
@@ -123,20 +130,26 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
           unselectedLabelColor: AppColors.textTertiary,
           labelStyle: AppTextStyles.labelMedium,
           tabs: [
-            const Tab(text: 'Toàn cầu', icon: Icon(Icons.public_rounded, size: 20)),
-            const Tab(text: 'Tuần này', icon: Icon(Icons.emoji_events_rounded, size: 20)),
+            const Tab(
+                text: 'Toàn cầu', icon: Icon(Icons.public_rounded, size: 20)),
+            const Tab(
+                text: 'Tuần này',
+                icon: Icon(Icons.emoji_events_rounded, size: 20)),
             if (widget.subjectId != null)
-              const Tab(text: 'Môn học', icon: Icon(Icons.book_rounded, size: 20)),
+              const Tab(
+                  text: 'Môn học', icon: Icon(Icons.book_rounded, size: 20)),
           ],
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.history_rounded, color: AppColors.textSecondary),
+            icon: const Icon(Icons.history_rounded,
+                color: AppColors.textSecondary),
             tooltip: 'Lịch sử phần thưởng',
             onPressed: () => context.push('/weekly-rewards-history'),
           ),
           IconButton(
-            icon: const Icon(Icons.refresh_rounded, color: AppColors.textSecondary),
+            icon: const Icon(Icons.refresh_rounded,
+                color: AppColors.textSecondary),
             onPressed: _loadData,
           ),
         ],
@@ -152,7 +165,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
                       children: [
                         _buildGlobalTab(),
                         _buildWeeklyTab(),
-                        if (widget.subjectId != null) _buildGlobalList(_subjectData),
+                        if (widget.subjectId != null)
+                          _buildGlobalList(_subjectData),
                       ],
                     ),
           const FloatingChatBubble(),
@@ -228,9 +242,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
                     entry: entry,
                   );
                 },
-                childCount: entries.length >= 3
-                    ? entries.length - 3
-                    : entries.length,
+                childCount:
+                    entries.length >= 3 ? entries.length - 3 : entries.length,
               ),
             ),
           ),
@@ -253,7 +266,10 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [AppColors.purpleNeon.withOpacity(0.8), AppColors.cyanNeon.withOpacity(0.6)],
+          colors: [
+            AppColors.purpleNeon.withOpacity(0.8),
+            AppColors.cyanNeon.withOpacity(0.6)
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -270,11 +286,15 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
         children: [
           Row(
             children: [
-              const Icon(Icons.calendar_today_rounded, color: Colors.white, size: 20),
+              const Icon(Icons.calendar_today_rounded,
+                  color: Colors.white, size: 20),
               const SizedBox(width: 8),
-              Text(weekCode, style: AppTextStyles.labelLarge.copyWith(color: Colors.white)),
+              Text(weekCode,
+                  style:
+                      AppTextStyles.labelLarge.copyWith(color: Colors.white)),
               const Spacer(),
-              const Icon(Icons.emoji_events_rounded, color: Colors.amber, size: 24),
+              const Icon(Icons.emoji_events_rounded,
+                  color: Colors.amber, size: 24),
             ],
           ),
           const SizedBox(height: 16),
@@ -286,11 +306,14 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
             children: [
               _CountdownBlock(value: '$d', label: 'Ngày'),
               _CountdownSeparator(),
-              _CountdownBlock(value: '${h.toString().padLeft(2, '0')}', label: 'Giờ'),
+              _CountdownBlock(
+                  value: h.toString().padLeft(2, '0'), label: 'Giờ'),
               _CountdownSeparator(),
-              _CountdownBlock(value: '${m.toString().padLeft(2, '0')}', label: 'Phút'),
+              _CountdownBlock(
+                  value: m.toString().padLeft(2, '0'), label: 'Phút'),
               _CountdownSeparator(),
-              _CountdownBlock(value: '${s.toString().padLeft(2, '0')}', label: 'Giây'),
+              _CountdownBlock(
+                  value: s.toString().padLeft(2, '0'), label: 'Giây'),
             ],
           ),
         ],
@@ -311,7 +334,9 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Phần thưởng tuần', style: AppTextStyles.labelLarge.copyWith(color: AppColors.textPrimary)),
+          Text('Phần thưởng tuần',
+              style: AppTextStyles.labelLarge
+                  .copyWith(color: AppColors.textPrimary)),
           const SizedBox(height: 12),
           Wrap(
             spacing: 8,
@@ -322,7 +347,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
               final diamonds = tier['diamonds'] ?? 0;
               final badge = tier['badgeName'];
               return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
                   color: maxRank <= 3
                       ? AppColors.purpleNeon.withOpacity(0.1)
@@ -338,15 +364,21 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
                     Text(
                       maxRank <= 3 ? 'Top $maxRank' : 'Top $maxRank',
                       style: AppTextStyles.labelMedium.copyWith(
-                          color: maxRank <= 3 ? AppColors.purpleNeon : AppColors.textSecondary),
+                          color: maxRank <= 3
+                              ? AppColors.purpleNeon
+                              : AppColors.textSecondary),
                     ),
                     const SizedBox(width: 8),
-                    const Icon(Icons.diamond_rounded, size: 14, color: Colors.lightBlueAccent),
+                    const Icon(Icons.diamond_rounded,
+                        size: 14, color: Colors.lightBlueAccent),
                     const SizedBox(width: 2),
-                    Text('$diamonds', style: AppTextStyles.labelMedium.copyWith(color: Colors.lightBlueAccent)),
+                    Text('$diamonds',
+                        style: AppTextStyles.labelMedium
+                            .copyWith(color: Colors.lightBlueAccent)),
                     if (badge != null) ...[
                       const SizedBox(width: 6),
-                      const Icon(Icons.workspace_premium_rounded, size: 14, color: Colors.amber),
+                      const Icon(Icons.workspace_premium_rounded,
+                          size: 14, color: Colors.amber),
                     ],
                   ],
                 ),
@@ -403,7 +435,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
               shape: BoxShape.circle,
             ),
             child: Center(
-              child: Text('#$rank', style: AppTextStyles.h4.copyWith(color: Colors.white)),
+              child: Text('#$rank',
+                  style: AppTextStyles.h4.copyWith(color: Colors.white)),
             ),
           ),
           const SizedBox(width: 12),
@@ -411,12 +444,17 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Vị trí của bạn', style: AppTextStyles.labelLarge.copyWith(color: Colors.white)),
-                Text('$xp XP tuần này', style: AppTextStyles.bodySmall.copyWith(color: Colors.white70)),
+                Text('Vị trí của bạn',
+                    style:
+                        AppTextStyles.labelLarge.copyWith(color: Colors.white)),
+                Text('$xp XP tuần này',
+                    style: AppTextStyles.bodySmall
+                        .copyWith(color: Colors.white70)),
               ],
             ),
           ),
-          const Icon(Icons.arrow_upward_rounded, color: Colors.greenAccent, size: 24),
+          const Icon(Icons.arrow_upward_rounded,
+              color: Colors.greenAccent, size: 24),
         ],
       ),
     );
@@ -449,10 +487,12 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.2),
               shape: BoxShape.circle,
-              border: Border.all(color: Colors.white.withOpacity(0.3), width: 2),
+              border:
+                  Border.all(color: Colors.white.withOpacity(0.3), width: 2),
             ),
             child: Center(
-              child: Text('#$rank', style: AppTextStyles.h3.copyWith(color: Colors.white)),
+              child: Text('#$rank',
+                  style: AppTextStyles.h3.copyWith(color: Colors.white)),
             ),
           ),
           const SizedBox(width: 16),
@@ -460,9 +500,12 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Hạng của bạn', style: AppTextStyles.h4.copyWith(color: Colors.white)),
+                Text('Hạng của bạn',
+                    style: AppTextStyles.h4.copyWith(color: Colors.white)),
                 const SizedBox(height: 4),
-                Text('$totalXP XP tổng', style: AppTextStyles.bodySmall.copyWith(color: Colors.white70)),
+                Text('$totalXP XP tổng',
+                    style: AppTextStyles.bodySmall
+                        .copyWith(color: Colors.white70)),
               ],
             ),
           ),
@@ -491,11 +534,14 @@ class _CountdownBlock extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
           ),
           child: Center(
-            child: Text(value, style: AppTextStyles.h3.copyWith(color: Colors.white)),
+            child: Text(value,
+                style: AppTextStyles.h3.copyWith(color: Colors.white)),
           ),
         ),
         const SizedBox(height: 4),
-        Text(label, style: AppTextStyles.caption.copyWith(color: Colors.white60, fontSize: 10)),
+        Text(label,
+            style: AppTextStyles.caption
+                .copyWith(color: Colors.white60, fontSize: 10)),
       ],
     );
   }
@@ -517,7 +563,8 @@ class _PodiumItem extends StatelessWidget {
   final Map<String, dynamic> entry;
   final int rank;
   final double height;
-  const _PodiumItem({required this.entry, required this.rank, required this.height});
+  const _PodiumItem(
+      {required this.entry, required this.rank, required this.height});
 
   Color get _color {
     if (rank == 1) return AppColors.rankGold;
@@ -539,7 +586,8 @@ class _PodiumItem extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           entry['fullName'] ?? 'Anon',
-          style: AppTextStyles.labelMedium.copyWith(color: AppColors.textPrimary),
+          style:
+              AppTextStyles.labelMedium.copyWith(color: AppColors.textPrimary),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           textAlign: TextAlign.center,
@@ -600,14 +648,16 @@ class _WeeklyEntryCard extends StatelessWidget {
             ),
             child: Center(
               child: Text('#$rank',
-                  style: AppTextStyles.labelLarge.copyWith(color: AppColors.textSecondary)),
+                  style: AppTextStyles.labelLarge
+                      .copyWith(color: AppColors.textSecondary)),
             ),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               entry['fullName'] ?? 'Anonymous',
-              style: AppTextStyles.labelLarge.copyWith(color: AppColors.textPrimary),
+              style: AppTextStyles.labelLarge
+                  .copyWith(color: AppColors.textPrimary),
             ),
           ),
           Container(
@@ -618,10 +668,12 @@ class _WeeklyEntryCard extends StatelessWidget {
             ),
             child: Row(
               children: [
-                const Icon(Icons.star_rounded, color: AppColors.xpGold, size: 16),
+                const Icon(Icons.star_rounded,
+                    color: AppColors.xpGold, size: 16),
                 const SizedBox(width: 4),
                 Text('${entry['weeklyXp'] ?? 0}',
-                    style: AppTextStyles.numberMedium.copyWith(color: AppColors.xpGold, fontSize: 14)),
+                    style: AppTextStyles.numberMedium
+                        .copyWith(color: AppColors.xpGold, fontSize: 14)),
               ],
             ),
           ),
@@ -660,7 +712,12 @@ class _LeaderboardEntryCard extends StatelessWidget {
             ? Border.all(color: rankColor.withOpacity(0.5), width: 2)
             : Border.all(color: AppColors.borderPrimary),
         boxShadow: isTopThree
-            ? [BoxShadow(color: rankColor.withOpacity(0.2), blurRadius: 8, offset: const Offset(0, 2))]
+            ? [
+                BoxShadow(
+                    color: rankColor.withOpacity(0.2),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2))
+              ]
             : null,
       ),
       child: Row(
@@ -669,15 +726,20 @@ class _LeaderboardEntryCard extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: isTopThree ? rankColor.withOpacity(0.2) : AppColors.bgTertiary,
+              color: isTopThree
+                  ? rankColor.withOpacity(0.2)
+                  : AppColors.bgTertiary,
               borderRadius: BorderRadius.circular(12),
-              border: isTopThree ? Border.all(color: rankColor.withOpacity(0.5)) : null,
+              border: isTopThree
+                  ? Border.all(color: rankColor.withOpacity(0.5))
+                  : null,
             ),
             child: Center(
               child: isTopThree
                   ? Icon(Icons.emoji_events_rounded, color: rankColor, size: 24)
                   : Text('#$rank',
-                      style: AppTextStyles.labelLarge.copyWith(color: AppColors.textSecondary)),
+                      style: AppTextStyles.labelLarge
+                          .copyWith(color: AppColors.textSecondary)),
             ),
           ),
           const SizedBox(width: 12),
@@ -693,18 +755,23 @@ class _LeaderboardEntryCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    if (entry['currentStreak'] != null && entry['currentStreak'] > 0) ...[
-                      const Icon(Icons.local_fire_department_rounded, size: 14, color: AppColors.streakOrange),
+                    if (entry['currentStreak'] != null &&
+                        entry['currentStreak'] > 0) ...[
+                      const Icon(Icons.local_fire_department_rounded,
+                          size: 14, color: AppColors.streakOrange),
                       const SizedBox(width: 4),
                       Text('${entry['currentStreak']}',
-                          style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary)),
+                          style: AppTextStyles.caption
+                              .copyWith(color: AppColors.textSecondary)),
                       const SizedBox(width: 12),
                     ],
                     if (entry['coins'] != null) ...[
-                      const Icon(Icons.monetization_on_rounded, size: 14, color: AppColors.coinGold),
+                      const Icon(Icons.monetization_on_rounded,
+                          size: 14, color: AppColors.coinGold),
                       const SizedBox(width: 4),
                       Text('${entry['coins']}',
-                          style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary)),
+                          style: AppTextStyles.caption
+                              .copyWith(color: AppColors.textSecondary)),
                     ],
                   ],
                 ),
@@ -719,10 +786,12 @@ class _LeaderboardEntryCard extends StatelessWidget {
             ),
             child: Row(
               children: [
-                const Icon(Icons.star_rounded, color: AppColors.xpGold, size: 18),
+                const Icon(Icons.star_rounded,
+                    color: AppColors.xpGold, size: 18),
                 const SizedBox(width: 4),
                 Text('${entry['totalXP'] ?? 0}',
-                    style: AppTextStyles.numberMedium.copyWith(color: AppColors.xpGold, fontSize: 16)),
+                    style: AppTextStyles.numberMedium
+                        .copyWith(color: AppColors.xpGold, fontSize: 16)),
               ],
             ),
           ),

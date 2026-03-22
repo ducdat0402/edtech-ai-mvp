@@ -65,6 +65,16 @@ class _DomainsListScreenState extends State<DomainsListScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.subjectName ?? 'Chương học'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.auto_graph_rounded),
+            tooltip: 'Coach AI — Lộ trình cá nhân',
+            onPressed: () => context.push(
+              '/subjects/${widget.subjectId}/ai-coach',
+              extra: {'subjectName': widget.subjectName},
+            ),
+          ),
+        ],
       ),
       body: _isLoading
           ? const SkeletonLoader(

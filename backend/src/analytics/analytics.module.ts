@@ -11,6 +11,7 @@ import { LearningNode } from '../learning-nodes/entities/learning-node.entity';
 import { Subject } from '../subjects/entities/subject.entity';
 import { PendingContribution } from '../pending-contributions/entities/pending-contribution.entity';
 import { UsersModule } from '../users/users.module';
+import { AiAgentsModule } from '../ai-agents/ai-agents.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { UsersModule } from '../users/users.module';
       PendingContribution,
     ]),
     UsersModule,
+    AiAgentsModule,
   ],
   controllers: [AnalyticsController],
   providers: [AnalyticsService],

@@ -36,11 +36,36 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
   // Slide 3: User segment
   String? _selectedSegment;
   final List<Map<String, String>> _segmentOptions = [
-    {'id': 'student_hs', 'label': 'Học sinh (cấp 2, cấp 3)', 'icon': '🎒', 'desc': 'Đang đi học phổ thông'},
-    {'id': 'student_uni', 'label': 'Sinh viên đại học', 'icon': '🎓', 'desc': 'Đang học đại học / cao đẳng'},
-    {'id': 'worker', 'label': 'Người đi làm', 'icon': '💼', 'desc': 'Đã đi làm, muốn nâng cao'},
-    {'id': 'self_learner', 'label': 'Tự học', 'icon': '📚', 'desc': 'Học vì đam mê cá nhân'},
-    {'id': 'parent', 'label': 'Phụ huynh', 'icon': '👨‍👩‍👧', 'desc': 'Tìm hiểu cho con em'},
+    {
+      'id': 'student_hs',
+      'label': 'Học sinh (cấp 2, cấp 3)',
+      'icon': '🎒',
+      'desc': 'Đang đi học phổ thông'
+    },
+    {
+      'id': 'student_uni',
+      'label': 'Sinh viên đại học',
+      'icon': '🎓',
+      'desc': 'Đang học đại học / cao đẳng'
+    },
+    {
+      'id': 'worker',
+      'label': 'Người đi làm',
+      'icon': '💼',
+      'desc': 'Đã đi làm, muốn nâng cao'
+    },
+    {
+      'id': 'self_learner',
+      'label': 'Tự học',
+      'icon': '📚',
+      'desc': 'Học vì đam mê cá nhân'
+    },
+    {
+      'id': 'parent',
+      'label': 'Phụ huynh',
+      'icon': '👨‍👩‍👧',
+      'desc': 'Tìm hiểu cho con em'
+    },
     {'id': 'other', 'label': 'Khác', 'icon': '🌟', 'desc': ''},
   ];
 
@@ -59,18 +84,48 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
   String? _selectedEngagement;
   final List<Map<String, String>> _engagementOptions = [
     {'id': '5min', 'label': '5 phút / ngày', 'tag': 'Đơn giản', 'icon': '⚡'},
-    {'id': '10min', 'label': '10 phút / ngày', 'tag': 'Bình thường', 'icon': '🕐'},
-    {'id': '15min', 'label': '15 phút / ngày', 'tag': 'Có cố gắng', 'icon': '💪'},
+    {
+      'id': '10min',
+      'label': '10 phút / ngày',
+      'tag': 'Bình thường',
+      'icon': '🕐'
+    },
+    {
+      'id': '15min',
+      'label': '15 phút / ngày',
+      'tag': 'Có cố gắng',
+      'icon': '💪'
+    },
     {'id': '20min', 'label': '20 phút / ngày', 'tag': 'Kỷ luật', 'icon': '🔥'},
-    {'id': '30min_plus', 'label': '> 30 phút / ngày', 'tag': 'Nghiêm túc', 'icon': '🏆'},
+    {
+      'id': '30min_plus',
+      'label': '> 30 phút / ngày',
+      'tag': 'Nghiêm túc',
+      'icon': '🏆'
+    },
   ];
 
   // Slide 6: Notification preference
   String? _selectedNotification;
   final List<Map<String, String>> _notificationOptions = [
-    {'id': 'yes_daily', 'label': 'Có, nhắc tôi mỗi ngày', 'icon': '🔔', 'desc': 'Nhận thông báo nhắc học kèm câu nói truyền cảm hứng'},
-    {'id': 'yes_sometimes', 'label': 'Thỉnh thoảng thôi', 'icon': '🔕', 'desc': 'Chỉ nhắc khi tôi lâu không vào học'},
-    {'id': 'no', 'label': 'Không, cảm ơn', 'icon': '❌', 'desc': 'Tôi sẽ tự nhớ'},
+    {
+      'id': 'yes_daily',
+      'label': 'Có, nhắc tôi mỗi ngày',
+      'icon': '🔔',
+      'desc': 'Nhận thông báo nhắc học kèm câu nói truyền cảm hứng'
+    },
+    {
+      'id': 'yes_sometimes',
+      'label': 'Thỉnh thoảng thôi',
+      'icon': '🔕',
+      'desc': 'Chỉ nhắc khi tôi lâu không vào học'
+    },
+    {
+      'id': 'no',
+      'label': 'Không, cảm ơn',
+      'icon': '❌',
+      'desc': 'Tôi sẽ tự nhớ'
+    },
   ];
 
   late AnimationController _fadeController;
@@ -83,7 +138,8 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
       vsync: this,
       duration: const Duration(milliseconds: 500),
     );
-    _fadeAnimation = CurvedAnimation(parent: _fadeController, curve: Curves.easeIn);
+    _fadeAnimation =
+        CurvedAnimation(parent: _fadeController, curve: Curves.easeIn);
     _fadeController.forward();
   }
 
@@ -97,13 +153,20 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
 
   bool get _canProceed {
     switch (_currentPage) {
-      case 0: return _nicknameController.text.trim().isNotEmpty;
-      case 1: return _selectedAcquisition != null;
-      case 2: return _selectedSegment != null;
-      case 3: return _selectedGoals.isNotEmpty;
-      case 4: return _selectedEngagement != null;
-      case 5: return _selectedNotification != null;
-      default: return false;
+      case 0:
+        return _nicknameController.text.trim().isNotEmpty;
+      case 1:
+        return _selectedAcquisition != null;
+      case 2:
+        return _selectedSegment != null;
+      case 3:
+        return _selectedGoals.isNotEmpty;
+      case 4:
+        return _selectedEngagement != null;
+      case 5:
+        return _selectedNotification != null;
+      default:
+        return false;
     }
   }
 
@@ -148,8 +211,9 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Lưu thông tin bị lỗi, nhưng bạn vẫn có thể tiếp tục.'),
+          const SnackBar(
+            content:
+                Text('Lưu thông tin bị lỗi, nhưng bạn vẫn có thể tiếp tục.'),
             backgroundColor: AppColors.orangeNeon,
           ),
         );
@@ -183,7 +247,8 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
               children: [
                 Center(
                   child: Container(
-                    width: 40, height: 4,
+                    width: 40,
+                    height: 4,
                     margin: const EdgeInsets.only(bottom: 16),
                     decoration: BoxDecoration(
                       color: AppColors.bgTertiary,
@@ -191,11 +256,14 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
                     ),
                   ),
                 ),
-                Text('Bắt đầu như thế nào?', style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
+                Text('Bắt đầu như thế nào?',
+                    style: AppTextStyles.h4
+                        .copyWith(color: AppColors.textPrimary)),
                 const SizedBox(height: 8),
                 Text(
                   'Chọn cách bạn muốn bắt đầu, sau đó chọn môn học.',
-                  style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+                  style: AppTextStyles.bodySmall
+                      .copyWith(color: AppColors.textSecondary),
                 ),
                 const SizedBox(height: 20),
                 _buildChoiceCard(
@@ -212,7 +280,8 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
                 _buildChoiceCard(
                   icon: Icons.route_rounded,
                   title: 'Tạo lộ trình cá nhân',
-                  subtitle: 'Thiết kế lộ trình thông qua câu hỏi hoặc chat với AI',
+                  subtitle:
+                      'Thiết kế lộ trình thông qua câu hỏi hoặc chat với AI',
                   gradient: [AppColors.pinkNeon, AppColors.orangeNeon],
                   onTap: () {
                     Navigator.pop(ctx);
@@ -226,7 +295,10 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
                       Navigator.pop(ctx);
                       context.go('/dashboard');
                     },
-                    child: Text('Vào trang chính', style: AppTextStyles.labelMedium.copyWith(color: AppColors.textTertiary, decoration: TextDecoration.underline)),
+                    child: Text('Vào trang chính',
+                        style: AppTextStyles.labelMedium.copyWith(
+                            color: AppColors.textTertiary,
+                            decoration: TextDecoration.underline)),
                   ),
                 ),
               ],
@@ -278,22 +350,32 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
                   children: [
                     Center(
                       child: Container(
-                        width: 40, height: 4,
+                        width: 40,
+                        height: 4,
                         margin: const EdgeInsets.only(bottom: 16),
-                        decoration: BoxDecoration(color: AppColors.bgTertiary, borderRadius: BorderRadius.circular(999)),
+                        decoration: BoxDecoration(
+                            color: AppColors.bgTertiary,
+                            borderRadius: BorderRadius.circular(999)),
                       ),
                     ),
                     Text(
-                      mode == 'try_lesson' ? 'Chọn môn học để thử' : 'Chọn môn học để tạo lộ trình',
-                      style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+                      mode == 'try_lesson'
+                          ? 'Chọn môn học để thử'
+                          : 'Chọn môn học để tạo lộ trình',
+                      style: AppTextStyles.h4
+                          .copyWith(color: AppColors.textPrimary),
                     ),
                     const SizedBox(height: 4),
-                    Text('Chọn 1 môn bạn muốn bắt đầu', style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary)),
+                    Text('Chọn 1 môn bạn muốn bắt đầu',
+                        style: AppTextStyles.bodySmall
+                            .copyWith(color: AppColors.textSecondary)),
                     const SizedBox(height: 16),
                     if (loading)
                       const Padding(
                         padding: EdgeInsets.all(40),
-                        child: Center(child: CircularProgressIndicator(color: AppColors.cyanNeon)),
+                        child: Center(
+                            child: CircularProgressIndicator(
+                                color: AppColors.cyanNeon)),
                       )
                     else
                       Flexible(
@@ -303,14 +385,16 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
                           itemBuilder: (_, index) {
                             final s = subjects[index];
                             final name = s['name'] as String? ?? '';
-                            final metadata = s['metadata'] as Map<String, dynamic>?;
+                            final metadata =
+                                s['metadata'] as Map<String, dynamic>?;
                             final icon = metadata?['icon'] as String? ?? '📖';
                             final desc = s['description'] as String? ?? '';
 
                             return GestureDetector(
                               onTap: () {
                                 Navigator.pop(ctx);
-                                _navigateAfterChoice(mode, s['id'] as String, name);
+                                _navigateAfterChoice(
+                                    mode, s['id'] as String, name);
                               },
                               child: Container(
                                 margin: const EdgeInsets.only(bottom: 10),
@@ -318,23 +402,39 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
                                 decoration: BoxDecoration(
                                   color: AppColors.bgSecondary,
                                   borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: AppColors.borderPrimary),
+                                  border: Border.all(
+                                      color: AppColors.borderPrimary),
                                 ),
                                 child: Row(
                                   children: [
-                                    Text(icon, style: const TextStyle(fontSize: 28)),
+                                    Text(icon,
+                                        style: const TextStyle(fontSize: 28)),
                                     const SizedBox(width: 14),
                                     Expanded(
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
-                                          Text(name, style: AppTextStyles.bodyBold.copyWith(color: AppColors.textPrimary)),
+                                          Text(name,
+                                              style: AppTextStyles.bodyBold
+                                                  .copyWith(
+                                                      color: AppColors
+                                                          .textPrimary)),
                                           if (desc.isNotEmpty)
-                                            Text(desc, style: AppTextStyles.caption.copyWith(color: AppColors.textTertiary), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                            Text(desc,
+                                                style: AppTextStyles.caption
+                                                    .copyWith(
+                                                        color: AppColors
+                                                            .textTertiary),
+                                                maxLines: 1,
+                                                overflow:
+                                                    TextOverflow.ellipsis),
                                         ],
                                       ),
                                     ),
-                                    Icon(Icons.arrow_forward_ios_rounded, color: AppColors.textTertiary, size: 16),
+                                    const Icon(Icons.arrow_forward_ios_rounded,
+                                        color: AppColors.textTertiary,
+                                        size: 16),
                                   ],
                                 ),
                               ),
@@ -385,8 +485,9 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.bgSecondary,
-        title: Text('Thoát giới thiệu?', style: TextStyle(color: AppColors.textPrimary)),
-        content: Text(
+        title: const Text('Thoát giới thiệu?',
+            style: TextStyle(color: AppColors.textPrimary)),
+        content: const Text(
           'Thông tin bạn đã nhập sẽ không được lưu. Bạn có chắc muốn thoát?',
           style: TextStyle(color: AppColors.textSecondary),
         ),
@@ -419,32 +520,33 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
       child: Scaffold(
         backgroundColor: AppColors.bgPrimary,
         body: SafeArea(
-        child: FadeTransition(
-          opacity: _fadeAnimation,
-          child: Column(
-            children: [
-              _buildHeader(),
-              _buildProgressBar(),
-              Expanded(
-                child: PageView(
-                  controller: _pageController,
-                  physics: const NeverScrollableScrollPhysics(),
-                  onPageChanged: (page) => setState(() => _currentPage = page),
-                  children: [
-                    _buildNicknameSlide(),
-                    _buildAcquisitionSlide(),
-                    _buildSegmentSlide(),
-                    _buildGoalsSlide(),
-                    _buildEngagementSlide(),
-                    _buildNotificationSlide(),
-                  ],
+          child: FadeTransition(
+            opacity: _fadeAnimation,
+            child: Column(
+              children: [
+                _buildHeader(),
+                _buildProgressBar(),
+                Expanded(
+                  child: PageView(
+                    controller: _pageController,
+                    physics: const NeverScrollableScrollPhysics(),
+                    onPageChanged: (page) =>
+                        setState(() => _currentPage = page),
+                    children: [
+                      _buildNicknameSlide(),
+                      _buildAcquisitionSlide(),
+                      _buildSegmentSlide(),
+                      _buildGoalsSlide(),
+                      _buildEngagementSlide(),
+                      _buildNotificationSlide(),
+                    ],
+                  ),
                 ),
-              ),
-              _buildBottomButtons(),
-            ],
+                _buildBottomButtons(),
+              ],
+            ),
           ),
         ),
-      ),
       ),
     );
   }
@@ -464,7 +566,8 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(color: AppColors.borderPrimary),
                 ),
-                child: const Icon(Icons.arrow_back_rounded, color: AppColors.textSecondary, size: 20),
+                child: const Icon(Icons.arrow_back_rounded,
+                    color: AppColors.textSecondary, size: 20),
               ),
             )
           else
@@ -472,7 +575,8 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
           const Spacer(),
           Text(
             '${_currentPage + 1} / $_totalSlides',
-            style: AppTextStyles.labelMedium.copyWith(color: AppColors.textTertiary),
+            style: AppTextStyles.labelMedium
+                .copyWith(color: AppColors.textTertiary),
           ),
           const Spacer(),
           const SizedBox(width: 36),
@@ -513,9 +617,15 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
         child: GamingButton(
           text: isLastPage ? 'Hoàn thành' : 'Tiếp tục',
           onPressed: _canProceed ? _nextPage : null,
-          gradient: _canProceed ? (isLastPage ? AppGradients.success : AppGradients.primary) : null,
-          glowColor: _canProceed ? (isLastPage ? AppColors.successNeon : AppColors.pinkNeon) : null,
-          icon: isLastPage ? Icons.check_circle_rounded : Icons.arrow_forward_rounded,
+          gradient: _canProceed
+              ? (isLastPage ? AppGradients.success : AppGradients.primary)
+              : null,
+          glowColor: _canProceed
+              ? (isLastPage ? AppColors.successNeon : AppColors.pinkNeon)
+              : null,
+          icon: isLastPage
+              ? Icons.check_circle_rounded
+              : Icons.arrow_forward_rounded,
           isLoading: _isSaving,
         ),
       ),
@@ -531,21 +641,30 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
         children: [
           const SizedBox(height: 40),
           Container(
-            width: 100, height: 100,
+            width: 100,
+            height: 100,
             decoration: BoxDecoration(
               gradient: AppGradients.primary,
               borderRadius: BorderRadius.circular(30),
-              boxShadow: [BoxShadow(color: AppColors.purpleNeon.withOpacity(0.4), blurRadius: 30, spreadRadius: 5)],
+              boxShadow: [
+                BoxShadow(
+                    color: AppColors.purpleNeon.withOpacity(0.4),
+                    blurRadius: 30,
+                    spreadRadius: 5)
+              ],
             ),
-            child: const Icon(Icons.waving_hand_rounded, size: 50, color: Colors.white),
+            child: const Icon(Icons.waving_hand_rounded,
+                size: 50, color: Colors.white),
           ),
           const SizedBox(height: 32),
-          AppTextStyles.gradientText('Chào mừng bạn!', AppTextStyles.h2, AppGradients.primary),
+          AppTextStyles.gradientText(
+              'Chào mừng bạn!', AppTextStyles.h2, AppGradients.primary),
           const SizedBox(height: 12),
           Text(
             'Mình sẽ giúp bạn cá nhân hóa trải nghiệm học tập.\nHãy cho mình biết tên bạn nhé!',
             textAlign: TextAlign.center,
-            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+            style: AppTextStyles.bodyMedium
+                .copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: 40),
           Container(
@@ -556,14 +675,17 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
             ),
             child: TextField(
               controller: _nicknameController,
-              style: AppTextStyles.bodyLarge.copyWith(color: AppColors.textPrimary),
+              style: AppTextStyles.bodyLarge
+                  .copyWith(color: AppColors.textPrimary),
               textAlign: TextAlign.center,
               onChanged: (_) => setState(() {}),
               decoration: InputDecoration(
                 hintText: 'Nhập tên của bạn',
-                hintStyle: AppTextStyles.bodyLarge.copyWith(color: AppColors.textTertiary),
+                hintStyle: AppTextStyles.bodyLarge
+                    .copyWith(color: AppColors.textTertiary),
                 border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
               ),
             ),
           ),
@@ -580,11 +702,15 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
       child: Column(
         children: [
           const SizedBox(height: 20),
-          const Icon(Icons.campaign_rounded, size: 48, color: AppColors.cyanNeon),
+          const Icon(Icons.campaign_rounded,
+              size: 48, color: AppColors.cyanNeon),
           const SizedBox(height: 16),
-          AppTextStyles.gradientText('Bạn biết đến app từ đâu?', AppTextStyles.h3, AppGradients.cyan),
+          AppTextStyles.gradientText(
+              'Bạn biết đến app từ đâu?', AppTextStyles.h3, AppGradients.cyan),
           const SizedBox(height: 8),
-          Text('Giúp mình cải thiện để tiếp cận nhiều người hơn', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+          Text('Giúp mình cải thiện để tiếp cận nhiều người hơn',
+              style: AppTextStyles.bodyMedium
+                  .copyWith(color: AppColors.textSecondary)),
           const SizedBox(height: 32),
           ..._acquisitionOptions.map((opt) {
             final isSelected = _selectedAcquisition == opt['id'];
@@ -610,11 +736,15 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
       child: Column(
         children: [
           const SizedBox(height: 20),
-          const Icon(Icons.people_rounded, size: 48, color: AppColors.purpleNeon),
+          const Icon(Icons.people_rounded,
+              size: 48, color: AppColors.purpleNeon),
           const SizedBox(height: 16),
-          AppTextStyles.gradientText('Bạn là ai?', AppTextStyles.h3, AppGradients.purplePink),
+          AppTextStyles.gradientText(
+              'Bạn là ai?', AppTextStyles.h3, AppGradients.purplePink),
           const SizedBox(height: 8),
-          Text('Để mình cá nhân hóa nội dung phù hợp nhất', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+          Text('Để mình cá nhân hóa nội dung phù hợp nhất',
+              style: AppTextStyles.bodyMedium
+                  .copyWith(color: AppColors.textSecondary)),
           const SizedBox(height: 32),
           ..._segmentOptions.map((opt) {
             final isSelected = _selectedSegment == opt['id'];
@@ -641,11 +771,15 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
       child: Column(
         children: [
           const SizedBox(height: 20),
-          const Icon(Icons.flag_rounded, size: 48, color: AppColors.successNeon),
+          const Icon(Icons.flag_rounded,
+              size: 48, color: AppColors.successNeon),
           const SizedBox(height: 16),
-          AppTextStyles.gradientText('Bạn học để làm gì?', AppTextStyles.h3, AppGradients.success),
+          AppTextStyles.gradientText(
+              'Bạn học để làm gì?', AppTextStyles.h3, AppGradients.success),
           const SizedBox(height: 8),
-          Text('Chọn một hoặc nhiều mục tiêu của bạn', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+          Text('Chọn một hoặc nhiều mục tiêu của bạn',
+              style: AppTextStyles.bodyMedium
+                  .copyWith(color: AppColors.textSecondary)),
           const SizedBox(height: 32),
           Wrap(
             spacing: 12,
@@ -665,17 +799,24 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
                 },
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
                   decoration: BoxDecoration(
                     gradient: isSelected ? AppGradients.success : null,
                     color: isSelected ? null : AppColors.bgSecondary,
                     borderRadius: BorderRadius.circular(30),
                     border: Border.all(
-                      color: isSelected ? AppColors.successNeon : AppColors.borderPrimary,
+                      color: isSelected
+                          ? AppColors.successNeon
+                          : AppColors.borderPrimary,
                       width: isSelected ? 2 : 1,
                     ),
                     boxShadow: isSelected
-                        ? [BoxShadow(color: AppColors.successNeon.withOpacity(0.3), blurRadius: 12)]
+                        ? [
+                            BoxShadow(
+                                color: AppColors.successNeon.withOpacity(0.3),
+                                blurRadius: 12)
+                          ]
                         : null,
                   ),
                   child: Row(
@@ -686,12 +827,14 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
                       Text(
                         opt['label']!,
                         style: AppTextStyles.bodyBold.copyWith(
-                          color: isSelected ? Colors.white : AppColors.textPrimary,
+                          color:
+                              isSelected ? Colors.white : AppColors.textPrimary,
                         ),
                       ),
                       if (isSelected) ...[
                         const SizedBox(width: 8),
-                        const Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
+                        const Icon(Icons.check_circle_rounded,
+                            color: Colors.white, size: 18),
                       ],
                     ],
                   ),
@@ -712,11 +855,15 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
       child: Column(
         children: [
           const SizedBox(height: 20),
-          const Icon(Icons.schedule_rounded, size: 48, color: AppColors.orangeNeon),
+          const Icon(Icons.schedule_rounded,
+              size: 48, color: AppColors.orangeNeon),
           const SizedBox(height: 16),
-          AppTextStyles.gradientText('Bạn muốn học mỗi ngày bao lâu?', AppTextStyles.h3, AppGradients.pinkOrange),
+          AppTextStyles.gradientText('Bạn muốn học mỗi ngày bao lâu?',
+              AppTextStyles.h3, AppGradients.pinkOrange),
           const SizedBox(height: 8),
-          Text('Mình sẽ điều chỉnh bài học phù hợp', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+          Text('Mình sẽ điều chỉnh bài học phù hợp',
+              style: AppTextStyles.bodyMedium
+                  .copyWith(color: AppColors.textSecondary)),
           const SizedBox(height: 32),
           ..._engagementOptions.map((opt) {
             final isSelected = _selectedEngagement == opt['id'];
@@ -729,17 +876,24 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
                 },
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                   decoration: BoxDecoration(
                     gradient: isSelected ? AppGradients.pinkOrange : null,
                     color: isSelected ? null : AppColors.bgSecondary,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: isSelected ? AppColors.orangeNeon : AppColors.borderPrimary,
+                      color: isSelected
+                          ? AppColors.orangeNeon
+                          : AppColors.borderPrimary,
                       width: isSelected ? 2 : 1,
                     ),
                     boxShadow: isSelected
-                        ? [BoxShadow(color: AppColors.orangeNeon.withOpacity(0.3), blurRadius: 16)]
+                        ? [
+                            BoxShadow(
+                                color: AppColors.orangeNeon.withOpacity(0.3),
+                                blurRadius: 16)
+                          ]
                         : null,
                   ),
                   child: Row(
@@ -750,13 +904,24 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(opt['label']!, style: AppTextStyles.bodyBold.copyWith(color: isSelected ? Colors.white : AppColors.textPrimary, fontSize: 15)),
-                            Text(opt['tag']!, style: TextStyle(color: isSelected ? Colors.white70 : AppColors.textTertiary, fontSize: 13)),
+                            Text(opt['label']!,
+                                style: AppTextStyles.bodyBold.copyWith(
+                                    color: isSelected
+                                        ? Colors.white
+                                        : AppColors.textPrimary,
+                                    fontSize: 15)),
+                            Text(opt['tag']!,
+                                style: TextStyle(
+                                    color: isSelected
+                                        ? Colors.white70
+                                        : AppColors.textTertiary,
+                                    fontSize: 13)),
                           ],
                         ),
                       ),
                       if (isSelected)
-                        const Icon(Icons.check_circle_rounded, color: Colors.white, size: 24),
+                        const Icon(Icons.check_circle_rounded,
+                            color: Colors.white, size: 24),
                     ],
                   ),
                 ),
@@ -776,14 +941,17 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
       child: Column(
         children: [
           const SizedBox(height: 20),
-          const Icon(Icons.notifications_active_rounded, size: 48, color: AppColors.coinGold),
+          const Icon(Icons.notifications_active_rounded,
+              size: 48, color: AppColors.coinGold),
           const SizedBox(height: 16),
-          AppTextStyles.gradientText('Nhắc học mỗi ngày?', AppTextStyles.h3, AppGradients.streak),
+          AppTextStyles.gradientText(
+              'Nhắc học mỗi ngày?', AppTextStyles.h3, AppGradients.streak),
           const SizedBox(height: 8),
           Text(
             'Mỗi thông báo sẽ kèm một câu nói truyền cảm hứng\ngiúp bạn duy trì động lực học tập.',
             textAlign: TextAlign.center,
-            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+            style: AppTextStyles.bodyMedium
+                .copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: 32),
           ..._notificationOptions.map((opt) {
@@ -813,7 +981,9 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
                 Expanded(
                   child: Text(
                     '"Kỷ luật là cầu nối giữa mục tiêu và thành tựu." – Jim Rohn',
-                    style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary, fontStyle: FontStyle.italic),
+                    style: AppTextStyles.caption.copyWith(
+                        color: AppColors.textSecondary,
+                        fontStyle: FontStyle.italic),
                   ),
                 ),
               ],
@@ -848,18 +1018,29 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
             gradient: isSelected ? gradient : null,
             color: isSelected ? null : AppColors.bgSecondary,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: isSelected ? activeColor : AppColors.borderPrimary, width: isSelected ? 2 : 1),
-            boxShadow: isSelected ? [BoxShadow(color: activeColor.withOpacity(0.3), blurRadius: 12)] : null,
+            border: Border.all(
+                color: isSelected ? activeColor : AppColors.borderPrimary,
+                width: isSelected ? 2 : 1),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                        color: activeColor.withOpacity(0.3), blurRadius: 12)
+                  ]
+                : null,
           ),
           child: Row(
             children: [
               Text(icon, style: const TextStyle(fontSize: 24)),
               const SizedBox(width: 14),
               Expanded(
-                child: Text(label, style: AppTextStyles.bodyBold.copyWith(color: isSelected ? Colors.white : AppColors.textPrimary)),
+                child: Text(label,
+                    style: AppTextStyles.bodyBold.copyWith(
+                        color:
+                            isSelected ? Colors.white : AppColors.textPrimary)),
               ),
               if (isSelected)
-                const Icon(Icons.check_circle_rounded, color: Colors.white, size: 22),
+                const Icon(Icons.check_circle_rounded,
+                    color: Colors.white, size: 22),
             ],
           ),
         ),
@@ -890,8 +1071,15 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
             gradient: isSelected ? gradient : null,
             color: isSelected ? null : AppColors.bgSecondary,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: isSelected ? activeColor : AppColors.borderPrimary, width: isSelected ? 2 : 1),
-            boxShadow: isSelected ? [BoxShadow(color: activeColor.withOpacity(0.3), blurRadius: 16)] : null,
+            border: Border.all(
+                color: isSelected ? activeColor : AppColors.borderPrimary,
+                width: isSelected ? 2 : 1),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                        color: activeColor.withOpacity(0.3), blurRadius: 16)
+                  ]
+                : null,
           ),
           child: Row(
             children: [
@@ -901,14 +1089,25 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(label, style: AppTextStyles.bodyBold.copyWith(color: isSelected ? Colors.white : AppColors.textPrimary, fontSize: 15)),
+                    Text(label,
+                        style: AppTextStyles.bodyBold.copyWith(
+                            color: isSelected
+                                ? Colors.white
+                                : AppColors.textPrimary,
+                            fontSize: 15)),
                     if (desc.isNotEmpty)
-                      Text(desc, style: TextStyle(color: isSelected ? Colors.white70 : AppColors.textTertiary, fontSize: 13)),
+                      Text(desc,
+                          style: TextStyle(
+                              color: isSelected
+                                  ? Colors.white70
+                                  : AppColors.textTertiary,
+                              fontSize: 13)),
                   ],
                 ),
               ),
               if (isSelected)
-                const Icon(Icons.check_circle_rounded, color: Colors.white, size: 24),
+                const Icon(Icons.check_circle_rounded,
+                    color: Colors.white, size: 24),
             ],
           ),
         ),
@@ -932,13 +1131,21 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
           color: AppColors.bgSecondary,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: gradient[0].withOpacity(0.3)),
-          boxShadow: [BoxShadow(color: gradient[0].withOpacity(0.1), blurRadius: 16, offset: const Offset(0, 4))],
+          boxShadow: [
+            BoxShadow(
+                color: gradient[0].withOpacity(0.1),
+                blurRadius: 16,
+                offset: const Offset(0, 4))
+          ],
         ),
         child: Row(
           children: [
             Container(
-              width: 56, height: 56,
-              decoration: BoxDecoration(gradient: LinearGradient(colors: gradient), borderRadius: BorderRadius.circular(16)),
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                  gradient: LinearGradient(colors: gradient),
+                  borderRadius: BorderRadius.circular(16)),
               child: Icon(icon, color: Colors.white, size: 28),
             ),
             const SizedBox(width: 16),
@@ -946,9 +1153,13 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: AppTextStyles.bodyBold.copyWith(color: AppColors.textPrimary, fontSize: 16)),
+                  Text(title,
+                      style: AppTextStyles.bodyBold.copyWith(
+                          color: AppColors.textPrimary, fontSize: 16)),
                   const SizedBox(height: 4),
-                  Text(subtitle, style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary)),
+                  Text(subtitle,
+                      style: AppTextStyles.bodySmall
+                          .copyWith(color: AppColors.textSecondary)),
                 ],
               ),
             ),

@@ -206,8 +206,9 @@ class _CreateTopicScreenState extends State<CreateTopicScreen> {
                       controller: _nameController,
                       hint: 'VD: Nốt nhạc cơ bản, Hợp âm trưởng...',
                       validator: (v) {
-                        if (v == null || v.trim().isEmpty)
+                        if (v == null || v.trim().isEmpty) {
                           return 'Vui lòng nhập tên topic';
+                        }
                         if (v.trim().length < 2) return 'Tên quá ngắn';
                         return null;
                       },

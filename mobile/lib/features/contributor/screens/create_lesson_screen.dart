@@ -212,8 +212,9 @@ class _CreateLessonScreenState extends State<CreateLessonScreen> {
                       controller: _nameController,
                       hint: 'VD: Giới thiệu Excel, Hàm VLOOKUP cơ bản...',
                       validator: (v) {
-                        if (v == null || v.trim().isEmpty)
+                        if (v == null || v.trim().isEmpty) {
                           return 'Vui lòng nhập tên bài học';
+                        }
                         if (v.trim().length < 2) return 'Tên quá ngắn';
                         return null;
                       },

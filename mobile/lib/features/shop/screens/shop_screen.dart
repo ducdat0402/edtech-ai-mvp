@@ -12,7 +12,8 @@ class ShopScreen extends StatefulWidget {
   State<ShopScreen> createState() => _ShopScreenState();
 }
 
-class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateMixin {
+class _ShopScreenState extends State<ShopScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   int _coins = 0;
   List<dynamic> _shopItems = [];
@@ -35,7 +36,10 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
   }
 
   Future<void> _loadData() async {
-    setState(() { _isLoading = true; _error = null; });
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
 
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
@@ -52,13 +56,17 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
           _coins = shopData['coins'] as int? ?? 0;
           _shopItems = shopData['items'] as List<dynamic>? ?? [];
           _inventory = inventoryData['inventory'] as List<dynamic>? ?? [];
-          _activeEffects = inventoryData['activeEffects'] as Map<String, dynamic>? ?? {};
+          _activeEffects =
+              inventoryData['activeEffects'] as Map<String, dynamic>? ?? {};
           _isLoading = false;
         });
       }
     } catch (e) {
       if (mounted) {
-        setState(() { _error = e.toString(); _isLoading = false; });
+        setState(() {
+          _error = e.toString();
+          _isLoading = false;
+        });
       }
     }
   }
@@ -73,7 +81,8 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.bgSecondary,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Xác nhận mua', style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
+        title: Text('Xác nhận mua',
+            style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -85,14 +94,20 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
               ),
               child: Row(
                 children: [
-                  Icon(_getItemIcon(item['icon'] as String? ?? ''), color: AppColors.purpleNeon, size: 32),
+                  Icon(_getItemIcon(item['icon'] as String? ?? ''),
+                      color: AppColors.purpleNeon, size: 32),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(itemName, style: AppTextStyles.labelLarge.copyWith(color: AppColors.textPrimary, fontWeight: FontWeight.bold)),
-                        Text(item['description'] as String? ?? '', style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary)),
+                        Text(itemName,
+                            style: AppTextStyles.labelLarge.copyWith(
+                                color: AppColors.textPrimary,
+                                fontWeight: FontWeight.bold)),
+                        Text(item['description'] as String? ?? '',
+                            style: AppTextStyles.caption
+                                .copyWith(color: AppColors.textSecondary)),
                       ],
                     ),
                   ),
@@ -103,11 +118,16 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.monetization_on_rounded, color: AppColors.coinGold, size: 22),
+                const Icon(Icons.monetization_on_rounded,
+                    color: AppColors.coinGold, size: 22),
                 const SizedBox(width: 6),
-                Text('$price', style: AppTextStyles.h3.copyWith(color: AppColors.coinGold)),
+                Text('$price',
+                    style:
+                        AppTextStyles.h3.copyWith(color: AppColors.coinGold)),
                 const SizedBox(width: 16),
-                Text('Số dư: $_coins', style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary)),
+                Text('Số dư: $_coins',
+                    style: AppTextStyles.bodySmall
+                        .copyWith(color: AppColors.textSecondary)),
               ],
             ),
           ],
@@ -115,14 +135,17 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text('Hủy', style: TextStyle(color: AppColors.textSecondary)),
+            child: const Text('Hủy',
+                style: TextStyle(color: AppColors.textSecondary)),
           ),
           ElevatedButton(
             onPressed: _coins >= price ? () => Navigator.pop(ctx, true) : null,
             style: ElevatedButton.styleFrom(
-              backgroundColor: _coins >= price ? AppColors.coinGold : AppColors.bgTertiary,
+              backgroundColor:
+                  _coins >= price ? AppColors.coinGold : AppColors.bgTertiary,
               foregroundColor: Colors.black,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
             ),
             child: Text(_coins >= price ? 'Mua ngay' : 'Không đủ Coins'),
           ),
@@ -170,19 +193,23 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.bgSecondary,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Sử dụng $itemName?', style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
-        content: Text(item['description'] as String? ?? '', style: TextStyle(color: AppColors.textSecondary)),
+        title: Text('Sử dụng $itemName?',
+            style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
+        content: Text(item['description'] as String? ?? '',
+            style: const TextStyle(color: AppColors.textSecondary)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text('Hủy', style: TextStyle(color: AppColors.textSecondary)),
+            child: const Text('Hủy',
+                style: TextStyle(color: AppColors.textSecondary)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.cyanNeon,
               foregroundColor: Colors.black,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
             ),
             child: const Text('Sử dụng'),
           ),
@@ -204,7 +231,9 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi: ${_extractError(e)}'), backgroundColor: Colors.red),
+          SnackBar(
+              content: Text('Lỗi: ${_extractError(e)}'),
+              backgroundColor: Colors.red),
         );
       }
     }
@@ -221,15 +250,21 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Row(
           children: [
-            const Icon(Icons.check_circle_rounded, color: AppColors.successNeon, size: 28),
+            const Icon(Icons.check_circle_rounded,
+                color: AppColors.successNeon, size: 28),
             const SizedBox(width: 8),
-            Expanded(child: Text(itemName, style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary))),
+            Expanded(
+                child: Text(itemName,
+                    style: AppTextStyles.h4
+                        .copyWith(color: AppColors.textPrimary))),
           ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(message, style: TextStyle(color: AppColors.textSecondary, fontSize: 15)),
+            Text(message,
+                style: const TextStyle(
+                    color: AppColors.textSecondary, fontSize: 15)),
             if (reward != null) ...[
               const SizedBox(height: 16),
               Container(
@@ -237,21 +272,30 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
                 decoration: BoxDecoration(
                   color: AppColors.coinGold.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: AppColors.coinGold.withOpacity(0.3)),
+                  border:
+                      Border.all(color: AppColors.coinGold.withOpacity(0.3)),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     if ((reward['xp'] as int? ?? 0) > 0) ...[
-                      const Icon(Icons.star_rounded, color: AppColors.xpGold, size: 20),
+                      const Icon(Icons.star_rounded,
+                          color: AppColors.xpGold, size: 20),
                       const SizedBox(width: 4),
-                      Text('+${reward['xp']} XP', style: TextStyle(color: AppColors.xpGold, fontWeight: FontWeight.bold)),
+                      Text('+${reward['xp']} XP',
+                          style: const TextStyle(
+                              color: AppColors.xpGold,
+                              fontWeight: FontWeight.bold)),
                       const SizedBox(width: 16),
                     ],
                     if ((reward['coins'] as int? ?? 0) > 0) ...[
-                      const Icon(Icons.monetization_on_rounded, color: AppColors.coinGold, size: 20),
+                      const Icon(Icons.monetization_on_rounded,
+                          color: AppColors.coinGold, size: 20),
                       const SizedBox(width: 4),
-                      Text('+${reward['coins']} Coins', style: TextStyle(color: AppColors.coinGold, fontWeight: FontWeight.bold)),
+                      Text('+${reward['coins']} Coins',
+                          style: const TextStyle(
+                              color: AppColors.coinGold,
+                              fontWeight: FontWeight.bold)),
                     ],
                   ],
                 ),
@@ -265,7 +309,8 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.cyanNeon,
               foregroundColor: Colors.black,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
             ),
             child: const Text('OK'),
           ),
@@ -278,7 +323,8 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
     final str = e.toString();
     final match = RegExp(r'"message":"([^"]+)"').firstMatch(str);
     if (match != null) return match.group(1)!;
-    if (str.contains('Không đủ')) return str.split('Không đủ').last.split('"').first;
+    if (str.contains('Không đủ'))
+      return str.split('Không đủ').last.split('"').first;
     return 'Có lỗi xảy ra';
   }
 
@@ -288,7 +334,8 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
       backgroundColor: AppColors.bgPrimary,
       appBar: AppBar(
         backgroundColor: AppColors.bgPrimary,
-        title: Text('Cửa hàng', style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
+        title: Text('Cửa hàng',
+            style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () {
@@ -311,11 +358,13 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.monetization_on_rounded, color: AppColors.coinGold, size: 18),
+                const Icon(Icons.monetization_on_rounded,
+                    color: AppColors.coinGold, size: 18),
                 const SizedBox(width: 6),
                 Text(
                   '$_coins',
-                  style: AppTextStyles.labelLarge.copyWith(color: AppColors.coinGold, fontWeight: FontWeight.bold),
+                  style: AppTextStyles.labelLarge.copyWith(
+                      color: AppColors.coinGold, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
@@ -327,8 +376,12 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
           labelColor: AppColors.cyanNeon,
           unselectedLabelColor: AppColors.textTertiary,
           tabs: const [
-            Tab(text: 'Cửa hàng', icon: Icon(Icons.storefront_rounded, size: 20)),
-            Tab(text: 'Kho đồ', icon: Icon(Icons.inventory_2_rounded, size: 20)),
+            Tab(
+                text: 'Cửa hàng',
+                icon: Icon(Icons.storefront_rounded, size: 20)),
+            Tab(
+                text: 'Kho đồ',
+                icon: Icon(Icons.inventory_2_rounded, size: 20)),
           ],
         ),
       ),
@@ -339,9 +392,11 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text('Lỗi tải dữ liệu', style: TextStyle(color: AppColors.textSecondary)),
+                      const Text('Lỗi tải dữ liệu',
+                          style: TextStyle(color: AppColors.textSecondary)),
                       const SizedBox(height: 12),
-                      ElevatedButton(onPressed: _loadData, child: const Text('Thử lại')),
+                      ElevatedButton(
+                          onPressed: _loadData, child: const Text('Thử lại')),
                     ],
                   ),
                 )
@@ -363,9 +418,11 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
         children: [
           _buildCoinInfoBanner(),
           const SizedBox(height: 20),
-          Text('Vật phẩm', style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary)),
+          Text('Vật phẩm',
+              style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary)),
           const SizedBox(height: 12),
-          ..._shopItems.map((item) => _buildShopItemCard(item as Map<String, dynamic>)),
+          ..._shopItems
+              .map((item) => _buildShopItemCard(item as Map<String, dynamic>)),
         ],
       ),
     );
@@ -376,19 +433,24 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [AppColors.coinGold.withOpacity(0.12), AppColors.orangeNeon.withOpacity(0.06)],
+          colors: [
+            AppColors.coinGold.withOpacity(0.12),
+            AppColors.orangeNeon.withOpacity(0.06)
+          ],
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.coinGold.withOpacity(0.25)),
       ),
       child: Row(
         children: [
-          const Icon(Icons.info_outline_rounded, color: AppColors.coinGold, size: 20),
+          const Icon(Icons.info_outline_rounded,
+              color: AppColors.coinGold, size: 20),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               'Coins kiếm được qua học tập. Hoàn thành bài học, quest, achievement để nhận thêm!',
-              style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+              style: AppTextStyles.caption
+                  .copyWith(color: AppColors.textSecondary),
             ),
           ),
         ],
@@ -429,16 +491,22 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
                     color: categoryColor.withOpacity(0.12),
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  child: Icon(_getItemIcon(iconName), color: categoryColor, size: 26),
+                  child: Icon(_getItemIcon(iconName),
+                      color: categoryColor, size: 26),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(name, style: AppTextStyles.labelLarge.copyWith(color: AppColors.textPrimary, fontWeight: FontWeight.w600)),
+                      Text(name,
+                          style: AppTextStyles.labelLarge.copyWith(
+                              color: AppColors.textPrimary,
+                              fontWeight: FontWeight.w600)),
                       const SizedBox(height: 2),
-                      Text(desc, style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary)),
+                      Text(desc,
+                          style: AppTextStyles.caption
+                              .copyWith(color: AppColors.textSecondary)),
                     ],
                   ),
                 ),
@@ -446,9 +514,11 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
                 GestureDetector(
                   onTap: canAfford ? () => _purchaseItem(item) : null,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 10),
                     decoration: BoxDecoration(
-                      color: canAfford ? AppColors.coinGold : AppColors.bgTertiary,
+                      color:
+                          canAfford ? AppColors.coinGold : AppColors.bgTertiary,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Row(
@@ -456,14 +526,18 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
                       children: [
                         Icon(
                           Icons.monetization_on_rounded,
-                          color: canAfford ? Colors.black87 : AppColors.textTertiary,
+                          color: canAfford
+                              ? Colors.black87
+                              : AppColors.textTertiary,
                           size: 16,
                         ),
                         const SizedBox(width: 4),
                         Text(
                           '$price',
                           style: TextStyle(
-                            color: canAfford ? Colors.black87 : AppColors.textTertiary,
+                            color: canAfford
+                                ? Colors.black87
+                                : AppColors.textTertiary,
                             fontWeight: FontWeight.bold,
                             fontSize: 14,
                           ),
@@ -490,11 +564,16 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
                 Center(
                   child: Column(
                     children: [
-                      Icon(Icons.inventory_2_outlined, size: 64, color: AppColors.textTertiary),
+                      const Icon(Icons.inventory_2_outlined,
+                          size: 64, color: AppColors.textTertiary),
                       const SizedBox(height: 16),
-                      Text('Kho đồ trống', style: AppTextStyles.h4.copyWith(color: AppColors.textSecondary)),
+                      Text('Kho đồ trống',
+                          style: AppTextStyles.h4
+                              .copyWith(color: AppColors.textSecondary)),
                       const SizedBox(height: 8),
-                      Text('Mua vật phẩm từ cửa hàng để thấy ở đây', style: AppTextStyles.bodySmall.copyWith(color: AppColors.textTertiary)),
+                      Text('Mua vật phẩm từ cửa hàng để thấy ở đây',
+                          style: AppTextStyles.bodySmall
+                              .copyWith(color: AppColors.textTertiary)),
                     ],
                   ),
                 ),
@@ -504,9 +583,11 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
               padding: const EdgeInsets.all(16),
               children: [
                 if (_activeEffects['xpBoost'] == true)
-                  _buildActiveEffectBanner('Boost XP x2 đang hoạt động!', Icons.auto_awesome_rounded, AppColors.orangeNeon),
+                  _buildActiveEffectBanner('Boost XP x2 đang hoạt động!',
+                      Icons.auto_awesome_rounded, AppColors.orangeNeon),
                 const SizedBox(height: 8),
-                ..._inventory.map((entry) => _buildInventoryItemCard(entry as Map<String, dynamic>)),
+                ..._inventory.map((entry) =>
+                    _buildInventoryItemCard(entry as Map<String, dynamic>)),
               ],
             ),
     );
@@ -525,7 +606,12 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
         children: [
           Icon(icon, color: color, size: 22),
           const SizedBox(width: 10),
-          Expanded(child: Text(text, style: TextStyle(color: color, fontWeight: FontWeight.w600, fontSize: 14))),
+          Expanded(
+              child: Text(text,
+                  style: TextStyle(
+                      color: color,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14))),
         ],
       ),
     );
@@ -548,7 +634,10 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
       decoration: BoxDecoration(
         color: AppColors.bgSecondary,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isActive ? categoryColor.withOpacity(0.5) : AppColors.borderPrimary),
+        border: Border.all(
+            color: isActive
+                ? categoryColor.withOpacity(0.5)
+                : AppColors.borderPrimary),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -561,7 +650,8 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
                 color: categoryColor.withOpacity(0.12),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(_getItemIcon(iconName), color: categoryColor, size: 24),
+              child:
+                  Icon(_getItemIcon(iconName), color: categoryColor, size: 24),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -570,37 +660,56 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
                 children: [
                   Row(
                     children: [
-                      Text(name, style: AppTextStyles.labelLarge.copyWith(color: AppColors.textPrimary, fontWeight: FontWeight.w600)),
+                      Text(name,
+                          style: AppTextStyles.labelLarge.copyWith(
+                              color: AppColors.textPrimary,
+                              fontWeight: FontWeight.w600)),
                       if (isActive) ...[
                         const SizedBox(width: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(color: categoryColor, borderRadius: BorderRadius.circular(10)),
-                          child: const Text('Active', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                              color: categoryColor,
+                              borderRadius: BorderRadius.circular(10)),
+                          child: const Text('Active',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold)),
                         ),
                       ],
                     ],
                   ),
                   const SizedBox(height: 2),
-                  Text(desc, style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary)),
+                  Text(desc,
+                      style: AppTextStyles.caption
+                          .copyWith(color: AppColors.textSecondary)),
                 ],
               ),
             ),
             const SizedBox(width: 8),
             Column(
               children: [
-                Text('x$quantity', style: AppTextStyles.numberMedium.copyWith(color: AppColors.textPrimary)),
+                Text('x$quantity',
+                    style: AppTextStyles.numberMedium
+                        .copyWith(color: AppColors.textPrimary)),
                 if (quantity > 0)
                   GestureDetector(
                     onTap: () => _useItem(entry),
                     child: Container(
                       margin: const EdgeInsets.only(top: 6),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
                         color: AppColors.cyanNeon,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Text('Dùng', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 12)),
+                      child: const Text('Dùng',
+                          style: TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12)),
                     ),
                   ),
               ],
@@ -613,23 +722,35 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
 
   IconData _getItemIcon(String iconName) {
     switch (iconName) {
-      case 'auto_awesome': return Icons.auto_awesome_rounded;
-      case 'shield': return Icons.shield_rounded;
-      case 'tips_and_updates': return Icons.tips_and_updates_rounded;
-      case 'card_giftcard': return Icons.card_giftcard_rounded;
-      case 'palette': return Icons.palette_rounded;
-      default: return Icons.shopping_bag_rounded;
+      case 'auto_awesome':
+        return Icons.auto_awesome_rounded;
+      case 'shield':
+        return Icons.shield_rounded;
+      case 'tips_and_updates':
+        return Icons.tips_and_updates_rounded;
+      case 'card_giftcard':
+        return Icons.card_giftcard_rounded;
+      case 'palette':
+        return Icons.palette_rounded;
+      default:
+        return Icons.shopping_bag_rounded;
     }
   }
 
   Color _getCategoryColor(String category) {
     switch (category) {
-      case 'boost': return AppColors.orangeNeon;
-      case 'protection': return AppColors.cyanNeon;
-      case 'consumable': return AppColors.purpleNeon;
-      case 'mystery': return AppColors.pinkNeon;
-      case 'cosmetic': return AppColors.coinGold;
-      default: return AppColors.textSecondary;
+      case 'boost':
+        return AppColors.orangeNeon;
+      case 'protection':
+        return AppColors.cyanNeon;
+      case 'consumable':
+        return AppColors.purpleNeon;
+      case 'mystery':
+        return AppColors.pinkNeon;
+      case 'cosmetic':
+        return AppColors.coinGold;
+      default:
+        return AppColors.textSecondary;
     }
   }
 }

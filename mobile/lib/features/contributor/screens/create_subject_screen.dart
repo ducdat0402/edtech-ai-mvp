@@ -149,8 +149,9 @@ class _CreateSubjectScreenState extends State<CreateSubjectScreen> {
                 controller: _nameController,
                 hint: 'VD: Lập trình Python, Guitar cơ bản...',
                 validator: (v) {
-                  if (v == null || v.trim().isEmpty)
+                  if (v == null || v.trim().isEmpty) {
                     return 'Vui lòng nhập tên môn học';
+                  }
                   if (v.trim().length < 2) return 'Tên quá ngắn';
                   return null;
                 },

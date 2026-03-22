@@ -203,8 +203,9 @@ class _CreateDomainScreenState extends State<CreateDomainScreen> {
                       controller: _nameController,
                       hint: 'VD: Kiến thức cơ bản, Kỹ thuật nâng cao...',
                       validator: (v) {
-                        if (v == null || v.trim().isEmpty)
+                        if (v == null || v.trim().isEmpty) {
                           return 'Vui lòng nhập tên domain';
+                        }
                         if (v.trim().length < 2) return 'Tên quá ngắn';
                         return null;
                       },

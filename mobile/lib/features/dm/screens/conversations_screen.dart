@@ -32,15 +32,19 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
     try {
       final api = Provider.of<ApiService>(context, listen: false);
       final list = await api.getDmConversations();
-      if (mounted) setState(() {
-        _conversations = list;
-        _loading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _conversations = list;
+          _loading = false;
+        });
+      }
     } catch (e) {
-      if (mounted) setState(() {
-        _error = e.toString();
-        _loading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _error = e.toString();
+          _loading = false;
+        });
+      }
     }
   }
 
@@ -50,21 +54,27 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
       backgroundColor: AppColors.bgPrimary,
       appBar: AppBar(
         backgroundColor: AppColors.bgSecondary,
-        title: const Text('Tin nhắn', style: TextStyle(color: AppColors.textPrimary)),
+        title: const Text('Tin nhắn',
+            style: TextStyle(color: AppColors.textPrimary)),
         iconTheme: const IconThemeData(color: AppColors.textPrimary),
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator(color: AppColors.purpleNeon))
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.purpleNeon))
           : _error != null
               ? Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.error_outline, color: AppColors.errorNeon, size: 48),
+                      const Icon(Icons.error_outline,
+                          color: AppColors.errorNeon, size: 48),
                       const SizedBox(height: 16),
-                      Text(_error!, style: const TextStyle(color: AppColors.textSecondary)),
+                      Text(_error!,
+                          style:
+                              const TextStyle(color: AppColors.textSecondary)),
                       const SizedBox(height: 16),
-                      ElevatedButton(onPressed: _load, child: const Text('Thử lại')),
+                      ElevatedButton(
+                          onPressed: _load, child: const Text('Thử lại')),
                     ],
                   ),
                 )
@@ -72,7 +82,8 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
                   ? const EmptyStateWidget(
                       icon: Icons.chat_bubble_outline_rounded,
                       title: 'Chưa có cuộc trò chuyện',
-                      message: 'Chỉ nhắn tin được với bạn bè. Kết bạn rồi quay lại đây!',
+                      message:
+                          'Chỉ nhắn tin được với bạn bè. Kết bạn rồi quay lại đây!',
                     )
                   : RefreshIndicator(
                       onRefresh: _load,
@@ -81,7 +92,8 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
                         padding: const EdgeInsets.all(16),
                         itemCount: _conversations.length,
                         itemBuilder: (context, index) {
-                          final c = _conversations[index] as Map<String, dynamic>;
+                          final c =
+                              _conversations[index] as Map<String, dynamic>;
                           return _buildConversationTile(c);
                         },
                       ),
@@ -104,12 +116,14 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
         border: Border.all(color: AppColors.borderPrimary),
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         leading: CircleAvatar(
           backgroundColor: AppColors.purpleNeon.withOpacity(0.2),
           child: Text(
             peerName.isNotEmpty ? peerName[0].toUpperCase() : '?',
-            style: const TextStyle(color: AppColors.purpleNeon, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+                color: AppColors.purpleNeon, fontWeight: FontWeight.bold),
           ),
         ),
         title: Text(
@@ -124,7 +138,8 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
                 last['content'] as String? ?? '',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                style: const TextStyle(
+                    color: AppColors.textSecondary, fontSize: 13),
               )
             : const Text(
                 'Nhắn tin...',
@@ -139,11 +154,15 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
                 ),
                 child: Text(
                   unread > 99 ? '99+' : '$unread',
-                  style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold),
                 ),
               )
             : null,
-        onTap: () => context.push('/dm/chat/$peerId', extra: {'peerName': peerName}),
+        onTap: () =>
+            context.push('/dm/chat/$peerId', extra: {'peerName': peerName}),
       ),
     );
   }

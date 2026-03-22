@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:edtech_mobile/core/services/ai_behavior_tracker.dart';
+import 'package:edtech_mobile/core/services/ai_user_preferences.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
+import 'package:edtech_mobile/features/learning_nodes/widgets/ai_learning_insight_card.dart';
+import 'package:edtech_mobile/features/learning_nodes/widgets/drl_next_node_card.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 
 class NodeDetailScreen extends StatefulWidget {
@@ -31,6 +35,20 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
   String _selectedDifficulty = 'medium'; // Default difficulty
   String _selectedFormat = 'all'; // Default format: all, text, video, image
   bool _isDiamondLocked = false; // True if node requires diamond unlock
+  bool _aiNodeDetailViewTracked = false;
+  /// Phase 2: mastery + ITS (loaded after node detail).
+  int? _aiMasteryPct;
+  String? _aiSuggestedDifficulty;
+  String? _aiItsReason;
+  bool? _aiShouldSkip;
+  bool _drlLoading = false;
+  String? _drlNextNodeId;
+  String? _drlNextTitle;
+  double? _drlConfidence;
+  String? _drlReason;
+  List<Map<String, dynamic>> _aiBehHistory = [];
+  bool _aiBehHistoryLoading = false;
+  bool _aiBehHistoryLoaded = false;
 
   @override
   void initState() {
@@ -97,8 +115,9 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
 
   /// Đếm số content items theo format
   Map<String, int> _countContentByFormat() {
-    if (_contentItems == null)
+    if (_contentItems == null) {
       return {'all': 0, 'text': 0, 'video': 0, 'image': 0};
+    }
 
     int textCount = 0;
     int videoCount = 0;
@@ -348,7 +367,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
         return;
       }
 
-      final allContent = results[2] as List<dynamic>;
+      // Legacy content list (if backend adds `contentItems` on node); avoid invalid results[2].
+      final allContent = (nodeData['contentItems'] as List<dynamic>?) ?? [];
 
       setState(() {
         _nodeData = nodeData;
@@ -362,6 +382,20 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
         _subjectId = nodeData['subjectId'] as String? ??
             (nodeData['subject'] as Map<String, dynamic>?)?['id'] as String?;
       });
+
+      if (!_aiNodeDetailViewTracked && mounted) {
+        _aiNodeDetailViewTracked = true;
+        final api = Provider.of<ApiService>(context, listen: false);
+        AiBehaviorTracker.fireAndForget(
+          api,
+          nodeId: widget.nodeId,
+          action: 'view',
+          context: const {'screen': 'node_detail'},
+        );
+      }
+
+      _loadAiAgentInsights();
+      _loadDrlNextSuggestion();
 
       // ✅ Debug: Print progress data structure
       print('🔍 Progress Data Structure:');
@@ -399,9 +433,241 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
     }
   }
 
+  String _difficultyForItsApi() {
+    final d = _selectedDifficulty.toLowerCase();
+    const allowed = {'easy', 'medium', 'hard', 'expert'};
+    if (allowed.contains(d)) return d;
+    return 'medium';
+  }
+
+  /// Phase 2: pull mastery + ITS suggestion (non-blocking for main load).
+  Future<void> _loadAiAgentInsights() async {
+    if (!mounted) return;
+    if (!AiUserPreferences.instance.cloudAiEnabled) {
+      if (mounted) {
+        setState(() {
+          _aiMasteryPct = null;
+          _aiSuggestedDifficulty = null;
+          _aiItsReason = null;
+          _aiShouldSkip = null;
+        });
+      }
+      return;
+    }
+    try {
+      final api = Provider.of<ApiService>(context, listen: false);
+      final masteryRes = await api.getAiMastery(widget.nodeId);
+      final itsRes = await api.getAiAdjustedDifficulty(
+        widget.nodeId,
+        _difficultyForItsApi(),
+      );
+      if (!mounted) return;
+      setState(() {
+        _aiMasteryPct = (masteryRes['masteryPercentage'] as num?)?.toInt();
+        _aiSuggestedDifficulty =
+            itsRes['suggestedDifficulty']?.toString();
+        _aiItsReason = itsRes['reason']?.toString();
+        _aiShouldSkip = itsRes['shouldSkip'] == true;
+      });
+    } catch (_) {
+      // Offline, 401, or server error — omit card
+    }
+  }
+
+  /// Phase 3: DRL next-node suggestion (needs subjectId on node).
+  Future<void> _loadDrlNextSuggestion() async {
+    if (!AiUserPreferences.instance.cloudAiEnabled) {
+      if (mounted) {
+        setState(() {
+          _drlLoading = false;
+          _drlNextNodeId = null;
+          _drlNextTitle = null;
+          _drlConfidence = null;
+          _drlReason = null;
+        });
+      }
+      return;
+    }
+    final subjectId = _subjectId;
+    if (subjectId == null || subjectId.isEmpty) return;
+    if (!mounted) return;
+    setState(() {
+      _drlLoading = true;
+      _drlNextNodeId = null;
+      _drlNextTitle = null;
+      _drlConfidence = null;
+      _drlReason = null;
+    });
+    try {
+      final api = Provider.of<ApiService>(context, listen: false);
+      final res = await api.getAiDrlNextNode(
+        currentNodeId: widget.nodeId,
+        subjectId: subjectId,
+      );
+      if (!mounted) return;
+      if (res == null || res['nodeId'] == null) {
+        setState(() => _drlLoading = false);
+        return;
+      }
+      final nid = res['nodeId']!.toString();
+      String? title;
+      try {
+        final detail = await api.getNodeDetail(nid);
+        title = detail['title']?.toString();
+      } catch (_) {}
+      if (!mounted) return;
+      setState(() {
+        _drlLoading = false;
+        _drlNextNodeId = nid;
+        _drlNextTitle = title;
+        _drlConfidence = (res['confidence'] as num?)?.toDouble();
+        _drlReason = res['reason']?.toString();
+      });
+    } catch (_) {
+      if (mounted) {
+        setState(() => _drlLoading = false);
+      }
+    }
+  }
+
+  Future<void> _fetchAiBehaviorHistory() async {
+    if (!mounted) return;
+    setState(() {
+      _aiBehHistoryLoading = true;
+    });
+    try {
+      final api = Provider.of<ApiService>(context, listen: false);
+      final raw = await api.getAiNodeBehavior(widget.nodeId, limit: 25);
+      if (!mounted) return;
+      final list = <Map<String, dynamic>>[];
+      for (final item in raw) {
+        if (item is Map) {
+          list.add(Map<String, dynamic>.from(item));
+        }
+      }
+      setState(() {
+        _aiBehHistoryLoading = false;
+        _aiBehHistoryLoaded = true;
+        _aiBehHistory = list;
+      });
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _aiBehHistoryLoading = false;
+          _aiBehHistoryLoaded = true;
+        });
+      }
+    }
+  }
+
+  Widget _buildAiBehaviorHistorySection() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        color: AppColors.bgSecondary,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.borderPrimary),
+      ),
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          childrenPadding:
+              const EdgeInsets.only(left: 16, right: 16, bottom: 12),
+          title: Text(
+            'Hoạt động gần đây (AI)',
+            style: AppTextStyles.labelLarge.copyWith(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          subtitle: Text(
+            'Sự kiện đã lưu cho bài này (Phase 1 tracking)',
+            style: AppTextStyles.caption.copyWith(color: AppColors.textTertiary),
+          ),
+          onExpansionChanged: (expanded) {
+            if (expanded &&
+                !_aiBehHistoryLoaded &&
+                !_aiBehHistoryLoading) {
+              _fetchAiBehaviorHistory();
+            }
+          },
+          children: [
+            if (_aiBehHistoryLoading)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 16),
+                child: Center(
+                  child: CircularProgressIndicator(color: AppColors.purpleNeon),
+                ),
+              )
+            else if (_aiBehHistory.isEmpty)
+              Text(
+                'Chưa có sự kiện — học thêm hoặc bật ghi nhận hành vi trong Hồ sơ.',
+                style: AppTextStyles.bodySmall
+                    .copyWith(color: AppColors.textSecondary),
+              )
+            else
+              ..._aiBehHistory.map((e) {
+                final action = e['action']?.toString() ?? '';
+                final cid = e['contentItemId']?.toString();
+                final at = e['createdAt']?.toString() ?? '';
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.bolt_rounded,
+                          size: 16, color: AppColors.cyanNeon),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              action,
+                              style: AppTextStyles.labelMedium.copyWith(
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            if (cid != null && cid.isNotEmpty)
+                              Text(
+                                'content: $cid',
+                                style: AppTextStyles.caption
+                                    .copyWith(color: AppColors.textTertiary),
+                              ),
+                            Text(
+                              at,
+                              style: AppTextStyles.caption
+                                  .copyWith(color: AppColors.textTertiary),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _onContentItemTap(Map<String, dynamic> item) async {
     final itemType = item['type'] as String;
     final itemId = item['id'] as String;
+
+    final api = Provider.of<ApiService>(context, listen: false);
+    AiBehaviorTracker.fireAndForget(
+      api,
+      nodeId: widget.nodeId,
+      action: 'view',
+      contentItemId: itemId,
+      context: {
+        'screen': 'node_detail',
+        'contentType': itemType,
+      },
+    );
 
     // Navigate based on content type
     switch (itemType) {
@@ -707,6 +973,13 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
 
                       // Mark node as complete
                       await apiService.completeNode(nodeId);
+
+                      AiBehaviorTracker.fireAndForget(
+                        apiService,
+                        nodeId: nodeId,
+                        action: 'complete',
+                        context: const {'source': 'complete_node_dialog'},
+                      );
 
                       // Close dialog
                       if (context.mounted) {
@@ -1042,6 +1315,24 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 if (_progressData != null) _buildProgressHUD(),
+                                AiLearningInsightCard(
+                                  masteryPercentage: _aiMasteryPct,
+                                  suggestedDifficulty: _aiSuggestedDifficulty,
+                                  reason: _aiItsReason,
+                                  shouldSkip: _aiShouldSkip,
+                                ),
+                                DrlNextNodeCard(
+                                  loading: _drlLoading,
+                                  nextNodeId: _drlNextNodeId,
+                                  nextTitle: _drlNextTitle,
+                                  confidence: _drlConfidence,
+                                  reason: _drlReason,
+                                  onOpen: (_drlNextNodeId != null &&
+                                          _drlNextNodeId!.isNotEmpty)
+                                      ? () => context.push('/nodes/${_drlNextNodeId!}')
+                                      : null,
+                                ),
+                                _buildAiBehaviorHistorySection(),
                                 const SizedBox(height: 24),
                                 _buildNodeInfo(),
                                 const SizedBox(height: 24),

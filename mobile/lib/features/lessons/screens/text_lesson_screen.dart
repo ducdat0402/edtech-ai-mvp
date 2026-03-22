@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:edtech_mobile/core/services/ai_behavior_tracker.dart';
 import 'package:edtech_mobile/theme/colors.dart';
 import 'end_quiz_screen.dart';
 
@@ -51,6 +52,17 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
         widget.lessonData['objectives'] ??
         [];
     return List<String>.from(raw.map((e) => e.toString()));
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    AiBehaviorTracker.trackLessonScreenOpened(
+      context,
+      nodeId: widget.nodeId,
+      screenName: 'text_lesson',
+      lessonType: widget.lessonType,
+    );
   }
 
   int get _estimatedReadingTime {

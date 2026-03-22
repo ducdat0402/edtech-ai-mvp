@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:edtech_mobile/core/services/ai_behavior_tracker.dart';
+import 'package:edtech_mobile/core/services/ai_user_preferences.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
+import 'package:edtech_mobile/features/learning_nodes/widgets/ai_learning_insight_card.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 
 /// Screen showing all available lesson types for a learning node.
@@ -27,6 +30,11 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
   List<dynamic> _contents = [];
   List<String> _completedTypes = [];
   bool _isLessonComplete = false;
+  bool _aiLessonTypesViewTracked = false;
+  int? _aiMasteryPct;
+  String? _aiSuggestedDifficulty;
+  String? _aiItsReason;
+  bool? _aiShouldSkip;
 
   @override
   void initState() {
@@ -51,14 +59,25 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
 
       setState(() {
         _contents = (contentsData['contents'] as List<dynamic>?) ?? [];
-        _completedTypes =
-            (progressData['completedTypes'] as List<dynamic>?)
+        _completedTypes = (progressData['completedTypes'] as List<dynamic>?)
                 ?.map((e) => e.toString())
                 .toList() ??
             [];
         _isLessonComplete = progressData['isLessonComplete'] == true;
         _isLoading = false;
       });
+
+      if (!_aiLessonTypesViewTracked && mounted) {
+        _aiLessonTypesViewTracked = true;
+        AiBehaviorTracker.fireAndForget(
+          apiService,
+          nodeId: widget.nodeId,
+          action: 'view',
+          context: const {'screen': 'lesson_types_overview'},
+        );
+      }
+
+      _loadAiAgentInsightsForOverview(apiService);
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -66,6 +85,25 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
         _isLoading = false;
       });
     }
+  }
+
+  /// Phase 2: mastery + ITS on lesson-type overview (baseline difficulty: medium).
+  Future<void> _loadAiAgentInsightsForOverview(ApiService api) async {
+    if (!mounted) return;
+    if (!AiUserPreferences.instance.cloudAiEnabled) return;
+    try {
+      final masteryRes = await api.getAiMastery(widget.nodeId);
+      final itsRes =
+          await api.getAiAdjustedDifficulty(widget.nodeId, 'medium');
+      if (!mounted) return;
+      setState(() {
+        _aiMasteryPct = (masteryRes['masteryPercentage'] as num?)?.toInt();
+        _aiSuggestedDifficulty =
+            itsRes['suggestedDifficulty']?.toString();
+        _aiItsReason = itsRes['reason']?.toString();
+        _aiShouldSkip = itsRes['shouldSkip'] == true;
+      });
+    } catch (_) {}
   }
 
   void _openLessonType(Map<String, dynamic> content) {
@@ -117,7 +155,8 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppColors.purpleNeon))
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.purpleNeon))
           : _error != null
               ? _buildErrorState()
               : _contents.isEmpty
@@ -134,7 +173,8 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
           const Icon(Icons.error_outline, size: 48, color: AppColors.errorNeon),
           const SizedBox(height: 16),
           Text('Lỗi: $_error',
-              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+              style: AppTextStyles.bodyMedium
+                  .copyWith(color: AppColors.textSecondary),
               textAlign: TextAlign.center),
           const SizedBox(height: 16),
           GamingButton(
@@ -166,7 +206,8 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
                 shape: BoxShape.circle,
                 color: AppColors.purpleNeon.withOpacity(0.1),
               ),
-              child: const Icon(Icons.school_outlined, size: 48, color: AppColors.purpleNeon),
+              child: const Icon(Icons.school_outlined,
+                  size: 48, color: AppColors.purpleNeon),
             ),
             const SizedBox(height: 24),
             Text(
@@ -176,7 +217,8 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
             const SizedBox(height: 8),
             Text(
               'Bài học này chưa có nội dung. Vui lòng quay lại sau.',
-              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+              style: AppTextStyles.bodyMedium
+                  .copyWith(color: AppColors.textSecondary),
               textAlign: TextAlign.center,
             ),
           ],
@@ -194,6 +236,12 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          AiLearningInsightCard(
+            masteryPercentage: _aiMasteryPct,
+            suggestedDifficulty: _aiSuggestedDifficulty,
+            reason: _aiItsReason,
+            shouldSkip: _aiShouldSkip,
+          ),
           // Streak hint when lesson not fully complete
           if (!_isLessonComplete && totalCount > 0) ...[
             _buildStreakHintBanner(),
@@ -230,7 +278,8 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
       ),
       child: Row(
         children: [
-          Icon(Icons.local_fire_department_rounded, color: AppColors.orangeNeon, size: 24),
+          const Icon(Icons.local_fire_department_rounded,
+              color: AppColors.orangeNeon, size: 24),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
@@ -264,7 +313,8 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
         children: [
           Row(
             children: [
-              const Icon(Icons.school_rounded, color: AppColors.purpleNeon, size: 24),
+              const Icon(Icons.school_rounded,
+                  color: AppColors.purpleNeon, size: 24),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -289,7 +339,8 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
               ),
               // Percentage badge
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 decoration: BoxDecoration(
                   color: _isLessonComplete
                       ? AppColors.successNeon.withOpacity(0.15)
@@ -299,7 +350,9 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
                 child: Text(
                   '${(progress * 100).round()}%',
                   style: AppTextStyles.labelLarge.copyWith(
-                    color: _isLessonComplete ? AppColors.successNeon : AppColors.purpleNeon,
+                    color: _isLessonComplete
+                        ? AppColors.successNeon
+                        : AppColors.purpleNeon,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -314,7 +367,9 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
               value: progress,
               backgroundColor: AppColors.bgTertiary,
               valueColor: AlwaysStoppedAnimation(
-                _isLessonComplete ? AppColors.successNeon : AppColors.purpleNeon,
+                _isLessonComplete
+                    ? AppColors.successNeon
+                    : AppColors.purpleNeon,
               ),
               minHeight: 8,
             ),
@@ -361,7 +416,10 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
                 gradient: LinearGradient(
                   colors: isCompleted
                       ? [AppColors.successNeon, const Color(0xFF2DD4BF)]
-                      : [info['color'] as Color, (info['color'] as Color).withOpacity(0.7)],
+                      : [
+                          info['color'] as Color,
+                          (info['color'] as Color).withOpacity(0.7)
+                        ],
                 ),
                 borderRadius: BorderRadius.circular(14),
               ),
@@ -389,7 +447,9 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
                   Text(
                     isCompleted ? 'Đã hoàn thành' : 'Nhấn để bắt đầu',
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: isCompleted ? AppColors.successNeon : AppColors.textSecondary,
+                      color: isCompleted
+                          ? AppColors.successNeon
+                          : AppColors.textSecondary,
                     ),
                   ),
                 ],
@@ -399,7 +459,8 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
             // Arrow
             Icon(
               Icons.chevron_right_rounded,
-              color: isCompleted ? AppColors.successNeon : AppColors.textSecondary,
+              color:
+                  isCompleted ? AppColors.successNeon : AppColors.textSecondary,
               size: 24,
             ),
           ],
@@ -430,7 +491,8 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
               shape: BoxShape.circle,
               color: AppColors.successNeon.withOpacity(0.2),
             ),
-            child: const Icon(Icons.emoji_events_rounded, color: AppColors.successNeon, size: 28),
+            child: const Icon(Icons.emoji_events_rounded,
+                color: AppColors.successNeon, size: 28),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -447,7 +509,8 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
                 const SizedBox(height: 4),
                 Text(
                   'Bạn đã hoàn thành tất cả dạng bài trong bài học này.',
-                  style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+                  style: AppTextStyles.bodySmall
+                      .copyWith(color: AppColors.textSecondary),
                 ),
               ],
             ),

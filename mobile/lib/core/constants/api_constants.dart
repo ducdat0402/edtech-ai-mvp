@@ -188,6 +188,26 @@ class ApiConstants {
   // Analytics (Admin only)
   static const String analyticsOverview = '/analytics/overview';
 
+  // AI agents (behavior tracking — JWT required)
+  static const String aiAgentsBehaviorTrack = '/ai-agents/behavior/track';
+  static String aiAgentsMastery(String nodeId) => '/ai-agents/mastery/$nodeId';
+  static String aiAgentsBehaviorNode(String nodeId) =>
+      '/ai-agents/behavior/node/$nodeId';
+  static const String aiAgentsItsAdjustDifficulty = '/ai-agents/its/adjust-difficulty';
+  static const String aiAgentsDrlNextNode = '/ai-agents/drl/next-node';
+  static const String aiAgentsItsHint = '/ai-agents/its/hint';
+  static const String aiAgentsLangchainRoadmap = '/ai-agents/langchain/roadmap';
+  static const String aiAgentsItsRecommendations = '/ai-agents/its/recommendations';
+  static String aiAgentsItsShouldSkip(String nodeId) =>
+      '/ai-agents/its/should-skip/$nodeId';
+  static const String aiAgentsBehaviorErrorPatterns =
+      '/ai-agents/behavior/error-patterns';
+  static const String aiAgentsBehaviorStrengthsWeaknesses =
+      '/ai-agents/behavior/strengths-weaknesses';
+
+  /// Admin: raw behaviors for user + node
+  static const String analyticsUserBehaviors = '/analytics/user-behaviors';
+
   // Payment (Diamond purchase)
   static const String paymentPackages = '/payment/packages';
   static const String createPayment = '/payment/create';

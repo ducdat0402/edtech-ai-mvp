@@ -51,21 +51,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
       TutorialHelper.buildTarget(
         key: _levelCardKey,
         title: 'Level & Kinh nghiệm',
-        description: 'Đây là cấp độ hiện tại của bạn. Hoàn thành bài học để nhận XP và lên level!',
+        description:
+            'Đây là cấp độ hiện tại của bạn. Hoàn thành bài học để nhận XP và lên level!',
         icon: Icons.military_tech,
         stepLabel: 'Bước 1/5',
       ),
       TutorialHelper.buildTarget(
         key: _statsRowKey,
         title: 'Tài nguyên của bạn',
-        description: 'Coins để mua vật phẩm, Kim cương để mở khoá bài học, Streak theo dõi chuỗi học liên tiếp.',
+        description:
+            'Coins để mua vật phẩm, Kim cương để mở khoá bài học, Streak theo dõi chuỗi học liên tiếp.',
         icon: Icons.account_balance_wallet,
         stepLabel: 'Bước 2/5',
       ),
       TutorialHelper.buildTarget(
         key: _subjectsKey,
         title: 'Danh sách môn học',
-        description: 'Chọn một môn học để bắt đầu. Vuốt ngang để xem thêm các môn khác.',
+        description:
+            'Chọn một môn học để bắt đầu. Vuốt ngang để xem thêm các môn khác.',
         icon: Icons.school,
         stepLabel: 'Bước 3/5',
         align: ContentAlign.top,
@@ -73,7 +76,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
       TutorialHelper.buildTarget(
         key: _quickActionsKey,
         title: 'Truy cập nhanh',
-        description: 'Quests hằng ngày, Bảng xếp hạng, Ví tiền, Cửa hàng... tất cả ở đây!',
+        description:
+            'Quests hằng ngày, Bảng xếp hạng, Ví tiền, Cửa hàng... tất cả ở đây!',
         icon: Icons.flash_on,
         stepLabel: 'Bước 4/5',
         align: ContentAlign.top,
@@ -81,7 +85,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
       TutorialHelper.buildTarget(
         key: _bottomNavKey,
         title: 'Thanh điều hướng',
-        description: 'Di chuyển nhanh giữa Dashboard, Nhiệm vụ, Bảng xếp hạng và Hồ sơ cá nhân.',
+        description:
+            'Di chuyển nhanh giữa Dashboard, Nhiệm vụ, Bảng xếp hạng và Hồ sơ cá nhân.',
         icon: Icons.navigation,
         stepLabel: 'Bước 5/5',
         align: ContentAlign.top,
@@ -137,12 +142,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
         context: context,
         builder: (ctx) => AlertDialog(
           backgroundColor: AppColors.bgSecondary,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Row(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Row(
             children: [
-              const Icon(Icons.emoji_events_rounded, color: Colors.amber, size: 28),
-              const SizedBox(width: 8),
-              const Expanded(child: Text('Phần thưởng tuần!')),
+              Icon(Icons.emoji_events_rounded, color: Colors.amber, size: 28),
+              SizedBox(width: 8),
+              Expanded(child: Text('Phần thưởng tuần!')),
             ],
           ),
           content: Column(
@@ -150,29 +156,36 @@ class _DashboardScreenState extends State<DashboardScreen> {
             children: [
               Text(
                 'Chúc mừng! Bạn đạt hạng #$rank tuần $week',
-                style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary),
+                style: AppTextStyles.bodyMedium
+                    .copyWith(color: AppColors.textPrimary),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.diamond_rounded, color: Colors.lightBlueAccent, size: 24),
+                  const Icon(Icons.diamond_rounded,
+                      color: Colors.lightBlueAccent, size: 24),
                   const SizedBox(width: 6),
-                  Text('+$diamonds', style: AppTextStyles.h3.copyWith(color: Colors.lightBlueAccent)),
+                  Text('+$diamonds',
+                      style: AppTextStyles.h3
+                          .copyWith(color: Colors.lightBlueAccent)),
                 ],
               ),
               if (badge != null) ...[
                 const SizedBox(height: 8),
-                const Icon(Icons.workspace_premium_rounded, color: Colors.amber, size: 32),
+                const Icon(Icons.workspace_premium_rounded,
+                    color: Colors.amber, size: 32),
                 Text('Huy hiệu: ${badge.toString().replaceAll('_', ' ')}',
-                    style: AppTextStyles.bodySmall.copyWith(color: Colors.amber)),
+                    style:
+                        AppTextStyles.bodySmall.copyWith(color: Colors.amber)),
               ],
               if (rewards.length > 1)
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
                   child: Text('và ${rewards.length - 1} phần thưởng khác...',
-                      style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary)),
+                      style: AppTextStyles.caption
+                          .copyWith(color: AppColors.textSecondary)),
                 ),
             ],
           ),
@@ -262,56 +275,53 @@ class _DashboardScreenState extends State<DashboardScreen> {
       body: Stack(
         children: [
           _isLoading
-          ? _buildSkeletonLoader()
-          : _error != null
-              ? AppErrorWidget(
-                  message: _error!,
-                  onRetry: _loadDashboard,
-                )
-              : _dashboardData == null
-                  ? const Center(child: Text('No data available'))
-                  : RefreshIndicator(
-                      onRefresh: _loadDashboard,
-                      child: SingleChildScrollView(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildStatsSection(_dashboardData!['stats'] ?? {}),
-                            const SizedBox(height: 24),
-
-                            if (_motivation != null && _motivation!['quote'] != null)
-                              ...[
-                                _buildMotivationCard(_motivation!),
+              ? _buildSkeletonLoader()
+              : _error != null
+                  ? AppErrorWidget(
+                      message: _error!,
+                      onRetry: _loadDashboard,
+                    )
+                  : _dashboardData == null
+                      ? const Center(child: Text('No data available'))
+                      : RefreshIndicator(
+                          onRefresh: _loadDashboard,
+                          child: SingleChildScrollView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _buildStatsSection(
+                                    _dashboardData!['stats'] ?? {}),
                                 const SizedBox(height: 24),
+                                if (_motivation != null &&
+                                    _motivation!['quote'] != null) ...[
+                                  _buildMotivationCard(_motivation!),
+                                  const SizedBox(height: 24),
+                                ],
+                                _buildOnboardingBanner(),
+                                const SizedBox(height: 24),
+                                _buildQuickActions(
+                                    _dashboardData!['subjects'] ?? []),
+                                const SizedBox(height: 24),
+                                KeyedSubtree(
+                                  key: _subjectsKey,
+                                  child: _buildSubjectsSection(
+                                    'Môn học',
+                                    _dashboardData!['subjects'] ?? [],
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                _buildCurrentLearningSection(
+                                    _dashboardData!['currentLearningNodes'] ??
+                                        []),
+                                const SizedBox(height: 24),
+                                _buildQuestsSection(
+                                    _dashboardData!['dailyQuests'] ?? []),
                               ],
-
-                            _buildOnboardingBanner(),
-                            const SizedBox(height: 24),
-
-                            _buildQuickActions(),
-                            const SizedBox(height: 24),
-
-                            KeyedSubtree(
-                              key: _subjectsKey,
-                              child: _buildSubjectsSection(
-                                'Môn học',
-                                _dashboardData!['subjects'] ?? [],
-                              ),
                             ),
-                            const SizedBox(height: 24),
-
-                            _buildCurrentLearningSection(
-                                _dashboardData!['currentLearningNodes'] ?? []),
-                            const SizedBox(height: 24),
-
-                            _buildQuestsSection(
-                                _dashboardData!['dailyQuests'] ?? []),
-                          ],
+                          ),
                         ),
-                      ),
-                    ),
           const FloatingChatBubble(),
         ],
       ),
@@ -365,7 +375,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ),
         const SizedBox(height: 20),
-
         Row(
           key: _statsRowKey,
           children: [
@@ -641,14 +650,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
           if (body.isNotEmpty) ...[
             Text(
               body,
-              style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+              style: AppTextStyles.bodySmall
+                  .copyWith(color: AppColors.textSecondary),
             ),
             const SizedBox(height: 10),
           ],
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('💬', style: const TextStyle(fontSize: 18)),
+              const Text('💬', style: TextStyle(fontSize: 18)),
               const SizedBox(width: 8),
               Expanded(
                 child: Column(
@@ -666,7 +676,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         padding: const EdgeInsets.only(top: 4),
                         child: Text(
                           '— $author',
-                          style: AppTextStyles.caption.copyWith(color: AppColors.textTertiary),
+                          style: AppTextStyles.caption
+                              .copyWith(color: AppColors.textTertiary),
                         ),
                       ),
                   ],
@@ -685,7 +696,77 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return const SizedBox.shrink();
   }
 
-  Widget _buildQuickActions() {
+  void _showCoachAiSubjectPicker(List<dynamic> subjects) {
+    if (subjects.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Chưa có môn học trên dashboard')),
+      );
+      return;
+    }
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: AppColors.bgSecondary,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      isScrollControlled: true,
+      builder: (ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Chọn môn — Coach AI',
+                  style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Lộ trình LangChain & phân tích ITS theo từng môn.',
+                  style: AppTextStyles.caption
+                      .copyWith(color: AppColors.textTertiary),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  height: MediaQuery.of(ctx).size.height * 0.42,
+                  child: ListView.builder(
+                    itemCount: subjects.length,
+                    itemBuilder: (context, i) {
+                      final s = subjects[i];
+                      if (s is! Map) return const SizedBox.shrink();
+                      final id = s['id'] as String?;
+                      final name = s['name'] as String? ?? 'Môn học';
+                      return ListTile(
+                        leading: const Icon(Icons.auto_graph_rounded,
+                            color: AppColors.purpleNeon),
+                        title: Text(
+                          name,
+                          style: const TextStyle(color: AppColors.textPrimary),
+                        ),
+                        onTap: () {
+                          Navigator.pop(ctx);
+                          if (id != null) {
+                            context.push(
+                              '/subjects/$id/ai-coach',
+                              extra: {'subjectName': name},
+                            );
+                          }
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildQuickActions(List<dynamic> subjects) {
     return Column(
       key: _quickActionsKey,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -712,6 +793,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 label: 'Currency',
                 color: AppColors.coinGold,
                 onTap: () => context.push('/currency'),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _ActionCard(
+                icon: Icons.auto_graph_rounded,
+                label: 'Coach AI',
+                color: AppColors.purpleNeon,
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  _showCoachAiSubjectPicker(subjects);
+                },
               ),
             ),
           ],
@@ -1126,10 +1223,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   subject['name'] as String? ?? 'Môn học';
                               final description =
                                   subject['description'] as String?;
-                              final metadata = subject['metadata']
-                                  as Map<String, dynamic>?;
-                              final icon =
-                                  metadata?['icon'] as String? ?? '📚';
+                              final metadata =
+                                  subject['metadata'] as Map<String, dynamic>?;
+                              final icon = metadata?['icon'] as String? ?? '📚';
 
                               return ListTile(
                                 leading: Text(icon,

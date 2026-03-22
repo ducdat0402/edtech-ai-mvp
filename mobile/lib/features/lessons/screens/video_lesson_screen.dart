@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:edtech_mobile/core/services/ai_behavior_tracker.dart';
 import 'package:edtech_mobile/theme/colors.dart';
 import 'end_quiz_screen.dart';
 
@@ -38,6 +39,17 @@ class _VideoLessonScreenState extends State<VideoLessonScreen> {
   List<String> get _keywords {
     final raw = widget.lessonData['keywords'] ?? widget.lessonData['tags'] ?? [];
     return List<String>.from(raw.map((e) => e.toString()));
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    AiBehaviorTracker.trackLessonScreenOpened(
+      context,
+      nodeId: widget.nodeId,
+      screenName: 'video_lesson',
+      lessonType: widget.lessonType,
+    );
   }
 
   void _copyToClipboard(String text) {

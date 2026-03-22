@@ -539,7 +539,9 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
   /// Fetch lesson type contents for a node from the API and cache them
   void _fetchLessonTypesForNode(String nodeId) {
     if (_lessonTypeCache.containsKey(nodeId) ||
-        _lessonTypeFetching.contains(nodeId)) return;
+        _lessonTypeFetching.contains(nodeId)) {
+      return;
+    }
     _lessonTypeFetching.add(nodeId);
     final apiService = Provider.of<ApiService>(context, listen: false);
     apiService.getLessonTypeContents(nodeId).then((data) {
@@ -1311,8 +1313,9 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
       queryParts.add('nodeId=$existingNodeId');
       queryParts.add('existingLessonNodeId=$existingNodeId');
     }
-    if (existingLessonType != null)
+    if (existingLessonType != null) {
       queryParts.add('existingLessonType=$existingLessonType');
+    }
     final result = await context.push(
       '/lessons/create?${queryParts.join('&')}',
     );

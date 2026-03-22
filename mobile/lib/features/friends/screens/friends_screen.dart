@@ -91,18 +91,21 @@ class _FriendsScreenState extends State<FriendsScreen>
       backgroundColor: AppColors.bgPrimary,
       appBar: AppBar(
         backgroundColor: AppColors.bgSecondary,
-        title: const Text('Ban be', style: TextStyle(color: AppColors.textPrimary)),
+        title: const Text('Ban be',
+            style: TextStyle(color: AppColors.textPrimary)),
         actions: [
           IconButton(
             icon: const Icon(Icons.chat_rounded, color: AppColors.textPrimary),
             onPressed: () => context.push('/dm/conversations'),
           ),
           IconButton(
-            icon: const Icon(Icons.search_rounded, color: AppColors.textPrimary),
+            icon:
+                const Icon(Icons.search_rounded, color: AppColors.textPrimary),
             onPressed: _showSearchDialog,
           ),
           IconButton(
-            icon: const Icon(Icons.timeline_rounded, color: AppColors.textPrimary),
+            icon: const Icon(Icons.timeline_rounded,
+                color: AppColors.textPrimary),
             onPressed: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const _FriendActivityPage()),
@@ -115,27 +118,34 @@ class _FriendsScreenState extends State<FriendsScreen>
           labelColor: AppColors.purpleNeon,
           unselectedLabelColor: AppColors.textSecondary,
           tabs: [
-            const Tab(text: 'Danh sach', icon: Icon(Icons.people_rounded, size: 20)),
+            const Tab(
+                text: 'Danh sach', icon: Icon(Icons.people_rounded, size: 20)),
             Tab(
               icon: const Icon(Icons.mail_rounded, size: 20),
               child: _buildRequestsTabLabel(),
             ),
-            const Tab(text: 'Goi y', icon: Icon(Icons.person_add_rounded, size: 20)),
+            const Tab(
+                text: 'Goi y', icon: Icon(Icons.person_add_rounded, size: 20)),
           ],
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppColors.purpleNeon))
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.purpleNeon))
           : _error != null
               ? Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.error_outline, color: AppColors.errorNeon, size: 48),
+                      const Icon(Icons.error_outline,
+                          color: AppColors.errorNeon, size: 48),
                       const SizedBox(height: 16),
-                      Text(_error!, style: const TextStyle(color: AppColors.textSecondary)),
+                      Text(_error!,
+                          style:
+                              const TextStyle(color: AppColors.textSecondary)),
                       const SizedBox(height: 16),
-                      ElevatedButton(onPressed: _loadData, child: const Text('Thu lai')),
+                      ElevatedButton(
+                          onPressed: _loadData, child: const Text('Thu lai')),
                     ],
                   ),
                 )
@@ -167,7 +177,10 @@ class _FriendsScreenState extends State<FriendsScreen>
             ),
             child: Text(
               '$receivedCount',
-              style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold),
             ),
           ),
         ],
@@ -218,20 +231,28 @@ class _FriendsScreenState extends State<FriendsScreen>
           backgroundColor: AppColors.purpleNeon.withOpacity(0.2),
           child: Text(
             (name as String).isNotEmpty ? name[0].toUpperCase() : '?',
-            style: const TextStyle(color: AppColors.purpleNeon, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+                color: AppColors.purpleNeon, fontWeight: FontWeight.bold),
           ),
         ),
-        title: Text(name, style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w600)),
+        title: Text(name,
+            style: const TextStyle(
+                color: AppColors.textPrimary, fontWeight: FontWeight.w600)),
         subtitle: Row(
           children: [
-            Icon(Icons.trending_up_rounded, size: 14, color: AppColors.getLevelColor(level)),
+            Icon(Icons.trending_up_rounded,
+                size: 14, color: AppColors.getLevelColor(level)),
             const SizedBox(width: 4),
-            Text('Lv.$level', style: TextStyle(color: AppColors.getLevelColor(level), fontSize: 12)),
+            Text('Lv.$level',
+                style: TextStyle(
+                    color: AppColors.getLevelColor(level), fontSize: 12)),
             const SizedBox(width: 12),
             if (streak > 0) ...[
               const Text('🔥', style: TextStyle(fontSize: 12)),
               const SizedBox(width: 2),
-              Text('$streak ngay', style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+              Text('$streak ngay',
+                  style: const TextStyle(
+                      color: AppColors.textSecondary, fontSize: 12)),
             ],
           ],
         ),
@@ -239,10 +260,12 @@ class _FriendsScreenState extends State<FriendsScreen>
           mainAxisSize: MainAxisSize.min,
           children: [
             IconButton(
-              icon: const Icon(Icons.chat_bubble_outline_rounded, color: AppColors.cyanNeon),
+              icon: const Icon(Icons.chat_bubble_outline_rounded,
+                  color: AppColors.cyanNeon),
               onPressed: () {
                 final id = friend['id'] as String?;
-                if (id != null) context.push('/dm/chat/$id', extra: {'peerName': name});
+                if (id != null)
+                  context.push('/dm/chat/$id', extra: {'peerName': name});
               },
             ),
             PopupMenuButton<String>(
@@ -250,8 +273,14 @@ class _FriendsScreenState extends State<FriendsScreen>
               color: AppColors.bgTertiary,
               onSelected: (value) => _handleFriendAction(value, friend),
               itemBuilder: (_) => [
-                const PopupMenuItem(value: 'unfriend', child: Text('Huy ket ban', style: TextStyle(color: AppColors.errorNeon))),
-                const PopupMenuItem(value: 'block', child: Text('Chan nguoi dung', style: TextStyle(color: AppColors.errorNeon))),
+                const PopupMenuItem(
+                    value: 'unfriend',
+                    child: Text('Huy ket ban',
+                        style: TextStyle(color: AppColors.errorNeon))),
+                const PopupMenuItem(
+                    value: 'block',
+                    child: Text('Chan nguoi dung',
+                        style: TextStyle(color: AppColors.errorNeon))),
               ],
             ),
           ],
@@ -260,7 +289,8 @@ class _FriendsScreenState extends State<FriendsScreen>
     );
   }
 
-  Future<void> _handleFriendAction(String action, Map<String, dynamic> friend) async {
+  Future<void> _handleFriendAction(
+      String action, Map<String, dynamic> friend) async {
     final api = Provider.of<ApiService>(context, listen: false);
     final friendshipId = friend['friendshipId'] as String?;
     final userId = friend['id'] as String?;
@@ -301,15 +331,19 @@ class _FriendsScreenState extends State<FriendsScreen>
         padding: const EdgeInsets.all(16),
         children: [
           if (received.isNotEmpty) ...[
-            _buildSectionHeader('Loi moi nhan duoc', Icons.call_received_rounded, received.length),
+            _buildSectionHeader('Loi moi nhan duoc',
+                Icons.call_received_rounded, received.length),
             const SizedBox(height: 8),
-            ...received.map((r) => _buildReceivedRequestCard(r as Map<String, dynamic>)),
+            ...received.map(
+                (r) => _buildReceivedRequestCard(r as Map<String, dynamic>)),
             const SizedBox(height: 20),
           ],
           if (sent.isNotEmpty) ...[
-            _buildSectionHeader('Loi moi da gui', Icons.call_made_rounded, sent.length),
+            _buildSectionHeader(
+                'Loi moi da gui', Icons.call_made_rounded, sent.length),
             const SizedBox(height: 8),
-            ...sent.map((s) => _buildSentRequestCard(s as Map<String, dynamic>)),
+            ...sent
+                .map((s) => _buildSentRequestCard(s as Map<String, dynamic>)),
           ],
         ],
       ),
@@ -321,7 +355,11 @@ class _FriendsScreenState extends State<FriendsScreen>
       children: [
         Icon(icon, color: AppColors.purpleNeon, size: 18),
         const SizedBox(width: 8),
-        Text(title, style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 16)),
+        Text(title,
+            style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.bold,
+                fontSize: 16)),
         const Spacer(),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -329,7 +367,11 @@ class _FriendsScreenState extends State<FriendsScreen>
             color: AppColors.purpleNeon.withOpacity(0.2),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Text('$count', style: const TextStyle(color: AppColors.purpleNeon, fontSize: 12, fontWeight: FontWeight.bold)),
+          child: Text('$count',
+              style: const TextStyle(
+                  color: AppColors.purpleNeon,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold)),
         ),
       ],
     );
@@ -354,7 +396,8 @@ class _FriendsScreenState extends State<FriendsScreen>
               backgroundColor: AppColors.cyanNeon.withOpacity(0.2),
               child: Text(
                 (name as String).isNotEmpty ? name[0].toUpperCase() : '?',
-                style: const TextStyle(color: AppColors.cyanNeon, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                    color: AppColors.cyanNeon, fontWeight: FontWeight.bold),
               ),
             ),
             const SizedBox(width: 12),
@@ -362,14 +405,21 @@ class _FriendsScreenState extends State<FriendsScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(name, style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w600)),
-                  Text('Lv.$level', style: TextStyle(color: AppColors.getLevelColor(level), fontSize: 12)),
+                  Text(name,
+                      style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.w600)),
+                  Text('Lv.$level',
+                      style: TextStyle(
+                          color: AppColors.getLevelColor(level), fontSize: 12)),
                 ],
               ),
             ),
-            _buildActionButton('Chap nhan', AppColors.successGlow, () => _acceptRequest(req['friendshipId'])),
+            _buildActionButton('Chap nhan', AppColors.successGlow,
+                () => _acceptRequest(req['friendshipId'])),
             const SizedBox(width: 8),
-            _buildActionButton('Tu choi', AppColors.errorGlow, () => _rejectRequest(req['friendshipId'])),
+            _buildActionButton('Tu choi', AppColors.errorGlow,
+                () => _rejectRequest(req['friendshipId'])),
           ],
         ),
       ),
@@ -395,7 +445,8 @@ class _FriendsScreenState extends State<FriendsScreen>
               backgroundColor: AppColors.orangeNeon.withOpacity(0.2),
               child: Text(
                 (name as String).isNotEmpty ? name[0].toUpperCase() : '?',
-                style: const TextStyle(color: AppColors.orangeNeon, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                    color: AppColors.orangeNeon, fontWeight: FontWeight.bold),
               ),
             ),
             const SizedBox(width: 12),
@@ -403,12 +454,18 @@ class _FriendsScreenState extends State<FriendsScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(name, style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w600)),
-                  Text('Lv.$level • Dang cho', style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                  Text(name,
+                      style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.w600)),
+                  Text('Lv.$level • Dang cho',
+                      style: const TextStyle(
+                          color: AppColors.textSecondary, fontSize: 12)),
                 ],
               ),
             ),
-            _buildActionButton('Huy', AppColors.textTertiary, () => _cancelRequest(req['friendshipId'])),
+            _buildActionButton('Huy', AppColors.textTertiary,
+                () => _cancelRequest(req['friendshipId'])),
           ],
         ),
       ),
@@ -426,7 +483,9 @@ class _FriendsScreenState extends State<FriendsScreen>
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: color.withOpacity(0.4)),
         ),
-        child: Text(label, style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.bold)),
+        child: Text(label,
+            style: TextStyle(
+                color: color, fontSize: 12, fontWeight: FontWeight.bold)),
       ),
     );
   }
@@ -434,7 +493,8 @@ class _FriendsScreenState extends State<FriendsScreen>
   Future<void> _acceptRequest(String? id) async {
     if (id == null) return;
     try {
-      await Provider.of<ApiService>(context, listen: false).acceptFriendRequest(id);
+      await Provider.of<ApiService>(context, listen: false)
+          .acceptFriendRequest(id);
       _showSnack('Da chap nhan loi moi!');
       _loadDataForTab(1);
       _loadDataForTab(0);
@@ -446,7 +506,8 @@ class _FriendsScreenState extends State<FriendsScreen>
   Future<void> _rejectRequest(String? id) async {
     if (id == null) return;
     try {
-      await Provider.of<ApiService>(context, listen: false).rejectFriendRequest(id);
+      await Provider.of<ApiService>(context, listen: false)
+          .rejectFriendRequest(id);
       _showSnack('Da tu choi loi moi');
       _loadDataForTab(1);
     } catch (e) {
@@ -457,7 +518,8 @@ class _FriendsScreenState extends State<FriendsScreen>
   Future<void> _cancelRequest(String? id) async {
     if (id == null) return;
     try {
-      await Provider.of<ApiService>(context, listen: false).cancelFriendRequest(id);
+      await Provider.of<ApiService>(context, listen: false)
+          .cancelFriendRequest(id);
       _showSnack('Da huy loi moi');
       _loadDataForTab(1);
     } catch (e) {
@@ -510,7 +572,8 @@ class _FriendsScreenState extends State<FriendsScreen>
               backgroundColor: AppColors.pinkNeon.withOpacity(0.2),
               child: Text(
                 (name as String).isNotEmpty ? name[0].toUpperCase() : '?',
-                style: const TextStyle(color: AppColors.pinkNeon, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                    color: AppColors.pinkNeon, fontWeight: FontWeight.bold),
               ),
             ),
             const SizedBox(width: 12),
@@ -518,22 +581,32 @@ class _FriendsScreenState extends State<FriendsScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(name, style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w600)),
+                  Text(name,
+                      style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.w600)),
                   Row(
                     children: [
-                      Text('Lv.$level', style: TextStyle(color: AppColors.getLevelColor(level), fontSize: 12)),
+                      Text('Lv.$level',
+                          style: TextStyle(
+                              color: AppColors.getLevelColor(level),
+                              fontSize: 12)),
                       if (mutual > 0) ...[
                         const SizedBox(width: 8),
-                        Icon(Icons.people_rounded, size: 12, color: AppColors.textSecondary),
+                        const Icon(Icons.people_rounded,
+                            size: 12, color: AppColors.textSecondary),
                         const SizedBox(width: 2),
-                        Text('$mutual ban chung', style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                        Text('$mutual ban chung',
+                            style: const TextStyle(
+                                color: AppColors.textSecondary, fontSize: 12)),
                       ],
                     ],
                   ),
                 ],
               ),
             ),
-            _buildActionButton('Ket ban', AppColors.purpleNeon, () => _sendRequest(s['id'])),
+            _buildActionButton(
+                'Ket ban', AppColors.purpleNeon, () => _sendRequest(s['id'])),
           ],
         ),
       ),
@@ -543,7 +616,8 @@ class _FriendsScreenState extends State<FriendsScreen>
   Future<void> _sendRequest(String? userId) async {
     if (userId == null) return;
     try {
-      await Provider.of<ApiService>(context, listen: false).sendFriendRequest(userId);
+      await Provider.of<ApiService>(context, listen: false)
+          .sendFriendRequest(userId);
       _showSnack('Da gui loi moi ket ban!');
       _loadDataForTab(2);
     } catch (e) {
@@ -581,7 +655,8 @@ class _FriendsScreenState extends State<FriendsScreen>
 
             return AlertDialog(
               backgroundColor: AppColors.bgSecondary,
-              title: const Text('Tim kiem nguoi dung', style: TextStyle(color: AppColors.textPrimary)),
+              title: const Text('Tim kiem nguoi dung',
+                  style: TextStyle(color: AppColors.textPrimary)),
               content: SizedBox(
                 width: double.maxFinite,
                 child: Column(
@@ -593,8 +668,10 @@ class _FriendsScreenState extends State<FriendsScreen>
                       style: const TextStyle(color: AppColors.textPrimary),
                       decoration: InputDecoration(
                         hintText: 'Nhap ten hoac email...',
-                        hintStyle: const TextStyle(color: AppColors.textTertiary),
-                        prefixIcon: const Icon(Icons.search, color: AppColors.textSecondary),
+                        hintStyle:
+                            const TextStyle(color: AppColors.textTertiary),
+                        prefixIcon: const Icon(Icons.search,
+                            color: AppColors.textSecondary),
                         filled: true,
                         fillColor: AppColors.bgTertiary,
                         border: OutlineInputBorder(
@@ -613,14 +690,16 @@ class _FriendsScreenState extends State<FriendsScreen>
                                 searchController.text.length < 2
                                     ? 'Nhap it nhat 2 ky tu'
                                     : 'Khong tim thay',
-                                style: const TextStyle(color: AppColors.textTertiary),
+                                style: const TextStyle(
+                                    color: AppColors.textTertiary),
                               ),
                             )
                           : ListView.builder(
                               itemCount: results.length,
                               itemBuilder: (_, i) {
                                 final u = results[i] as Map<String, dynamic>;
-                                return _buildSearchResultTile(u, setDialogState, results);
+                                return _buildSearchResultTile(
+                                    u, setDialogState, results);
                               },
                             ),
                     ),
@@ -633,7 +712,8 @@ class _FriendsScreenState extends State<FriendsScreen>
                     debounce?.cancel();
                     Navigator.pop(ctx);
                   },
-                  child: const Text('Dong', style: TextStyle(color: AppColors.textSecondary)),
+                  child: const Text('Dong',
+                      style: TextStyle(color: AppColors.textSecondary)),
                 ),
               ],
             );
@@ -643,7 +723,8 @@ class _FriendsScreenState extends State<FriendsScreen>
     );
   }
 
-  Widget _buildSearchResultTile(Map<String, dynamic> u, StateSetter setDialogState, List<dynamic> results) {
+  Widget _buildSearchResultTile(Map<String, dynamic> u,
+      StateSetter setDialogState, List<dynamic> results) {
     final name = u['fullName'] ?? u['email'] ?? 'User';
     final level = u['level'] ?? 1;
     final status = u['friendshipStatus'];
@@ -659,7 +740,8 @@ class _FriendsScreenState extends State<FriendsScreen>
     } else if (status == 'pending') {
       final isRequester = u['isRequester'] == true;
       actionLabel = isRequester ? 'Da gui' : 'Chap nhan';
-      actionColor = isRequester ? AppColors.textTertiary : AppColors.successGlow;
+      actionColor =
+          isRequester ? AppColors.textTertiary : AppColors.successGlow;
       onAction = isRequester
           ? null
           : () async {
@@ -681,7 +763,8 @@ class _FriendsScreenState extends State<FriendsScreen>
       actionColor = AppColors.purpleNeon;
       onAction = () async {
         try {
-          await Provider.of<ApiService>(context, listen: false).sendFriendRequest(u['id']);
+          await Provider.of<ApiService>(context, listen: false)
+              .sendFriendRequest(u['id']);
           _showSnack('Da gui loi moi!');
           final api = Provider.of<ApiService>(context, listen: false);
           final r = await api.searchUsers(u['fullName'] ?? '');
@@ -705,20 +788,26 @@ class _FriendsScreenState extends State<FriendsScreen>
           backgroundColor: AppColors.cyanNeon.withOpacity(0.2),
           child: Text(
             (name as String).isNotEmpty ? name[0].toUpperCase() : '?',
-            style: const TextStyle(color: AppColors.cyanNeon, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+                color: AppColors.cyanNeon, fontWeight: FontWeight.bold),
           ),
         ),
-        title: Text(name, style: const TextStyle(color: AppColors.textPrimary, fontSize: 14)),
-        subtitle: Text('Lv.$level', style: TextStyle(color: AppColors.getLevelColor(level), fontSize: 12)),
+        title: Text(name,
+            style: const TextStyle(color: AppColors.textPrimary, fontSize: 14)),
+        subtitle: Text('Lv.$level',
+            style:
+                TextStyle(color: AppColors.getLevelColor(level), fontSize: 12)),
         trailing: onAction != null
             ? _buildActionButton(actionLabel, actionColor, onAction)
             : Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: actionColor.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Text(actionLabel, style: TextStyle(color: actionColor, fontSize: 11)),
+                child: Text(actionLabel,
+                    style: TextStyle(color: actionColor, fontSize: 11)),
               ),
       ),
     );
@@ -781,11 +870,13 @@ class _FriendActivityPageState extends State<_FriendActivityPage> {
       backgroundColor: AppColors.bgPrimary,
       appBar: AppBar(
         backgroundColor: AppColors.bgSecondary,
-        title: const Text('Hoat dong ban be', style: TextStyle(color: AppColors.textPrimary)),
+        title: const Text('Hoat dong ban be',
+            style: TextStyle(color: AppColors.textPrimary)),
         iconTheme: const IconThemeData(color: AppColors.textPrimary),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppColors.purpleNeon))
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.purpleNeon))
           : _activities.isEmpty
               ? const EmptyStateWidget(
                   icon: Icons.timeline_rounded,
@@ -797,7 +888,8 @@ class _FriendActivityPageState extends State<_FriendActivityPage> {
                   color: AppColors.purpleNeon,
                   child: ListView.builder(
                     padding: const EdgeInsets.all(16),
-                    itemCount: _activities.length + (_total > _activities.length ? 1 : 0),
+                    itemCount: _activities.length +
+                        (_total > _activities.length ? 1 : 0),
                     itemBuilder: (context, index) {
                       if (index == _activities.length) {
                         return Center(
@@ -806,7 +898,8 @@ class _FriendActivityPageState extends State<_FriendActivityPage> {
                               _page++;
                               _loadMore();
                             },
-                            child: const Text('Xem them', style: TextStyle(color: AppColors.purpleNeon)),
+                            child: const Text('Xem them',
+                                style: TextStyle(color: AppColors.purpleNeon)),
                           ),
                         );
                       }
@@ -856,7 +949,8 @@ class _FriendActivityPageState extends State<_FriendActivityPage> {
               color: AppColors.purpleNeon.withOpacity(0.15),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Center(child: Text(icon, style: const TextStyle(fontSize: 18))),
+            child:
+                Center(child: Text(icon, style: const TextStyle(fontSize: 18))),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -866,14 +960,24 @@ class _FriendActivityPageState extends State<_FriendActivityPage> {
                 RichText(
                   text: TextSpan(
                     children: [
-                      TextSpan(text: '$name ', style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 13)),
-                      TextSpan(text: desc, style: const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+                      TextSpan(
+                          text: '$name ',
+                          style: const TextStyle(
+                              color: AppColors.textPrimary,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13)),
+                      TextSpan(
+                          text: desc,
+                          style: const TextStyle(
+                              color: AppColors.textSecondary, fontSize: 13)),
                     ],
                   ),
                 ),
                 if (createdAt != null) ...[
                   const SizedBox(height: 4),
-                  Text(_timeAgo(createdAt), style: const TextStyle(color: AppColors.textTertiary, fontSize: 11)),
+                  Text(_timeAgo(createdAt),
+                      style: const TextStyle(
+                          color: AppColors.textTertiary, fontSize: 11)),
                 ],
               ],
             ),

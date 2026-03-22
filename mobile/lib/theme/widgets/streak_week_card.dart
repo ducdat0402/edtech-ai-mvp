@@ -98,7 +98,7 @@ class StreakWeekCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Text('🔥', style: TextStyle(fontSize: 22, height: 1)),
+              const Text('🔥', style: TextStyle(fontSize: 22, height: 1)),
               const SizedBox(width: 8),
               Text(
                 'CHUỖI NGÀY HỌC',
@@ -116,7 +116,8 @@ class StreakWeekCard extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppColors.bgSecondary.withOpacity(0.6),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.borderPrimary.withOpacity(0.5)),
+              border:
+                  Border.all(color: AppColors.borderPrimary.withOpacity(0.5)),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -133,8 +134,11 @@ class StreakWeekCard extends StatelessWidget {
                     Text(
                       dayLabels[i],
                       style: AppTextStyles.caption.copyWith(
-                        color: hasFire ? AppColors.streakOrange : AppColors.textTertiary,
-                        fontWeight: hasFire ? FontWeight.w600 : FontWeight.normal,
+                        color: hasFire
+                            ? AppColors.streakOrange
+                            : AppColors.textTertiary,
+                        fontWeight:
+                            hasFire ? FontWeight.w600 : FontWeight.normal,
                       ),
                     ),
                   ],
@@ -145,22 +149,26 @@ class StreakWeekCard extends StatelessWidget {
           const SizedBox(height: 20),
           Row(
             children: [
-              Icon(Icons.local_fire_department_rounded, color: AppColors.streakOrange, size: 20),
+              const Icon(Icons.local_fire_department_rounded,
+                  color: AppColors.streakOrange, size: 20),
               const SizedBox(width: 8),
               Text(
                 'Chuỗi hiện tại: $currentStreak ngày',
-                style: AppTextStyles.labelLarge.copyWith(color: AppColors.textPrimary),
+                style: AppTextStyles.labelLarge
+                    .copyWith(color: AppColors.textPrimary),
               ),
             ],
           ),
           const SizedBox(height: 8),
           Row(
             children: [
-              Icon(Icons.emoji_events_rounded, color: AppColors.streakYellow, size: 20),
+              const Icon(Icons.emoji_events_rounded,
+                  color: AppColors.streakYellow, size: 20),
               const SizedBox(width: 8),
               Text(
                 'Chuỗi cao nhất: ${maxStreak > 0 ? maxStreak : currentStreak} ngày',
-                style: AppTextStyles.labelLarge.copyWith(color: AppColors.textPrimary),
+                style: AppTextStyles.labelLarge
+                    .copyWith(color: AppColors.textPrimary),
               ),
             ],
           ),
@@ -170,11 +178,12 @@ class StreakWeekCard extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppColors.streakOrange.withOpacity(0.12),
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppColors.streakOrange.withOpacity(0.25)),
+              border:
+                  Border.all(color: AppColors.streakOrange.withOpacity(0.25)),
             ),
             child: Row(
               children: [
-                Text('💡', style: TextStyle(fontSize: 18)),
+                const Text('💡', style: TextStyle(fontSize: 18)),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -191,11 +200,13 @@ class StreakWeekCard extends StatelessWidget {
           const SizedBox(height: 12),
           Row(
             children: [
-              Icon(Icons.schedule_rounded, color: AppColors.textSecondary, size: 18),
+              const Icon(Icons.schedule_rounded,
+                  color: AppColors.textSecondary, size: 18),
               const SizedBox(width: 6),
               Text(
                 'Còn ${_getTimeLeftUntilMidnight()}',
-                style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+                style: AppTextStyles.caption
+                    .copyWith(color: AppColors.textSecondary),
               ),
             ],
           ),

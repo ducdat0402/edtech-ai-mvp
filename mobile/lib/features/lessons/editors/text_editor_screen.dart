@@ -984,8 +984,9 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
         ),
       );
     } finally {
-      if (mounted)
+      if (mounted) {
         setState(() => _generatingInlineQuizExplanations.remove(quizIndex));
+      }
     }
   }
 

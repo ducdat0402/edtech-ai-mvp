@@ -39,7 +39,8 @@ class _WorldChatScreenState extends State<WorldChatScreen>
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(_onTabChanged);
     _loadMessages();
-    _pollTimer = Timer.periodic(const Duration(seconds: 4), (_) => _pollNewMessages());
+    _pollTimer =
+        Timer.periodic(const Duration(seconds: 4), (_) => _pollNewMessages());
     _loadCurrentUser();
   }
 
@@ -64,10 +65,12 @@ class _WorldChatScreenState extends State<WorldChatScreen>
     try {
       final api = Provider.of<ApiService>(context, listen: false);
       final list = await api.getDmConversations();
-      if (mounted) setState(() {
-        _conversations = list;
-        _conversationsLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _conversations = list;
+          _conversationsLoading = false;
+        });
+      }
     } catch (_) {
       if (mounted) setState(() => _conversationsLoading = false);
     }
@@ -185,8 +188,10 @@ class _WorldChatScreenState extends State<WorldChatScreen>
     final selection = _messageController.selection;
     final start = selection.start.clamp(0, text.length);
     final end = selection.end.clamp(0, text.length);
-    _messageController.text = text.substring(0, start) + emoji + text.substring(end);
-    _messageController.selection = TextSelection.collapsed(offset: start + emoji.length);
+    _messageController.text =
+        text.substring(0, start) + emoji + text.substring(end);
+    _messageController.selection =
+        TextSelection.collapsed(offset: start + emoji.length);
   }
 
   Future<void> _deleteMessage(String messageId) async {
@@ -202,7 +207,9 @@ class _WorldChatScreenState extends State<WorldChatScreen>
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_extractError(e)), backgroundColor: Colors.red.shade700),
+          SnackBar(
+              content: Text(_extractError(e)),
+              backgroundColor: Colors.red.shade700),
         );
       }
     }
@@ -233,8 +240,10 @@ class _WorldChatScreenState extends State<WorldChatScreen>
     }
 
     result.sort((a, b) {
-      final ta = DateTime.tryParse(a['createdAt'] as String? ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0);
-      final tb = DateTime.tryParse(b['createdAt'] as String? ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0);
+      final ta = DateTime.tryParse(a['createdAt'] as String? ?? '') ??
+          DateTime.fromMillisecondsSinceEpoch(0);
+      final tb = DateTime.tryParse(b['createdAt'] as String? ?? '') ??
+          DateTime.fromMillisecondsSinceEpoch(0);
       return ta.compareTo(tb);
     });
 
@@ -257,7 +266,8 @@ class _WorldChatScreenState extends State<WorldChatScreen>
           children: [
             const Icon(Icons.chat_rounded, color: AppColors.cyanNeon, size: 22),
             const SizedBox(width: 8),
-            Text('Chat', style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
+            Text('Chat',
+                style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
             if (_tabController.index == 0) ...[
               const SizedBox(width: 10),
               Container(
@@ -272,12 +282,16 @@ class _WorldChatScreenState extends State<WorldChatScreen>
                     Container(
                       width: 7,
                       height: 7,
-                      decoration: const BoxDecoration(color: AppColors.successNeon, shape: BoxShape.circle),
+                      decoration: const BoxDecoration(
+                          color: AppColors.successNeon, shape: BoxShape.circle),
                     ),
                     const SizedBox(width: 5),
                     Text(
                       '$_onlineCount',
-                      style: const TextStyle(color: AppColors.successNeon, fontSize: 12, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                          color: AppColors.successNeon,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
@@ -295,7 +309,9 @@ class _WorldChatScreenState extends State<WorldChatScreen>
           labelColor: AppColors.cyanNeon,
           unselectedLabelColor: AppColors.textSecondary,
           tabs: const [
-            Tab(text: 'Chat thế giới', icon: Icon(Icons.public_rounded, size: 20)),
+            Tab(
+                text: 'Chat thế giới',
+                icon: Icon(Icons.public_rounded, size: 20)),
             Tab(text: 'Bạn bè', icon: Icon(Icons.people_rounded, size: 20)),
           ],
         ),
@@ -315,23 +331,29 @@ class _WorldChatScreenState extends State<WorldChatScreen>
       children: [
         Expanded(
           child: _isLoading
-              ? const Center(child: CircularProgressIndicator(color: AppColors.cyanNeon))
+              ? const Center(
+                  child: CircularProgressIndicator(color: AppColors.cyanNeon))
               : _messages.isEmpty
-                  ? Center(
+                  ? const Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.chat_bubble_outline_rounded, size: 56, color: AppColors.textTertiary),
-                          const SizedBox(height: 12),
-                          Text('Chưa có tin nhắn', style: TextStyle(color: AppColors.textSecondary)),
-                          const SizedBox(height: 4),
-                          Text('Hãy là người đầu tiên!', style: TextStyle(color: AppColors.textTertiary, fontSize: 13)),
+                          Icon(Icons.chat_bubble_outline_rounded,
+                              size: 56, color: AppColors.textTertiary),
+                          SizedBox(height: 12),
+                          Text('Chưa có tin nhắn',
+                              style: TextStyle(color: AppColors.textSecondary)),
+                          SizedBox(height: 4),
+                          Text('Hãy là người đầu tiên!',
+                              style: TextStyle(
+                                  color: AppColors.textTertiary, fontSize: 13)),
                         ],
                       ),
                     )
                   : ListView.builder(
                       controller: _scrollController,
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
                       itemCount: _messages.length,
                       itemBuilder: (context, index) {
                         final msg = _messages[index];
@@ -349,7 +371,8 @@ class _WorldChatScreenState extends State<WorldChatScreen>
 
   Widget _buildFriendsChatTab() {
     if (_conversationsLoading) {
-      return const Center(child: CircularProgressIndicator(color: AppColors.purpleNeon));
+      return const Center(
+          child: CircularProgressIndicator(color: AppColors.purpleNeon));
     }
     if (_conversations.isEmpty) {
       return const EmptyStateWidget(
@@ -386,12 +409,14 @@ class _WorldChatScreenState extends State<WorldChatScreen>
         border: Border.all(color: AppColors.borderPrimary),
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         leading: CircleAvatar(
           backgroundColor: AppColors.purpleNeon.withOpacity(0.2),
           child: Text(
             peerName.isNotEmpty ? peerName[0].toUpperCase() : '?',
-            style: const TextStyle(color: AppColors.purpleNeon, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+                color: AppColors.purpleNeon, fontWeight: FontWeight.bold),
           ),
         ),
         title: Text(
@@ -406,7 +431,8 @@ class _WorldChatScreenState extends State<WorldChatScreen>
                 last['content'] as String? ?? '',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                style: const TextStyle(
+                    color: AppColors.textSecondary, fontSize: 13),
               )
             : const Text(
                 'Nhắn tin...',
@@ -421,27 +447,35 @@ class _WorldChatScreenState extends State<WorldChatScreen>
                 ),
                 child: Text(
                   unread > 99 ? '99+' : '$unread',
-                  style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold),
                 ),
               )
             : null,
-        onTap: () => context.push('/dm/chat/$peerId', extra: {'peerName': peerName}),
+        onTap: () =>
+            context.push('/dm/chat/$peerId', extra: {'peerName': peerName}),
       ),
     );
   }
 
-  void _showMessageActions(BuildContext context, Map<String, dynamic> msg, bool isMe) {
+  void _showMessageActions(
+      BuildContext context, Map<String, dynamic> msg, bool isMe) {
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: AppColors.bgSecondary,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
       builder: (ctx) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.reply_rounded, color: AppColors.cyanNeon),
-              title: const Text('Trả lời', style: TextStyle(color: AppColors.textPrimary)),
+              leading:
+                  const Icon(Icons.reply_rounded, color: AppColors.cyanNeon),
+              title: const Text('Trả lời',
+                  style: TextStyle(color: AppColors.textPrimary)),
               onTap: () {
                 Navigator.pop(ctx);
                 setState(() {
@@ -456,8 +490,10 @@ class _WorldChatScreenState extends State<WorldChatScreen>
             ),
             if (isMe)
               ListTile(
-                leading: const Icon(Icons.delete_outline_rounded, color: AppColors.pinkNeon),
-                title: const Text('Xóa tin nhắn', style: TextStyle(color: AppColors.textPrimary)),
+                leading: const Icon(Icons.delete_outline_rounded,
+                    color: AppColors.pinkNeon),
+                title: const Text('Xóa tin nhắn',
+                    style: TextStyle(color: AppColors.textPrimary)),
                 onTap: () {
                   Navigator.pop(ctx);
                   _confirmDelete(msg['id'] as String);
@@ -474,13 +510,18 @@ class _WorldChatScreenState extends State<WorldChatScreen>
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.bgSecondary,
-        title: const Text('Xóa tin nhắn?', style: TextStyle(color: AppColors.textPrimary)),
-        content: const Text('Tin nhắn sẽ bị xóa vĩnh viễn.', style: TextStyle(color: AppColors.textSecondary)),
+        title: const Text('Xóa tin nhắn?',
+            style: TextStyle(color: AppColors.textPrimary)),
+        content: const Text('Tin nhắn sẽ bị xóa vĩnh viễn.',
+            style: TextStyle(color: AppColors.textSecondary)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Hủy')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Hủy')),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Xóa', style: TextStyle(color: AppColors.pinkNeon)),
+            child:
+                const Text('Xóa', style: TextStyle(color: AppColors.pinkNeon)),
           ),
         ],
       ),
@@ -489,15 +530,18 @@ class _WorldChatScreenState extends State<WorldChatScreen>
     });
   }
 
-  Widget _buildMessageBubble(Map<String, dynamic> msg, bool isMe, bool showAvatar) {
+  Widget _buildMessageBubble(
+      Map<String, dynamic> msg, bool isMe, bool showAvatar) {
     final username = msg['username'] as String? ?? 'Anonymous';
     final message = msg['message'] as String? ?? '';
     final level = msg['userLevel'] as int? ?? 1;
     final createdAt = msg['createdAt'] as String?;
     final time = _formatTime(createdAt);
     final replyTo = msg['replyTo'];
-    final replyUsername = replyTo is Map ? (replyTo['username'] as String? ?? '') : '';
-    final replySnippet = replyTo is Map ? (replyTo['message'] as String? ?? '') : '';
+    final replyUsername =
+        replyTo is Map ? (replyTo['username'] as String? ?? '') : '';
+    final replySnippet =
+        replyTo is Map ? (replyTo['message'] as String? ?? '') : '';
 
     return Padding(
       padding: EdgeInsets.only(
@@ -506,7 +550,8 @@ class _WorldChatScreenState extends State<WorldChatScreen>
         right: isMe ? 0 : 48,
       ),
       child: Column(
-        crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        crossAxisAlignment:
+            isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
           if (showAvatar && !isMe)
             Padding(
@@ -524,14 +569,18 @@ class _WorldChatScreenState extends State<WorldChatScreen>
                   ),
                   const SizedBox(width: 6),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                     decoration: BoxDecoration(
                       color: AppColors.purpleNeon.withOpacity(0.15),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
                       'Lv.$level',
-                      style: const TextStyle(color: AppColors.purpleNeon, fontSize: 10, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                          color: AppColors.purpleNeon,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold),
                     ),
                   ),
                 ],
@@ -542,7 +591,9 @@ class _WorldChatScreenState extends State<WorldChatScreen>
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
-                color: isMe ? AppColors.cyanNeon.withOpacity(0.15) : AppColors.bgSecondary,
+                color: isMe
+                    ? AppColors.cyanNeon.withOpacity(0.15)
+                    : AppColors.bgSecondary,
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(16),
                   topRight: const Radius.circular(16),
@@ -550,7 +601,9 @@ class _WorldChatScreenState extends State<WorldChatScreen>
                   bottomRight: Radius.circular(isMe ? 4 : 16),
                 ),
                 border: Border.all(
-                  color: isMe ? AppColors.cyanNeon.withOpacity(0.25) : AppColors.borderPrimary,
+                  color: isMe
+                      ? AppColors.cyanNeon.withOpacity(0.25)
+                      : AppColors.borderPrimary,
                 ),
               ),
               child: Column(
@@ -561,7 +614,10 @@ class _WorldChatScreenState extends State<WorldChatScreen>
                       padding: const EdgeInsets.only(bottom: 8),
                       margin: const EdgeInsets.only(bottom: 8),
                       decoration: BoxDecoration(
-                        border: Border(left: BorderSide(color: AppColors.cyanNeon.withOpacity(0.6), width: 3)),
+                        border: Border(
+                            left: BorderSide(
+                                color: AppColors.cyanNeon.withOpacity(0.6),
+                                width: 3)),
                       ),
                       child: Align(
                         alignment: Alignment.centerLeft,
@@ -570,7 +626,7 @@ class _WorldChatScreenState extends State<WorldChatScreen>
                           children: [
                             Text(
                               replyUsername,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 color: AppColors.cyanNeon,
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
@@ -578,8 +634,11 @@ class _WorldChatScreenState extends State<WorldChatScreen>
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              replySnippet.length > 60 ? '${replySnippet.substring(0, 60)}...' : replySnippet,
-                              style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                              replySnippet.length > 60
+                                  ? '${replySnippet.substring(0, 60)}...'
+                                  : replySnippet,
+                              style: const TextStyle(
+                                  color: AppColors.textSecondary, fontSize: 12),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -590,7 +649,7 @@ class _WorldChatScreenState extends State<WorldChatScreen>
                   ],
                   Text(
                     message,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 14.5,
                       height: 1.35,
@@ -599,7 +658,8 @@ class _WorldChatScreenState extends State<WorldChatScreen>
                   const SizedBox(height: 4),
                   Text(
                     time,
-                    style: TextStyle(color: AppColors.textTertiary, fontSize: 10),
+                    style: const TextStyle(
+                        color: AppColors.textTertiary, fontSize: 10),
                   ),
                 ],
               ),
@@ -612,7 +672,7 @@ class _WorldChatScreenState extends State<WorldChatScreen>
 
   Widget _buildInputBar() {
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: AppColors.bgSecondary,
         border: Border(top: BorderSide(color: AppColors.borderPrimary)),
       ),
@@ -625,7 +685,8 @@ class _WorldChatScreenState extends State<WorldChatScreen>
               color: AppColors.bgTertiary.withOpacity(0.5),
               child: Row(
                 children: [
-                  Icon(Icons.reply_rounded, size: 18, color: AppColors.cyanNeon),
+                  const Icon(Icons.reply_rounded,
+                      size: 18, color: AppColors.cyanNeon),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Column(
@@ -634,13 +695,17 @@ class _WorldChatScreenState extends State<WorldChatScreen>
                       children: [
                         Text(
                           _replyTo!['username'] as String? ?? '',
-                          style: TextStyle(color: AppColors.cyanNeon, fontSize: 12, fontWeight: FontWeight.w600),
+                          style: const TextStyle(
+                              color: AppColors.cyanNeon,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600),
                         ),
                         Text(
                           (_replyTo!['message'] as String? ?? '').length > 50
                               ? '${(_replyTo!['message'] as String).substring(0, 50)}...'
                               : (_replyTo!['message'] as String? ?? ''),
-                          style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                          style: const TextStyle(
+                              color: AppColors.textSecondary, fontSize: 12),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -667,10 +732,13 @@ class _WorldChatScreenState extends State<WorldChatScreen>
               children: [
                 IconButton(
                   icon: Icon(
-                    _showEmojiBar ? Icons.keyboard_rounded : Icons.emoji_emotions_outlined,
+                    _showEmojiBar
+                        ? Icons.keyboard_rounded
+                        : Icons.emoji_emotions_outlined,
                     color: AppColors.cyanNeon,
                   ),
-                  onPressed: () => setState(() => _showEmojiBar = !_showEmojiBar),
+                  onPressed: () =>
+                      setState(() => _showEmojiBar = !_showEmojiBar),
                 ),
                 Expanded(
                   child: Container(
@@ -681,12 +749,13 @@ class _WorldChatScreenState extends State<WorldChatScreen>
                     ),
                     child: TextField(
                       controller: _messageController,
-                      style: const TextStyle(color: AppColors.textPrimary, fontSize: 15),
-                      decoration: InputDecoration(
+                      style: const TextStyle(
+                          color: AppColors.textPrimary, fontSize: 15),
+                      decoration: const InputDecoration(
                         hintText: 'Nhập tin nhắn...',
                         hintStyle: TextStyle(color: AppColors.textTertiary),
                         border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                        contentPadding: EdgeInsets.symmetric(vertical: 12),
                       ),
                       maxLines: 3,
                       minLines: 1,
@@ -702,7 +771,9 @@ class _WorldChatScreenState extends State<WorldChatScreen>
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
-                      color: _isSending ? AppColors.bgTertiary : AppColors.cyanNeon,
+                      color: _isSending
+                          ? AppColors.bgTertiary
+                          : AppColors.cyanNeon,
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
