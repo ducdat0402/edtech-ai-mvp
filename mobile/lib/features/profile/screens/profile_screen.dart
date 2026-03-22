@@ -494,7 +494,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   'Gửi view / quiz / complete để DRL & ITS có ngữ cảnh. Tắt = không gửi tracking mới.',
                 ),
                 value: AiUserPreferences.instance.behaviorTrackingEnabled,
-                activeThumbColor: _accentColor,
                 onChanged: (v) async {
                   await AiUserPreferences.instance
                       .setBehaviorTrackingEnabled(v);
@@ -507,7 +506,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   'Coach AI, mastery, gợi ý quiz, lộ trình LangChain (API + OpenAI).',
                 ),
                 value: AiUserPreferences.instance.cloudAiEnabled,
-                activeThumbColor: _accentColor,
                 onChanged: (v) async {
                   await AiUserPreferences.instance.setCloudAiEnabled(v);
                 },
