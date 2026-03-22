@@ -310,6 +310,11 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
     }
   }
 
+  /// Coach AI (LangChain + hành vi) — cùng môn với lộ trình cá nhân.
+  void _navigateToAiCoach() {
+    context.push('/subjects/${widget.subjectId}/ai-coach');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -333,9 +338,21 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
                   _checkAndLoadMindMap();
                 } else if (value == 'recreate') {
                   _recreateMindMap();
+                } else if (value == 'coach') {
+                  _navigateToAiCoach();
                 }
               },
               itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: 'coach',
+                  child: Row(
+                    children: [
+                      Icon(Icons.insights, size: 20, color: Colors.deepPurple),
+                      SizedBox(width: 8),
+                      Text('Coach AI / Kế hoạch học'),
+                    ],
+                  ),
+                ),
                 const PopupMenuItem(
                   value: 'refresh',
                   child: Row(
@@ -893,6 +910,46 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
                 ],
               ),
             ],
+          ),
+        ),
+        Material(
+          color: Colors.deepPurple.shade50,
+          child: InkWell(
+            onTap: _navigateToAiCoach,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  Icon(Icons.auto_awesome, color: Colors.deepPurple.shade700),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Coach AI / Kế hoạch học',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.deepPurple.shade900,
+                            fontSize: 15,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Gợi ý theo quiz & tiến độ — bổ sung cho lộ trình chủ đề của bạn',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.deepPurple.shade700,
+                            height: 1.25,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(Icons.chevron_right, color: Colors.deepPurple.shade400),
+                ],
+              ),
+            ),
           ),
         ),
         Expanded(

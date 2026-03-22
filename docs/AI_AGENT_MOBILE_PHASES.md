@@ -54,7 +54,10 @@
 | `GET /ai-agents/behavior/strengths-weaknesses` | `getAiStrengthsWeaknesses` |
 | `GET /ai-agents/its/should-skip/:nodeId` | `getAiShouldSkipTopic` *(sẵn cho tích hợp thêm)* |
 
-**UI:** màn `AiLearningCoachScreen` — route `/subjects/:id/ai-coach`. Vào từ icon **biểu đồ** trên AppBar màn **Danh sách chương** (`DomainsListScreen`).
+**UI:** màn `AiLearningCoachScreen` — route `/subjects/:id/ai-coach`.
+
+- **Luồng chính theo mục tiêu sản phẩm:** gắn với **lộ trình cá nhân** — màn **Chọn cách tạo lộ trình** (`LearningPathChoiceScreen`, mục *Bổ sung cho lộ trình / Coach AI*) và màn **Lộ trình của bạn** (`PersonalMindMapScreen`: banner + menu ⋮).
+- **Lối tắt:** icon **biểu đồ** trên AppBar **Danh sách chương** (`DomainsListScreen`) và Quick Action **Coach AI** trên **Dashboard**.
 
 - Chọn **7 / 14 / 30 ngày** (mặc định 14; 30 ngày có thể rất chậm do vòng lặp backend).
 - Ô mục tiêu → **Tạo lộ trình AI** → hiển thị `summary`, `confidence`, danh sách bước (mở `/nodes/:id`).

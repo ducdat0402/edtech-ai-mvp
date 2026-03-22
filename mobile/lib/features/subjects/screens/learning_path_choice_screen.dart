@@ -195,6 +195,51 @@ class _LearningPathChoiceScreenState extends State<LearningPathChoiceScreen> {
               },
             ),
 
+            const SizedBox(height: 28),
+
+            Text(
+              'Bổ sung cho lộ trình (Coach AI)',
+              style: AppTextStyles.labelLarge.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Gắn với môn này: xem tiến độ/quiz, gợi ý ITS/DRL và tạo kế hoạch học ngắn hạn — không thay thế chat hay bài test phía trên.',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.textTertiary,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            _buildOptionCard(
+              context,
+              title: 'Coach AI / Kế hoạch học',
+              subtitle:
+                  'Theo dõi & gợi ý dựa trên hành vi học (quiz, bài học)',
+              description:
+                  'Mở cùng môn đã chọn: phân tích lỗi quiz, điểm mạnh/yếu, gợi ý bước tiếp theo và kế hoạch 7–14 ngày (LangChain). Dùng song song với lộ trình chủ đề từ chat hoặc bài kiểm tra.',
+              icon: Icons.insights_rounded,
+              gradient: [AppColors.orangeNeon, AppColors.pinkNeon],
+              duration: '2–5 phút',
+              features: [
+                'Gắn với tiến độ thật',
+                'Tôn trọng quyền riêng tư (Hồ sơ)',
+                'Mở từ đây hoặc từ màn Lộ trình của bạn',
+              ],
+              onTap: () {
+                HapticFeedback.lightImpact();
+                final name = widget.subjectName ?? '';
+                final q = name.isEmpty
+                    ? ''
+                    : '?name=${Uri.encodeComponent(name)}';
+                context.push(
+                  '/subjects/${widget.subjectId}/ai-coach$q',
+                );
+              },
+            ),
+
             const SizedBox(height: 32),
 
             // Info note
@@ -219,7 +264,7 @@ class _LearningPathChoiceScreenState extends State<LearningPathChoiceScreen> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      'Bạn có thể thay đổi lộ trình sau bằng cách làm lại bài test hoặc chat với AI.',
+                      'Bạn có thể thay đổi lộ trình sau bằng cách làm lại bài test hoặc chat với AI. Coach AI (kế hoạch theo tiến độ) mở từ khối bên trên hoặc từ màn Lộ trình của bạn.',
                       style: AppTextStyles.bodySmall.copyWith(
                         color: AppColors.textSecondary,
                         height: 1.4,
