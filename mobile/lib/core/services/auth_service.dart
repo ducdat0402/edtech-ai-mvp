@@ -229,12 +229,13 @@ class AuthService {
         
         if (token != null && token.toString().isNotEmpty) {
           await _apiClient.saveToken(token.toString());
-          
+          _onAuthSuccess();
+
           if (kDebugMode) {
             debugPrint('[AuthService] Token saved successfully');
             debugPrint('[AuthService] User data: ${dataMap['user']}');
           }
-          
+
           return {
             'success': true,
             'token': token.toString(),
