@@ -17,6 +17,7 @@ class ApiConstants {
 
   // Dashboard
   static const String dashboard = '/dashboard';
+  static const String dashboardSummary = '/dashboard/summary';
 
   // Subjects
   static const String explorerSubjects = '/subjects/explorer';

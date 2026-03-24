@@ -10,6 +10,7 @@ import { GenerationProgressService } from './generation-progress.service';
 import { LessonTypeContentsModule } from '../lesson-type-contents/lesson-type-contents.module';
 import { UserCurrencyModule } from '../user-currency/user-currency.module';
 import { UnlockTransactionsModule } from '../unlock-transactions/unlock-transactions.module';
+import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { UnlockTransactionsModule } from '../unlock-transactions/unlock-transact
     LessonTypeContentsModule,
     UserCurrencyModule,
     forwardRef(() => UnlockTransactionsModule),
+    UsersModule,
   ],
   controllers: [LearningNodesController],
   providers: [LearningNodesService, LessonContentService, GenerationProgressService],

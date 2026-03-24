@@ -12,6 +12,7 @@ import {
   validateEndQuiz,
 } from './dto/lesson-content.dto';
 import { LessonTypeContentsService } from '../lesson-type-contents/lesson-type-contents.service';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class LessonContentService {
@@ -20,7 +21,25 @@ export class LessonContentService {
     private readonly nodeRepository: Repository<LearningNode>,
     private readonly aiService: AiService,
     private readonly lessonTypeContentsService: LessonTypeContentsService,
+    private readonly usersService: UsersService,
   ) {}
+
+  private async contributorPayload(
+    contributorId: string | null | undefined,
+  ): Promise<{
+    id: string;
+    fullName: string;
+    avatarUrl: string | null;
+  } | null> {
+    if (!contributorId) return null;
+    const u = await this.usersService.findById(contributorId);
+    if (!u) return null;
+    return {
+      id: u.id,
+      fullName: u.fullName?.trim() || 'Thành viên',
+      avatarUrl: u.avatarUrl ?? null,
+    };
+  }
 
   /**
    * Get lesson data for a learning node
@@ -35,9 +54,16 @@ export class LessonContentService {
     difficulty: string;
     subjectId: string;
     domainId: string | null;
+    contributor: {
+      id: string;
+      fullName: string;
+      avatarUrl: string | null;
+    } | null;
   }> {
     const node = await this.nodeRepository.findOne({ where: { id: nodeId } });
     if (!node) throw new NotFoundException('Learning node not found');
+
+    const contributor = await this.contributorPayload(node.contributorId);
 
     return {
       id: node.id,
@@ -49,6 +75,7 @@ export class LessonContentService {
       difficulty: node.difficulty,
       subjectId: node.subjectId,
       domainId: node.domainId,
+      contributor,
     };
   }
 
@@ -274,6 +301,11 @@ CHỈ TRẢ VỀ JSON.`;
     difficulty: string;
     subjectId: string;
     domainId: string | null;
+    contributor: {
+      id: string;
+      fullName: string;
+      avatarUrl: string | null;
+    } | null;
   }> {
     const node = await this.nodeRepository.findOne({ where: { id: nodeId } });
     if (!node) throw new NotFoundException('Learning node not found');
@@ -282,6 +314,8 @@ CHỈ TRẢ VỀ JSON.`;
     if (!typeContent) {
       throw new NotFoundException(`Lesson type "${lessonType}" not found for node ${nodeId}`);
     }
+
+    const contributor = await this.contributorPayload(node.contributorId);
 
     return {
       id: typeContent.id,
@@ -294,6 +328,7 @@ CHỈ TRẢ VỀ JSON.`;
       difficulty: node.difficulty,
       subjectId: node.subjectId,
       domainId: node.domainId,
+      contributor,
     };
   }
 

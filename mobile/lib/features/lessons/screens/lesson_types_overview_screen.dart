@@ -26,6 +26,7 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
   bool _isLoading = true;
   String? _error;
   List<dynamic> _contents = [];
+  Map<String, dynamic>? _nodeContributor;
   List<String> _completedTypes = [];
   bool _isLessonComplete = false;
   bool _aiLessonTypesViewTracked = false;
@@ -84,6 +85,7 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
       'lessonData': lessonData,
       'title': widget.title,
       'endQuiz': endQuiz,
+      'contributor': _nodeContributor,
     }).then((_) async {
       if (!mounted) return;
       await _loadData();

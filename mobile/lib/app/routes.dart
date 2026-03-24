@@ -391,17 +391,46 @@ GoRouter createAppRouter(AuthSessionController authSession) {
         final lessonData = extra?['lessonData'] as Map<String, dynamic>? ?? {};
         final title = extra?['title'] as String? ?? 'Bài học';
         final endQuiz = extra?['endQuiz'] as Map<String, dynamic>?;
-        
+        final contributor = _contributorFromRouteExtra(extra?['contributor']);
+
         switch (lessonType) {
           case 'image_quiz':
-            return ImageQuizLessonScreen(nodeId: nodeId, lessonData: lessonData, title: title, endQuiz: endQuiz, lessonType: lessonType);
+            return ImageQuizLessonScreen(
+              nodeId: nodeId,
+              lessonData: lessonData,
+              title: title,
+              endQuiz: endQuiz,
+              lessonType: lessonType,
+              contributor: contributor,
+            );
           case 'image_gallery':
-            return ImageGalleryLessonScreen(nodeId: nodeId, lessonData: lessonData, title: title, endQuiz: endQuiz, lessonType: lessonType);
+            return ImageGalleryLessonScreen(
+              nodeId: nodeId,
+              lessonData: lessonData,
+              title: title,
+              endQuiz: endQuiz,
+              lessonType: lessonType,
+              contributor: contributor,
+            );
           case 'video':
-            return VideoLessonScreen(nodeId: nodeId, lessonData: lessonData, title: title, endQuiz: endQuiz, lessonType: lessonType);
+            return VideoLessonScreen(
+              nodeId: nodeId,
+              lessonData: lessonData,
+              title: title,
+              endQuiz: endQuiz,
+              lessonType: lessonType,
+              contributor: contributor,
+            );
           case 'text':
           default:
-            return TextLessonScreen(nodeId: nodeId, lessonData: lessonData, title: title, endQuiz: endQuiz, lessonType: lessonType);
+            return TextLessonScreen(
+              nodeId: nodeId,
+              lessonData: lessonData,
+              title: title,
+              endQuiz: endQuiz,
+              lessonType: lessonType,
+              contributor: contributor,
+            );
         }
       },
     ),
@@ -458,6 +487,7 @@ class _LessonEditLoaderState extends State<_LessonEditLoader> {
           'lessonData': lessonData,
           'title': title,
           'endQuiz': endQuiz,
+          'contributor': node['contributor'],
         },
       );
     } catch (e) {
@@ -496,4 +526,11 @@ class _LessonEditLoaderState extends State<_LessonEditLoader> {
       ),
     );
   }
+}
+
+Map<String, dynamic>? _contributorFromRouteExtra(Object? raw) {
+  if (raw == null) return null;
+  if (raw is Map<String, dynamic>) return raw;
+  if (raw is Map) return Map<String, dynamic>.from(raw);
+  return null;
 }

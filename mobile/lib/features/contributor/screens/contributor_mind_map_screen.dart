@@ -92,18 +92,19 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
 
       final domains = results[1] as List<dynamic>;
 
-      // Load topics for each domain
-      final topicsMap = <String, List<dynamic>>{};
-      for (final domain in domains) {
+      // Tải topics song song (trước đây await từng domain → rất chậm khi nhiều chương).
+      final topicFutures = domains.map<Future<MapEntry<String, List<dynamic>>>>((domain) async {
         final d = domain as Map<String, dynamic>;
         final domainId = d['id'] as String;
         try {
           final topics = await apiService.getTopicsByDomain(domainId);
-          topicsMap[domainId] = topics;
+          return MapEntry(domainId, topics);
         } catch (_) {
-          topicsMap[domainId] = [];
+          return MapEntry(domainId, <dynamic>[]);
         }
-      }
+      });
+      final topicEntries = await Future.wait(topicFutures);
+      final topicsMap = Map<String, List<dynamic>>.fromEntries(topicEntries);
 
       if (mounted) {
         final allNodes = results[2] as List<dynamic>;

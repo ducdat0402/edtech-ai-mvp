@@ -315,6 +315,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                           {},
                   'title': title,
                   'endQuiz': singleContent['endQuiz'] as Map<String, dynamic>?,
+                  'contributor': nodeData['contributor'],
                 });
               }
             });
@@ -327,11 +328,15 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
         // Fallback: use legacy lessonType/lessonData from the node itself
         Map<String, dynamic> lessonData;
         Map<String, dynamic>? endQuiz;
+        Map<String, dynamic>? contributor =
+            nodeData['contributor'] as Map<String, dynamic>?;
         try {
           final fullLessonData = await apiService.getLessonData(widget.nodeId);
           lessonData =
               fullLessonData['lessonData'] as Map<String, dynamic>? ?? {};
           endQuiz = fullLessonData['endQuiz'] as Map<String, dynamic>?;
+          contributor ??=
+              fullLessonData['contributor'] as Map<String, dynamic>?;
         } catch (_) {
           lessonData = nodeData['lessonData'] as Map<String, dynamic>? ?? {};
           endQuiz = nodeData['endQuiz'] as Map<String, dynamic>?;
@@ -343,6 +348,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
               'lessonData': lessonData,
               'title': title,
               'endQuiz': endQuiz,
+              'contributor': contributor,
             });
           }
         });

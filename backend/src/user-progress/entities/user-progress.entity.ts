@@ -13,6 +13,7 @@ import { LearningNode } from '../../learning-nodes/entities/learning-node.entity
 
 @Entity('user_progress')
 @Index(['userId', 'nodeId'], { unique: true })
+@Index(['userId', 'isCompleted'])
 export class UserProgress {
   @PrimaryGeneratedColumn('uuid')
   id: string;

@@ -25,6 +25,41 @@ export class DashboardService {
     private progressRepository: Repository<UserProgress>,
   ) {}
 
+  /**
+   * Chỉ số thống kê + level — không load toàn bộ learning_nodes.
+   * Dùng cho Profile / nơi chỉ cần XP, coin, streak, số bài đã xong.
+   */
+  async getDashboardSummary(userId: string) {
+    const [currency, totalNodesCompleted] = await Promise.all([
+      this.currencyService.getCurrency(userId),
+      this.progressRepository.count({
+        where: { userId, isCompleted: true },
+      }),
+    ]);
+
+    const totalXP = currency.xp;
+    const currentLevel = currency.level || 1;
+    const levelInfo = this.currencyService.getLevelInfo(totalXP, currentLevel);
+
+    return {
+      stats: {
+        totalXP,
+        currentStreak: currency.currentStreak,
+        maxStreak: currency.maxStreak ?? 0,
+        totalCoins: currency.coins,
+        totalDiamonds: currency.diamonds ?? 0,
+        totalNodesCompleted,
+        shards: currency.shards,
+        level: currentLevel,
+        levelInfo: {
+          currentXP: levelInfo.currentXP,
+          xpForNextLevel: levelInfo.xpForNextLevel,
+          progress: levelInfo.progress,
+        },
+      },
+    };
+  }
+
   async getDashboard(userId: string) {
     const user = await this.usersService.findById(userId);
     if (!user) {

@@ -700,6 +700,9 @@ export class PendingContributionsService {
             existingNode.lessonType = contribution.data.lessonType;
             existingNode.lessonData = contribution.data.lessonData;
             existingNode.endQuiz = contribution.data.endQuiz || existingNode.endQuiz;
+            if (!existingNode.contributorId) {
+              existingNode.contributorId = contribution.contributorId;
+            }
             await this.learningNodeRepo.save(existingNode);
             contribution.data = { ...contribution.data, createdEntityId: existingNode.id };
           }
@@ -720,6 +723,7 @@ export class PendingContributionsService {
             expReward: contribution.data.expReward || 0,
             coinReward: contribution.data.coinReward || 0,
             contentStructure: { concepts: 0, examples: 0, hiddenRewards: 0, bossQuiz: 0 },
+            contributorId: contribution.contributorId,
           });
           const savedNode = await this.learningNodeRepo.save(newNode);
 
@@ -816,6 +820,9 @@ export class PendingContributionsService {
             contentNode.lessonType = contentLessonType;
             contentNode.lessonData = contribution.data.lessonData;
             if (contribution.data.endQuiz) contentNode.endQuiz = contribution.data.endQuiz;
+            if (!contentNode.contributorId) {
+              contentNode.contributorId = contribution.contributorId;
+            }
             await this.learningNodeRepo.save(contentNode);
           }
         } else {

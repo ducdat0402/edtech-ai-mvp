@@ -8,12 +8,14 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   JoinColumn,
+  Index,
 } from 'typeorm';
 import { Subject } from '../../subjects/entities/subject.entity';
 import { Domain } from '../../domains/entities/domain.entity';
 import { Topic } from '../../topics/entities/topic.entity';
 
 @Entity('learning_nodes')
+@Index(['subjectId'])
 export class LearningNode {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -102,6 +104,10 @@ export class LearningNode {
   // image_gallery: { images: [{ url, description }] }
   // video: { videoUrl, summary, keyPoints: [{title, description?, timestamp?}], keywords: [] }
   // text: { sections: [{title, content, richContent?}], inlineQuizzes: [{afterSectionIndex, question, options, correctAnswer}], summary, learningObjectives: [] }
+
+  /** User được ghi công khi đóng góp bài học được admin duyệt (bài mới hoặc bổ sung nội dung lần đầu). */
+  @Column({ type: 'uuid', nullable: true })
+  contributorId: string | null;
 
   @Column({ type: 'jsonb', nullable: true, default: null })
   endQuiz: {

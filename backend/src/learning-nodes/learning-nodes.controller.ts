@@ -1,8 +1,10 @@
 import { Controller, Get, Param, Post, Put, Body, UseGuards, NotFoundException, Request, ForbiddenException, BadRequestException } from '@nestjs/common';
+import { instanceToPlain } from 'class-transformer';
 import { LearningNodesService } from './learning-nodes.service';
 import { LessonContentService } from './lesson-content.service';
 import { AiService } from '../ai/ai.service';
 import { UserCurrencyService } from '../user-currency/user-currency.service';
+import { UsersService } from '../users/users.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
 import { UpdateLessonContentDto } from './dto/lesson-content.dto';
@@ -20,6 +22,7 @@ export class LearningNodesController {
     private readonly lessonContentService: LessonContentService,
     private readonly aiService: AiService,
     private readonly userCurrencyService: UserCurrencyService,
+    private readonly usersService: UsersService,
   ) {}
 
   /**
@@ -60,8 +63,28 @@ export class LearningNodesController {
         requiresUnlock: true,
       });
     }
-    
-    return this.nodesService.findById(id);
+
+    const node = await this.nodesService.findById(id);
+    if (!node) {
+      throw new NotFoundException('Learning node not found');
+    }
+    const plain = instanceToPlain(node) as Record<string, unknown>;
+    let contributor: {
+      id: string;
+      fullName: string;
+      avatarUrl: string | null;
+    } | null = null;
+    if (node.contributorId) {
+      const u = await this.usersService.findById(node.contributorId);
+      if (u) {
+        contributor = {
+          id: u.id,
+          fullName: (u.fullName && u.fullName.trim()) || 'Thành viên',
+          avatarUrl: u.avatarUrl ?? null,
+        };
+      }
+    }
+    return { ...plain, contributor };
   }
 
   /**

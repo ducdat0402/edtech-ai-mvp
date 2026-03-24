@@ -12,6 +12,12 @@ class ApiService {
     return response.data;
   }
 
+  /// Thống kê nhẹ (XP, coin, streak, số bài xong) — không tải toàn bộ nodes.
+  Future<Map<String, dynamic>> getDashboardSummary() async {
+    final response = await _apiClient.get(ApiConstants.dashboardSummary);
+    return response.data;
+  }
+
   // Subjects
   Future<List<dynamic>> getExplorerSubjects() async {
     final response = await _apiClient.get(ApiConstants.explorerSubjects);

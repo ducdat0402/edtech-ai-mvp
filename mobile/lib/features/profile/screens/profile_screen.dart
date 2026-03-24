@@ -89,17 +89,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
 
-      final results = await Future.wait([
+      final results = await Future.wait<dynamic>([
         apiService.getUserProfile(),
         apiService.getCurrency(),
-        apiService.getDashboard(),
+        apiService.getDashboardSummary(),
         apiService.getWeeklyBadges().catchError((_) => <String, dynamic>{}),
       ]);
 
       setState(() {
-        _profileData = results[0];
-        _currencyData = results[1];
-        _dashboardStats = results[2]['stats'];
+        _profileData = results[0] as Map<String, dynamic>;
+        _currencyData = results[1] as Map<String, dynamic>;
+        final summary = results[2] as Map<String, dynamic>;
+        final statsRaw = summary['stats'];
+        _dashboardStats =
+            statsRaw is Map ? Map<String, dynamic>.from(statsRaw) : null;
         final badgesData = results[3] as Map<String, dynamic>? ?? {};
         _badgeCollection = badgesData['collection'] as List? ?? [];
         _isLoading = false;
@@ -393,8 +396,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
       setState(() => _isSwitchingRole = true);
       try {
         final apiService = Provider.of<ApiService>(context, listen: false);
-        await apiService.switchRole(targetRole);
-        await _loadProfile(); // Reload profile to get updated role
+        // Không gọi lại _loadProfile(): nó kéo getDashboard + toàn bộ nodes — rất chậm.
+        // PATCH switch-role đã trả về user cập nhật (gồm role).
+        final raw = await apiService.switchRole(targetRole);
+        if (!mounted) return;
+        final updated = Map<String, dynamic>.from(raw as Map);
+        setState(() {
+          _profileData = {...?_profileData, ...updated};
+        });
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -949,7 +958,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           child: _buildStatCard(
             icon: Icons.star_rounded,
             label: 'XP',
-            value: '${stats['totalXP'] ?? currency['lPoints'] ?? 0}',
+            value: '${stats['totalXP'] ?? currency['xp'] ?? 0}',
             color: AppColors.xpGold,
           ),
         ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
+import 'package:edtech_mobile/core/widgets/contributor_credit_button.dart';
 import 'package:flutter/services.dart';
 import 'package:edtech_mobile/theme/colors.dart';
 import 'end_quiz_screen.dart';
@@ -10,6 +11,7 @@ class VideoLessonScreen extends StatefulWidget {
   final String title;
   final Map<String, dynamic>? endQuiz;
   final String? lessonType;
+  final Map<String, dynamic>? contributor;
 
   const VideoLessonScreen({
     super.key,
@@ -18,6 +20,7 @@ class VideoLessonScreen extends StatefulWidget {
     required this.title,
     this.endQuiz,
     this.lessonType,
+    this.contributor,
   });
 
   @override
@@ -72,6 +75,9 @@ class _VideoLessonScreenState extends State<VideoLessonScreen> {
             fontWeight: FontWeight.bold,
           ),
         ),
+        actions: [
+          ContributorCreditButton(contributor: widget.contributor),
+        ],
       ),
       body: Column(
         children: [
