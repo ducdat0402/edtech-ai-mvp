@@ -12,6 +12,8 @@ import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { existsSync, mkdirSync } from 'fs';
+import { unlink } from 'fs/promises';
+import { CloudinaryService } from './cloudinary.service';
 
 const IMAGE_DEST = './uploads/images';
 const VIDEO_DEST = './uploads/videos';
@@ -23,6 +25,8 @@ if (!existsSync(VIDEO_DEST)) mkdirSync(VIDEO_DEST, { recursive: true });
 @Controller('uploads')
 @UseGuards(JwtAuthGuard)
 export class UploadsController {
+  constructor(private readonly cloudinaryService: CloudinaryService) {}
+
   @Post('image')
   @UseInterceptors(
     FileInterceptor('image', {
@@ -46,8 +50,28 @@ export class UploadsController {
     if (!file) {
       throw new BadRequestException('No image file provided');
     }
-    const imageUrl = `/uploads/images/${file.filename}`;
-    return { imageUrl, url: imageUrl };
+
+    const localImageUrl = `/uploads/images/${file.filename}`;
+    if (!this.cloudinaryService.isEnabled()) {
+      return { imageUrl: localImageUrl, url: localImageUrl };
+    }
+
+    try {
+      const imageUrl = await this.cloudinaryService.uploadImageFromPath(
+        file.path,
+      );
+      return { imageUrl, url: imageUrl };
+    } catch (error) {
+      throw new BadRequestException(
+        `Cloudinary upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+    } finally {
+      try {
+        await unlink(file.path);
+      } catch {
+        // ignore cleanup errors
+      }
+    }
   }
 
   @Post('video')
