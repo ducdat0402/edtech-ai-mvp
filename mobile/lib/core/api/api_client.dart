@@ -60,7 +60,7 @@ class ApiClient {
       InterceptorsWrapper(
         onRequest: (options, handler) async {
           // Add token to requests
-          final token = await _storage.read(key: _tokenKey);
+          final token = await _safeRead(_tokenKey);
           if (token != null) {
             options.headers['Authorization'] = 'Bearer $token';
           }
@@ -106,6 +106,24 @@ class ApiClient {
     return p.contains('/auth/me') || p.contains('/auth/verify');
   }
 
+  /// Read secure storage safely. If key material changed/corrupted (BAD_DECRYPT),
+  /// remove stale auth keys so app can continue login flow instead of crashing.
+  Future<String?> _safeRead(String key) async {
+    try {
+      return await _storage.read(key: key);
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[API] SecureStorage read failed for $key: $e');
+      }
+      if (key == _tokenKey || key == _loginAtKey) {
+        try {
+          await clearToken();
+        } catch (_) {}
+      }
+      return null;
+    }
+  }
+
   static Map<String, dynamic>? _decodeJwtPayload(String token) {
     try {
       final parts = token.split('.');
@@ -120,11 +138,11 @@ class ApiClient {
 
   /// Token còn hiệu lực: có token, trong 30 ngày kể từ lần đăng nhập, và chưa hết JWT `exp`.
   Future<bool> hasValidStoredSession() async {
-    final token = await _storage.read(key: _tokenKey);
+    final token = await _safeRead(_tokenKey);
     if (token == null || token.isEmpty) return false;
 
     final now = DateTime.now();
-    final atStr = await _storage.read(key: _loginAtKey);
+    final atStr = await _safeRead(_loginAtKey);
 
     if (atStr != null && atStr.isNotEmpty) {
       final atMs = int.tryParse(atStr);
@@ -182,7 +200,7 @@ class ApiClient {
 
   // Get token
   Future<String?> getToken() async {
-    return await _storage.read(key: _tokenKey);
+    return await _safeRead(_tokenKey);
   }
 
   // GET request
