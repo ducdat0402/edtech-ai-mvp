@@ -77,8 +77,16 @@ class _LoginScreenState extends State<LoginScreen>
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
+      if (kDebugMode) {
+        debugPrint(
+          '[LOGIN] email/password result: success=${result['success']}, message=${result['message']}',
+        );
+      }
 
       if (result['success'] == true) {
+        if (kDebugMode) {
+          debugPrint('[LOGIN] navigating -> /dashboard');
+        }
         if (mounted) {
           context.go('/dashboard');
         }
@@ -456,6 +464,9 @@ class _LoginScreenState extends State<LoginScreen>
         onTimeout: () => null,
       );
       if (account == null) {
+        if (kDebugMode) {
+          debugPrint('[LOGIN][GOOGLE] account is null (cancelled or timeout)');
+        }
         return;
       }
 
@@ -467,6 +478,9 @@ class _LoginScreenState extends State<LoginScreen>
       );
       final idToken = auth.idToken;
       if (idToken == null) {
+        if (kDebugMode) {
+          debugPrint('[LOGIN][GOOGLE] idToken is null');
+        }
         if (mounted) {
           setState(() {
             _errorMessage =
@@ -480,9 +494,17 @@ class _LoginScreenState extends State<LoginScreen>
 
       // Không bọc .timeout ngoài: googleLogin đã có retry + receiveTimeout từng request trong AuthService.
       final result = await authService.googleLogin(idToken: idToken);
+      if (kDebugMode) {
+        debugPrint(
+          '[LOGIN][GOOGLE] backend result: success=${result['success']}, message=${result['message']}',
+        );
+      }
 
       if (!mounted) return;
       if (result['success'] == true) {
+        if (kDebugMode) {
+          debugPrint('[LOGIN][GOOGLE] navigating -> /dashboard');
+        }
         context.go('/dashboard');
       } else {
         setState(() {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
@@ -110,6 +111,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
       _isLoading = true;
       _error = null;
     });
+    if (kDebugMode) {
+      debugPrint('[DASHBOARD] load start');
+    }
 
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
@@ -117,6 +121,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       final dashboard = await apiService
           .getDashboard()
           .timeout(const Duration(seconds: 30));
+      if (kDebugMode) {
+        final subjects = (dashboard['subjects'] as List?)?.length ?? 0;
+        debugPrint('[DASHBOARD] primary loaded: subjects=$subjects');
+      }
 
       // Non-critical requests should not block dashboard rendering.
       Map<String, dynamic>? profile;
@@ -125,12 +133,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
         profile = await apiService
             .getUserProfile()
             .timeout(const Duration(seconds: 20));
-      } catch (_) {}
+      } catch (e) {
+        if (kDebugMode) {
+          debugPrint('[DASHBOARD] profile load skipped/error: $e');
+        }
+      }
       try {
         motivation = await apiService
             .getDailyMotivation()
             .timeout(const Duration(seconds: 20));
-      } catch (_) {}
+      } catch (e) {
+        if (kDebugMode) {
+          debugPrint('[DASHBOARD] motivation load skipped/error: $e');
+        }
+      }
 
       if (!mounted) return;
       setState(() {
@@ -139,6 +155,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         _motivation = motivation;
         _isLoading = false;
       });
+      if (kDebugMode) {
+        debugPrint('[DASHBOARD] render ready, role=$_userRole');
+      }
       _showDashboardTutorial();
       _checkWeeklyRewards(apiService);
     } catch (e) {
@@ -147,6 +166,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         _error = e.toString();
         _isLoading = false;
       });
+      if (kDebugMode) {
+        debugPrint('[DASHBOARD] load failed: $e');
+      }
     }
   }
 

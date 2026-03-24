@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
@@ -61,10 +62,21 @@ GoRouter createAppRouter(AuthSessionController authSession) {
       final atAuthGate = loc == '/login' ||
           loc == '/register' ||
           loc == '/forgot-password';
+      if (kDebugMode) {
+        debugPrint(
+          '[ROUTER] redirect check: loc=$loc, atAuthGate=$atAuthGate, isLoggedIn=${authSession.isLoggedIn}',
+        );
+      }
       if (!authSession.isLoggedIn && !atAuthGate) {
+        if (kDebugMode) {
+          debugPrint('[ROUTER] redirect -> /login');
+        }
         return '/login';
       }
       if (authSession.isLoggedIn && atAuthGate) {
+        if (kDebugMode) {
+          debugPrint('[ROUTER] redirect -> /dashboard');
+        }
         return '/dashboard';
       }
       return null;
