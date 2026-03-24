@@ -19,8 +19,9 @@ class ApiClient {
     _dio = Dio(
       BaseOptions(
         baseUrl: ApiConstants.baseUrl,
-        connectTimeout: const Duration(seconds: 60), // Increased timeout
-        receiveTimeout: const Duration(seconds: 60), // Increased timeout
+        // Render / mạng yếu: cold start + TLS có thể > 60s.
+        connectTimeout: const Duration(seconds: 90),
+        receiveTimeout: const Duration(seconds: 120),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -172,21 +173,36 @@ class ApiClient {
   }
 
   // GET request
-  Future<Response> get(String path,
-      {Map<String, dynamic>? queryParameters}) async {
+  Future<Response> get(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+  }) async {
     try {
-      return await _dio.get(path, queryParameters: queryParameters);
+      return await _dio.get(
+        path,
+        queryParameters: queryParameters,
+        options: options,
+      );
     } catch (e) {
       rethrow;
     }
   }
 
   // POST request
-  Future<Response> post(String path,
-      {dynamic data, Map<String, dynamic>? queryParameters}) async {
+  Future<Response> post(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+  }) async {
     try {
-      final response =
-          await _dio.post(path, data: data, queryParameters: queryParameters);
+      final response = await _dio.post(
+        path,
+        data: data,
+        queryParameters: queryParameters,
+        options: options,
+      );
       // Log response for debugging
       if (kDebugMode) {
         debugPrint('[API] Response status: ${response.statusCode}');

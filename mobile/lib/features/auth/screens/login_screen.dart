@@ -49,6 +49,16 @@ class _LoginScreenState extends State<LoginScreen>
         CurvedAnimation(parent: _animationController, curve: Curves.easeOut));
 
     _animationController.forward();
+
+    if (!kIsWeb &&
+        (defaultTargetPlatform == TargetPlatform.android ||
+            defaultTargetPlatform == TargetPlatform.iOS)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        Provider.of<AuthService>(context, listen: false)
+            .warmUpBackendConnection();
+      });
+    }
   }
 
   Future<void> _handleLogin() async {
@@ -466,14 +476,10 @@ class _LoginScreenState extends State<LoginScreen>
         return;
       }
 
-      final result = await authService.googleLogin(idToken: idToken).timeout(
-        const Duration(seconds: 60),
-        onTimeout: () => <String, dynamic>{
-          'success': false,
-          'message':
-              'Máy chủ phản hồi quá lâu. Kiểm tra mạng và thử lại.',
-        },
-      );
+      await authService.warmUpBackendConnection();
+
+      // Không bọc .timeout ngoài: googleLogin đã có retry + receiveTimeout từng request trong AuthService.
+      final result = await authService.googleLogin(idToken: idToken);
 
       if (!mounted) return;
       if (result['success'] == true) {

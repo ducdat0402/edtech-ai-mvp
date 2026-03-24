@@ -17,6 +17,97 @@ class AuthService {
     _session?.setLoggedIn(true);
   }
 
+  /// Gọi khi vào màn login (mobile): giúp mở TLS + DNS trước, giảm timeout “lần đầu” khi đăng nhập Google.
+  Future<void> warmUpBackendConnection() async {
+    try {
+      await _apiClient.get(
+        ApiConstants.health,
+        options: Options(
+          receiveTimeout: const Duration(seconds: 30),
+          sendTimeout: const Duration(seconds: 15),
+        ),
+      );
+    } catch (_) {}
+  }
+
+  bool _googleLoginFailureRetryable(Map<String, dynamic> r) {
+    if (r['retryable'] == true) return true;
+    final msg = (r['message'] ?? '').toString().toLowerCase();
+    return msg.contains('timeout') ||
+        msg.contains('quá lâu') ||
+        msg.contains('connection') ||
+        msg.contains('failed host lookup') ||
+        msg.contains('socketexception');
+  }
+
+  Future<Map<String, dynamic>> _googleLoginOnce(String idToken) async {
+    try {
+      final response = await _apiClient.post(
+        '/auth/google',
+        data: {'idToken': idToken},
+        options: Options(
+          receiveTimeout: const Duration(seconds: 120),
+          sendTimeout: const Duration(seconds: 90),
+        ),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final responseData = response.data;
+        Map<String, dynamic> dataMap;
+        if (responseData is Map<String, dynamic>) {
+          dataMap = responseData;
+        } else if (responseData is String) {
+          try {
+            dataMap = jsonDecode(responseData) as Map<String, dynamic>;
+          } catch (_) {
+            return {'success': false, 'message': 'Invalid response format'};
+          }
+        } else {
+          return {'success': false, 'message': 'Unexpected response format'};
+        }
+
+        final token = dataMap['accessToken'] ?? dataMap['access_token'];
+        if (token != null && token.toString().isNotEmpty) {
+          await _apiClient.saveToken(token.toString());
+          _onAuthSuccess();
+          return {
+            'success': true,
+            'token': token.toString(),
+            'user': dataMap['user'] ?? dataMap,
+          };
+        }
+        return {'success': false, 'message': 'No token received'};
+      }
+      return {'success': false, 'message': 'Google login failed'};
+    } catch (e) {
+      if (e is DioException) {
+        if (e.response != null) {
+          final data = e.response!.data;
+          final msg = data is Map
+              ? (data['message'] ?? 'Google login failed')
+              : 'Google login failed';
+          return {'success': false, 'message': msg.toString()};
+        }
+        if (e.type == DioExceptionType.connectionTimeout ||
+            e.type == DioExceptionType.receiveTimeout ||
+            e.type == DioExceptionType.sendTimeout ||
+            e.type == DioExceptionType.connectionError) {
+          return {
+            'success': false,
+            'retryable': true,
+            'message':
+                'Mạng hoặc máy chủ phản hồi chậm. Đang thử lại tự động…',
+          };
+        }
+      }
+      return {
+        'success': false,
+        'message': e.toString(),
+        'retryable': false,
+      };
+    }
+  }
+
   Future<Map<String, dynamic>> register({
     required String email,
     required String password,
@@ -212,48 +303,25 @@ class AuthService {
   }
 
   Future<Map<String, dynamic>> googleLogin({required String idToken}) async {
-    try {
-      final response = await _apiClient.post(
-        '/auth/google',
-        data: {'idToken': idToken},
-      );
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        final responseData = response.data;
-        Map<String, dynamic> dataMap;
-        if (responseData is Map<String, dynamic>) {
-          dataMap = responseData;
-        } else if (responseData is String) {
-          try {
-            dataMap = jsonDecode(responseData) as Map<String, dynamic>;
-          } catch (_) {
-            return {'success': false, 'message': 'Invalid response format'};
-          }
-        } else {
-          return {'success': false, 'message': 'Unexpected response format'};
-        }
-
-        final token = dataMap['accessToken'] ?? dataMap['access_token'];
-        if (token != null && token.toString().isNotEmpty) {
-          await _apiClient.saveToken(token.toString());
-          _onAuthSuccess();
-          return {
-            'success': true,
-            'token': token.toString(),
-            'user': dataMap['user'] ?? dataMap,
-          };
-        }
-        return {'success': false, 'message': 'No token received'};
+    const maxAttempts = 3;
+    Map<String, dynamic>? last;
+    for (var attempt = 1; attempt <= maxAttempts; attempt++) {
+      if (attempt > 1) {
+        await Future<void>.delayed(Duration(seconds: attempt * 2));
       }
-      return {'success': false, 'message': 'Google login failed'};
-    } catch (e) {
-      if (e is DioException && e.response != null) {
-        final data = e.response!.data;
-        final msg = data is Map ? (data['message'] ?? 'Google login failed') : 'Google login failed';
-        return {'success': false, 'message': msg.toString()};
+      last = await _googleLoginOnce(idToken);
+      if (last['success'] == true) {
+        last.remove('retryable');
+        return last;
       }
-      return {'success': false, 'message': e.toString()};
+      if (!_googleLoginFailureRetryable(last) || attempt == maxAttempts) {
+        last.remove('retryable');
+        return last;
+      }
     }
+    last ??= {'success': false, 'message': 'Google login failed'};
+    last.remove('retryable');
+    return last;
   }
 
   Future<Map<String, dynamic>> forgotPassword({required String email}) async {

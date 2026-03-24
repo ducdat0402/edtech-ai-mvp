@@ -102,7 +102,7 @@ class ApiConstants {
   static const String myUnlocks = '/unlock/my-unlocks';
   static const String unlockTransactions = '/unlock/transactions';
 
-  // Health
+  // Health (public — warm-up TLS/DNS trước auth trên mobile)
   static const String health = '/health';
 
   // Uploads
