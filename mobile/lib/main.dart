@@ -9,7 +9,12 @@ Future<void> main() async {
   final apiClient = ApiClient();
   final authSession = AuthSessionController();
   apiClient.onSessionInvalidated = () => authSession.setLoggedIn(false);
-  await authSession.restoreFromStorage(apiClient);
+  try {
+    await authSession.restoreFromStorage(apiClient);
+  } catch (_) {
+    // Avoid startup black screen if secure storage is unavailable/corrupted.
+    authSession.setLoggedIn(false);
+  }
 
   runApp(EdTechApp(apiClient: apiClient, authSession: authSession));
 }
