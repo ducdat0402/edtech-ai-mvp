@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -396,17 +398,6 @@ class _LoginScreenState extends State<LoginScreen>
               defaultTargetPlatform == TargetPlatform.iOS)) ||
       kIsWeb;
 
-  /// Sau khi đã đăng nhập Google trước đó, [signOut] giúp hiện lại chọn tài khoản.
-  /// [disconnect] có thể ném `Failed to disconnect` khi app mới cài / chưa có phiên Google — bỏ qua.
-  Future<void> _prepareGoogleAccountPicker(GoogleSignIn googleSignIn) async {
-    try {
-      await googleSignIn.signOut();
-    } catch (_) {}
-    try {
-      await googleSignIn.disconnect();
-    } catch (_) {}
-  }
-
   Future<void> _handleGoogleSignIn() async {
     setState(() {
       _isGoogleLoading = true;
@@ -440,46 +431,68 @@ class _LoginScreenState extends State<LoginScreen>
             });
           },
         );
+        return;
+      }
+
+      // Mobile: không gọi signOut/disconnect ngay trước signIn — dễ khiến Play Services
+      // treo vô hạn sau khi user chọn tài khoản. Đổi tài khoản: đăng xuất trong app.
+      final googleSignIn = GoogleSignIn(
+        scopes: ['email', 'profile'],
+        serverClientId: ApiConstants.googleServerClientId,
+      );
+
+      final account = await googleSignIn.signIn().timeout(
+        const Duration(minutes: 2),
+        onTimeout: () => null,
+      );
+      if (account == null) {
+        return;
+      }
+
+      final auth = await account.authentication.timeout(
+        const Duration(seconds: 45),
+        onTimeout: () => throw TimeoutException(
+          'Hết thời gian lấy token từ Google. Thử lại hoặc cập nhật Google Play Services.',
+        ),
+      );
+      final idToken = auth.idToken;
+      if (idToken == null) {
+        if (mounted) {
+          setState(() {
+            _errorMessage =
+                'Không lấy được token từ Google. Kiểm tra serverClientId / cấu hình OAuth.';
+          });
+        }
+        return;
+      }
+
+      final result = await authService.googleLogin(idToken: idToken).timeout(
+        const Duration(seconds: 60),
+        onTimeout: () => <String, dynamic>{
+          'success': false,
+          'message':
+              'Máy chủ phản hồi quá lâu. Kiểm tra mạng và thử lại.',
+        },
+      );
+
+      if (!mounted) return;
+      if (result['success'] == true) {
+        context.go('/dashboard');
       } else {
-        // On mobile platforms we need serverClientId (web client ID)
-        // to receive a valid ID token for backend verification.
-        final googleSignIn = GoogleSignIn(
-          scopes: ['email', 'profile'],
-          serverClientId: ApiConstants.googleServerClientId,
-        );
-        await _prepareGoogleAccountPicker(googleSignIn);
-        final account = await googleSignIn.signIn();
-        if (account == null) {
-          setState(() => _isGoogleLoading = false);
-          return;
-        }
-
-        final auth = await account.authentication;
-        final idToken = auth.idToken;
-        if (idToken == null) {
-          setState(() {
-            _errorMessage = 'Không lấy được token từ Google';
-            _isGoogleLoading = false;
-          });
-          return;
-        }
-
-        final result = await authService.googleLogin(idToken: idToken);
-
-        if (result['success'] == true) {
-          if (mounted) context.go('/dashboard');
-        } else {
-          setState(() {
-            _errorMessage = result['message'] ?? 'Google login failed';
-            _isGoogleLoading = false;
-          });
-        }
+        setState(() {
+          _errorMessage = result['message'] ?? 'Google login failed';
+        });
       }
     } catch (e) {
-      setState(() {
-        _errorMessage = 'Lỗi đăng nhập Google: ${e.toString()}';
-        _isGoogleLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Lỗi đăng nhập Google: ${e.toString()}';
+        });
+      }
+    } finally {
+      if (mounted && !kIsWeb) {
+        setState(() => _isGoogleLoading = false);
+      }
     }
   }
 
