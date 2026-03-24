@@ -1685,60 +1685,6 @@ CHỈ TRẢ VỀ JSON.`;
   }
 
   /**
-   * Lộ trình cá nhân (chat / placement): thứ tự bài học thật (learning node id) + neo DRL.
-   * Rỗng nếu chưa có mind map hoặc chưa gắn linkedLearningNodeId — AI agents sẽ fallback cả môn.
-   */
-  async getPersonalPathLearningState(
-    userId: string,
-    subjectId: string,
-  ): Promise<{
-    orderedLearningNodeIds: string[];
-    lastCompletedLearningNodeId: string | null;
-  }> {
-    const mindMap = await this.personalMindMapRepo.findOne({
-      where: { userId, subjectId },
-    });
-    if (!mindMap?.nodes?.length) {
-      return {
-        orderedLearningNodeIds: [],
-        lastCompletedLearningNodeId: null,
-      };
-    }
-
-    const lessons = mindMap.nodes.filter(
-      (n: PersonalMindMapNode) =>
-        n.level === 3 &&
-        n.metadata?.linkedLearningNodeId != null &&
-        String(n.metadata!.linkedLearningNodeId).length > 0,
-    );
-
-    lessons.sort((a, b) => {
-      const yA = a.position?.y ?? 0;
-      const yB = b.position?.y ?? 0;
-      if (yA !== yB) return yA - yB;
-      const xA = a.position?.x ?? 0;
-      const xB = b.position?.x ?? 0;
-      return xA - xB;
-    });
-
-    const orderedLearningNodeIds = lessons.map(
-      (n) => n.metadata!.linkedLearningNodeId as string,
-    );
-
-    let lastCompletedLearningNodeId: string | null = null;
-    for (const n of lessons) {
-      if (n.status === 'completed' && n.metadata?.linkedLearningNodeId) {
-        lastCompletedLearningNodeId = n.metadata.linkedLearningNodeId;
-      }
-    }
-
-    return {
-      orderedLearningNodeIds,
-      lastCompletedLearningNodeId,
-    };
-  }
-
-  /**
    * Xóa personal mind map
    */
   async deletePersonalMindMap(

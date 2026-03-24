@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
@@ -152,10 +153,11 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
               fontWeight: FontWeight.bold,
               fontSize: 18),
         ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF2D3748)),
-          onPressed: () => context.pop(),
+        leading: const AppBarLeadingBackAndHome(
+          iconColor: Color(0xFF2D3748),
         ),
+        leadingWidth: 112,
+        automaticallyImplyLeading: false,
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh, color: Color(0xFF2D3748)),

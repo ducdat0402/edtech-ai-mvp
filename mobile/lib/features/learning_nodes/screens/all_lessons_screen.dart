@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/theme/colors.dart';
 import 'package:edtech_mobile/theme/text_styles.dart';
@@ -174,17 +175,9 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
           _introData?['subject']?['name'] ?? 'Lộ trình tổng quát',
           style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
         ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-          onPressed: () {
-            // Nếu còn route phía sau thì pop bình thường, nếu không thì về Dashboard
-            if (Navigator.canPop(context)) {
-              Navigator.pop(context);
-            } else {
-              context.go('/dashboard');
-            }
-          },
-        ),
+        leading: const AppBarLeadingBackAndHome(),
+        leadingWidth: 112,
+        automaticallyImplyLeading: false,
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh, color: AppColors.textSecondary),

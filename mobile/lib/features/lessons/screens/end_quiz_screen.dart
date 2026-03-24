@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:edtech_mobile/core/services/ai_behavior_tracker.dart';
-import 'package:edtech_mobile/core/services/ai_user_preferences.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 
@@ -44,7 +42,6 @@ class _EndQuizScreenState extends State<EndQuizScreen>
   int _currentQuestionIndex = 0;
   final Map<int, int> _selectedAnswers = {};
   bool _isSubmitting = false;
-  bool _hintLoading = false;
   bool _showResults = false;
   Map<String, dynamic>? _quizResult;
   Map<String, dynamic>? _rewardData; // Cascade rewards from completeLessonType
@@ -228,24 +225,6 @@ class _EndQuizScreenState extends State<EndQuizScreen>
       final scorePct = (result['score'] as num?)?.toDouble() ??
           (totalQs > 0 ? (correct * 100.0 / totalQs) : 0.0);
 
-      AiBehaviorTracker.fireAndForget(
-        apiService,
-        nodeId: widget.nodeId,
-        action: 'attempt_quiz',
-        metrics: {
-          'totalQuestions': totalQs,
-          'correctAnswers': correct,
-          'errors': totalQs - correct,
-          'accuracy': scorePct,
-          'passed': result['passed'] == true,
-        },
-        context: {
-          'quizKind': 'end_quiz',
-          if (widget.lessonType != null && widget.lessonType!.isNotEmpty)
-            'lessonType': widget.lessonType,
-        },
-      );
-
       setState(() {
         _quizResult = result;
         _showResults = true;
@@ -269,15 +248,6 @@ class _EndQuizScreenState extends State<EndQuizScreen>
             if (mounted) {
               setState(() => _rewardData = rewardResult);
             }
-            AiBehaviorTracker.fireAndForget(
-              apiService,
-              nodeId: widget.nodeId,
-              action: 'complete',
-              context: {
-                'source': 'end_quiz',
-                'lessonType': widget.lessonType!,
-              },
-            );
           } catch (e) {
             debugPrint('Error completing lesson type: $e');
           }
@@ -289,111 +259,6 @@ class _EndQuizScreenState extends State<EndQuizScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Lỗi: $e'),
-            backgroundColor: AppColors.errorNeon,
-          ),
-        );
-      }
-    }
-  }
-
-  Future<void> _requestItsHint() async {
-    if (_questions.isEmpty || !mounted) return;
-    if (!AiUserPreferences.instance.cloudAiEnabled) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Đã tắt gợi ý AI trên cloud — bật lại trong Hồ sơ → AI & quyền riêng tư.',
-          ),
-        ),
-      );
-      return;
-    }
-    final q = _questions[_currentQuestionIndex] as Map<String, dynamic>;
-    final questionText = (q['question'] ?? '').toString();
-    final opts = _getOptionTexts(q);
-    final sel = _selectedAnswers[_currentQuestionIndex];
-    final userAnswer = sel != null && sel >= 0 && sel < opts.length
-        ? opts[sel]
-        : null;
-
-    setState(() => _hintLoading = true);
-    try {
-      final api = Provider.of<ApiService>(context, listen: false);
-      final res = await api.requestAiItsHint(
-        nodeId: widget.nodeId,
-        contentItemId: 'end_quiz:${widget.nodeId}:q$_currentQuestionIndex',
-        question: questionText,
-        userAnswer: userAnswer,
-      );
-      if (!mounted) return;
-      setState(() => _hintLoading = false);
-
-      final hint = res['hint']?.toString() ?? '';
-      final level = res['level']?.toString() ?? '';
-      final nextStep = res['nextStep']?.toString();
-
-      await showModalBottomSheet<void>(
-        context: context,
-        backgroundColor: AppColors.bgSecondary,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-        ),
-        builder: (ctx) => SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Gợi ý từ AI (ITS)',
-                  style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
-                ),
-                if (level.isNotEmpty) ...[
-                  const SizedBox(height: 6),
-                  Text(
-                    'Mức gợi ý: $level',
-                    style: AppTextStyles.caption
-                        .copyWith(color: AppColors.purpleNeon),
-                  ),
-                ],
-                const SizedBox(height: 12),
-                Text(
-                  hint.isNotEmpty
-                      ? hint
-                      : 'Hãy đọc lại câu hỏi và loại trừ các phương án rõ ràng sai.',
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.textSecondary,
-                    height: 1.45,
-                  ),
-                ),
-                if (nextStep != null && nextStep.isNotEmpty) ...[
-                  const SizedBox(height: 12),
-                  Text(
-                    'Gợi ý bước tiếp: $nextStep',
-                    style: AppTextStyles.bodySmall
-                        .copyWith(color: AppColors.cyanNeon, height: 1.35),
-                  ),
-                ],
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  child: TextButton(
-                    onPressed: () => Navigator.pop(ctx),
-                    child: const Text('Đóng'),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    } catch (e) {
-      if (mounted) {
-        setState(() => _hintLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Không lấy được gợi ý: $e'),
             backgroundColor: AppColors.errorNeon,
           ),
         );
@@ -413,6 +278,15 @@ class _EndQuizScreenState extends State<EndQuizScreen>
       return n;
     }
     return 0;
+  }
+
+  /// Đóng màn test cuối bài + màn dạng bài hiện tại → quay lại màn 4 dạng bài (hoặc màn trước đó).
+  void _finishLessonTypeAndReturnToPicker() {
+    final nav = Navigator.of(context);
+    nav.pop(true);
+    if (nav.canPop()) {
+      nav.pop();
+    }
   }
 
   Map<String, dynamic> _evaluateLocally() {
@@ -716,30 +590,6 @@ class _EndQuizScreenState extends State<EndQuizScreen>
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
                         height: 1.6,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: ListenableBuilder(
-                        listenable: AiUserPreferences.instance,
-                        builder: (context, _) {
-                          final cloud =
-                              AiUserPreferences.instance.cloudAiEnabled;
-                          return GamingButtonOutlined(
-                            text: !cloud
-                                ? 'Gợi ý AI (đang tắt)'
-                                : _hintLoading
-                                    ? 'Đang lấy gợi ý…'
-                                    : 'Gợi ý AI (ITS)',
-                            onPressed: (!cloud ||
-                                    _showResults ||
-                                    _hintLoading)
-                                ? null
-                                : _requestItsHint,
-                            icon: Icons.lightbulb_outline_rounded,
-                          );
-                        },
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -1360,7 +1210,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
                 Expanded(
                   child: GamingButton(
                     text: 'Hoàn thành',
-                    onPressed: () => context.pop(true),
+                    onPressed: _finishLessonTypeAndReturnToPicker,
                     gradient: AppGradients.success,
                     glowColor: AppColors.successNeon,
                     icon: Icons.emoji_events_rounded,

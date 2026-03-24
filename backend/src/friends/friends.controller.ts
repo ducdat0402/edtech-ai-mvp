@@ -63,6 +63,11 @@ export class FriendsController {
     return { success: true };
   }
 
+  @Get('blocked')
+  async getBlockedUsers(@Request() req) {
+    return this.friendsService.getBlockedUsers(req.user.id);
+  }
+
   // ─── Requests & Info ────────────────────────────────────
 
   @Get('requests')

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
+import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/core/widgets/error_widget.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 
@@ -50,6 +51,9 @@ class _WeeklyRewardsHistoryScreenState
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        leading: const AppBarLeadingBackAndHome(),
+        leadingWidth: 112,
+        automaticallyImplyLeading: false,
         title: Text('Phần thưởng tuần',
             style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary)),
       ),

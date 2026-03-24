@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { Subject } from './entities/subject.entity';
 import { UserProgressService } from '../user-progress/user-progress.service';
 import { LearningNodesService } from '../learning-nodes/learning-nodes.service';
@@ -150,13 +150,106 @@ export class SubjectsService {
     return saved;
   }
 
+  /**
+   * Xóa môn học và dữ liệu phụ thuộc (domains, topics, nodes, progress, unlock, placement…).
+   * Cần thiết khi admin duyệt đóng góp xóa môn — Postgres chặn xóa subject nếu còn FK.
+   */
   async delete(id: string): Promise<void> {
     const subject = await this.findById(id);
     if (!subject) {
       throw new BadRequestException('Subject not found');
     }
-    await this.subjectRepository.remove(subject);
+    await this.subjectRepository.manager.transaction(async (em) => {
+      await this.deleteSubjectGraph(em, id);
+      await em.delete(Subject, id);
+    });
     this.invalidateCache();
+  }
+
+  /** Best-effort cleanup (bảng có thể không tồn tại ở mọi môi trường). */
+  private async safeDeleteQuery(
+    em: EntityManager,
+    sql: string,
+    params: unknown[] = [],
+  ): Promise<void> {
+    try {
+      await em.query(sql, params);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.warn(`[SubjectsService.delete] optional SQL skipped: ${msg}`);
+    }
+  }
+
+  private async deleteSubjectGraph(
+    em: EntityManager,
+    subjectId: string,
+  ): Promise<void> {
+    const q = (sql: string, params: unknown[] = []) => em.query(sql, params);
+
+    await this.safeDeleteQuery(
+      em,
+      `DELETE FROM user_behavior WHERE "nodeId" IN (SELECT id FROM learning_nodes WHERE "subjectId" = $1)`,
+      [subjectId],
+    );
+
+    await q(`DELETE FROM adaptive_tests WHERE "subjectId" = $1`, [subjectId]);
+    await q(`DELETE FROM unlock_transactions WHERE "subjectId" = $1`, [
+      subjectId,
+    ]);
+    await q(
+      `DELETE FROM user_unlocks WHERE "subjectId" = $1 OR "domainId" IN (SELECT id FROM domains WHERE "subjectId" = $1) OR "topicId" IN (SELECT id FROM topics WHERE "domainId" IN (SELECT id FROM domains WHERE "subjectId" = $1))`,
+      [subjectId],
+    );
+    await q(`DELETE FROM placement_tests WHERE "subjectId" = $1`, [
+      subjectId,
+    ]);
+    await q(`DELETE FROM questions WHERE "subjectId" = $1`, [subjectId]);
+    await q(`DELETE FROM personal_mind_maps WHERE "subjectId" = $1`, [
+      subjectId,
+    ]);
+    await q(
+      `DELETE FROM user_domain_progress WHERE "domainId" IN (SELECT id FROM domains WHERE "subjectId" = $1)`,
+      [subjectId],
+    );
+
+    const knFilter = `
+      kn."entityId" = $1
+      OR kn."entityId" IN (SELECT id FROM domains WHERE "subjectId" = $1)
+      OR kn."entityId" IN (SELECT id FROM topics WHERE "domainId" IN (SELECT id FROM domains WHERE "subjectId" = $1))
+      OR kn."entityId" IN (SELECT id FROM learning_nodes WHERE "subjectId" = $1)`;
+
+    await this.safeDeleteQuery(
+      em,
+      `DELETE FROM knowledge_edges e USING knowledge_nodes kn
+       WHERE (e."fromNodeId" = kn.id OR e."toNodeId" = kn.id)
+       AND (${knFilter.replace(/\n/g, ' ')})`,
+      [subjectId],
+    );
+    await this.safeDeleteQuery(
+      em,
+      `DELETE FROM knowledge_nodes kn WHERE ${knFilter.replace(/\n/g, ' ')}`,
+      [subjectId],
+    );
+
+    await q(
+      `DELETE FROM lesson_type_content_versions WHERE "nodeId" IN (SELECT id FROM learning_nodes WHERE "subjectId" = $1)`,
+      [subjectId],
+    );
+    await q(
+      `DELETE FROM lesson_type_contents WHERE "nodeId" IN (SELECT id FROM learning_nodes WHERE "subjectId" = $1)`,
+      [subjectId],
+    );
+    await q(
+      `DELETE FROM user_progress WHERE "nodeId" IN (SELECT id FROM learning_nodes WHERE "subjectId" = $1)`,
+      [subjectId],
+    );
+
+    await q(`DELETE FROM learning_nodes WHERE "subjectId" = $1`, [subjectId]);
+    await q(
+      `DELETE FROM topics WHERE "domainId" IN (SELECT id FROM domains WHERE "subjectId" = $1)`,
+      [subjectId],
+    );
+    await q(`DELETE FROM domains WHERE "subjectId" = $1`, [subjectId]);
   }
 
   // Fog of War: Chỉ hiện nodes đã unlock

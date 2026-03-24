@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
+import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/core/widgets/error_widget.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 
@@ -107,10 +108,9 @@ class _MyPendingContributionsScreenState
           'Đóng góp của tôi',
           style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary),
         ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-          onPressed: () => context.pop(),
-        ),
+        leading: const AppBarLeadingBackAndHome(),
+        leadingWidth: 112,
+        automaticallyImplyLeading: false,
         actions: [
           IconButton(
             icon: const Icon(Icons.add_circle_outline,

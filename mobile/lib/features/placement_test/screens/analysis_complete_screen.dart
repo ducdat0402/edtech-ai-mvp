@@ -5,6 +5,7 @@ import 'package:confetti/confetti.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
+import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 
 class AnalysisCompleteScreen extends StatefulWidget {
@@ -75,24 +76,9 @@ class _AnalysisCompleteScreenState extends State<AnalysisCompleteScreen>
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text('Kết quả phân tích', style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
-        leading: IconButton(
-          icon: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: AppColors.bgSecondary,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppColors.borderPrimary),
-            ),
-            child: const Icon(Icons.arrow_back, color: AppColors.textPrimary, size: 20),
-          ),
-          onPressed: () {
-            if (Navigator.canPop(context)) {
-              Navigator.pop(context);
-            } else {
-              context.go('/dashboard');
-            }
-          },
-        ),
+        leading: const AppBarLeadingBackAndHome(),
+        leadingWidth: 112,
+        automaticallyImplyLeading: false,
       ),
       body: Stack(
         children: [

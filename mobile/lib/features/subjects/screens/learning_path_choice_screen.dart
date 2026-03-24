@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
+import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 
 /// Screen to choose between AI Chat and Placement Test for creating personal learning path
@@ -101,18 +102,8 @@ class _LearningPathChoiceScreenState extends State<LearningPathChoiceScreen> {
           'Tạo lộ trình học tập',
           style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
         ),
-        leading: IconButton(
-          icon: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: AppColors.bgSecondary,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppColors.borderPrimary),
-            ),
-            child: const Icon(Icons.arrow_back,
-                color: AppColors.textPrimary, size: 20),
-          ),
-          onPressed: () {
+        leading: AppBarLeadingBackAndHome(
+          onBack: () {
             if (widget.forceShowChoice) {
               context.go('/dashboard?showTutorial=1');
             } else {
@@ -120,6 +111,8 @@ class _LearningPathChoiceScreenState extends State<LearningPathChoiceScreen> {
             }
           },
         ),
+        leadingWidth: 112,
+        automaticallyImplyLeading: false,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -195,51 +188,6 @@ class _LearningPathChoiceScreenState extends State<LearningPathChoiceScreen> {
               },
             ),
 
-            const SizedBox(height: 28),
-
-            Text(
-              'Theo dõi & gợi ý trên lộ trình đã tạo (Coach AI)',
-              style: AppTextStyles.labelLarge.copyWith(
-                color: AppColors.textSecondary,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Dùng tiến độ/quiz để phân tích và xếp lịch ôn — chỉ trong các bài đã có trên lộ trình cá nhân (sau chat/placement), không tạo lộ trình chủ đề mới.',
-              style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textTertiary,
-                height: 1.4,
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            _buildOptionCard(
-              context,
-              title: 'Coach AI / Kế hoạch ôn',
-              subtitle:
-                  'Phân tích tiến độ & quiz trên đúng lộ trình bạn đã tạo',
-              description:
-                  'Gợi ý DRL/ITS và kế hoạch ngắn hạn chỉ gồm các bài đã nằm trên personal mind map (chat/placement). Không sinh lộ trình chủ đề mới — bổ sung cho hai lựa chọn phía trên.',
-              icon: Icons.insights_rounded,
-              gradient: [AppColors.orangeNeon, AppColors.pinkNeon],
-              duration: '2–5 phút',
-              features: [
-                'Gắn với tiến độ thật',
-                'Tôn trọng quyền riêng tư (Hồ sơ)',
-                'Mở từ đây hoặc từ màn Lộ trình của bạn',
-              ],
-              onTap: () {
-                HapticFeedback.lightImpact();
-                final name = widget.subjectName ?? '';
-                final q = name.isEmpty
-                    ? ''
-                    : '?name=${Uri.encodeComponent(name)}';
-                context.push(
-                  '/subjects/${widget.subjectId}/ai-coach$q',
-                );
-              },
-            ),
-
             const SizedBox(height: 32),
 
             // Info note
@@ -264,7 +212,7 @@ class _LearningPathChoiceScreenState extends State<LearningPathChoiceScreen> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      'Bạn có thể thay đổi lộ trình sau bằng cách làm lại bài test hoặc chat với AI. Coach AI (kế hoạch theo tiến độ) mở từ khối bên trên hoặc từ màn Lộ trình của bạn.',
+                      'Bạn có thể thay đổi lộ trình sau bằng cách làm lại bài test hoặc chat với AI.',
                       style: AppTextStyles.bodySmall.copyWith(
                         color: AppColors.textSecondary,
                         height: 1.4,

@@ -6,6 +6,7 @@ import {
   UseGuards,
   Request,
   BadRequestException,
+  Param,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -20,6 +21,12 @@ export class UsersController {
     const user = await this.usersService.findById(req.user.id);
     const { password, ...result } = user;
     return result;
+  }
+
+  /** Xem hồ sơ người khác (đã đăng nhập) — dùng cho leaderboard, không lộ email. */
+  @Get('public/:userId')
+  async getPublicProfile(@Param('userId') userId: string) {
+    return this.usersService.getPublicProfile(userId);
   }
 
   @Patch('switch-role')

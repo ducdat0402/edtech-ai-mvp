@@ -14,7 +14,6 @@ import { Quest } from '../quests/entities/quest.entity';
 import { UserQuest } from '../quests/entities/user-quest.entity';
 import { Domain } from '../domains/entities/domain.entity';
 import { Topic } from '../topics/entities/topic.entity';
-import { UserBehavior } from '../ai-agents/entities/user-behavior.entity';
 import { RewardTransaction } from '../user-currency/entities/reward-transaction.entity';
 import { Achievement } from '../achievements/entities/achievement.entity';
 import { UserAchievement } from '../achievements/entities/user-achievement.entity';
@@ -77,7 +76,6 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
         UserQuest,
         Domain,
         Topic,
-        UserBehavior,
         RewardTransaction,
         Achievement,
         UserAchievement,

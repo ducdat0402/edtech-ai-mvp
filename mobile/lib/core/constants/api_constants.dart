@@ -4,6 +4,10 @@ class ApiConstants {
   // Base URL - Change in api_config.dart
   static const String baseUrl = ApiConfig.baseUrl;
 
+  /// Web OAuth client ID — dùng làm `serverClientId` trên Android/iOS (ID token cho backend).
+  static const String googleServerClientId =
+      '472848673350-3cdph27sao6jrinaem7fftkvrr2cjrha.apps.googleusercontent.com';
+
   // Auth Endpoints
   static const String register = '/auth/register';
   static const String login = '/auth/login';
@@ -144,6 +148,8 @@ class ApiConstants {
 
   // User Role
   static const String switchRole = '/users/switch-role';
+  /// Hồ sơ công khai (đã đăng nhập) — leaderboard, không có email.
+  static String userPublicProfile(String userId) => '/users/public/$userId';
 
   // Pending Contributions (Contributor mode)
   static const String myPendingContributions = '/pending-contributions/my';
@@ -160,6 +166,7 @@ class ApiConstants {
 
   // Friends
   static const String friends = '/friends';
+  static const String friendsBlocked = '/friends/blocked';
   static const String friendRequests = '/friends/requests';
   static const String friendPendingCount = '/friends/pending-count';
   static const String friendSearch = '/friends/search';
@@ -187,26 +194,6 @@ class ApiConstants {
 
   // Analytics (Admin only)
   static const String analyticsOverview = '/analytics/overview';
-
-  // AI agents (behavior tracking — JWT required)
-  static const String aiAgentsBehaviorTrack = '/ai-agents/behavior/track';
-  static String aiAgentsMastery(String nodeId) => '/ai-agents/mastery/$nodeId';
-  static String aiAgentsBehaviorNode(String nodeId) =>
-      '/ai-agents/behavior/node/$nodeId';
-  static const String aiAgentsItsAdjustDifficulty = '/ai-agents/its/adjust-difficulty';
-  static const String aiAgentsDrlNextNode = '/ai-agents/drl/next-node';
-  static const String aiAgentsItsHint = '/ai-agents/its/hint';
-  static const String aiAgentsLangchainRoadmap = '/ai-agents/langchain/roadmap';
-  static const String aiAgentsItsRecommendations = '/ai-agents/its/recommendations';
-  static String aiAgentsItsShouldSkip(String nodeId) =>
-      '/ai-agents/its/should-skip/$nodeId';
-  static const String aiAgentsBehaviorErrorPatterns =
-      '/ai-agents/behavior/error-patterns';
-  static const String aiAgentsBehaviorStrengthsWeaknesses =
-      '/ai-agents/behavior/strengths-weaknesses';
-
-  /// Admin: raw behaviors for user + node
-  static const String analyticsUserBehaviors = '/analytics/user-behaviors';
 
   // Payment (Diamond purchase)
   static const String paymentPackages = '/payment/packages';

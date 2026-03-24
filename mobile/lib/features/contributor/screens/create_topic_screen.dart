@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
+import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 
 class CreateTopicScreen extends StatefulWidget {
@@ -147,10 +148,9 @@ class _CreateTopicScreenState extends State<CreateTopicScreen> {
         elevation: 0,
         title: Text('Tạo Topic Mới',
             style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary)),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-          onPressed: () => context.pop(),
-        ),
+        leading: const AppBarLeadingBackAndHome(),
+        leadingWidth: 112,
+        automaticallyImplyLeading: false,
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())

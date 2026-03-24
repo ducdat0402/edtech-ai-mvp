@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:dio/dio.dart';
 import 'package:edtech_mobile/theme/colors.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
+import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'quiz_editor_screen.dart';
 
 class ImageQuizEditorScreen extends StatefulWidget {
@@ -233,10 +234,9 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
       backgroundColor: AppColors.bgPrimary,
       appBar: AppBar(
         backgroundColor: AppColors.bgSecondary,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
+        leading: const AppBarLeadingBackAndHome(),
+        leadingWidth: 112,
+        automaticallyImplyLeading: false,
         title: Text(
           widget.isEditMode ? 'Sửa bài Image Quiz' : 'Tạo bài Image Quiz',
           style: const TextStyle(color: AppColors.textPrimary, fontSize: 18),

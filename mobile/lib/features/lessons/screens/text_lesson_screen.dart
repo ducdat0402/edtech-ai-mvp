@@ -1,6 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:edtech_mobile/core/services/ai_behavior_tracker.dart';
+import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/theme/colors.dart';
 import 'end_quiz_screen.dart';
 
@@ -54,17 +54,6 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
     return List<String>.from(raw.map((e) => e.toString()));
   }
 
-  @override
-  void initState() {
-    super.initState();
-    AiBehaviorTracker.trackLessonScreenOpened(
-      context,
-      nodeId: widget.nodeId,
-      screenName: 'text_lesson',
-      lessonType: widget.lessonType,
-    );
-  }
-
   int get _estimatedReadingTime {
     int totalWords = 0;
     for (final section in _sections) {
@@ -100,10 +89,9 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.bgPrimary,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
+        leading: const AppBarLeadingBackAndHome(),
+        leadingWidth: 112,
+        automaticallyImplyLeading: false,
         title: Text(
           widget.title,
           style: const TextStyle(

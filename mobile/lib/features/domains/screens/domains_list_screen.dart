@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
@@ -64,17 +65,10 @@ class _DomainsListScreenState extends State<DomainsListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: const AppBarLeadingBackAndHome(),
+        leadingWidth: 112,
+        automaticallyImplyLeading: false,
         title: Text(widget.subjectName ?? 'Chương học'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.auto_graph_rounded),
-            tooltip: 'Coach AI — Lộ trình cá nhân',
-            onPressed: () => context.push(
-              '/subjects/${widget.subjectId}/ai-coach',
-              extra: {'subjectName': widget.subjectName},
-            ),
-          ),
-        ],
       ),
       body: _isLoading
           ? const SkeletonLoader(

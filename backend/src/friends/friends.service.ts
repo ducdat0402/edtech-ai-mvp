@@ -270,6 +270,25 @@ export class FriendsService {
     await this.blockRepository.remove(block);
   }
 
+  /** Người mà user hiện tại đã chặn (để hiển thị danh sách & gỡ chặn). */
+  async getBlockedUsers(userId: string): Promise<{
+    users: Array<{ id: string; fullName: string; blockedAt: string }>;
+  }> {
+    const blocks = await this.blockRepository.find({
+      where: { blockerId: userId },
+      relations: ['blocked'],
+      order: { createdAt: 'DESC' },
+    });
+
+    return {
+      users: blocks.map((b) => ({
+        id: b.blocked.id,
+        fullName: b.blocked.fullName || 'Anonymous',
+        blockedAt: b.createdAt.toISOString(),
+      })),
+    };
+  }
+
   // ─── Requests ──────────────────────────────────────────────
 
   async getRequests(userId: string): Promise<{ received: any[]; sent: any[] }> {

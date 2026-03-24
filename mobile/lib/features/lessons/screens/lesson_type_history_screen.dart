@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
+import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/theme/colors.dart';
 import 'package:edtech_mobile/features/lessons/screens/image_quiz_lesson_screen.dart';
 import 'package:edtech_mobile/features/lessons/screens/image_gallery_lesson_screen.dart';
@@ -211,10 +212,9 @@ class _LessonTypeHistoryScreenState extends State<LessonTypeHistoryScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.bgSecondary,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
+        leading: const AppBarLeadingBackAndHome(),
+        leadingWidth: 112,
+        automaticallyImplyLeading: false,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

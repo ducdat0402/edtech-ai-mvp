@@ -75,12 +75,13 @@ class TutorialHelper {
       beforeFocus: (target) async {
         final ctx = target.keyTarget?.currentContext;
         if (ctx != null && ctx.mounted) {
+          // explicit: luôn cuộn để đưa target vào viewport (kể cả phần dưới màn hình, vd. chat AI)
           await Scrollable.ensureVisible(
             ctx,
-            duration: const Duration(milliseconds: 400),
+            duration: const Duration(milliseconds: 450),
             curve: Curves.easeInOut,
-            alignment: 0.3,
-            alignmentPolicy: ScrollPositionAlignmentPolicy.keepVisibleAtEnd,
+            alignment: 0.2,
+            alignmentPolicy: ScrollPositionAlignmentPolicy.explicit,
           );
         }
       },

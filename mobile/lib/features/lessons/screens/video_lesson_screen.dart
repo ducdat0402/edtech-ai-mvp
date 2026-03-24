@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:flutter/services.dart';
-import 'package:edtech_mobile/core/services/ai_behavior_tracker.dart';
 import 'package:edtech_mobile/theme/colors.dart';
 import 'end_quiz_screen.dart';
 
@@ -41,17 +41,6 @@ class _VideoLessonScreenState extends State<VideoLessonScreen> {
     return List<String>.from(raw.map((e) => e.toString()));
   }
 
-  @override
-  void initState() {
-    super.initState();
-    AiBehaviorTracker.trackLessonScreenOpened(
-      context,
-      nodeId: widget.nodeId,
-      screenName: 'video_lesson',
-      lessonType: widget.lessonType,
-    );
-  }
-
   void _copyToClipboard(String text) {
     Clipboard.setData(ClipboardData(text: text));
     ScaffoldMessenger.of(context).showSnackBar(
@@ -72,10 +61,9 @@ class _VideoLessonScreenState extends State<VideoLessonScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.bgPrimary,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
+        leading: const AppBarLeadingBackAndHome(),
+        leadingWidth: 112,
+        automaticallyImplyLeading: false,
         title: Text(
           widget.title,
           style: const TextStyle(

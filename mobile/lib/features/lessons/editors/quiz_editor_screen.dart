@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:dio/dio.dart';
 import 'package:edtech_mobile/theme/colors.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
+import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/features/lessons/screens/image_quiz_lesson_screen.dart';
 import 'package:edtech_mobile/features/lessons/screens/image_gallery_lesson_screen.dart';
 import 'package:edtech_mobile/features/lessons/screens/video_lesson_screen.dart';
@@ -627,10 +628,9 @@ class _QuizEditorScreenState extends State<QuizEditorScreen> {
       backgroundColor: AppColors.bgPrimary,
       appBar: AppBar(
         backgroundColor: AppColors.bgSecondary,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
+        leading: const AppBarLeadingBackAndHome(),
+        leadingWidth: 112,
+        automaticallyImplyLeading: false,
         title: Text(
           widget.isEditMode ? 'Sửa bài test cuối bài' : 'Bài test cuối bài',
           style: const TextStyle(color: AppColors.textPrimary, fontSize: 18),

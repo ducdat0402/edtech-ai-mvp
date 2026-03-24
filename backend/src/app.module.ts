@@ -19,7 +19,6 @@ import { LeaderboardModule } from './leaderboard/leaderboard.module';
 import { HealthModule } from './health/health.module';
 import { DomainsModule } from './domains/domains.module';
 import { TopicsModule } from './topics/topics.module';
-import { AiAgentsModule } from './ai-agents/ai-agents.module';
 import { AchievementsModule } from './achievements/achievements.module';
 import { PersonalMindMapModule } from './personal-mind-map/personal-mind-map.module';
 import { PaymentModule } from './payment/payment.module';
@@ -63,7 +62,6 @@ import { TypeOrmConfigService } from './config/typeorm.config';
     HealthModule,
     DomainsModule,
     TopicsModule,
-    AiAgentsModule,
     AchievementsModule,
     PersonalMindMapModule,
     PaymentModule,

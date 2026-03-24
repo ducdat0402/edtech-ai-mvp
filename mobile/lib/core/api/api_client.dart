@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter/foundation.dart';
@@ -7,6 +9,11 @@ class ApiClient {
   late Dio _dio;
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
   static const String _tokenKey = 'auth_token';
+  /// Thời điểm lưu token (ms epoch) — cửa sổ “ghi nhớ đăng nhập” 30 ngày.
+  static const String _loginAtKey = 'auth_login_at_ms';
+
+  /// Gọi khi 401 để cập nhật UI (GoRouter) mà không cần import session vào đây.
+  void Function()? onSessionInvalidated;
 
   ApiClient() {
     _dio = Dio(
@@ -61,8 +68,9 @@ class ApiClient {
         onError: (error, handler) {
           // Handle errors
           if (error.response?.statusCode == 401) {
-            // Token expired, clear and redirect to login
-            _storage.delete(key: _tokenKey);
+            clearToken().then((_) {
+              onSessionInvalidated?.call();
+            });
           }
           // For 200 with null/empty response, don't treat as error
           if (error.response?.statusCode == 200 &&
@@ -84,14 +92,78 @@ class ApiClient {
     );
   }
 
+  static Map<String, dynamic>? _decodeJwtPayload(String token) {
+    try {
+      final parts = token.split('.');
+      if (parts.length != 3) return null;
+      final normalized = base64Url.normalize(parts[1]);
+      final jsonStr = utf8.decode(base64Url.decode(normalized));
+      return jsonDecode(jsonStr) as Map<String, dynamic>;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Token còn hiệu lực: có token, trong 30 ngày kể từ lần đăng nhập, và chưa hết JWT `exp`.
+  Future<bool> hasValidStoredSession() async {
+    final token = await _storage.read(key: _tokenKey);
+    if (token == null || token.isEmpty) return false;
+
+    final now = DateTime.now();
+    final atStr = await _storage.read(key: _loginAtKey);
+
+    if (atStr != null && atStr.isNotEmpty) {
+      final atMs = int.tryParse(atStr);
+      if (atMs != null) {
+        final loginAt = DateTime.fromMillisecondsSinceEpoch(atMs);
+        if (now.difference(loginAt) > const Duration(days: 30)) {
+          await clearToken();
+          onSessionInvalidated?.call();
+          return false;
+        }
+      }
+    }
+
+    final payload = _decodeJwtPayload(token);
+    if (payload != null && payload['exp'] != null) {
+      final expSec = payload['exp'];
+      final expMs = expSec is int
+          ? expSec * 1000
+          : (expSec is num ? (expSec * 1000).round() : null);
+      if (expMs != null) {
+        final expAt = DateTime.fromMillisecondsSinceEpoch(expMs);
+        if (now.isAfter(expAt)) {
+          await clearToken();
+          onSessionInvalidated?.call();
+          return false;
+        }
+      }
+    }
+
+    // Cài cũ chưa có auth_login_at_ms: gắn mốc hiện tại để bắt đầu cửa sổ 30 ngày.
+    if (atStr == null || atStr.isEmpty) {
+      await _storage.write(
+        key: _loginAtKey,
+        value: now.millisecondsSinceEpoch.toString(),
+      );
+    }
+
+    return true;
+  }
+
   // Save token
   Future<void> saveToken(String token) async {
     await _storage.write(key: _tokenKey, value: token);
+    await _storage.write(
+      key: _loginAtKey,
+      value: DateTime.now().millisecondsSinceEpoch.toString(),
+    );
   }
 
   // Clear token
   Future<void> clearToken() async {
     await _storage.delete(key: _tokenKey);
+    await _storage.delete(key: _loginAtKey);
   }
 
   // Get token

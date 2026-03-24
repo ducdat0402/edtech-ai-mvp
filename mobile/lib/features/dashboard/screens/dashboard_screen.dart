@@ -696,77 +696,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return const SizedBox.shrink();
   }
 
-  void _showCoachAiSubjectPicker(List<dynamic> subjects) {
-    if (subjects.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Chưa có môn học trên dashboard')),
-      );
-      return;
-    }
-    showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: AppColors.bgSecondary,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      isScrollControlled: true,
-      builder: (ctx) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Chọn môn — Coach AI',
-                  style:
-                      AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Lộ trình LangChain & phân tích ITS theo từng môn.',
-                  style: AppTextStyles.caption
-                      .copyWith(color: AppColors.textTertiary),
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  height: MediaQuery.of(ctx).size.height * 0.42,
-                  child: ListView.builder(
-                    itemCount: subjects.length,
-                    itemBuilder: (context, i) {
-                      final s = subjects[i];
-                      if (s is! Map) return const SizedBox.shrink();
-                      final id = s['id'] as String?;
-                      final name = s['name'] as String? ?? 'Môn học';
-                      return ListTile(
-                        leading: const Icon(Icons.auto_graph_rounded,
-                            color: AppColors.purpleNeon),
-                        title: Text(
-                          name,
-                          style: const TextStyle(color: AppColors.textPrimary),
-                        ),
-                        onTap: () {
-                          Navigator.pop(ctx);
-                          if (id != null) {
-                            context.push(
-                              '/subjects/$id/ai-coach',
-                              extra: {'subjectName': name},
-                            );
-                          }
-                        },
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
   Widget _buildQuickActions(List<dynamic> subjects) {
     return Column(
       key: _quickActionsKey,
@@ -794,22 +723,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 label: 'Currency',
                 color: AppColors.coinGold,
                 onTap: () => context.push('/currency'),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _ActionCard(
-                icon: Icons.auto_graph_rounded,
-                label: 'Coach AI',
-                color: AppColors.purpleNeon,
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  _showCoachAiSubjectPicker(subjects);
-                },
               ),
             ),
           ],

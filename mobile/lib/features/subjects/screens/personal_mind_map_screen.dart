@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/services/tutorial_service.dart';
 import 'package:edtech_mobile/core/tutorial/tutorial_helper.dart';
+import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:go_router/go_router.dart';
 
 class PersonalMindMapScreen extends StatefulWidget {
@@ -84,8 +85,13 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
 
   void _showWelcomeTutorial() {
     if (!mounted) return;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
+      // Nút chat nằm cuối SingleChildScrollView — cuộn trước rồi mới mở coach mark
+      await _scrollWelcomeButtonIntoView();
+      if (!mounted || !context.mounted) return;
+      await Future<void>.delayed(const Duration(milliseconds: 80));
+      if (!mounted || !context.mounted) return;
       TutorialHelper.showTutorial(
         context: context,
         tutorialId: '${TutorialService.personalMindMapTutorial}_welcome',
@@ -96,10 +102,24 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
             description: 'Nhấn nút này để chat với AI và tạo lộ trình học tập phù hợp với bạn!',
             icon: Icons.route,
             stepLabel: 'Bắt đầu',
+            align: ContentAlign.top,
           ),
         ],
       );
     });
+  }
+
+  /// Đưa nút "Bắt đầu" (chat AI) vào vùng nhìn thấy trước khi hiện hướng dẫn.
+  Future<void> _scrollWelcomeButtonIntoView() async {
+    final ctx = _welcomeButtonKey.currentContext;
+    if (ctx == null || !ctx.mounted) return;
+    await Scrollable.ensureVisible(
+      ctx,
+      duration: const Duration(milliseconds: 420),
+      curve: Curves.easeInOut,
+      alignment: 0.15,
+      alignmentPolicy: ScrollPositionAlignmentPolicy.explicit,
+    );
   }
 
   void _showMindMapTutorial() {
@@ -310,19 +330,13 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
     }
   }
 
-  /// Coach AI (LangChain + hành vi) — cùng môn với lộ trình cá nhân.
-  void _navigateToAiCoach() {
-    context.push('/subjects/${widget.subjectId}/ai-coach');
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Lộ trình của bạn'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
+        leading: AppBarLeadingBackAndHome(
+          onBack: () {
             if (_isChatMode && !_exists) {
               setState(() => _isChatMode = false);
             } else {
@@ -330,6 +344,8 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
             }
           },
         ),
+        leadingWidth: 112,
+        automaticallyImplyLeading: false,
         actions: [
           if (_exists)
             PopupMenuButton<String>(
@@ -338,21 +354,9 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
                   _checkAndLoadMindMap();
                 } else if (value == 'recreate') {
                   _recreateMindMap();
-                } else if (value == 'coach') {
-                  _navigateToAiCoach();
                 }
               },
               itemBuilder: (context) => [
-                const PopupMenuItem(
-                  value: 'coach',
-                  child: Row(
-                    children: [
-                      Icon(Icons.insights, size: 20, color: Colors.deepPurple),
-                      SizedBox(width: 8),
-                      Text('Coach AI (trên lộ trình này)'),
-                    ],
-                  ),
-                ),
                 const PopupMenuItem(
                   value: 'refresh',
                   child: Row(
@@ -910,46 +914,6 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
                 ],
               ),
             ],
-          ),
-        ),
-        Material(
-          color: Colors.deepPurple.shade50,
-          child: InkWell(
-            onTap: _navigateToAiCoach,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Row(
-                children: [
-                  Icon(Icons.auto_awesome, color: Colors.deepPurple.shade700),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Coach AI — theo dõi trên lộ trình này',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.deepPurple.shade900,
-                            fontSize: 15,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Phân tích quiz & tiến độ; gợi ý/ôn chỉ trong các bài đã có trên map',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.deepPurple.shade700,
-                            height: 1.25,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Icon(Icons.chevron_right, color: Colors.deepPurple.shade400),
-                ],
-              ),
-            ),
           ),
         ),
         Expanded(

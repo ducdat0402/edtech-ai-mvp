@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:edtech_mobile/core/services/auth_service.dart';
 import 'package:go_router/go_router.dart';
+import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -103,19 +104,11 @@ class _RegisterScreenState extends State<RegisterScreen>
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: AppColors.bgSecondary,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppColors.borderPrimary),
-            ),
-            child: const Icon(Icons.arrow_back,
-                color: AppColors.textPrimary, size: 20),
-          ),
-          onPressed: () => context.go('/login'),
+        leading: AppBarLeadingBackAndHome(
+          onBack: () => context.go('/login'),
         ),
+        leadingWidth: 112,
+        automaticallyImplyLeading: false,
       ),
       body: SafeArea(
         child: Center(

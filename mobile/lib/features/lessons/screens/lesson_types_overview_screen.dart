@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:edtech_mobile/core/services/ai_behavior_tracker.dart';
-import 'package:edtech_mobile/core/services/ai_user_preferences.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
-import 'package:edtech_mobile/features/learning_nodes/widgets/ai_learning_insight_card.dart';
+import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 
 /// Screen showing all available lesson types for a learning node.
@@ -67,17 +65,6 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
         _isLoading = false;
       });
 
-      if (!_aiLessonTypesViewTracked && mounted) {
-        _aiLessonTypesViewTracked = true;
-        AiBehaviorTracker.fireAndForget(
-          apiService,
-          nodeId: widget.nodeId,
-          action: 'view',
-          context: const {'screen': 'lesson_types_overview'},
-        );
-      }
-
-      _loadAiAgentInsightsForOverview(apiService);
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -85,25 +72,6 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
         _isLoading = false;
       });
     }
-  }
-
-  /// Phase 2: mastery + ITS on lesson-type overview (baseline difficulty: medium).
-  Future<void> _loadAiAgentInsightsForOverview(ApiService api) async {
-    if (!mounted) return;
-    if (!AiUserPreferences.instance.cloudAiEnabled) return;
-    try {
-      final masteryRes = await api.getAiMastery(widget.nodeId);
-      final itsRes =
-          await api.getAiAdjustedDifficulty(widget.nodeId, 'medium');
-      if (!mounted) return;
-      setState(() {
-        _aiMasteryPct = (masteryRes['masteryPercentage'] as num?)?.toInt();
-        _aiSuggestedDifficulty =
-            itsRes['suggestedDifficulty']?.toString();
-        _aiItsReason = itsRes['reason']?.toString();
-        _aiShouldSkip = itsRes['shouldSkip'] == true;
-      });
-    } catch (_) {}
   }
 
   void _openLessonType(Map<String, dynamic> content) {
@@ -142,10 +110,9 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-          onPressed: () => context.pop(),
-        ),
+        leading: const AppBarLeadingBackAndHome(),
+        leadingWidth: 112,
+        automaticallyImplyLeading: false,
         title: Text(
           widget.title,
           style:
@@ -236,12 +203,6 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AiLearningInsightCard(
-            masteryPercentage: _aiMasteryPct,
-            suggestedDifficulty: _aiSuggestedDifficulty,
-            reason: _aiItsReason,
-            shouldSkip: _aiShouldSkip,
-          ),
           // Streak hint when lesson not fully complete
           if (!_isLessonComplete && totalCount > 0) ...[
             _buildStreakHintBanner(),

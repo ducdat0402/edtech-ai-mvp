@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
@@ -111,6 +112,9 @@ class _DomainDetailScreenState extends State<DomainDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: const AppBarLeadingBackAndHome(),
+        leadingWidth: 112,
+        automaticallyImplyLeading: false,
         title: Text(_domainData?['name'] ?? 'Chương học'),
       ),
       body: _isLoading

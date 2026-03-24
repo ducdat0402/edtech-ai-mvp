@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:edtech_mobile/core/constants/api_constants.dart';
 import 'package:edtech_mobile/core/services/auth_service.dart';
 import 'package:go_router/go_router.dart';
 import 'package:edtech_mobile/theme/theme.dart';
@@ -405,11 +406,8 @@ class _LoginScreenState extends State<LoginScreen>
       final authService = Provider.of<AuthService>(context, listen: false);
 
       if (kIsWeb) {
-        const clientId =
-            '472848673350-3cdph27sao6jrinaem7fftkvrr2cjrha.apps.googleusercontent.com';
-
         startGoogleJsSignIn(
-          clientId,
+          ApiConstants.googleServerClientId,
           (idToken) async {
             final result = await authService.googleLogin(idToken: idToken);
             if (!mounted) return;
@@ -434,12 +432,13 @@ class _LoginScreenState extends State<LoginScreen>
       } else {
         // On mobile platforms we need serverClientId (web client ID)
         // to receive a valid ID token for backend verification.
-        const webClientId =
-            '472848673350-3cdph27sao6jrinaem7fftkvrr2cjrha.apps.googleusercontent.com';
         final googleSignIn = GoogleSignIn(
           scopes: ['email', 'profile'],
-          serverClientId: webClientId,
+          serverClientId: ApiConstants.googleServerClientId,
         );
+        // Buộc hiển thị chọn tài khoản Google (sau khi đã signOut ở logout).
+        await googleSignIn.signOut();
+        await googleSignIn.disconnect();
         final account = await googleSignIn.signIn();
         if (account == null) {
           setState(() => _isGoogleLoading = false);

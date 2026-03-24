@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:edtech_mobile/core/services/ai_behavior_tracker.dart';
+import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/theme/colors.dart';
 import 'end_quiz_screen.dart';
 import 'fullscreen_image_viewer.dart';
@@ -39,12 +39,6 @@ class _ImageQuizLessonScreenState extends State<ImageQuizLessonScreen> {
   void initState() {
     super.initState();
     _pageController = PageController();
-    AiBehaviorTracker.trackLessonScreenOpened(
-      context,
-      nodeId: widget.nodeId,
-      screenName: 'image_quiz_lesson',
-      lessonType: widget.lessonType,
-    );
   }
 
   @override
@@ -75,10 +69,9 @@ class _ImageQuizLessonScreenState extends State<ImageQuizLessonScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.bgPrimary,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
+        leading: const AppBarLeadingBackAndHome(),
+        leadingWidth: 112,
+        automaticallyImplyLeading: false,
         title: Text(
           widget.title,
           style: const TextStyle(

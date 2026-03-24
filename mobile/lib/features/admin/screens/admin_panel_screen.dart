@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
+import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/core/config/api_config.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:video_player/video_player.dart';
@@ -43,12 +44,6 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
   bool _isLoadingAnalytics = false;
   String _analyticsPeriod = '30d';
 
-  final TextEditingController _aiBehUserIdController = TextEditingController();
-  final TextEditingController _aiBehNodeIdController = TextEditingController();
-  List<Map<String, dynamic>> _aiBehRows = [];
-  bool _aiBehLoading = false;
-  String? _aiBehError;
-
   @override
   void initState() {
     super.initState();
@@ -62,45 +57,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
 
   @override
   void dispose() {
-    _aiBehUserIdController.dispose();
-    _aiBehNodeIdController.dispose();
     _tabController.dispose();
     super.dispose();
-  }
-
-  Future<void> _loadAdminAiBehaviors() async {
-    final uid = _aiBehUserIdController.text.trim();
-    final nid = _aiBehNodeIdController.text.trim();
-    if (uid.isEmpty || nid.isEmpty) {
-      setState(() {
-        _aiBehError = 'Nhập userId và nodeId (UUID).';
-        _aiBehRows = [];
-      });
-      return;
-    }
-    setState(() {
-      _aiBehLoading = true;
-      _aiBehError = null;
-    });
-    try {
-      final api = Provider.of<ApiService>(context, listen: false);
-      final list = await api.getAdminUserBehaviors(userId: uid, nodeId: nid);
-      if (!mounted) return;
-      setState(() {
-        _aiBehLoading = false;
-        _aiBehRows = list.map((e) {
-          if (e is Map<String, dynamic>) return e;
-          return Map<String, dynamic>.from(e as Map);
-        }).toList();
-      });
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _aiBehLoading = false;
-        _aiBehError = e.toString();
-        _aiBehRows = [];
-      });
-    }
   }
 
   Future<void> _loadPendingEdits() async {
@@ -621,6 +579,9 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
       appBar: AppBar(
         backgroundColor: AppColors.bgSecondary,
         elevation: 0,
+        leading: const AppBarLeadingBackAndHome(),
+        leadingWidth: 112,
+        automaticallyImplyLeading: false,
         title: Row(
           children: [
             Container(
@@ -1853,135 +1814,6 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
   // ANALYTICS TAB
   // ═══════════════════════════════════════════════════════════════
 
-  Widget _buildAiBehaviorInspector() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.borderPrimary),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.hub_outlined,
-                  color: AppColors.purpleNeon, size: 22),
-              const SizedBox(width: 8),
-              Text(
-                'AI — User behaviors (theo user + node)',
-                style: AppTextStyles.labelLarge.copyWith(
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'GET /analytics/user-behaviors (admin). Dùng để debug Phase 1 tracking.',
-            style: AppTextStyles.caption
-                .copyWith(color: AppColors.textTertiary),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _aiBehUserIdController,
-            style: AppTextStyles.bodyMedium
-                .copyWith(color: AppColors.textPrimary),
-            decoration: const InputDecoration(
-              labelText: 'User ID (UUID)',
-              border: OutlineInputBorder(),
-              isDense: true,
-            ),
-          ),
-          const SizedBox(height: 10),
-          TextField(
-            controller: _aiBehNodeIdController,
-            style: AppTextStyles.bodyMedium
-                .copyWith(color: AppColors.textPrimary),
-            decoration: const InputDecoration(
-              labelText: 'Learning node ID (UUID)',
-              border: OutlineInputBorder(),
-              isDense: true,
-            ),
-          ),
-          const SizedBox(height: 12),
-          GamingButton(
-            text: _aiBehLoading ? 'Đang tải…' : 'Tải behaviors',
-            onPressed: _aiBehLoading ? null : _loadAdminAiBehaviors,
-            icon: Icons.download_rounded,
-          ),
-          if (_aiBehError != null) ...[
-            const SizedBox(height: 10),
-            Text(
-              _aiBehError!,
-              style: AppTextStyles.caption.copyWith(color: AppColors.errorNeon),
-            ),
-          ],
-          if (_aiBehRows.isNotEmpty) ...[
-            const SizedBox(height: 14),
-            Text(
-              '${_aiBehRows.length} sự kiện',
-              style: AppTextStyles.labelMedium
-                  .copyWith(color: AppColors.textSecondary),
-            ),
-            const SizedBox(height: 8),
-            ..._aiBehRows.take(30).map((row) {
-              final action = row['action']?.toString() ?? '';
-              final cid = row['contentItemId']?.toString();
-              final created = row['createdAt']?.toString() ?? '';
-              return Container(
-                width: double.infinity,
-                margin: const EdgeInsets.only(bottom: 8),
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: AppColors.bgPrimary,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AppColors.borderPrimary),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      action,
-                      style: AppTextStyles.labelMedium.copyWith(
-                        color: AppColors.cyanNeon,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    if (cid != null && cid.isNotEmpty)
-                      Text(
-                        'contentItemId: $cid',
-                        style: AppTextStyles.caption
-                            .copyWith(color: AppColors.textTertiary),
-                      ),
-                    Text(
-                      created,
-                      style: AppTextStyles.caption
-                          .copyWith(color: AppColors.textTertiary),
-                    ),
-                    if (row['metrics'] != null)
-                      Text(
-                        'metrics: ${row['metrics']}',
-                        style: AppTextStyles.caption.copyWith(
-                          color: AppColors.textSecondary,
-                          fontSize: 11,
-                        ),
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                  ],
-                ),
-              );
-            }),
-          ],
-        ],
-      ),
-    );
-  }
-
   Widget _buildAnalyticsTab() {
     if (_isLoadingAnalytics) {
       return RefreshIndicator(
@@ -1993,8 +1825,6 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildAiBehaviorInspector(),
-              const SizedBox(height: 24),
               const Center(
                 child: CircularProgressIndicator(color: AppColors.purpleNeon),
               ),
@@ -2013,8 +1843,6 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildAiBehaviorInspector(),
-              const SizedBox(height: 24),
               Center(
                 child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -2052,8 +1880,6 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(16),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          _buildAiBehaviorInspector(),
-          const SizedBox(height: 20),
           _buildPeriodSelector(),
           const SizedBox(height: 16),
           _buildAnalyticsSectionTitle(

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
+import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 
 class ShopScreen extends StatefulWidget {
@@ -323,8 +324,9 @@ class _ShopScreenState extends State<ShopScreen>
     final str = e.toString();
     final match = RegExp(r'"message":"([^"]+)"').firstMatch(str);
     if (match != null) return match.group(1)!;
-    if (str.contains('Không đủ'))
+    if (str.contains('Không đủ')) {
       return str.split('Không đủ').last.split('"').first;
+    }
     return 'Có lỗi xảy ra';
   }
 
@@ -336,16 +338,9 @@ class _ShopScreenState extends State<ShopScreen>
         backgroundColor: AppColors.bgPrimary,
         title: Text('Cửa hàng',
             style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-          onPressed: () {
-            if (Navigator.canPop(context)) {
-              Navigator.pop(context);
-            } else {
-              context.go('/dashboard');
-            }
-          },
-        ),
+        leading: const AppBarLeadingBackAndHome(),
+        leadingWidth: 112,
+        automaticallyImplyLeading: false,
         actions: [
           Container(
             margin: const EdgeInsets.only(right: 12),

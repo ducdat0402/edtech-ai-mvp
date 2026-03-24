@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
+import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/core/widgets/bottom_nav_bar.dart';
 import 'package:edtech_mobile/core/widgets/error_widget.dart';
 import 'package:edtech_mobile/core/widgets/empty_state.dart';
 import 'package:edtech_mobile/features/chat/widgets/chat_bubble.dart';
+import 'package:edtech_mobile/features/leaderboard/widgets/leaderboard_user_profile_sheet.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 
 class LeaderboardScreen extends StatefulWidget {
@@ -120,6 +122,9 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        leading: const AppBarLeadingBackAndHome(),
+        leadingWidth: 112,
+        automaticallyImplyLeading: false,
         title: Text('Bảng xếp hạng',
             style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary)),
         bottom: TabBar(
@@ -187,12 +192,17 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
     return Column(
       children: [
         if (_myRank != null) _buildMyRankCard(),
-        Expanded(child: _buildGlobalList(_globalData)),
+        Expanded(
+            child: _buildGlobalList(_globalData,
+                sourceLabel: 'Bảng toàn cầu')),
       ],
     );
   }
 
-  Widget _buildGlobalList(Map<String, dynamic>? data) {
+  Widget _buildGlobalList(
+    Map<String, dynamic>? data, {
+    String sourceLabel = 'Bảng xếp hạng',
+  }) {
     if (data == null) return _buildLoading();
     final entries = data['entries'] as List? ?? [];
     if (entries.isEmpty) return const EmptyLeaderboardWidget();
@@ -206,6 +216,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
           child: _LeaderboardEntryCard(
             rank: entry['rank'] ?? i + 1,
             entry: entry,
+            profileSourceLabel: sourceLabel,
           ),
         );
       },
@@ -240,6 +251,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
                   return _WeeklyEntryCard(
                     rank: entry['rank'] ?? startIdx + i + 1,
                     entry: entry,
+                    profileSourceLabel: 'Bảng XP tuần này',
                   );
                 },
                 childCount:
@@ -402,9 +414,24 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          Expanded(child: _PodiumItem(entry: e2, rank: 2, height: 100)),
-          Expanded(child: _PodiumItem(entry: e1, rank: 1, height: 130)),
-          Expanded(child: _PodiumItem(entry: e3, rank: 3, height: 80)),
+          Expanded(
+              child: _PodiumItem(
+                  entry: e2,
+                  rank: 2,
+                  height: 100,
+                  profileSourceLabel: 'Bảng XP tuần này')),
+          Expanded(
+              child: _PodiumItem(
+                  entry: e1,
+                  rank: 1,
+                  height: 130,
+                  profileSourceLabel: 'Bảng XP tuần này')),
+          Expanded(
+              child: _PodiumItem(
+                  entry: e3,
+                  rank: 3,
+                  height: 80,
+                  profileSourceLabel: 'Bảng XP tuần này')),
         ],
       ),
     );
@@ -563,8 +590,13 @@ class _PodiumItem extends StatelessWidget {
   final Map<String, dynamic> entry;
   final int rank;
   final double height;
-  const _PodiumItem(
-      {required this.entry, required this.rank, required this.height});
+  final String profileSourceLabel;
+  const _PodiumItem({
+    required this.entry,
+    required this.rank,
+    required this.height,
+    required this.profileSourceLabel,
+  });
 
   Color get _color {
     if (rank == 1) return AppColors.rankGold;
@@ -580,20 +612,53 @@ class _PodiumItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final userId = entry['userId']?.toString();
+    final api = Provider.of<ApiService>(context, listen: false);
+    final weeklyXp = entry['weeklyXp'] ?? entry['totalXP'] ?? 0;
+    final name = entry['fullName'] as String?;
+
+    void openProfile() {
+      if (userId == null || userId.isEmpty) return;
+      final wxp = weeklyXp is int ? weeklyXp : int.tryParse('$weeklyXp') ?? 0;
+      showLeaderboardUserProfileSheet(
+        context,
+        api: api,
+        userId: userId,
+        nameHint: name,
+        rankHint: rank,
+        sourceLabel: profileSourceLabel,
+        weeklyXpFromBoard: wxp > 0 ? wxp : null,
+      );
+    }
+
     return Column(
       children: [
         Text(_medal, style: const TextStyle(fontSize: 28)),
-        const SizedBox(height: 4),
-        Text(
-          entry['fullName'] ?? 'Anon',
-          style:
-              AppTextStyles.labelMedium.copyWith(color: AppColors.textPrimary),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          textAlign: TextAlign.center,
+        const SizedBox(height: 6),
+        LeaderboardUserAvatar(
+          displayName: name,
+          imageUrl: entry['avatar'] as String?,
+          size: 40,
+          onTap: userId != null && userId.isNotEmpty ? openProfile : null,
+        ),
+        const SizedBox(height: 6),
+        InkWell(
+          onTap: userId != null && userId.isNotEmpty ? openProfile : null,
+          borderRadius: BorderRadius.circular(8),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Text(
+              entry['fullName'] ?? 'Anon',
+              style: AppTextStyles.labelMedium
+                  .copyWith(color: AppColors.textPrimary),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+            ),
+          ),
         ),
         Text(
-          '${entry['weeklyXp'] ?? entry['totalXP'] ?? 0} XP',
+          '$weeklyXp XP',
           style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
         ),
         const SizedBox(height: 8),
@@ -625,10 +690,34 @@ class _PodiumItem extends StatelessWidget {
 class _WeeklyEntryCard extends StatelessWidget {
   final int rank;
   final Map<String, dynamic> entry;
-  const _WeeklyEntryCard({required this.rank, required this.entry});
+  final String profileSourceLabel;
+  const _WeeklyEntryCard({
+    required this.rank,
+    required this.entry,
+    required this.profileSourceLabel,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final userId = entry['userId']?.toString();
+    final api = Provider.of<ApiService>(context, listen: false);
+    final name = entry['fullName'] as String?;
+    final weeklyXp = entry['weeklyXp'] ?? 0;
+    final wxp = weeklyXp is int ? weeklyXp : int.tryParse('$weeklyXp') ?? 0;
+
+    void openProfile() {
+      if (userId == null || userId.isEmpty) return;
+      showLeaderboardUserProfileSheet(
+        context,
+        api: api,
+        userId: userId,
+        nameHint: name,
+        rankHint: rank,
+        sourceLabel: profileSourceLabel,
+        weeklyXpFromBoard: wxp > 0 ? wxp : null,
+      );
+    }
+
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
@@ -652,12 +741,23 @@ class _WeeklyEntryCard extends StatelessWidget {
                       .copyWith(color: AppColors.textSecondary)),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 10),
+          LeaderboardUserAvatar(
+            displayName: name,
+            imageUrl: entry['avatar'] as String?,
+            size: 44,
+            onTap: userId != null && userId.isNotEmpty ? openProfile : null,
+          ),
+          const SizedBox(width: 10),
           Expanded(
-            child: Text(
-              entry['fullName'] ?? 'Anonymous',
-              style: AppTextStyles.labelLarge
-                  .copyWith(color: AppColors.textPrimary),
+            child: InkWell(
+              onTap: userId != null && userId.isNotEmpty ? openProfile : null,
+              borderRadius: BorderRadius.circular(8),
+              child: Text(
+                entry['fullName'] ?? 'Anonymous',
+                style: AppTextStyles.labelLarge
+                    .copyWith(color: AppColors.textPrimary),
+              ),
             ),
           ),
           Container(
@@ -688,7 +788,12 @@ class _WeeklyEntryCard extends StatelessWidget {
 class _LeaderboardEntryCard extends StatelessWidget {
   final int rank;
   final Map<String, dynamic> entry;
-  const _LeaderboardEntryCard({required this.rank, required this.entry});
+  final String profileSourceLabel;
+  const _LeaderboardEntryCard({
+    required this.rank,
+    required this.entry,
+    required this.profileSourceLabel,
+  });
 
   Color _getRankColor(int rank) {
     if (rank == 1) return AppColors.rankGold;
@@ -701,6 +806,21 @@ class _LeaderboardEntryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final rankColor = _getRankColor(rank);
     final isTopThree = rank <= 3;
+    final userId = entry['userId']?.toString();
+    final api = Provider.of<ApiService>(context, listen: false);
+    final name = entry['fullName'] as String?;
+
+    void openProfile() {
+      if (userId == null || userId.isEmpty) return;
+      showLeaderboardUserProfileSheet(
+        context,
+        api: api,
+        userId: userId,
+        nameHint: name,
+        rankHint: rank,
+        sourceLabel: profileSourceLabel,
+      );
+    }
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -742,15 +862,26 @@ class _LeaderboardEntryCard extends StatelessWidget {
                           .copyWith(color: AppColors.textSecondary)),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 10),
+          LeaderboardUserAvatar(
+            displayName: name,
+            imageUrl: entry['avatar'] as String?,
+            size: 44,
+            onTap: userId != null && userId.isNotEmpty ? openProfile : null,
+          ),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  entry['fullName'] ?? 'Anonymous',
-                  style: AppTextStyles.labelLarge.copyWith(
-                      color: isTopThree ? rankColor : AppColors.textPrimary),
+                InkWell(
+                  onTap: userId != null && userId.isNotEmpty ? openProfile : null,
+                  borderRadius: BorderRadius.circular(8),
+                  child: Text(
+                    entry['fullName'] ?? 'Anonymous',
+                    style: AppTextStyles.labelLarge.copyWith(
+                        color: isTopThree ? rankColor : AppColors.textPrimary),
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Row(

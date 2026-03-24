@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
+import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/core/widgets/bottom_nav_bar.dart';
 import 'package:edtech_mobile/core/widgets/empty_state.dart';
 import 'package:edtech_mobile/theme/theme.dart';
@@ -91,9 +92,17 @@ class _FriendsScreenState extends State<FriendsScreen>
       backgroundColor: AppColors.bgPrimary,
       appBar: AppBar(
         backgroundColor: AppColors.bgSecondary,
+        leading: const AppBarLeadingBackAndHome(),
+        leadingWidth: 112,
+        automaticallyImplyLeading: false,
         title: const Text('Ban be',
             style: TextStyle(color: AppColors.textPrimary)),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.block_rounded, color: AppColors.textPrimary),
+            tooltip: 'Đã chặn',
+            onPressed: () => context.push('/friends/blocked'),
+          ),
           IconButton(
             icon: const Icon(Icons.chat_rounded, color: AppColors.textPrimary),
             onPressed: () => context.push('/dm/conversations'),
@@ -871,6 +880,9 @@ class _FriendActivityPageState extends State<_FriendActivityPage> {
       backgroundColor: AppColors.bgPrimary,
       appBar: AppBar(
         backgroundColor: AppColors.bgSecondary,
+        leading: const AppBarLeadingBackAndHome(),
+        leadingWidth: 112,
+        automaticallyImplyLeading: false,
         title: const Text('Hoat dong ban be',
             style: TextStyle(color: AppColors.textPrimary)),
         iconTheme: const IconThemeData(color: AppColors.textPrimary),

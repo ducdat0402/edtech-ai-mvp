@@ -43,15 +43,33 @@ import 'package:edtech_mobile/features/lessons/screens/lesson_types_overview_scr
 import 'package:edtech_mobile/features/subjects/screens/unlock_subject_screen.dart';
 import 'package:edtech_mobile/features/shop/screens/shop_screen.dart';
 import 'package:edtech_mobile/features/friends/screens/friends_screen.dart';
+import 'package:edtech_mobile/features/friends/screens/blocked_users_screen.dart';
 import 'package:edtech_mobile/features/dm/screens/conversations_screen.dart';
 import 'package:edtech_mobile/features/dm/screens/chat_room_screen.dart';
 import 'package:edtech_mobile/features/auth/screens/forgot_password_screen.dart';
 import 'package:edtech_mobile/features/leaderboard/screens/weekly_rewards_history_screen.dart';
-import 'package:edtech_mobile/features/ai_coach/screens/ai_learning_coach_screen.dart';
+import 'package:edtech_mobile/core/auth/auth_session_controller.dart';
+import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 
-final GoRouter appRouter = GoRouter(
-  initialLocation: '/login',
-  routes: [
+/// Router có redirect theo phiên đăng nhập (30 ngày + JWT).
+GoRouter createAppRouter(AuthSessionController authSession) {
+  return GoRouter(
+    initialLocation: authSession.isLoggedIn ? '/dashboard' : '/login',
+    refreshListenable: authSession,
+    redirect: (BuildContext context, GoRouterState state) {
+      final loc = state.matchedLocation;
+      final atAuthGate = loc == '/login' ||
+          loc == '/register' ||
+          loc == '/forgot-password';
+      if (!authSession.isLoggedIn && !atAuthGate) {
+        return '/login';
+      }
+      if (authSession.isLoggedIn && atAuthGate) {
+        return '/dashboard';
+      }
+      return null;
+    },
+    routes: [
     GoRoute(
       path: '/login',
       builder: (context, state) => const LoginScreen(),
@@ -161,19 +179,6 @@ final GoRouter appRouter = GoRouter(
       },
     ),
     GoRoute(
-      path: '/subjects/:id/ai-coach',
-      builder: (context, state) {
-        final subjectId = state.pathParameters['id']!;
-        final extra = state.extra as Map<String, dynamic>?;
-        final subjectName = extra?['subjectName'] as String? ??
-            state.uri.queryParameters['name'];
-        return AiLearningCoachScreen(
-          subjectId: subjectId,
-          subjectName: subjectName,
-        );
-      },
-    ),
-    GoRoute(
       path: '/domains/:id',
       builder: (context, state) {
         final domainId = state.pathParameters['id']!;
@@ -222,6 +227,10 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/friends',
       builder: (context, state) => const FriendsScreen(),
+    ),
+    GoRoute(
+      path: '/friends/blocked',
+      builder: (context, state) => const BlockedUsersScreen(),
     ),
     GoRoute(
       path: '/dm/conversations',
@@ -409,7 +418,8 @@ final GoRouter appRouter = GoRouter(
       },
     ),
   ],
-);
+  );
+}
 
 /// Helper widget that loads lesson node data and opens the appropriate viewer
 class _LessonEditLoader extends StatefulWidget {
@@ -466,10 +476,9 @@ class _LessonEditLoaderState extends State<_LessonEditLoader> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
-        ),
+        leading: const AppBarLeadingBackAndHome(),
+        leadingWidth: 112,
+        automaticallyImplyLeading: false,
       ),
       body: Center(
         child: _error != null

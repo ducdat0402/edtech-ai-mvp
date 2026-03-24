@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
+import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 
 /// Màn hình xem lịch sử đóng góp của người dùng
@@ -69,19 +70,9 @@ class _MyContributionsScreenState extends State<MyContributionsScreen>
       appBar: AppBar(
         backgroundColor: AppColors.bgSecondary,
         elevation: 0,
-        leading: IconButton(
-          icon: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: AppColors.bgTertiary,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppColors.borderPrimary),
-            ),
-            child: const Icon(Icons.arrow_back,
-                color: AppColors.textPrimary, size: 20),
-          ),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: const AppBarLeadingBackAndHome(),
+        leadingWidth: 112,
+        automaticallyImplyLeading: false,
         title: Text('Đóng góp của tôi',
             style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
         bottom: TabBar(

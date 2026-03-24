@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/theme/colors.dart';
 import 'package:edtech_mobile/theme/text_styles.dart';
@@ -110,16 +111,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
       appBar: AppBar(
         title: const Text('Mua Kim Cương', style: AppTextStyles.h3),
         backgroundColor: AppColors.bgPrimary,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-          onPressed: () {
-            if (Navigator.canPop(context)) {
-              Navigator.pop(context);
-            } else {
-              context.go('/dashboard');
-            }
-          },
-        ),
+        leading: const AppBarLeadingBackAndHome(),
+        leadingWidth: 112,
+        automaticallyImplyLeading: false,
       ),
       body: _isLoading
           ? const Center(

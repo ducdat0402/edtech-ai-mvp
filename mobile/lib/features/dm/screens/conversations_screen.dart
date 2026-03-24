@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
+import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/core/widgets/bottom_nav_bar.dart';
 import 'package:edtech_mobile/core/widgets/empty_state.dart';
 import 'package:edtech_mobile/theme/theme.dart';
@@ -54,6 +55,9 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
       backgroundColor: AppColors.bgPrimary,
       appBar: AppBar(
         backgroundColor: AppColors.bgSecondary,
+        leading: const AppBarLeadingBackAndHome(),
+        leadingWidth: 112,
+        automaticallyImplyLeading: false,
         title: const Text('Tin nhắn',
             style: TextStyle(color: AppColors.textPrimary)),
         iconTheme: const IconThemeData(color: AppColors.textPrimary),

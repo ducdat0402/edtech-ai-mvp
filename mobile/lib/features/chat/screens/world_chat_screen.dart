@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/widgets/empty_state.dart';
 import 'package:edtech_mobile/features/chat/widgets/emoji_bar.dart';
+import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 
 class WorldChatScreen extends StatefulWidget {
@@ -299,10 +300,9 @@ class _WorldChatScreenState extends State<WorldChatScreen>
             ],
           ],
         ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: const AppBarLeadingBackAndHome(),
+        leadingWidth: 112,
+        automaticallyImplyLeading: false,
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: AppColors.cyanNeon,

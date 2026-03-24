@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/theme/colors.dart';
 import 'package:edtech_mobile/features/lessons/editors/image_quiz_editor_screen.dart';
 import 'package:edtech_mobile/features/lessons/editors/image_gallery_editor_screen.dart';
@@ -65,6 +66,9 @@ class _LessonTypePickerScreenState extends State<LessonTypePickerScreen> {
         backgroundColor: AppColors.bgPrimary,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
+        leading: const AppBarLeadingBackAndHome(),
+        leadingWidth: 112,
+        automaticallyImplyLeading: false,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),

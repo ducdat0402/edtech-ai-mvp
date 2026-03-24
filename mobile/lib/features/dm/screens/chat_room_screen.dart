@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/services/dm_socket_service.dart';
 import 'package:edtech_mobile/features/chat/widgets/emoji_bar.dart';
+import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 
 class ChatRoomScreen extends StatefulWidget {
@@ -270,6 +271,9 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
       backgroundColor: AppColors.bgPrimary,
       appBar: AppBar(
         backgroundColor: AppColors.bgSecondary,
+        leading: const AppBarLeadingBackAndHome(),
+        leadingWidth: 112,
+        automaticallyImplyLeading: false,
         title: Text(widget.peerName,
             style: const TextStyle(color: AppColors.textPrimary)),
         iconTheme: const IconThemeData(color: AppColors.textPrimary),

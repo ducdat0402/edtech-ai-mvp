@@ -1,13 +1,21 @@
 import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:edtech_mobile/core/api/api_client.dart';
+import 'package:edtech_mobile/core/auth/auth_session_controller.dart';
 import 'package:edtech_mobile/core/constants/api_constants.dart';
 
 class AuthService {
   final ApiClient _apiClient;
+  final AuthSessionController? _session;
 
-  AuthService(this._apiClient);
+  AuthService(this._apiClient, [this._session]);
+
+  void _onAuthSuccess() {
+    _session?.setLoggedIn(true);
+  }
 
   Future<Map<String, dynamic>> register({
     required String email,
@@ -28,6 +36,7 @@ class AuthService {
         final token = response.data['accessToken'] ?? response.data['access_token'];
         if (token != null) {
           await _apiClient.saveToken(token);
+          _onAuthSuccess();
         }
         return {
           'success': true,
@@ -227,6 +236,7 @@ class AuthService {
         final token = dataMap['accessToken'] ?? dataMap['access_token'];
         if (token != null && token.toString().isNotEmpty) {
           await _apiClient.saveToken(token.toString());
+          _onAuthSuccess();
           return {
             'success': true,
             'token': token.toString(),
@@ -265,11 +275,25 @@ class AuthService {
 
   Future<void> logout() async {
     await _apiClient.clearToken();
+    _session?.setLoggedIn(false);
+
+    // Đăng xuất khỏi Google trên thiết bị → lần sau bấm “Đăng nhập Google” sẽ chọn tài khoản.
+    if (!kIsWeb &&
+        (defaultTargetPlatform == TargetPlatform.android ||
+            defaultTargetPlatform == TargetPlatform.iOS)) {
+      try {
+        final gsi = GoogleSignIn(
+          scopes: ['email', 'profile'],
+          serverClientId: ApiConstants.googleServerClientId,
+        );
+        await gsi.signOut();
+        await gsi.disconnect();
+      } catch (_) {}
+    }
   }
 
   Future<bool> isAuthenticated() async {
-    final token = await _apiClient.getToken();
-    return token != null && token.isNotEmpty;
+    return _apiClient.hasValidStoredSession();
   }
 
   Future<Map<String, dynamic>?> getCurrentUser() async {

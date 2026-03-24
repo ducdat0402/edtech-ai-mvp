@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
+import { UserCurrency } from '../user-currency/entities/user-currency.entity';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -9,6 +10,8 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    @InjectRepository(UserCurrency)
+    private currencyRepository: Repository<UserCurrency>,
   ) {}
 
   async create(email: string, password: string, fullName?: string): Promise<User> {
@@ -27,6 +30,41 @@ export class UsersService {
 
   async findById(id: string): Promise<User | null> {
     return this.usersRepository.findOne({ where: { id } });
+  }
+
+  /** Hồ sơ công khai (bảng xếp hạng / bạn bè) — không trả email, password. */
+  async getPublicProfile(userId: string) {
+    const user = await this.usersRepository.findOne({
+      where: { id: userId },
+      select: ['id', 'fullName', 'totalXP', 'role', 'createdAt'],
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    const currency = await this.currencyRepository.findOne({
+      where: { userId },
+      select: [
+        'coins',
+        'diamonds',
+        'level',
+        'currentStreak',
+        'maxStreak',
+        'weeklyXp',
+      ],
+    });
+    return {
+      id: user.id,
+      fullName: user.fullName || 'Anonymous',
+      totalXP: user.totalXP ?? 0,
+      role: user.role,
+      memberSince: user.createdAt?.toISOString?.() ?? null,
+      coins: currency?.coins ?? 0,
+      diamonds: currency?.diamonds ?? 0,
+      level: currency?.level ?? 1,
+      currentStreak: currency?.currentStreak ?? 0,
+      maxStreak: currency?.maxStreak ?? 0,
+      weeklyXp: currency?.weeklyXp ?? 0,
+    };
   }
 
   async validatePassword(user: User, password: string): Promise<boolean> {

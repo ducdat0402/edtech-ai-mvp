@@ -54,7 +54,6 @@ edtech-ai-mvp/
 │   └── src/
 │       ├── achievements/       # Hệ thống thành tựu
 │       ├── ai/                 # AI Service (OpenAI)
-│       ├── ai-agents/          # ITS, DRL, LangChain
 │       ├── auth/               # Authentication
 │       ├── content-edits/      # Community editing
 │       ├── content-items/      # Nội dung bài học

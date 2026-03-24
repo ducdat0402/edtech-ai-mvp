@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:edtech_mobile/theme/colors.dart';
+import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'quiz_editor_screen.dart';
 
 class VideoEditorScreen extends StatefulWidget {
@@ -193,10 +194,9 @@ class _VideoEditorScreenState extends State<VideoEditorScreen> {
       backgroundColor: AppColors.bgPrimary,
       appBar: AppBar(
         backgroundColor: AppColors.bgSecondary,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
+        leading: const AppBarLeadingBackAndHome(),
+        leadingWidth: 112,
+        automaticallyImplyLeading: false,
         title: Text(
           widget.isEditMode ? 'Sửa bài Video' : 'Tạo bài Video',
           style: const TextStyle(color: AppColors.textPrimary, fontSize: 18),

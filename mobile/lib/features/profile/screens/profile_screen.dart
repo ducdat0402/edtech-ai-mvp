@@ -4,9 +4,9 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/services/auth_service.dart';
-import 'package:edtech_mobile/core/services/ai_user_preferences.dart';
 import 'package:edtech_mobile/core/services/tutorial_service.dart';
 import 'package:edtech_mobile/core/tutorial/tutorial_helper.dart';
+import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/core/widgets/bottom_nav_bar.dart';
 import 'package:edtech_mobile/core/widgets/error_widget.dart';
 import 'package:edtech_mobile/features/chat/widgets/chat_bubble.dart';
@@ -252,6 +252,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        leading: const AppBarLeadingBackAndHome(),
+        leadingWidth: 112,
+        automaticallyImplyLeading: false,
         title: Text('Profile',
             style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary)),
         actions: [
@@ -431,7 +434,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
 
           const SizedBox(height: 16),
-          _buildAiPrivacyCard(),
 
           // Profile Info Card
           _buildProfileInfoCard(),
@@ -451,71 +453,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const SizedBox(height: 32),
         ],
       ),
-    );
-  }
-
-  Widget _buildAiPrivacyCard() {
-    return ListenableBuilder(
-      listenable: AiUserPreferences.instance,
-      builder: (context, _) {
-        return Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: _bgSecondary,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: _borderColor),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(Icons.privacy_tip_outlined,
-                      color: _accentColor, size: 22),
-                  const SizedBox(width: 8),
-                  Text(
-                    'AI & quyền riêng tư',
-                    style: AppTextStyles.h4.copyWith(
-                      color: AppColors.textPrimary,
-                      fontSize: 16,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 6),
-              Text(
-                'Phase 5: kiểm soát dữ liệu gửi lên server và gọi OpenAI.',
-                style: AppTextStyles.caption
-                    .copyWith(color: AppColors.textTertiary),
-              ),
-              const SizedBox(height: 8),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Ghi nhận hành vi học'),
-                subtitle: const Text(
-                  'Gửi view / quiz / complete để DRL & ITS có ngữ cảnh. Tắt = không gửi tracking mới.',
-                ),
-                value: AiUserPreferences.instance.behaviorTrackingEnabled,
-                onChanged: (v) async {
-                  await AiUserPreferences.instance
-                      .setBehaviorTrackingEnabled(v);
-                },
-              ),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Gợi ý AI trên cloud'),
-                subtitle: const Text(
-                  'Coach AI, mastery, gợi ý quiz, lộ trình LangChain (API + OpenAI).',
-                ),
-                value: AiUserPreferences.instance.cloudAiEnabled,
-                onChanged: (v) async {
-                  await AiUserPreferences.instance.setCloudAiEnabled(v);
-                },
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 

@@ -274,6 +274,15 @@ class ApiService {
     return response.data;
   }
 
+  Future<Map<String, dynamic>> getUserPublicProfile(String userId) async {
+    final response =
+        await _apiClient.get(ApiConstants.userPublicProfile(userId));
+    final data = response.data;
+    if (data is Map<String, dynamic>) return data;
+    if (data is Map) return Map<String, dynamic>.from(data);
+    return {};
+  }
+
   Future<Map<String, dynamic>> getSubjectLeaderboard(
     String subjectId, {
     int limit = 100,
@@ -963,6 +972,14 @@ class ApiService {
     return response.data;
   }
 
+  Future<Map<String, dynamic>> getBlockedUsers() async {
+    final response = await _apiClient.get(ApiConstants.friendsBlocked);
+    final data = response.data;
+    if (data is Map<String, dynamic>) return data;
+    if (data is Map) return Map<String, dynamic>.from(data);
+    return {'users': <dynamic>[]};
+  }
+
   // Direct messages (DM)
   Future<List<dynamic>> getDmConversations() async {
     final response = await _apiClient.get(ApiConstants.dmConversations);
@@ -1002,169 +1019,4 @@ class ApiService {
     }
   }
 
-  /// Track learning behavior for AI agents (`POST /ai-agents/behavior/track`).
-  Future<void> trackAiBehavior({
-    required String nodeId,
-    required String action,
-    Map<String, dynamic>? metrics,
-    Map<String, dynamic>? context,
-    String? contentItemId,
-  }) async {
-    await _apiClient.post(
-      ApiConstants.aiAgentsBehaviorTrack,
-      data: {
-        'nodeId': nodeId,
-        'action': action,
-        if (metrics != null) 'metrics': metrics,
-        if (context != null) 'context': context,
-        if (contentItemId != null) 'contentItemId': contentItemId,
-      },
-    );
-  }
-
-  /// Mastery 0–1 + `masteryPercentage` (`GET /ai-agents/mastery/:nodeId`).
-  Future<Map<String, dynamic>> getAiMastery(String nodeId) async {
-    final response =
-        await _apiClient.get(ApiConstants.aiAgentsMastery(nodeId));
-    return Map<String, dynamic>.from(response.data as Map);
-  }
-
-  /// ITS suggested difficulty (`GET /ai-agents/its/adjust-difficulty`).
-  Future<Map<String, dynamic>> getAiAdjustedDifficulty(
-    String nodeId,
-    String currentDifficulty,
-  ) async {
-    final response = await _apiClient.get(
-      ApiConstants.aiAgentsItsAdjustDifficulty,
-      queryParameters: {
-        'nodeId': nodeId,
-        'currentDifficulty': currentDifficulty,
-      },
-    );
-    return Map<String, dynamic>.from(response.data as Map);
-  }
-
-  /// Recent behavior events for a node (`GET /ai-agents/behavior/node/:nodeId`).
-  Future<List<dynamic>> getAiNodeBehavior(
-    String nodeId, {
-    int limit = 30,
-  }) async {
-    final response = await _apiClient.get(
-      ApiConstants.aiAgentsBehaviorNode(nodeId),
-      queryParameters: {'limit': limit.toString()},
-    );
-    final data = response.data;
-    if (data is List) {
-      return List<dynamic>.from(data);
-    }
-    return [];
-  }
-
-  /// DRL suggested next learning node.
-  Future<Map<String, dynamic>?> getAiDrlNextNode({
-    required String currentNodeId,
-    required String subjectId,
-  }) async {
-    final response = await _apiClient.get(
-      ApiConstants.aiAgentsDrlNextNode,
-      queryParameters: {
-        'currentNodeId': currentNodeId,
-        'subjectId': subjectId,
-      },
-    );
-    final data = response.data;
-    if (data == null) return null;
-    if (data is Map) {
-      return Map<String, dynamic>.from(data);
-    }
-    return null;
-  }
-
-  /// ITS adaptive hint (may call OpenAI on backend).
-  Future<Map<String, dynamic>> requestAiItsHint({
-    required String nodeId,
-    required String contentItemId,
-    String? question,
-    String? userAnswer,
-  }) async {
-    final response = await _apiClient.post(
-      ApiConstants.aiAgentsItsHint,
-      data: {
-        'nodeId': nodeId,
-        'contentItemId': contentItemId,
-        if (question != null && question.isNotEmpty) 'question': question,
-        if (userAnswer != null && userAnswer.isNotEmpty) 'userAnswer': userAnswer,
-      },
-    );
-    return Map<String, dynamic>.from(response.data as Map);
-  }
-
-  /// Admin only: behaviors for arbitrary user + node.
-  Future<List<dynamic>> getAdminUserBehaviors({
-    required String userId,
-    required String nodeId,
-    int limit = 50,
-  }) async {
-    final response = await _apiClient.get(
-      ApiConstants.analyticsUserBehaviors,
-      queryParameters: {
-        'userId': userId,
-        'nodeId': nodeId,
-        'limit': limit.toString(),
-      },
-    );
-    final data = response.data;
-    if (data is List) return List<dynamic>.from(data);
-    return [];
-  }
-
-  /// LangChain personalized roadmap (heavy — may take tens of seconds).
-  Future<Map<String, dynamic>> generateAiLangchainRoadmap({
-    required String query,
-    required String subjectId,
-    int days = 14,
-  }) async {
-    final response = await _apiClient.post(
-      ApiConstants.aiAgentsLangchainRoadmap,
-      data: {
-        'query': query,
-        'subjectId': subjectId,
-        'days': days,
-      },
-    );
-    return Map<String, dynamic>.from(response.data as Map);
-  }
-
-  /// ITS aggregated recommendations (strengths, weaknesses, pace, suggestions).
-  Future<Map<String, dynamic>> getAiItsRecommendations() async {
-    final response =
-        await _apiClient.get(ApiConstants.aiAgentsItsRecommendations);
-    return Map<String, dynamic>.from(response.data as Map);
-  }
-
-  /// ITS: whether user can skip / fast-review this node.
-  Future<Map<String, dynamic>> getAiShouldSkipTopic(String nodeId) async {
-    final response = await _apiClient.get(
-      ApiConstants.aiAgentsItsShouldSkip(nodeId),
-    );
-    return Map<String, dynamic>.from(response.data as Map);
-  }
-
-  /// Behavior analytics: error patterns (optional [nodeId] scope).
-  Future<Map<String, dynamic>> getAiErrorPatterns({String? nodeId}) async {
-    final response = await _apiClient.get(
-      ApiConstants.aiAgentsBehaviorErrorPatterns,
-      queryParameters: {
-        if (nodeId != null && nodeId.isNotEmpty) 'nodeId': nodeId,
-      },
-    );
-    return Map<String, dynamic>.from(response.data as Map);
-  }
-
-  /// Strengths / weaknesses by inferred mastery per node.
-  Future<Map<String, dynamic>> getAiStrengthsWeaknesses() async {
-    final response =
-        await _apiClient.get(ApiConstants.aiAgentsBehaviorStrengthsWeaknesses);
-    return Map<String, dynamic>.from(response.data as Map);
-  }
 }
