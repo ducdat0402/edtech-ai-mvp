@@ -166,15 +166,24 @@ export class SubjectsService {
     this.invalidateCache();
   }
 
-  /** Best-effort cleanup (bảng có thể không tồn tại ở mọi môi trường). */
+  /**
+   * Best-effort DELETE trong transaction Postgres.
+   * Nếu chỉ try/catch ở JS mà không ROLLBACK TO SAVEPOINT, một lệnh lỗi (vd. bảng không tồn tại)
+   * vẫn làm **cả transaction bị aborted** → mọi lệnh sau báo "current transaction is aborted".
+   */
   private async safeDeleteQuery(
     em: EntityManager,
+    savepointId: string,
     sql: string,
     params: unknown[] = [],
   ): Promise<void> {
+    const sp = `sp_subj_del_${savepointId}`;
+    await em.query(`SAVEPOINT ${sp}`);
     try {
       await em.query(sql, params);
+      await em.query(`RELEASE SAVEPOINT ${sp}`);
     } catch (err: unknown) {
+      await em.query(`ROLLBACK TO SAVEPOINT ${sp}`);
       const msg = err instanceof Error ? err.message : String(err);
       console.warn(`[SubjectsService.delete] optional SQL skipped: ${msg}`);
     }
@@ -188,6 +197,7 @@ export class SubjectsService {
 
     await this.safeDeleteQuery(
       em,
+      'user_behavior',
       `DELETE FROM user_behavior WHERE "nodeId" IN (SELECT id FROM learning_nodes WHERE "subjectId" = $1)`,
       [subjectId],
     );
@@ -220,6 +230,7 @@ export class SubjectsService {
 
     await this.safeDeleteQuery(
       em,
+      'knowledge_edges',
       `DELETE FROM knowledge_edges e USING knowledge_nodes kn
        WHERE (e."fromNodeId" = kn.id OR e."toNodeId" = kn.id)
        AND (${knFilter.replace(/\n/g, ' ')})`,
@@ -227,6 +238,7 @@ export class SubjectsService {
     );
     await this.safeDeleteQuery(
       em,
+      'knowledge_nodes',
       `DELETE FROM knowledge_nodes kn WHERE ${knFilter.replace(/\n/g, ' ')}`,
       [subjectId],
     );
