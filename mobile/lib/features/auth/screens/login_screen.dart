@@ -396,6 +396,17 @@ class _LoginScreenState extends State<LoginScreen>
               defaultTargetPlatform == TargetPlatform.iOS)) ||
       kIsWeb;
 
+  /// Sau khi đã đăng nhập Google trước đó, [signOut] giúp hiện lại chọn tài khoản.
+  /// [disconnect] có thể ném `Failed to disconnect` khi app mới cài / chưa có phiên Google — bỏ qua.
+  Future<void> _prepareGoogleAccountPicker(GoogleSignIn googleSignIn) async {
+    try {
+      await googleSignIn.signOut();
+    } catch (_) {}
+    try {
+      await googleSignIn.disconnect();
+    } catch (_) {}
+  }
+
   Future<void> _handleGoogleSignIn() async {
     setState(() {
       _isGoogleLoading = true;
@@ -436,9 +447,7 @@ class _LoginScreenState extends State<LoginScreen>
           scopes: ['email', 'profile'],
           serverClientId: ApiConstants.googleServerClientId,
         );
-        // Buộc hiển thị chọn tài khoản Google (sau khi đã signOut ở logout).
-        await googleSignIn.signOut();
-        await googleSignIn.disconnect();
+        await _prepareGoogleAccountPicker(googleSignIn);
         final account = await googleSignIn.signIn();
         if (account == null) {
           setState(() => _isGoogleLoading = false);
