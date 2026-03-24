@@ -49,6 +49,7 @@ export class AuthService {
         id: user.id,
         email: user.email,
         fullName: user.fullName,
+        avatarUrl: user.avatarUrl ?? null,
       },
     };
   }
@@ -76,6 +77,7 @@ export class AuthService {
         id: user.id,
         email: user.email,
         fullName: user.fullName,
+        avatarUrl: user.avatarUrl ?? null,
         currentStreak: user.currentStreak,
         totalXP: user.totalXP,
       },
@@ -116,6 +118,7 @@ export class AuthService {
         id: user.id,
         email: user.email,
         fullName: user.fullName,
+        avatarUrl: user.avatarUrl ?? null,
         currentStreak: user.currentStreak,
         totalXP: user.totalXP,
       },
@@ -178,6 +181,7 @@ export class AuthService {
           id: user.id,
           email: user.email,
           fullName: user.fullName,
+          avatarUrl: user.avatarUrl ?? null,
           currentStreak: user.currentStreak,
           totalXP: user.totalXP,
         },

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:edtech_mobile/core/config/api_config.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 
@@ -34,8 +35,8 @@ class LeaderboardUserAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final initials = leaderboardInitials(displayName);
-    final url = imageUrl?.trim();
-    final hasUrl = url != null && url.isNotEmpty;
+    final url = ApiConfig.absoluteMediaUrl(imageUrl?.trim());
+    final hasUrl = url.isNotEmpty;
 
     Widget avatar = CircleAvatar(
       radius: size / 2,
@@ -169,6 +170,7 @@ class _LeaderboardUserProfileSheetBodyState
             children: [
               LeaderboardUserAvatar(
                 displayName: _data?['fullName'] as String? ?? widget.nameHint,
+                imageUrl: _data?['avatarUrl'] as String?,
                 size: 64,
               ),
               const SizedBox(width: 16),

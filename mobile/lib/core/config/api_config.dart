@@ -18,6 +18,22 @@ class ApiConfig {
   static const String baseUrl =
       'https://edtech-ai-backend-tbq7.onrender.com/api/v1';
 
+  /// URL đầy đủ để tải ảnh/static (API nằm dưới `/api/v1`, file tĩnh thường ở gốc host).
+  static String absoluteMediaUrl(String? path) {
+    if (path == null || path.isEmpty) return '';
+    final p = path.trim();
+    if (p.startsWith('http://') || p.startsWith('https://')) return p;
+    var origin = baseUrl.trim();
+    if (origin.endsWith('/')) {
+      origin = origin.substring(0, origin.length - 1);
+    }
+    if (origin.endsWith('/api/v1')) {
+      origin = origin.substring(0, origin.length - 7);
+    }
+    final seg = p.startsWith('/') ? p : '/$p';
+    return '$origin$seg';
+  }
+
   /// Base URL without /api/v1 (for Socket.IO)
   static String get serverUrl {
     const u = baseUrl;

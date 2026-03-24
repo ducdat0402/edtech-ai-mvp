@@ -29,7 +29,7 @@ export class LeaderboardService {
       order: { totalXP: 'DESC' },
       take: limit,
       skip,
-      select: ['id', 'email', 'fullName', 'totalXP'],
+      select: ['id', 'email', 'fullName', 'totalXP', 'avatarUrl'],
     });
 
     // Get currency data for these users
@@ -54,6 +54,7 @@ export class LeaderboardService {
         totalXP: user.totalXP,
         coins: currency?.coins || 0,
         currentStreak: currency?.currentStreak || 0,
+        avatar: user.avatarUrl || undefined,
       };
     });
 
@@ -102,11 +103,10 @@ export class LeaderboardService {
       order: { totalXP: 'DESC' },
       take: limit,
       skip,
-      select: ['id', 'email', 'fullName', 'totalXP'],
+      select: ['id', 'email', 'fullName', 'totalXP', 'avatarUrl'],
     });
 
     const userIds = users.map((u) => u.id);
-    const userMap = new Map(users.map((u) => [u.id, u]));
 
     // Get currency data
     const currencies = await this.currencyRepository.find({
@@ -129,6 +129,7 @@ export class LeaderboardService {
         totalXP: user.totalXP,
         coins: currency?.coins || 0,
         currentStreak: currency?.currentStreak || 0,
+        avatar: user.avatarUrl || undefined,
       };
     });
 
@@ -188,7 +189,7 @@ export class LeaderboardService {
     const userIds = subjectProgress.map((p) => p.userId);
     const users = await this.usersRepository.find({
       where: userIds.map((id) => ({ id })),
-      select: ['id', 'email', 'fullName', 'totalXP'],
+      select: ['id', 'email', 'fullName', 'totalXP', 'avatarUrl'],
     });
 
     const userMap = new Map(users.map((u) => [u.id, u]));
@@ -213,6 +214,7 @@ export class LeaderboardService {
         totalXP: user?.totalXP || 0,
         coins: currency?.coins || 0,
         currentStreak: currency?.currentStreak || 0,
+        avatar: user?.avatarUrl || undefined,
       };
     });
 

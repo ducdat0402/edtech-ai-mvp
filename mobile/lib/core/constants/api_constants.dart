@@ -13,6 +13,7 @@ class ApiConstants {
   static const String login = '/auth/login';
   static const String verify = '/auth/verify';
   static const String me = '/auth/me';
+  static const String updateProfile = '/users/profile';
 
   // Dashboard
   static const String dashboard = '/dashboard';

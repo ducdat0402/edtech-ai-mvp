@@ -1,0 +1,2 @@
+-- Chạy thủ công nếu production không bật TypeORM synchronize:
+-- ALTER TABLE users ADD COLUMN IF NOT EXISTS "avatarUrl" TEXT;

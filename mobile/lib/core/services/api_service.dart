@@ -179,6 +179,35 @@ class ApiService {
     return data['imageUrl'] as String? ?? data['url'] as String;
   }
 
+  /// Web / khi chỉ có bytes (không có đường dẫn file).
+  Future<String> uploadImageBytes(List<int> bytes, {String filename = 'avatar.jpg'}) async {
+    final response = await _apiClient.postMultipartBytes(
+      ApiConstants.uploadImage,
+      fileKey: 'image',
+      bytes: bytes,
+      filename: filename,
+    );
+    final data = response.data as Map<String, dynamic>?;
+    if (data == null) return '';
+    return data['imageUrl'] as String? ?? data['url'] as String? ?? '';
+  }
+
+  Future<Map<String, dynamic>> updateUserProfile({
+    String? fullName,
+    String? avatarUrl,
+    String? phone,
+  }) async {
+    final body = <String, dynamic>{};
+    if (fullName != null) body['fullName'] = fullName;
+    if (avatarUrl != null) body['avatarUrl'] = avatarUrl;
+    if (phone != null) body['phone'] = phone;
+    final response = await _apiClient.patch(
+      ApiConstants.updateProfile,
+      data: body,
+    );
+    return Map<String, dynamic>.from(response.data as Map);
+  }
+
   Future<Map<String, dynamic>> uploadVideo(String videoPath) async {
     final response = await _apiClient.postFile(
       ApiConstants.uploadVideo,

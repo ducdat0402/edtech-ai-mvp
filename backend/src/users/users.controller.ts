@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @Controller('users')
 @UseGuards(JwtAuthGuard)
@@ -19,6 +20,14 @@ export class UsersController {
   @Get('profile')
   async getProfile(@Request() req) {
     const user = await this.usersService.findById(req.user.id);
+    const { password, ...result } = user;
+    return result;
+  }
+
+  /** Cập nhật tên, ảnh đại diện (URL hoặc `/uploads/...`), số điện thoại. */
+  @Patch('profile')
+  async updateProfile(@Request() req, @Body() body: UpdateProfileDto) {
+    const user = await this.usersService.updateProfile(req.user.id, body);
     const { password, ...result } = user;
     return result;
   }

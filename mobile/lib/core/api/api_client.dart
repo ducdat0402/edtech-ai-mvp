@@ -248,4 +248,24 @@ class ApiClient {
       rethrow;
     }
   }
+
+  /// Upload multipart (web/mobile) từ bytes — field `image` giống [postFile].
+  Future<Response> postMultipartBytes(
+    String path, {
+    required String fileKey,
+    required List<int> bytes,
+    String filename = 'upload.jpg',
+  }) async {
+    try {
+      final formData = FormData.fromMap({
+        fileKey: MultipartFile.fromBytes(bytes, filename: filename),
+      });
+      return await _dio.post(path, data: formData);
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[API] Post multipart bytes error: $e');
+      }
+      rethrow;
+    }
+  }
 }

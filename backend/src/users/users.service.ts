@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
@@ -55,6 +59,7 @@ export class UsersService {
     return {
       id: user.id,
       fullName: user.fullName || 'Anonymous',
+      avatarUrl: user.avatarUrl ?? null,
       totalXP: user.totalXP ?? 0,
       role: user.role,
       memberSince: user.createdAt?.toISOString?.() ?? null,
@@ -114,17 +119,29 @@ export class UsersService {
 
   async updateProfile(
     userId: string,
-    data: { fullName?: string; phone?: string },
+    data: { fullName?: string; phone?: string; avatarUrl?: string },
   ): Promise<User> {
     const user = await this.findById(userId);
     if (!user) {
-      throw new Error('User not found');
+      throw new NotFoundException('User not found');
     }
-    if (data.fullName) {
-      user.fullName = data.fullName;
+    if (data.fullName !== undefined) {
+      const t = data.fullName.trim();
+      if (t.length === 0) {
+        throw new BadRequestException('fullName cannot be empty');
+      }
+      if (t.length > 120) {
+        throw new BadRequestException('fullName too long');
+      }
+      user.fullName = t;
     }
-    if (data.phone) {
-      user.phone = data.phone;
+    if (data.phone !== undefined) {
+      const p = data.phone.trim();
+      user.phone = p.length > 0 ? p : null;
+    }
+    if (data.avatarUrl !== undefined) {
+      const v = data.avatarUrl.trim();
+      user.avatarUrl = v.length > 0 ? v : null;
     }
     return this.usersRepository.save(user);
   }

@@ -1,7 +1,11 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:edtech_mobile/core/config/api_config.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/services/auth_service.dart';
 import 'package:edtech_mobile/core/services/tutorial_service.dart';
@@ -26,7 +30,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   List<dynamic> _badgeCollection = [];
   bool _isLoading = true;
   bool _isSwitchingRole = false;
+  bool _avatarBusy = false;
   String? _error;
+  final ImagePicker _imagePicker = ImagePicker();
 
   // Tutorial keys
   final _statsRowKey = GlobalKey();
@@ -123,6 +129,224 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   LinearGradient get _primaryGradient =>
       _isContributor ? AppGradients.contributor : AppGradients.primary;
+
+  String? _avatarUrlResolved() {
+    final raw = _profileData?['avatarUrl'] as String?;
+    final u = ApiConfig.absoluteMediaUrl(raw);
+    return u.isEmpty ? null : u;
+  }
+
+  Future<void> _showAvatarSheet() async {
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: _bgSecondary,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: Icon(Icons.photo_library_rounded, color: _accentColor),
+              title: Text('Chọn ảnh từ thư viện',
+                  style: TextStyle(color: AppColors.textPrimary)),
+              onTap: () {
+                Navigator.pop(ctx);
+                _pickAndUploadAvatar(ImageSource.gallery);
+              },
+            ),
+            if (!kIsWeb)
+              ListTile(
+                leading: Icon(Icons.camera_alt_rounded, color: _accentColor),
+                title: Text('Chụp ảnh',
+                    style: TextStyle(color: AppColors.textPrimary)),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _pickAndUploadAvatar(ImageSource.camera);
+                },
+              ),
+            if ((_profileData?['avatarUrl'] as String?)?.isNotEmpty ?? false)
+              ListTile(
+                leading:
+                    const Icon(Icons.delete_outline, color: AppColors.errorNeon),
+                title: Text('Xóa ảnh đại diện',
+                    style: TextStyle(color: AppColors.errorNeon)),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _removeAvatar();
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickAndUploadAvatar(ImageSource source) async {
+    if (_avatarBusy) return;
+    final api = Provider.of<ApiService>(context, listen: false);
+    setState(() => _avatarBusy = true);
+    try {
+      final x = await _imagePicker.pickImage(
+        source: source,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 88,
+      );
+      if (x == null) {
+        if (mounted) setState(() => _avatarBusy = false);
+        return;
+      }
+      String path;
+      if (kIsWeb) {
+        final bytes = await x.readAsBytes();
+        path = await api.uploadImageBytes(bytes,
+            filename: x.name.isNotEmpty ? x.name : 'avatar.jpg');
+      } else {
+        path = await api.uploadImage(x.path);
+      }
+      if (path.isEmpty) throw Exception('Upload thất bại');
+      final updated = await api.updateUserProfile(avatarUrl: path);
+      if (!mounted) return;
+      setState(() {
+        _profileData = {...?_profileData, ...updated};
+        _avatarBusy = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Đã cập nhật ảnh đại diện'),
+          backgroundColor: AppColors.successNeon.withValues(alpha: 0.9),
+        ),
+      );
+    } catch (e) {
+      if (mounted) {
+        setState(() => _avatarBusy = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi ảnh: $e'),
+            backgroundColor: AppColors.errorNeon,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _removeAvatar() async {
+    if (_avatarBusy) return;
+    final api = Provider.of<ApiService>(context, listen: false);
+    setState(() => _avatarBusy = true);
+    try {
+      final updated = await api.updateUserProfile(avatarUrl: '');
+      if (!mounted) return;
+      setState(() {
+        _profileData = {...?_profileData, ...updated};
+        _avatarBusy = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Đã xóa ảnh đại diện'),
+          backgroundColor: AppColors.textSecondary.withValues(alpha: 0.9),
+        ),
+      );
+    } catch (e) {
+      if (mounted) {
+        setState(() => _avatarBusy = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi: $e'),
+            backgroundColor: AppColors.errorNeon,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _editDisplayName() async {
+    final current =
+        (_profileData?['fullName'] as String?)?.trim() ?? '';
+    final controller = TextEditingController(text: current);
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: _bgSecondary,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('Đổi tên hiển thị',
+            style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
+        content: TextField(
+          controller: controller,
+          maxLength: 120,
+          autofocus: true,
+          style: AppTextStyles.bodyMedium
+              .copyWith(color: AppColors.textPrimary),
+          decoration: InputDecoration(
+            hintText: 'Tên của bạn',
+            hintStyle:
+                TextStyle(color: AppColors.textTertiary),
+            counterStyle: TextStyle(color: AppColors.textTertiary),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: _borderColor),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: _accentColor, width: 2),
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Hủy',
+                style: TextStyle(color: AppColors.textSecondary)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text('Lưu',
+                style: TextStyle(
+                    color: _accentColor, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) {
+      controller.dispose();
+      return;
+    }
+    final name = controller.text.trim();
+    controller.dispose();
+    if (name.isEmpty) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Tên không được để trống'),
+          backgroundColor: AppColors.errorNeon,
+        ),
+      );
+      return;
+    }
+    final api = Provider.of<ApiService>(context, listen: false);
+    try {
+      final updated = await api.updateUserProfile(fullName: name);
+      if (!mounted) return;
+      setState(() => _profileData = {...?_profileData, ...updated});
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Đã cập nhật tên'),
+          backgroundColor: AppColors.successNeon.withValues(alpha: 0.9),
+        ),
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi: $e'),
+            backgroundColor: AppColors.errorNeon,
+          ),
+        );
+      }
+    }
+  }
 
   Future<void> _handleSwitchRole() async {
     final targetRole = _isContributor ? 'user' : 'contributor';
@@ -322,10 +546,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _buildAvatarSection(),
           const SizedBox(height: 20),
 
-          // Username & Level
-          Text(
-            _profileData!['fullName'] ?? _profileData!['email'] ?? 'User',
-            style: AppTextStyles.h2.copyWith(color: AppColors.textPrimary),
+          // Tên hiển thị + đổi tên
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Flexible(
+                child: Text(
+                  _profileData!['fullName'] ??
+                      _profileData!['email'] ??
+                      'User',
+                  textAlign: TextAlign.center,
+                  style:
+                      AppTextStyles.h2.copyWith(color: AppColors.textPrimary),
+                ),
+              ),
+              IconButton(
+                onPressed: _editDisplayName,
+                tooltip: 'Đổi tên',
+                icon: Icon(Icons.edit_rounded,
+                    color: _accentColor, size: 22),
+              ),
+            ],
           ),
           const SizedBox(height: 8),
 
@@ -574,10 +815,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildAvatarSection() {
+    final imgUrl = _avatarUrlResolved();
     return Stack(
       alignment: Alignment.center,
       children: [
-        // Glow effect
         Container(
           width: 130,
           height: 130,
@@ -588,33 +829,111 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
         ),
-        // Avatar container
-        Container(
-          width: 110,
-          height: 110,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: _primaryGradient,
-            boxShadow: [
-              BoxShadow(
-                color: _accentColor.withOpacity(0.5),
-                blurRadius: 20,
-                spreadRadius: 2,
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: _avatarBusy ? null : _showAvatarSheet,
+            customBorder: const CircleBorder(),
+            child: Container(
+              width: 110,
+              height: 110,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: _primaryGradient,
+                boxShadow: [
+                  BoxShadow(
+                    color: _accentColor.withOpacity(0.5),
+                    blurRadius: 20,
+                    spreadRadius: 2,
+                  ),
+                ],
               ),
-            ],
-          ),
-          child: Container(
-            margin: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: _bgSecondary,
+              child: Container(
+                margin: const EdgeInsets.all(4),
+                clipBehavior: Clip.antiAlias,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                ),
+                child: imgUrl != null
+                    ? CachedNetworkImage(
+                        imageUrl: imgUrl,
+                        fit: BoxFit.cover,
+                        width: 102,
+                        height: 102,
+                        placeholder: (_, __) => Container(
+                          color: _bgSecondary,
+                          child: const Center(
+                            child: SizedBox(
+                              width: 28,
+                              height: 28,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: AppColors.purpleNeon,
+                              ),
+                            ),
+                          ),
+                        ),
+                        errorWidget: (_, __, ___) => ColoredBox(
+                          color: _bgSecondary,
+                          child: Icon(
+                            _isContributor ? Icons.edit_note : Icons.person,
+                            size: 50,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      )
+                    : ColoredBox(
+                        color: _bgSecondary,
+                        child: Center(
+                          child: Icon(
+                            _isContributor ? Icons.edit_note : Icons.person,
+                            size: 50,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ),
+              ),
             ),
+          ),
+        ),
+        if (_avatarBusy)
+          Positioned.fill(
             child: Center(
-              child: Icon(
-                _isContributor ? Icons.edit_note : Icons.person,
-                size: 50,
-                color: AppColors.textSecondary,
+              child: Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.black45,
+                  shape: BoxShape.circle,
+                ),
+                child: const SizedBox(
+                  width: 32,
+                  height: 32,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 3,
+                    color: Colors.white,
+                  ),
+                ),
               ),
+            ),
+          ),
+        Positioned(
+          right: 8,
+          bottom: 8,
+          child: IgnorePointer(
+            child: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: _accentColor,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 4,
+                  ),
+                ],
+              ),
+              child: const Icon(Icons.camera_alt_rounded,
+                  color: Colors.white, size: 18),
             ),
           ),
         ),

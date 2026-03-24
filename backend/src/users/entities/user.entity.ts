@@ -20,6 +20,10 @@ export class User {
   @Column({ nullable: true })
   fullName: string;
 
+  /** Ảnh đại diện: `/uploads/images/...` hoặc URL đầy đủ. */
+  @Column({ type: 'text', nullable: true })
+  avatarUrl: string | null;
+
   @Column({ nullable: true })
   phone: string;
 
