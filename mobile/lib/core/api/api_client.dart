@@ -69,9 +69,14 @@ class ApiClient {
         onError: (error, handler) {
           // Handle errors
           if (error.response?.statusCode == 401) {
-            clearToken().then((_) {
-              onSessionInvalidated?.call();
-            });
+            final path = error.requestOptions.path;
+            if (_shouldInvalidateSessionOn401(path)) {
+              clearToken().then((_) {
+                onSessionInvalidated?.call();
+              });
+            } else if (kDebugMode) {
+              debugPrint('[API] 401 on non-auth path: $path (skip session invalidate)');
+            }
           }
           // For 200 with null/empty response, don't treat as error
           if (error.response?.statusCode == 200 &&
@@ -91,6 +96,14 @@ class ApiClient {
         },
       ),
     );
+  }
+
+  /// Only invalidate session when core auth-check endpoints return 401.
+  /// Non-auth endpoints can transiently fail with 401 due to backend/permission
+  /// issues and should not immediately force-logout user.
+  bool _shouldInvalidateSessionOn401(String path) {
+    final p = path.toLowerCase();
+    return p.contains('/auth/me') || p.contains('/auth/verify');
   }
 
   static Map<String, dynamic>? _decodeJwtPayload(String token) {
