@@ -105,22 +105,44 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _loadDashboard() async {
+    if (!mounted) return;
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
-      final results = await Future.wait([
-        apiService.getDashboard(),
-        apiService.getUserProfile(),
-        apiService.getDailyMotivation(),
-      ]);
+      // Load critical data first so dashboard can render quickly.
+      final dashboard = await apiService
+          .getDashboard()
+          .timeout(const Duration(seconds: 30));
+
+      // Non-critical requests should not block dashboard rendering.
+      Map<String, dynamic>? profile;
+      Map<String, dynamic>? motivation;
+      try {
+        profile = await apiService
+            .getUserProfile()
+            .timeout(const Duration(seconds: 20));
+      } catch (_) {}
+      try {
+        motivation = await apiService
+            .getDailyMotivation()
+            .timeout(const Duration(seconds: 20));
+      } catch (_) {}
+
+      if (!mounted) return;
       setState(() {
-        _dashboardData = results[0];
-        _userRole = results[1]?['role'] as String? ?? 'user';
-        _motivation = results[2];
+        _dashboardData = dashboard;
+        _userRole = profile?['role'] as String? ?? 'user';
+        _motivation = motivation;
         _isLoading = false;
       });
       _showDashboardTutorial();
       _checkWeeklyRewards(apiService);
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _error = e.toString();
         _isLoading = false;
