@@ -40,7 +40,8 @@ export class UsersService {
   async getPublicProfile(userId: string) {
     const user = await this.usersRepository.findOne({
       where: { id: userId },
-      select: ['id', 'fullName', 'totalXP', 'role', 'createdAt'],
+      // NOTE: must include avatarUrl, otherwise TypeORM returns it as undefined/null
+      select: ['id', 'fullName', 'avatarUrl', 'totalXP', 'role', 'createdAt'],
     });
     if (!user) {
       throw new NotFoundException('User not found');
