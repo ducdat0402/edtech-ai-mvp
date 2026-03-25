@@ -5,6 +5,10 @@ import { User } from '../users/entities/user.entity';
 import { UserCurrency } from '../user-currency/entities/user-currency.entity';
 import { UserProgress } from '../user-progress/entities/user-progress.entity';
 import { LeaderboardEntry, LeaderboardResponse } from './entities/leaderboard.entity';
+import {
+  GLOBAL_STRICTLY_AHEAD_WHERE,
+  bindGlobalStrictlyAhead,
+} from './leaderboard-ranking.util';
 
 @Injectable()
 export class LeaderboardService {
@@ -24,13 +28,22 @@ export class LeaderboardService {
   ): Promise<LeaderboardResponse> {
     const skip = (page - 1) * limit;
 
-    // Get top users by totalXP
-    const users = await this.usersRepository.find({
-      order: { totalXP: 'DESC' },
-      take: limit,
-      skip,
-      select: ['id', 'email', 'fullName', 'totalXP', 'avatarUrl'],
-    });
+    // Ordinal rank: đồng XP → updatedAt sớm hơn (đạt mốc trước) đứng trên
+    const users = await this.usersRepository
+      .createQueryBuilder('user')
+      .select([
+        'user.id',
+        'user.email',
+        'user.fullName',
+        'user.totalXP',
+        'user.avatarUrl',
+      ])
+      .orderBy('user.totalXP', 'DESC')
+      .addOrderBy('user.updatedAt', 'ASC')
+      .addOrderBy('user.id', 'ASC')
+      .skip(skip)
+      .take(limit)
+      .getMany();
 
     // Get currency data for these users
     const userIds = users.map((u) => u.id);
@@ -63,14 +76,14 @@ export class LeaderboardService {
     if (userId) {
       const user = await this.usersRepository.findOne({
         where: { id: userId },
-        select: ['id', 'totalXP'],
+        select: ['id', 'totalXP', 'updatedAt'],
       });
 
       if (user) {
-      const rank = await this.usersRepository
-        .createQueryBuilder('user')
-        .where('user.totalXP > :totalXP', { totalXP: user.totalXP })
-        .getCount();
+        const rank = await this.usersRepository
+          .createQueryBuilder('user')
+          .where(GLOBAL_STRICTLY_AHEAD_WHERE, bindGlobalStrictlyAhead(user))
+          .getCount();
         userRank = rank + 1;
       }
     }
@@ -99,12 +112,21 @@ export class LeaderboardService {
     // Get users who were active in the last week
     // For weekly leaderboard, use totalXP as it's simpler and more accurate
     // In production, you might want to track weekly XP separately
-    const users = await this.usersRepository.find({
-      order: { totalXP: 'DESC' },
-      take: limit,
-      skip,
-      select: ['id', 'email', 'fullName', 'totalXP', 'avatarUrl'],
-    });
+    const users = await this.usersRepository
+      .createQueryBuilder('user')
+      .select([
+        'user.id',
+        'user.email',
+        'user.fullName',
+        'user.totalXP',
+        'user.avatarUrl',
+      ])
+      .orderBy('user.totalXP', 'DESC')
+      .addOrderBy('user.updatedAt', 'ASC')
+      .addOrderBy('user.id', 'ASC')
+      .skip(skip)
+      .take(limit)
+      .getMany();
 
     const userIds = users.map((u) => u.id);
 
@@ -143,12 +165,12 @@ export class LeaderboardService {
         // User not in top list, calculate rank
         const user = await this.usersRepository.findOne({
           where: { id: userId },
-          select: ['id', 'totalXP'],
+          select: ['id', 'totalXP', 'updatedAt'],
         });
         if (user) {
           const rank = await this.usersRepository
             .createQueryBuilder('user')
-            .where('user.totalXP > :totalXP', { totalXP: user.totalXP })
+            .where(GLOBAL_STRICTLY_AHEAD_WHERE, bindGlobalStrictlyAhead(user))
             .getCount();
           userRank = rank + 1;
         }
@@ -182,6 +204,7 @@ export class LeaderboardService {
       .addSelect('COUNT(progress.id)', 'completedNodes')
       .groupBy('progress.userId')
       .orderBy('completedNodes', 'DESC')
+      .addOrderBy('progress.userId', 'ASC')
       .limit(limit)
       .offset(skip)
       .getRawMany();
@@ -243,7 +266,7 @@ export class LeaderboardService {
   }> {
     const user = await this.usersRepository.findOne({
       where: { id: userId },
-      select: ['id', 'totalXP'],
+      select: ['id', 'totalXP', 'updatedAt'],
     });
 
     if (!user) {
@@ -252,7 +275,7 @@ export class LeaderboardService {
 
     const usersWithMoreXP = await this.usersRepository
       .createQueryBuilder('user')
-      .where('user.totalXP > :totalXP', { totalXP: user.totalXP })
+      .where(GLOBAL_STRICTLY_AHEAD_WHERE, bindGlobalStrictlyAhead(user))
       .getCount();
 
     const globalRank = usersWithMoreXP + 1;

@@ -11,6 +11,13 @@ import 'package:edtech_mobile/features/chat/widgets/chat_bubble.dart';
 import 'package:edtech_mobile/features/leaderboard/widgets/leaderboard_user_profile_sheet.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 
+int _entryRank(Map<String, dynamic> e, int fallback) {
+  final r = e['rank'];
+  if (r is int) return r;
+  if (r is num) return r.toInt();
+  return fallback;
+}
+
 class LeaderboardScreen extends StatefulWidget {
   final String? subjectId;
   const LeaderboardScreen({super.key, this.subjectId});
@@ -417,19 +424,19 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
           Expanded(
               child: _PodiumItem(
                   entry: e2,
-                  rank: 2,
+                  rank: _entryRank(e2, 2),
                   height: 100,
                   profileSourceLabel: 'Bảng XP tuần này')),
           Expanded(
               child: _PodiumItem(
                   entry: e1,
-                  rank: 1,
+                  rank: _entryRank(e1, 1),
                   height: 130,
                   profileSourceLabel: 'Bảng XP tuần này')),
           Expanded(
               child: _PodiumItem(
                   entry: e3,
-                  rank: 3,
+                  rank: _entryRank(e3, 3),
                   height: 80,
                   profileSourceLabel: 'Bảng XP tuần này')),
         ],

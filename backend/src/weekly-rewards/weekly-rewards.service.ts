@@ -6,6 +6,10 @@ import { UserBadge } from './entities/user-badge.entity';
 import { WeeklyRewardHistory } from './entities/weekly-reward-history.entity';
 import { UserCurrency } from '../user-currency/entities/user-currency.entity';
 import { User } from '../users/entities/user.entity';
+import {
+  WEEKLY_CURRENCY_STRICTLY_AHEAD_WHERE,
+  bindWeeklyCurrencyStrictlyAhead,
+} from '../leaderboard/leaderboard-ranking.util';
 
 export interface RewardTier {
   maxRank: number;
@@ -93,7 +97,9 @@ export class WeeklyRewardsService {
       .createQueryBuilder('c')
       .innerJoin(User, 'u', 'u.id = c."userId"')
       .where('c."weeklyXp" > 0')
-      .orderBy('c."weeklyXp"', 'DESC')
+      .orderBy('c.weeklyXp', 'DESC')
+      .addOrderBy('c.updatedAt', 'ASC')
+      .addOrderBy('c.userId', 'ASC')
       .select([
         'c."userId" AS "userId"',
         'c."weeklyXp" AS "weeklyXp"',
@@ -190,7 +196,9 @@ export class WeeklyRewardsService {
       .createQueryBuilder('c')
       .innerJoin(User, 'u', 'u.id = c."userId"')
       .where('c."weeklyXp" > 0')
-      .orderBy('c."weeklyXp"', 'DESC')
+      .orderBy('c.weeklyXp', 'DESC')
+      .addOrderBy('c.updatedAt', 'ASC')
+      .addOrderBy('c.userId', 'ASC')
       .select([
         'c."userId" AS "userId"',
         'c."weeklyXp" AS "weeklyXp"',
@@ -218,7 +226,7 @@ export class WeeklyRewardsService {
         if (mine && mine.weeklyXp > 0) {
           const ahead = await this.currencyRepo
             .createQueryBuilder('c')
-            .where('c."weeklyXp" > :xp', { xp: mine.weeklyXp })
+            .where(WEEKLY_CURRENCY_STRICTLY_AHEAD_WHERE, bindWeeklyCurrencyStrictlyAhead(mine))
             .getCount();
           myRank = ahead + 1;
           myXp = mine.weeklyXp;
