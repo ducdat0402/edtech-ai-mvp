@@ -176,7 +176,7 @@ class _ImageGalleryLessonScreenState extends State<ImageGalleryLessonScreen> {
                   ),
                 ),
                 child: const Text(
-                  'Lam bai test',
+                  'Làm bài kiểm tra',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
@@ -335,7 +335,7 @@ class _ImageGalleryLessonScreenState extends State<ImageGalleryLessonScreen> {
           Icon(Icons.image_outlined, color: AppColors.textTertiary, size: 64),
           SizedBox(height: 8),
           Text(
-            'Khong co hinh anh',
+            'Không có hình ảnh',
             style: TextStyle(color: AppColors.textTertiary, fontSize: 14),
           ),
         ],

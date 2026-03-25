@@ -143,7 +143,7 @@ class _ContributionUploadScreenState extends State<ContributionUploadScreen> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    'Phần thưởng: +50 XP, +30 Coin',
+                    'Phần thưởng: +50 XP, +30 xu',
                     style: AppTextStyles.caption.copyWith(
                         color: Colors.white, fontWeight: FontWeight.w600),
                   ),

@@ -52,7 +52,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       TutorialHelper.buildTarget(
         key: _statsRowKey,
         title: 'Thống kê của bạn',
-        description: 'Xem XP tích lũy, Coins kiếm được và chuỗi Streak.',
+        description: 'Xem XP tích lũy, xu kiếm được và chuỗi ngày học.',
         icon: Icons.bar_chart,
         stepLabel: 'Bước 1/3',
       ),
@@ -488,7 +488,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         leading: const AppBarLeadingBackAndHome(),
         leadingWidth: 112,
         automaticallyImplyLeading: false,
-        title: Text('Profile',
+        title: Text('Hồ sơ',
             style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary)),
         actions: [
           IconButton(
@@ -513,8 +513,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               : _error != null
                   ? AppErrorWidget(message: _error!, onRetry: _loadProfile)
                   : _profileData == null
-                      ? const Center(
-                          child: Text('No data available',
+                      ? Center(
+                          child: Text('Chưa có dữ liệu',
                               style: AppTextStyles.bodyMedium))
                       : RefreshIndicator(
                           onRefresh: _loadProfile,
@@ -966,7 +966,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Expanded(
           child: _buildStatCard(
             icon: Icons.monetization_on_rounded,
-            label: 'Coins',
+            label: 'Xu',
             value: '${stats['coins'] ?? currency['coins'] ?? 0}',
             color: AppColors.coinGold,
           ),
@@ -975,7 +975,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Expanded(
           child: _buildStatCard(
             icon: Icons.local_fire_department_rounded,
-            label: 'Streak',
+            label: 'Chuỗi ngày',
             value: '${stats['streak'] ?? currency['currentStreak'] ?? 0}',
             color: AppColors.streakOrange,
           ),

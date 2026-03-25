@@ -160,7 +160,7 @@ class StreakDisplay extends StatelessWidget {
             ),
           ),
           Text(
-            streak == 1 ? 'Day Streak' : 'Days Streak',
+            'ngày liên tiếp',
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.textSecondary,
             ),
@@ -168,7 +168,7 @@ class StreakDisplay extends StatelessWidget {
           if (maxStreak != null && maxStreak! > streak) ...[
             const SizedBox(height: 8),
             Text(
-              'Best: $maxStreak days',
+              'Kỷ lục: $maxStreak ngày',
               style: AppTextStyles.labelSmall.copyWith(
                 color: AppColors.textTertiary,
               ),

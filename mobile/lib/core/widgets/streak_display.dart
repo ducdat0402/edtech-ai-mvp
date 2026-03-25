@@ -74,7 +74,7 @@ class StreakDisplay extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           const Text(
-            'Day Streak',
+            'Chuỗi ngày',
             style: TextStyle(
               fontSize: 18,
               color: Colors.white,
@@ -141,7 +141,7 @@ class StreakDisplay extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '$streak Day Streak',
+                '$streak ngày liên tiếp',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -150,7 +150,7 @@ class StreakDisplay extends StatelessWidget {
               ),
               if (consecutivePerfect > 0)
                 Text(
-                  '$consecutivePerfect perfect days',
+                  '$consecutivePerfect ngày hoàn hảo',
                   style: TextStyle(
                     fontSize: 12,
                     color: Colors.orange.shade700,

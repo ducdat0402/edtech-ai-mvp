@@ -36,11 +36,11 @@ class AppTheme {
         backgroundColor: AppColors.bgPrimary,
         elevation: 0,
         centerTitle: true,
-        titleTextStyle: GoogleFonts.orbitron(
+        titleTextStyle: GoogleFonts.outfit(
           fontSize: 18,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
-          letterSpacing: 0.8,
+          letterSpacing: 0.2,
         ),
         iconTheme: const IconThemeData(color: AppColors.textPrimary),
       ),
@@ -64,10 +64,10 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          textStyle: GoogleFonts.inter(
+          textStyle: GoogleFonts.beVietnamPro(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            letterSpacing: 1.0,
+            letterSpacing: 0.2,
           ),
         ),
       ),
@@ -80,10 +80,10 @@ class AppTheme {
             borderRadius: BorderRadius.circular(12),
           ),
           side: const BorderSide(color: AppColors.cyanNeon, width: 2),
-          textStyle: GoogleFonts.inter(
+          textStyle: GoogleFonts.beVietnamPro(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            letterSpacing: 1.0,
+            letterSpacing: 0.2,
           ),
         ),
       ),
@@ -91,7 +91,7 @@ class AppTheme {
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: AppColors.cyanNeon,
-          textStyle: GoogleFonts.inter(
+          textStyle: GoogleFonts.beVietnamPro(
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
@@ -125,8 +125,8 @@ class AppTheme {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.errorNeon),
         ),
-        labelStyle: GoogleFonts.exo2(color: AppColors.textSecondary),
-        hintStyle: GoogleFonts.exo2(color: AppColors.textTertiary),
+        labelStyle: GoogleFonts.beVietnamPro(color: AppColors.textSecondary),
+        hintStyle: GoogleFonts.beVietnamPro(color: AppColors.textTertiary),
       ),
 
       // Bottom Navigation
@@ -144,12 +144,12 @@ class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
-        titleTextStyle: GoogleFonts.orbitron(
+        titleTextStyle: GoogleFonts.outfit(
           fontSize: 20,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
         ),
-        contentTextStyle: GoogleFonts.exo2(
+        contentTextStyle: GoogleFonts.beVietnamPro(
           fontSize: 14,
           color: AppColors.textSecondary,
         ),
@@ -166,7 +166,7 @@ class AppTheme {
       // Snackbar
       snackBarTheme: SnackBarThemeData(
         backgroundColor: AppColors.bgSecondary,
-        contentTextStyle: GoogleFonts.exo2(color: AppColors.textPrimary),
+        contentTextStyle: GoogleFonts.beVietnamPro(color: AppColors.textPrimary),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
@@ -230,7 +230,7 @@ class AppTheme {
           color: AppColors.bgTertiary,
           borderRadius: BorderRadius.circular(8),
         ),
-        textStyle: GoogleFonts.exo2(
+        textStyle: GoogleFonts.beVietnamPro(
           fontSize: 12,
           color: AppColors.textPrimary,
         ),
@@ -241,101 +241,92 @@ class AppTheme {
   /// Build text theme with gaming fonts
   static TextTheme _buildTextTheme() {
     return TextTheme(
-      // Display
-      displayLarge: GoogleFonts.orbitron(
+      displayLarge: GoogleFonts.outfit(
         fontSize: 32,
         fontWeight: FontWeight.w700,
         color: AppColors.textPrimary,
-        letterSpacing: 1.2,
+        letterSpacing: 0.3,
       ),
-      displayMedium: GoogleFonts.orbitron(
+      displayMedium: GoogleFonts.outfit(
         fontSize: 28,
         fontWeight: FontWeight.w700,
         color: AppColors.textPrimary,
-        letterSpacing: 1.0,
+        letterSpacing: 0.25,
       ),
-      displaySmall: GoogleFonts.orbitron(
+      displaySmall: GoogleFonts.outfit(
         fontSize: 24,
         fontWeight: FontWeight.w600,
         color: AppColors.textPrimary,
-        letterSpacing: 0.8,
+        letterSpacing: 0.2,
       ),
-
-      // Headlines
-      headlineLarge: GoogleFonts.orbitron(
+      headlineLarge: GoogleFonts.outfit(
         fontSize: 24,
         fontWeight: FontWeight.w700,
         color: AppColors.textPrimary,
-        letterSpacing: 1.0,
+        letterSpacing: 0.25,
       ),
-      headlineMedium: GoogleFonts.orbitron(
+      headlineMedium: GoogleFonts.outfit(
         fontSize: 20,
         fontWeight: FontWeight.w600,
         color: AppColors.textPrimary,
-        letterSpacing: 0.8,
+        letterSpacing: 0.2,
       ),
-      headlineSmall: GoogleFonts.orbitron(
+      headlineSmall: GoogleFonts.outfit(
         fontSize: 18,
         fontWeight: FontWeight.w600,
         color: AppColors.textPrimary,
-        letterSpacing: 0.6,
+        letterSpacing: 0.15,
       ),
-
-      // Titles
-      titleLarge: GoogleFonts.exo2(
+      titleLarge: GoogleFonts.beVietnamPro(
         fontSize: 18,
         fontWeight: FontWeight.w600,
         color: AppColors.textPrimary,
       ),
-      titleMedium: GoogleFonts.exo2(
+      titleMedium: GoogleFonts.beVietnamPro(
         fontSize: 16,
         fontWeight: FontWeight.w500,
         color: AppColors.textPrimary,
       ),
-      titleSmall: GoogleFonts.exo2(
+      titleSmall: GoogleFonts.beVietnamPro(
         fontSize: 14,
         fontWeight: FontWeight.w500,
         color: AppColors.textPrimary,
       ),
-
-      // Body
-      bodyLarge: GoogleFonts.exo2(
+      bodyLarge: GoogleFonts.beVietnamPro(
         fontSize: 16,
         fontWeight: FontWeight.w400,
         color: AppColors.textPrimary,
         height: 1.5,
       ),
-      bodyMedium: GoogleFonts.exo2(
+      bodyMedium: GoogleFonts.beVietnamPro(
         fontSize: 14,
         fontWeight: FontWeight.w400,
         color: AppColors.textSecondary,
         height: 1.5,
       ),
-      bodySmall: GoogleFonts.exo2(
+      bodySmall: GoogleFonts.beVietnamPro(
         fontSize: 12,
         fontWeight: FontWeight.w400,
         color: AppColors.textTertiary,
-        height: 1.4,
+        height: 1.45,
       ),
-
-      // Labels
-      labelLarge: GoogleFonts.inter(
+      labelLarge: GoogleFonts.beVietnamPro(
         fontSize: 14,
         fontWeight: FontWeight.w600,
         color: AppColors.textPrimary,
-        letterSpacing: 0.5,
+        letterSpacing: 0.2,
       ),
-      labelMedium: GoogleFonts.inter(
+      labelMedium: GoogleFonts.beVietnamPro(
         fontSize: 12,
         fontWeight: FontWeight.w500,
         color: AppColors.textSecondary,
-        letterSpacing: 0.5,
+        letterSpacing: 0.15,
       ),
-      labelSmall: GoogleFonts.inter(
+      labelSmall: GoogleFonts.beVietnamPro(
         fontSize: 10,
         fontWeight: FontWeight.w500,
         color: AppColors.textTertiary,
-        letterSpacing: 0.5,
+        letterSpacing: 0.1,
       ),
     );
   }

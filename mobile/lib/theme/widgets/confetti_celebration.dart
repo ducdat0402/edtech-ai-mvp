@@ -461,7 +461,7 @@ class _AchievementUnlockedCelebrationState extends State<AchievementUnlockedCele
                                 _RewardChip(icon: Icons.star_rounded, value: '+${widget.xpReward}', label: 'XP', color: AppColors.xpGold),
                               if (widget.xpReward > 0 && widget.coinReward > 0) const SizedBox(width: 16),
                               if (widget.coinReward > 0)
-                                _RewardChip(icon: Icons.monetization_on_rounded, value: '+${widget.coinReward}', label: 'Coin', color: AppColors.coinGold),
+                                _RewardChip(icon: Icons.monetization_on_rounded, value: '+${widget.coinReward}', label: 'Xu', color: AppColors.coinGold),
                             ],
                           ),
                         ],

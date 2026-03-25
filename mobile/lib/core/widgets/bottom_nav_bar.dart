@@ -63,23 +63,23 @@ class _BottomNavBarState extends State<BottomNavBar> {
       items: [
         const BottomNavigationBarItem(
           icon: Icon(Icons.dashboard),
-          label: 'Dashboard',
+          label: 'Tổng quan',
         ),
         const BottomNavigationBarItem(
           icon: Icon(Icons.task_alt),
-          label: 'Quests',
+          label: 'Nhiệm vụ',
         ),
         const BottomNavigationBarItem(
           icon: Icon(Icons.leaderboard),
-          label: 'Ranking',
+          label: 'Xếp hạng',
         ),
         BottomNavigationBarItem(
           icon: _buildFriendsIcon(),
-          label: 'Ban be',
+          label: 'Bạn bè',
         ),
         const BottomNavigationBarItem(
           icon: Icon(Icons.person),
-          label: 'Profile',
+          label: 'Hồ sơ',
         ),
       ],
     );

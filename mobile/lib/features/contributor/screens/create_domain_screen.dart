@@ -260,7 +260,7 @@ class _CreateDomainScreenState extends State<CreateDomainScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              _buildLabel('Coin nhận được'),
+                              _buildLabel('Xu nhận được'),
                               const SizedBox(height: 8),
                               _buildNumberField(
                                   controller: _coinController,

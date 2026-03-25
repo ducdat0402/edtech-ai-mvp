@@ -168,7 +168,7 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
                   ),
                 ),
                 child: const Text(
-                  'Lam bai test',
+                  'Làm bài kiểm tra',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
@@ -193,7 +193,7 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
           const Icon(Icons.schedule, color: AppColors.purpleNeon, size: 16),
           const SizedBox(width: 6),
           Text(
-            'Thoi gian doc: ~$_estimatedReadingTime phut',
+            'Thời gian đọc: ~$_estimatedReadingTime phút',
             style: const TextStyle(
               color: AppColors.purpleNeon,
               fontSize: 13,
@@ -388,7 +388,7 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
                     Icon(Icons.quiz, color: AppColors.purpleNeon, size: 14),
                     SizedBox(width: 4),
                     Text(
-                      'Cau hoi kiem tra',
+                      'Câu hỏi kiểm tra',
                       style: TextStyle(
                         color: AppColors.purpleNeon,
                         fontSize: 12,
@@ -627,7 +627,7 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
               ),
               const SizedBox(width: 12),
               const Text(
-                'Tong ket',
+                'Tổng kết',
                 style: TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: 17,
@@ -675,7 +675,7 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
               ),
               const SizedBox(width: 12),
               const Text(
-                'Noi dung can hoc',
+                'Nội dung cần học',
                 style: TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: 17,

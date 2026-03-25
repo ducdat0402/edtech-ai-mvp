@@ -108,7 +108,7 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
           const SizedBox(height: 24),
 
           _buildCurrencyCard(
-            title: 'Coins',
+            title: 'Xu',
             value: coins.toString(),
             icon: Icons.monetization_on,
             color: Colors.amber,
@@ -229,7 +229,7 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
               _buildStatItem(
                 icon: Icons.monetization_on,
                 value: coins.toString(),
-                label: 'Coins',
+                label: 'Xu',
                 color: Colors.amber,
               ),
               _buildStatItem(
@@ -247,7 +247,7 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
               _buildStatItem(
                 icon: Icons.local_fire_department,
                 value: streak.toString(),
-                label: 'Streak',
+                label: 'Chuỗi ngày',
                 color: Colors.orange,
               ),
             ],
@@ -376,7 +376,7 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
               ),
               const SizedBox(height: 4),
               Text(
-                'Hoàn thành các bài học để nhận Shards!',
+                'Hoàn thành bài học để nhận mảnh!',
                 style: TextStyle(
                   fontSize: 12,
                   color: Colors.grey.shade500,
@@ -404,7 +404,7 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
                 Icon(Icons.diamond, color: Colors.purple.shade400),
                 const SizedBox(width: 8),
                 const Text(
-                  'Shards',
+                  'Mảnh',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -497,10 +497,10 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '• Hoàn thành bài học để nhận XP và Coins\n'
-                    '• Coins dùng để mua vật phẩm trong Cửa hàng\n'
+                    '• Hoàn thành bài học để nhận XP và xu\n'
+                    '• Xu dùng để mua vật phẩm trong cửa hàng\n'
                     '• Kim cương dùng để mở khóa nội dung & AI\n'
-                    '• Học đều đặn để tăng Streak',
+                    '• Học đều đặn để tăng chuỗi ngày',
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.blue.shade700,

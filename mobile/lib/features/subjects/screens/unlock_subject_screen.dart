@@ -372,7 +372,7 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('$totalLessons bai x 25 💎 x 0.7',
+                      Text('$totalLessons bài × 25 💎 × 0.7',
                           style: const TextStyle(
                               color: AppColors.textTertiary, fontSize: 12)),
                       Text('$price 💎',
@@ -386,7 +386,7 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Gia goc (mua le):',
+                      const Text('Giá gốc (mua lẻ):',
                           style: TextStyle(
                               color: AppColors.textTertiary, fontSize: 11)),
                       Text('$totalIfTopics 💎',
@@ -400,7 +400,7 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Tiet kiem:',
+                      const Text('Tiết kiệm:',
                           style: TextStyle(
                               color: AppColors.successNeon, fontSize: 12)),
                       Text('$savings 💎',
@@ -419,7 +419,7 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
               child: ElevatedButton.icon(
                 onPressed: _unlockSubject,
                 icon: const Icon(Icons.lock_open_rounded, size: 20),
-                label: Text('Mo khoa ca mon - $price 💎',
+                label: Text('Mở khóa cả môn — $price 💎',
                     style: const TextStyle(fontWeight: FontWeight.bold)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.purpleNeon,
@@ -448,7 +448,7 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
       children: [
         Row(
           children: [
-            Text('Mua theo chuong',
+            Text('Mua theo chương',
                 style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
             const SizedBox(width: 8),
             Container(
@@ -499,7 +499,7 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
                           style: AppTextStyles.labelLarge
                               .copyWith(color: AppColors.textPrimary)),
                       const SizedBox(height: 4),
-                      Text('$lessonsCount bai hoc',
+                      Text('$lessonsCount bài học',
                           style: AppTextStyles.caption
                               .copyWith(color: AppColors.textTertiary)),
                       if (!isUnlocked) ...[
@@ -520,7 +520,7 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
                       color: AppColors.successNeon.withOpacity(0.15),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Text('Da mo',
+                    child: const Text('Đã mở',
                         style: TextStyle(
                             color: AppColors.successNeon,
                             fontSize: 12,
@@ -557,7 +557,7 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Tong neu mua tat ca chuong:',
+              const Text('Tổng nếu mua tất cả chương:',
                   style:
                       TextStyle(color: AppColors.textTertiary, fontSize: 12)),
               Text('${_pricing!['totalIfBuyDomains']} 💎',
@@ -582,10 +582,10 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Mua theo chu de',
+        Text('Mua theo chủ đề',
             style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
         const SizedBox(height: 4),
-        Text('Gia goc - khong giam gia',
+        Text('Giá gốc — không giảm giá',
             style:
                 AppTextStyles.caption.copyWith(color: AppColors.textTertiary)),
         const SizedBox(height: 12),
@@ -613,7 +613,7 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
                 title: Text(domainName,
                     style: AppTextStyles.labelLarge
                         .copyWith(color: AppColors.textPrimary)),
-                subtitle: Text('${topics.length} chu de',
+                subtitle: Text('${topics.length} chủ đề',
                     style: AppTextStyles.caption
                         .copyWith(color: AppColors.textTertiary)),
                 iconColor: AppColors.textSecondary,
@@ -659,7 +659,7 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
                                     fontSize: 13,
                                     fontWeight: FontWeight.w500,
                                   )),
-                              Text('$lessonsCount bai',
+                              Text('$lessonsCount bài',
                                   style: const TextStyle(
                                       color: AppColors.textTertiary,
                                       fontSize: 11)),
@@ -667,7 +667,7 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
                           ),
                         ),
                         if (isUnlocked)
-                          const Text('Da mo',
+                          const Text('Đã mở',
                               style: TextStyle(
                                   color: AppColors.successNeon,
                                   fontSize: 11,
@@ -712,7 +712,7 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Tong neu mua le tung topic:',
+              const Text('Tổng nếu mua lẻ từng chủ đề:',
                   style:
                       TextStyle(color: AppColors.textTertiary, fontSize: 12)),
               Text('${_pricing!['totalIfBuyTopics']} 💎',

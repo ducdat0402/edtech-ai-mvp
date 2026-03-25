@@ -170,7 +170,7 @@ class _ImageQuizLessonScreenState extends State<ImageQuizLessonScreen> {
                   ),
                 ),
                 child: const Text(
-                  'Lam bai test',
+                  'Làm bài kiểm tra',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
@@ -299,7 +299,7 @@ class _ImageQuizLessonScreenState extends State<ImageQuizLessonScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Goi y',
+                          'Gợi ý',
                           style: TextStyle(
                             color: AppColors.purpleNeon,
                             fontSize: 13,

@@ -69,7 +69,7 @@ class _RegisterScreenState extends State<RegisterScreen>
           context.go('/onboarding');
         }
       } else {
-        String errorMessage = result['message'] ?? 'Registration failed';
+        String errorMessage = result['message'] ?? 'Đăng ký thất bại';
 
         if (result['statusCode'] == 409) {
           errorMessage = 'Email đã tồn tại. Bạn có muốn đăng nhập không?';
@@ -82,7 +82,7 @@ class _RegisterScreenState extends State<RegisterScreen>
       }
     } catch (e) {
       setState(() {
-        _errorMessage = 'An error occurred: ${e.toString()}';
+        _errorMessage = 'Đã xảy ra lỗi: ${e.toString()}';
         _isLoading = false;
       });
     }

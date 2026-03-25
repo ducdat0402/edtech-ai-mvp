@@ -22,10 +22,10 @@ class _RewardsHistoryScreenState extends State<RewardsHistoryScreen> {
 
   final Map<String, String> _sourceLabels = {
     'content_item': 'Bài học',
-    'quest': 'Quest',
-    'skill_node': 'Skill Tree',
+    'quest': 'Nhiệm vụ',
+    'skill_node': 'Cây kỹ năng',
     'daily_streak': 'Chuỗi ngày',
-    'bonus': 'Bonus',
+    'bonus': 'Thưởng thêm',
   };
 
   @override
@@ -228,7 +228,7 @@ class _RewardsHistoryScreenState extends State<RewardsHistoryScreen> {
                   if (coins > 0)
                     _buildRewardChip(
                       icon: Icons.monetization_on,
-                      label: '$coins Coins',
+                      label: '$coins xu',
                       color: Colors.orange,
                     ),
                   ...shards.entries.map(

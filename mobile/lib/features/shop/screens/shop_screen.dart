@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
@@ -148,7 +147,7 @@ class _ShopScreenState extends State<ShopScreen>
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
             ),
-            child: Text(_coins >= price ? 'Mua ngay' : 'Không đủ Coins'),
+            child: Text(_coins >= price ? 'Mua ngay' : 'Không đủ xu'),
           ),
         ],
       ),
@@ -293,7 +292,7 @@ class _ShopScreenState extends State<ShopScreen>
                       const Icon(Icons.monetization_on_rounded,
                           color: AppColors.coinGold, size: 20),
                       const SizedBox(width: 4),
-                      Text('+${reward['coins']} Coins',
+                      Text('+${reward['coins']} xu',
                           style: const TextStyle(
                               color: AppColors.coinGold,
                               fontWeight: FontWeight.bold)),
@@ -443,7 +442,7 @@ class _ShopScreenState extends State<ShopScreen>
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Coins kiếm được qua học tập. Hoàn thành bài học, quest, achievement để nhận thêm!',
+              'Xu kiếm được qua học tập. Hoàn thành bài học, nhiệm vụ và thành tựu để nhận thêm!',
               style: AppTextStyles.caption
                   .copyWith(color: AppColors.textSecondary),
             ),

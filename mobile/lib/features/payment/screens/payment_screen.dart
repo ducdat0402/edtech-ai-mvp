@@ -109,7 +109,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
     return Scaffold(
       backgroundColor: AppColors.bgPrimary,
       appBar: AppBar(
-        title: const Text('Mua Kim Cương', style: AppTextStyles.h3),
+        title: Text('Mua Kim Cương', style: AppTextStyles.h3),
         backgroundColor: AppColors.bgPrimary,
         leading: const AppBarLeadingBackAndHome(),
         leadingWidth: 112,
@@ -136,7 +136,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
             const Icon(Icons.error_outline,
                 size: 64, color: AppColors.errorNeon),
             const SizedBox(height: 16),
-            const Text('Có lỗi xảy ra', style: AppTextStyles.h3),
+            Text('Có lỗi xảy ra', style: AppTextStyles.h3),
             const SizedBox(height: 8),
             Text(_error!,
                 style: AppTextStyles.bodyMedium, textAlign: TextAlign.center),
@@ -375,7 +375,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                     borderRadius: BorderRadius.circular(6),
                                   ),
                                   child: Text(
-                                    '+$bonusPercent% Bonus',
+                                    '+$bonusPercent% thưởng',
                                     style: const TextStyle(
                                         color: AppColors.successNeon,
                                         fontSize: 11,
@@ -387,7 +387,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                           ),
                           if (bonusDiamonds > 0)
                             Text(
-                              '($diamonds + $bonusDiamonds bonus)',
+                              '($diamonds + $bonusDiamonds thưởng kèm)',
                               style: const TextStyle(
                                   color: AppColors.textTertiary, fontSize: 11),
                             ),
@@ -469,7 +469,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
           _buildInfoItem(
               Icons.lock_open, 'Mở khóa bài học và nội dung cao cấp'),
           _buildInfoItem(Icons.auto_awesome, 'Sử dụng tính năng AI nâng cao'),
-          _buildInfoItem(Icons.stars, 'Mua vật phẩm đặc biệt và badge'),
+          _buildInfoItem(Icons.stars, 'Mua vật phẩm đặc biệt và huy hiệu'),
           _buildInfoItem(Icons.speed, 'Tăng tốc tiến trình học tập'),
         ],
       ),

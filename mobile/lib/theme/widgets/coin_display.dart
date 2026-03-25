@@ -72,8 +72,8 @@ class CoinDisplay extends StatelessWidget {
                     : AppTextStyles.coinDisplay,
               ),
               if (showLabel && !compact)
-                const Text(
-                  'Coins',
+                Text(
+                  'Xu',
                   style: AppTextStyles.labelSmall,
                 ),
             ],

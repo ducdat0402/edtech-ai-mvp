@@ -465,7 +465,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
             children: [
               const Icon(Icons.check_circle, color: Colors.green),
               const SizedBox(width: 8),
-              Text(item['title'] ?? 'Hidden Reward'),
+              Text(item['title'] ?? 'Phần thưởng ẩn'),
             ],
           ),
           content: Column(
@@ -497,7 +497,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                         const Icon(Icons.monetization_on,
                             color: Colors.amber, size: 20),
                         const SizedBox(width: 8),
-                        Text('Coins: +${rewards['coin']}'),
+                        Text('Xu: +${rewards['coin']}'),
                       ],
                     ),
                   ),
@@ -631,7 +631,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
-                              'Coins',
+                              'Xu',
                               style: TextStyle(
                                 fontSize: 12,
                                 color: Colors.grey,
@@ -1042,7 +1042,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                                   size: 48, color: AppColors.errorNeon),
                             ),
                             const SizedBox(height: 16),
-                            Text('Error: $_error',
+                            Text('Lỗi: $_error',
                                 style: AppTextStyles.bodyMedium
                                     .copyWith(color: AppColors.textSecondary),
                                 textAlign: TextAlign.center),
@@ -1057,7 +1057,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                     )
                   : _nodeData == null
                       ? Center(
-                          child: Text('No data available',
+                          child: Text('Chưa có dữ liệu',
                               style: AppTextStyles.bodyMedium
                                   .copyWith(color: AppColors.textSecondary)))
                       : RefreshIndicator(
@@ -1871,7 +1871,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                                   fontSize: 12, color: Colors.grey.shade700)),
                           Icon(Icons.monetization_on,
                               size: 14, color: Colors.amber.shade600),
-                          Text(' +30 Coin',
+                          Text(' +30 xu',
                               style: TextStyle(
                                   fontSize: 12, color: Colors.grey.shade700)),
                         ],
@@ -2064,7 +2064,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                                   const Text(' +50 XP  '),
                                   Icon(Icons.monetization_on,
                                       color: Colors.amber.shade600, size: 16),
-                                  const Text(' +30 Coin'),
+                                  const Text(' +30 xu'),
                                 ],
                               ),
                             ],
@@ -2808,7 +2808,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                                           color: Colors.amber.shade600,
                                           size: 16),
                                       const SizedBox(width: 4),
-                                      Text('+${rewards['coin']} Coin'),
+                                      Text('+${rewards['coin']} xu'),
                                     ],
                                   ],
                                 ),

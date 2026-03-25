@@ -92,13 +92,13 @@ class _LoginScreenState extends State<LoginScreen>
         }
       } else {
         setState(() {
-          _errorMessage = result['message'] ?? 'Login failed';
+          _errorMessage = result['message'] ?? 'Đăng nhập thất bại';
           _isLoading = false;
         });
       }
     } catch (e) {
       setState(() {
-        _errorMessage = 'An error occurred: ${e.toString()}';
+        _errorMessage = 'Đã xảy ra lỗi: ${e.toString()}';
         _isLoading = false;
       });
     }
@@ -198,7 +198,7 @@ class _LoginScreenState extends State<LoginScreen>
         ),
         const SizedBox(height: 8),
         Text(
-          'Level Up Your Learning',
+          'Nâng tầm học tập của bạn',
           style: AppTextStyles.bodyMedium.copyWith(
             color: AppColors.textSecondary,
           ),
@@ -436,7 +436,7 @@ class _LoginScreenState extends State<LoginScreen>
             } else {
               setState(() {
                 _errorMessage =
-                    result['message'] ?? 'Google login failed (web)';
+                    result['message'] ?? 'Đăng nhập Google thất bại (web)';
                 _isGoogleLoading = false;
               });
             }
@@ -508,7 +508,7 @@ class _LoginScreenState extends State<LoginScreen>
         context.go('/dashboard');
       } else {
         setState(() {
-          _errorMessage = result['message'] ?? 'Google login failed';
+          _errorMessage = result['message'] ?? 'Đăng nhập Google thất bại';
         });
       }
     } catch (e) {

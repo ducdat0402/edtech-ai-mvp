@@ -2038,7 +2038,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: AppColors.borderPrimary)),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const Text('Phân bổ vai trò', style: AppTextStyles.labelLarge),
+        Text('Phân bổ vai trò', style: AppTextStyles.labelLarge),
         const SizedBox(height: 12),
         SizedBox(
             height: 160,
@@ -2125,7 +2125,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: AppColors.borderPrimary)),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const Text('Hoàn thành theo môn', style: AppTextStyles.labelLarge),
+        Text('Hoàn thành theo môn', style: AppTextStyles.labelLarge),
         const SizedBox(height: 16),
         SizedBox(
             height: 200,
@@ -2233,7 +2233,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: AppColors.borderPrimary)),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const Text('Doanh thu theo gói', style: AppTextStyles.labelLarge),
+        Text('Doanh thu theo gói', style: AppTextStyles.labelLarge),
         const SizedBox(height: 12),
         ...List.generate(data.length, (i) {
           final pkg = data[i];
@@ -2271,13 +2271,13 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
   Widget _buildEngagementMetricsCards(Map<String, dynamic> engagement) {
     return Row(children: [
       _buildAnalyticsStatCard(
-          'TB Streak',
+          'TB chuỗi ngày',
           (double.tryParse('${engagement['avgStreak']}') ?? 0)
               .toStringAsFixed(1),
           icon: Icons.local_fire_department,
           color: AppColors.streakOrange),
       const SizedBox(width: 8),
-      _buildAnalyticsStatCard('Max Streak', '${engagement['maxStreak'] ?? 0}',
+      _buildAnalyticsStatCard('Chuỗi tối đa', '${engagement['maxStreak'] ?? 0}',
           icon: Icons.whatshot, color: AppColors.errorNeon),
       const SizedBox(width: 8),
       const Expanded(child: SizedBox()),
@@ -2302,7 +2302,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: AppColors.borderPrimary)),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const Text('Phân bổ streak', style: AppTextStyles.labelLarge),
+        Text('Phân bổ chuỗi ngày', style: AppTextStyles.labelLarge),
         const SizedBox(height: 12),
         SizedBox(
             height: 160,
@@ -2369,7 +2369,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: AppColors.borderPrimary)),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const Text('Top Contributors', style: AppTextStyles.labelLarge),
+        Text('Top người đóng góp', style: AppTextStyles.labelLarge),
         const SizedBox(height: 12),
         ...List.generate(contributors.length > 5 ? 5 : contributors.length,
             (i) {

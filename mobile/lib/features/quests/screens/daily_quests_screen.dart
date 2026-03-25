@@ -110,7 +110,7 @@ class _DailyQuestsScreenState extends State<DailyQuestsScreen>
         leading: const AppBarLeadingBackAndHome(),
         leadingWidth: 112,
         automaticallyImplyLeading: false,
-        title: Text('Daily Quests',
+        title: Text('Nhiệm vụ hằng ngày',
             style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary)),
         bottom: TabBar(
           controller: _tabController,
@@ -159,7 +159,7 @@ class _DailyQuestsScreenState extends State<DailyQuestsScreen>
         children: [
           const CircularProgressIndicator(color: AppColors.cyanNeon),
           const SizedBox(height: 16),
-          Text('Đang tải quests...',
+          Text('Đang tải nhiệm vụ…',
               style: AppTextStyles.bodyMedium
                   .copyWith(color: AppColors.textSecondary)),
         ],
@@ -197,8 +197,8 @@ class _DailyQuestsScreenState extends State<DailyQuestsScreen>
     if (_questHistory == null || _questHistory!.isEmpty) {
       return const EmptyStateWidget(
         icon: Icons.history_rounded,
-        title: 'Chưa có lịch sử quest',
-        message: 'Lịch sử quest sẽ được hiển thị ở đây',
+        title: 'Chưa có lịch sử nhiệm vụ',
+        message: 'Lịch sử nhiệm vụ sẽ hiển thị tại đây',
       );
     }
 
@@ -290,7 +290,7 @@ class _QuestCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        quest['title'] ?? 'Quest',
+                        quest['title'] ?? 'Nhiệm vụ',
                         style: AppTextStyles.labelLarge
                             .copyWith(color: AppColors.textPrimary),
                       ),
@@ -560,7 +560,7 @@ class _QuestHistoryCard extends StatelessWidget {
           child: Icon(icon, color: color, size: 22),
         ),
         title: Text(
-          quest['title'] ?? 'Quest',
+          quest['title'] ?? 'Nhiệm vụ',
           style:
               AppTextStyles.labelMedium.copyWith(color: AppColors.textPrimary),
         ),

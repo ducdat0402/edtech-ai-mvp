@@ -367,7 +367,7 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
                         color: Colors.amber.shade900)),
                 const SizedBox(height: 4),
                 Text(
-                  'Muốn nhận phần thưởng XP và Coin, hãy chuyển sang Learner mode để học và làm bài test nhé!',
+                  'Muốn nhận phần thưởng XP và xu, hãy chuyển sang chế độ học viên để học và làm bài kiểm tra nhé!',
                   style: TextStyle(
                       fontSize: 12, color: Colors.amber.shade800, height: 1.4),
                 ),

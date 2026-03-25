@@ -48,7 +48,7 @@ class _VideoLessonScreenState extends State<VideoLessonScreen> {
     Clipboard.setData(ClipboardData(text: text));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text('Da sao chep link!'),
+        content: const Text('Đã sao chép link!'),
         backgroundColor: AppColors.successNeon.withOpacity(0.9),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -94,7 +94,7 @@ class _VideoLessonScreenState extends State<VideoLessonScreen> {
                   // Summary section
                   if (_summary.isNotEmpty)
                     _buildCollapsibleSection(
-                      title: 'Tom tat',
+                      title: 'Tóm tắt',
                       icon: Icons.summarize,
                       initiallyExpanded: true,
                       child: Container(
@@ -120,7 +120,7 @@ class _VideoLessonScreenState extends State<VideoLessonScreen> {
                   if (_keyPoints.isNotEmpty) ...[
                     const SizedBox(height: 8),
                     _buildCollapsibleSection(
-                      title: 'Noi dung chinh',
+                      title: 'Nội dung chính',
                       icon: Icons.list_alt,
                       initiallyExpanded: true,
                       child: Column(
@@ -137,7 +137,7 @@ class _VideoLessonScreenState extends State<VideoLessonScreen> {
                   if (_keywords.isNotEmpty) ...[
                     const SizedBox(height: 8),
                     _buildCollapsibleSection(
-                      title: 'Tu khoa',
+                      title: 'Từ khóa',
                       icon: Icons.tag,
                       initiallyExpanded: false,
                       child: Padding(
@@ -201,7 +201,7 @@ class _VideoLessonScreenState extends State<VideoLessonScreen> {
                   ),
                 ),
                 child: const Text(
-                  'Lam bai test',
+                  'Làm bài kiểm tra',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
@@ -251,7 +251,7 @@ class _VideoLessonScreenState extends State<VideoLessonScreen> {
                 ),
                 SizedBox(height: 12),
                 Text(
-                  'Video bai hoc',
+                  'Video bài học',
                   style: TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 16,
@@ -260,7 +260,7 @@ class _VideoLessonScreenState extends State<VideoLessonScreen> {
                 ),
                 SizedBox(height: 4),
                 Text(
-                  'Nhan de mo trong trinh duyet',
+                  'Nhấn để mở trong trình duyệt',
                   style: TextStyle(
                     color: AppColors.textTertiary,
                     fontSize: 13,
@@ -294,7 +294,7 @@ class _VideoLessonScreenState extends State<VideoLessonScreen> {
                   IconButton(
                     icon: const Icon(Icons.copy, color: AppColors.textSecondary, size: 18),
                     onPressed: () => _copyToClipboard(_videoUrl),
-                    tooltip: 'Sao chep link',
+                    tooltip: 'Sao chép link',
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
                   ),
@@ -305,7 +305,7 @@ class _VideoLessonScreenState extends State<VideoLessonScreen> {
             const Padding(
               padding: EdgeInsets.all(12),
               child: Text(
-                'Chua co link video',
+                'Chưa có link video',
                 style: TextStyle(color: AppColors.textTertiary, fontSize: 13),
               ),
             ),

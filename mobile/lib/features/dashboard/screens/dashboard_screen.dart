@@ -51,9 +51,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final targets = [
       TutorialHelper.buildTarget(
         key: _levelCardKey,
-        title: 'Level & Kinh nghiệm',
+        title: 'Cấp độ & kinh nghiệm',
         description:
-            'Đây là cấp độ hiện tại của bạn. Hoàn thành bài học để nhận XP và lên level!',
+            'Đây là cấp độ hiện tại của bạn. Hoàn thành bài học để nhận XP và lên cấp!',
         icon: Icons.military_tech,
         stepLabel: 'Bước 1/5',
       ),
@@ -61,7 +61,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         key: _statsRowKey,
         title: 'Tài nguyên của bạn',
         description:
-            'Coins để mua vật phẩm, Kim cương để mở khoá bài học, Streak theo dõi chuỗi học liên tiếp.',
+            'Xu để mua vật phẩm, kim cương để mở khóa bài học, chuỗi ngày theo dõi số ngày học liên tiếp.',
         icon: Icons.account_balance_wallet,
         stepLabel: 'Bước 2/5',
       ),
@@ -78,7 +78,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         key: _quickActionsKey,
         title: 'Truy cập nhanh',
         description:
-            'Quests hằng ngày, Bảng xếp hạng, Ví tiền, Cửa hàng... tất cả ở đây!',
+            'Nhiệm vụ hằng ngày, bảng xếp hạng, ví tiền, cửa hàng… tất cả ở đây!',
         icon: Icons.flash_on,
         stepLabel: 'Bước 4/5',
         align: ContentAlign.top,
@@ -87,7 +87,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         key: _bottomNavKey,
         title: 'Thanh điều hướng',
         description:
-            'Di chuyển nhanh giữa Dashboard, Nhiệm vụ, Bảng xếp hạng và Hồ sơ cá nhân.',
+            'Di chuyển nhanh giữa Tổng quan, Nhiệm vụ, Bảng xếp hạng và Hồ sơ cá nhân.',
         icon: Icons.navigation,
         stepLabel: 'Bước 5/5',
         align: ContentAlign.top,
@@ -283,12 +283,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Dashboard'),
+        title: const Text('Tổng quan'),
         actions: [
           IconButton(
             icon: const Icon(Icons.person),
             onPressed: () => context.push('/profile'),
-            tooltip: 'Profile',
+            tooltip: 'Hồ sơ',
           ),
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -303,7 +303,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   children: [
                     Icon(Icons.logout, color: Colors.red),
                     SizedBox(width: 8),
-                    Text('Logout'),
+                    Text('Đăng xuất'),
                   ],
                 ),
               ),
@@ -326,7 +326,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       onRetry: _loadDashboard,
                     )
                   : _dashboardData == null
-                      ? const Center(child: Text('No data available'))
+                      ? const Center(child: Text('Chưa có dữ liệu'))
                       : RefreshIndicator(
                           onRefresh: _loadDashboard,
                           child: SingleChildScrollView(
@@ -425,7 +425,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             Expanded(
               child: _buildStatCard(
                 icon: Icons.monetization_on_rounded,
-                label: 'Coins',
+                label: 'Xu',
                 value: coins is int ? coins : 0,
                 color: AppColors.coinGold,
                 onTap: () => context.push('/shop'),
@@ -445,7 +445,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             Expanded(
               child: _buildStatCard(
                 icon: Icons.local_fire_department_rounded,
-                label: 'Streak',
+                label: 'Chuỗi ngày',
                 value: streak is int ? streak : 0,
                 color: AppColors.streakOrange,
                 onTap: () => context.push('/currency'),
@@ -638,7 +638,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                 ),
                 Text(
-                  'Level $levelRange',
+                  'Cấp $levelRange',
                   style: TextStyle(
                     fontSize: 11,
                     color: color.withOpacity(0.6),
@@ -745,8 +745,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
       key: _quickActionsKey,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Quick Actions',
+        Text(
+          'Thao tác nhanh',
           style: AppTextStyles.h3,
         ),
         const SizedBox(height: 16),
@@ -755,7 +755,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             Expanded(
               child: _ActionCard(
                 icon: Icons.task_alt_rounded,
-                label: 'Quests',
+                label: 'Nhiệm vụ',
                 color: AppColors.cyanNeon,
                 onTap: () => context.push('/quests'),
               ),
@@ -764,7 +764,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             Expanded(
               child: _ActionCard(
                 icon: Icons.account_balance_wallet_rounded,
-                label: 'Currency',
+                label: 'Ví & tiền tệ',
                 color: AppColors.coinGold,
                 onTap: () => context.push('/currency'),
               ),
@@ -782,8 +782,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              'Daily Quests',
+            Text(
+              'Nhiệm vụ hằng ngày',
               style: AppTextStyles.h3,
             ),
             TextButton(
@@ -794,15 +794,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
         const SizedBox(height: 16),
         if (quests.isEmpty)
-          const Text('No quests available')
+          Text('Chưa có nhiệm vụ', style: AppTextStyles.bodyMedium)
         else
           ...quests.take(3).map((quest) => Card(
                 margin: const EdgeInsets.only(bottom: 8),
                 child: ListTile(
                   leading: const Icon(Icons.task_alt),
-                  title: Text(quest['quest']?['title'] ?? 'Quest'),
+                  title: Text(quest['quest']?['title'] ?? 'Nhiệm vụ'),
                   subtitle: Text(
-                    'Progress: ${quest['progress'] ?? 0}/${quest['target'] ?? 0}',
+                    'Tiến độ: ${quest['progress'] ?? 0}/${quest['target'] ?? 0}',
                   ),
                   trailing: quest['status'] == 'completed'
                       ? const Icon(Icons.check_circle, color: Colors.green)
@@ -822,8 +822,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Topic đang học',
+        Text(
+          'Chủ đề đang học',
           style: AppTextStyles.h3,
         ),
         const SizedBox(height: 16),

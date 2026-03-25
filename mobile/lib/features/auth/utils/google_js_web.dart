@@ -25,7 +25,7 @@ void startGoogleJsSignIn(
         }
       } else if (type == 'google_error') {
         sub.cancel();
-        onError((data['message'] ?? 'Google sign-in failed').toString());
+        onError((data['message'] ?? 'Đăng nhập Google thất bại').toString());
       }
     }
   });

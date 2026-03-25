@@ -1218,14 +1218,14 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Mo khoa bai hoc',
+                    'Mở khóa bài học',
                     style: AppTextStyles.labelLarge.copyWith(
                         color: AppColors.textPrimary,
                         fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'Su dung kim cuong de mo khoa tung bai, chuong hoac ca mon',
+                    'Dùng kim cương để mở khóa từng bài, chương hoặc cả môn',
                     style: AppTextStyles.caption
                         .copyWith(color: AppColors.textSecondary),
                   ),

@@ -95,7 +95,7 @@ class _FriendsScreenState extends State<FriendsScreen>
         leading: const AppBarLeadingBackAndHome(),
         leadingWidth: 112,
         automaticallyImplyLeading: false,
-        title: const Text('Ban be',
+        title: const Text('Bạn bè',
             style: TextStyle(color: AppColors.textPrimary)),
         actions: [
           IconButton(
@@ -128,13 +128,13 @@ class _FriendsScreenState extends State<FriendsScreen>
           unselectedLabelColor: AppColors.textSecondary,
           tabs: [
             const Tab(
-                text: 'Danh sach', icon: Icon(Icons.people_rounded, size: 20)),
+                text: 'Danh sách', icon: Icon(Icons.people_rounded, size: 20)),
             Tab(
               icon: const Icon(Icons.mail_rounded, size: 20),
               child: _buildRequestsTabLabel(),
             ),
             const Tab(
-                text: 'Goi y', icon: Icon(Icons.person_add_rounded, size: 20)),
+                text: 'Gợi ý', icon: Icon(Icons.person_add_rounded, size: 20)),
           ],
         ),
       ),
@@ -154,7 +154,7 @@ class _FriendsScreenState extends State<FriendsScreen>
                               const TextStyle(color: AppColors.textSecondary)),
                       const SizedBox(height: 16),
                       ElevatedButton(
-                          onPressed: _loadData, child: const Text('Thu lai')),
+                          onPressed: _loadData, child: const Text('Thử lại')),
                     ],
                   ),
                 )
@@ -175,7 +175,7 @@ class _FriendsScreenState extends State<FriendsScreen>
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Text('Loi moi'),
+        const Text('Lời mời'),
         if (receivedCount > 0) ...[
           const SizedBox(width: 4),
           Container(
@@ -203,8 +203,8 @@ class _FriendsScreenState extends State<FriendsScreen>
     if (_friends.isEmpty) {
       return const EmptyStateWidget(
         icon: Icons.people_outline_rounded,
-        title: 'Chua co ban be',
-        message: 'Tim kiem hoac xem goi y de ket ban!',
+        title: 'Chưa có bạn bè',
+        message: 'Tìm kiếm hoặc xem gợi ý để kết bạn!',
       );
     }
 
@@ -259,7 +259,7 @@ class _FriendsScreenState extends State<FriendsScreen>
             if (streak > 0) ...[
               const Text('🔥', style: TextStyle(fontSize: 12)),
               const SizedBox(width: 2),
-              Text('$streak ngay',
+              Text('$streak ngày',
                   style: const TextStyle(
                       color: AppColors.textSecondary, fontSize: 12)),
             ],
@@ -285,11 +285,11 @@ class _FriendsScreenState extends State<FriendsScreen>
               itemBuilder: (_) => [
                 const PopupMenuItem(
                     value: 'unfriend',
-                    child: Text('Huy ket ban',
+                    child: Text('Hủy kết bạn',
                         style: TextStyle(color: AppColors.errorNeon))),
                 const PopupMenuItem(
                     value: 'block',
-                    child: Text('Chan nguoi dung',
+                    child: Text('Chặn người dùng',
                         style: TextStyle(color: AppColors.errorNeon))),
               ],
             ),
@@ -309,10 +309,10 @@ class _FriendsScreenState extends State<FriendsScreen>
     try {
       if (action == 'unfriend' && friendshipId != null) {
         await api.unfriend(friendshipId);
-        _showSnack('Da huy ket ban');
+        _showSnack('Đã hủy kết bạn');
       } else if (action == 'block' && userId != null) {
         await api.blockUser(userId);
-        _showSnack('Da chan nguoi dung');
+        _showSnack('Đã chặn người dùng');
       }
       _loadDataForTab(0);
     } catch (e) {
@@ -329,8 +329,8 @@ class _FriendsScreenState extends State<FriendsScreen>
     if (received.isEmpty && sent.isEmpty) {
       return const EmptyStateWidget(
         icon: Icons.mail_outline_rounded,
-        title: 'Khong co loi moi',
-        message: 'Tim ban be moi hoac doi ai do gui loi moi cho ban!',
+        title: 'Không có lời mời',
+        message: 'Tìm bạn bè mới hoặc đợi ai đó gửi lời mời cho bạn!',
       );
     }
 
@@ -341,7 +341,7 @@ class _FriendsScreenState extends State<FriendsScreen>
         padding: const EdgeInsets.all(16),
         children: [
           if (received.isNotEmpty) ...[
-            _buildSectionHeader('Loi moi nhan duoc',
+            _buildSectionHeader('Lời mời nhận được',
                 Icons.call_received_rounded, received.length),
             const SizedBox(height: 8),
             ...received.map(
@@ -350,7 +350,7 @@ class _FriendsScreenState extends State<FriendsScreen>
           ],
           if (sent.isNotEmpty) ...[
             _buildSectionHeader(
-                'Loi moi da gui', Icons.call_made_rounded, sent.length),
+                'Lời mời đã gửi', Icons.call_made_rounded, sent.length),
             const SizedBox(height: 8),
             ...sent
                 .map((s) => _buildSentRequestCard(s as Map<String, dynamic>)),
@@ -425,10 +425,10 @@ class _FriendsScreenState extends State<FriendsScreen>
                 ],
               ),
             ),
-            _buildActionButton('Chap nhan', AppColors.successGlow,
+            _buildActionButton('Chấp nhận', AppColors.successGlow,
                 () => _acceptRequest(req['friendshipId'])),
             const SizedBox(width: 8),
-            _buildActionButton('Tu choi', AppColors.errorGlow,
+            _buildActionButton('Từ chối', AppColors.errorGlow,
                 () => _rejectRequest(req['friendshipId'])),
           ],
         ),
@@ -468,13 +468,13 @@ class _FriendsScreenState extends State<FriendsScreen>
                       style: const TextStyle(
                           color: AppColors.textPrimary,
                           fontWeight: FontWeight.w600)),
-                  Text('Lv.$level • Dang cho',
+                  Text('Lv.$level • Đang chờ',
                       style: const TextStyle(
                           color: AppColors.textSecondary, fontSize: 12)),
                 ],
               ),
             ),
-            _buildActionButton('Huy', AppColors.textTertiary,
+            _buildActionButton('Hủy', AppColors.textTertiary,
                 () => _cancelRequest(req['friendshipId'])),
           ],
         ),
@@ -505,7 +505,7 @@ class _FriendsScreenState extends State<FriendsScreen>
     try {
       await Provider.of<ApiService>(context, listen: false)
           .acceptFriendRequest(id);
-      _showSnack('Da chap nhan loi moi!');
+      _showSnack('Đã chấp nhận lời mời!');
       _loadDataForTab(1);
       _loadDataForTab(0);
     } catch (e) {
@@ -518,7 +518,7 @@ class _FriendsScreenState extends State<FriendsScreen>
     try {
       await Provider.of<ApiService>(context, listen: false)
           .rejectFriendRequest(id);
-      _showSnack('Da tu choi loi moi');
+      _showSnack('Đã từ chối lời mời');
       _loadDataForTab(1);
     } catch (e) {
       _showSnack('Loi: $e');
@@ -530,7 +530,7 @@ class _FriendsScreenState extends State<FriendsScreen>
     try {
       await Provider.of<ApiService>(context, listen: false)
           .cancelFriendRequest(id);
-      _showSnack('Da huy loi moi');
+      _showSnack('Đã hủy lời mời');
       _loadDataForTab(1);
     } catch (e) {
       _showSnack('Loi: $e');
@@ -543,8 +543,8 @@ class _FriendsScreenState extends State<FriendsScreen>
     if (_suggestions.isEmpty) {
       return const EmptyStateWidget(
         icon: Icons.person_search_rounded,
-        title: 'Khong co goi y',
-        message: 'Hay hoc them de he thong goi y ban be phu hop!',
+        title: 'Không có gợi ý',
+        message: 'Hãy học thêm để hệ thống gợi ý bạn bè phù hợp!',
       );
     }
 
@@ -606,7 +606,7 @@ class _FriendsScreenState extends State<FriendsScreen>
                         const Icon(Icons.people_rounded,
                             size: 12, color: AppColors.textSecondary),
                         const SizedBox(width: 2),
-                        Text('$mutual ban chung',
+                        Text('$mutual bạn chung',
                             style: const TextStyle(
                                 color: AppColors.textSecondary, fontSize: 12)),
                       ],
@@ -616,7 +616,7 @@ class _FriendsScreenState extends State<FriendsScreen>
               ),
             ),
             _buildActionButton(
-                'Ket ban', AppColors.purpleNeon, () => _sendRequest(s['id'])),
+                'Kết bạn', AppColors.purpleNeon, () => _sendRequest(s['id'])),
           ],
         ),
       ),
@@ -628,7 +628,7 @@ class _FriendsScreenState extends State<FriendsScreen>
     try {
       await Provider.of<ApiService>(context, listen: false)
           .sendFriendRequest(userId);
-      _showSnack('Da gui loi moi ket ban!');
+      _showSnack('Đã gửi lời mời kết bạn!');
       _loadDataForTab(2);
     } catch (e) {
       _showSnack('Loi: $e');
@@ -665,7 +665,7 @@ class _FriendsScreenState extends State<FriendsScreen>
 
             return AlertDialog(
               backgroundColor: AppColors.bgSecondary,
-              title: const Text('Tim kiem nguoi dung',
+              title: const Text('Tìm kiếm người dùng',
                   style: TextStyle(color: AppColors.textPrimary)),
               content: SizedBox(
                 width: double.maxFinite,
@@ -677,7 +677,7 @@ class _FriendsScreenState extends State<FriendsScreen>
                       autofocus: true,
                       style: const TextStyle(color: AppColors.textPrimary),
                       decoration: InputDecoration(
-                        hintText: 'Nhap ten hoac email...',
+                        hintText: 'Nhập tên hoặc email…',
                         hintStyle:
                             const TextStyle(color: AppColors.textTertiary),
                         prefixIcon: const Icon(Icons.search,
@@ -698,8 +698,8 @@ class _FriendsScreenState extends State<FriendsScreen>
                           ? Center(
                               child: Text(
                                 searchController.text.length < 2
-                                    ? 'Nhap it nhat 2 ky tu'
-                                    : 'Khong tim thay',
+                                    ? 'Nhập ít nhất 2 ký tự'
+                                    : 'Không tìm thấy',
                                 style: const TextStyle(
                                     color: AppColors.textTertiary),
                               ),
@@ -722,7 +722,7 @@ class _FriendsScreenState extends State<FriendsScreen>
                     debounce?.cancel();
                     Navigator.pop(ctx);
                   },
-                  child: const Text('Dong',
+                  child: const Text('Đóng',
                       style: TextStyle(color: AppColors.textSecondary)),
                 ),
               ],
@@ -744,12 +744,12 @@ class _FriendsScreenState extends State<FriendsScreen>
     VoidCallback? onAction;
 
     if (status == 'accepted') {
-      actionLabel = 'Ban be';
+      actionLabel = 'Bạn bè';
       actionColor = AppColors.successGlow;
       onAction = null;
     } else if (status == 'pending') {
       final isRequester = u['isRequester'] == true;
-      actionLabel = isRequester ? 'Da gui' : 'Chap nhan';
+      actionLabel = isRequester ? 'Đã gửi' : 'Chấp nhận';
       actionColor =
           isRequester ? AppColors.textTertiary : AppColors.successGlow;
       onAction = isRequester
@@ -758,7 +758,7 @@ class _FriendsScreenState extends State<FriendsScreen>
               try {
                 await Provider.of<ApiService>(context, listen: false)
                     .acceptFriendRequest(u['friendshipId']);
-                _showSnack('Da chap nhan!');
+                _showSnack('Đã chấp nhận!');
                 final api = Provider.of<ApiService>(context, listen: false);
                 final r = await api.searchUsers(u['fullName'] ?? '');
                 setDialogState(() => results
@@ -769,13 +769,13 @@ class _FriendsScreenState extends State<FriendsScreen>
               }
             };
     } else {
-      actionLabel = 'Ket ban';
+      actionLabel = 'Kết bạn';
       actionColor = AppColors.purpleNeon;
       onAction = () async {
         try {
           await Provider.of<ApiService>(context, listen: false)
               .sendFriendRequest(u['id']);
-          _showSnack('Da gui loi moi!');
+          _showSnack('Đã gửi lời mời!');
           final api = Provider.of<ApiService>(context, listen: false);
           final r = await api.searchUsers(u['fullName'] ?? '');
           setDialogState(() => results
@@ -883,7 +883,7 @@ class _FriendActivityPageState extends State<_FriendActivityPage> {
         leading: const AppBarLeadingBackAndHome(),
         leadingWidth: 112,
         automaticallyImplyLeading: false,
-        title: const Text('Hoat dong ban be',
+        title: const Text('Hoạt động bạn bè',
             style: TextStyle(color: AppColors.textPrimary)),
         iconTheme: const IconThemeData(color: AppColors.textPrimary),
       ),
@@ -893,8 +893,8 @@ class _FriendActivityPageState extends State<_FriendActivityPage> {
           : _activities.isEmpty
               ? const EmptyStateWidget(
                   icon: Icons.timeline_rounded,
-                  title: 'Chua co hoat dong',
-                  message: 'Hoat dong cua ban be se xuat hien o day',
+                  title: 'Chưa có hoạt động',
+                  message: 'Hoạt động của bạn bè sẽ xuất hiện ở đây',
                 )
               : RefreshIndicator(
                   onRefresh: _load,
@@ -911,7 +911,7 @@ class _FriendActivityPageState extends State<_FriendActivityPage> {
                               _page++;
                               _loadMore();
                             },
-                            child: const Text('Xem them',
+                            child: const Text('Xem thêm',
                                 style: TextStyle(color: AppColors.purpleNeon)),
                           ),
                         );
@@ -1003,27 +1003,27 @@ class _FriendActivityPageState extends State<_FriendActivityPage> {
   (String, String) _activityDisplay(String type, Map<String, dynamic> meta) {
     switch (type) {
       case 'lesson_completed':
-        return ('📚', 'da hoan thanh bai hoc: ${meta['nodeName'] ?? ''}');
+        return ('📚', 'đã hoàn thành bài học: ${meta['nodeName'] ?? ''}');
       case 'achievement_unlocked':
-        return ('🏆', 'da mo khoa thanh tuu: ${meta['achievementName'] ?? ''}');
+        return ('🏆', 'đã mở khóa thành tựu: ${meta['achievementName'] ?? ''}');
       case 'level_up':
-        return ('⬆️', 'da len level ${meta['newLevel'] ?? ''}!');
+        return ('⬆️', 'đã lên level ${meta['newLevel'] ?? ''}!');
       case 'streak_milestone':
-        return ('🔥', 'dat chuoi ${meta['streak'] ?? ''} ngay hoc lien tiep!');
+        return ('🔥', 'đạt chuỗi ${meta['streak'] ?? ''} ngày học liên tiếp!');
       case 'subject_completed':
-        return ('🎓', 'da hoan thanh chu de: ${meta['topicName'] ?? ''}');
+        return ('🎓', 'đã hoàn thành chủ đề: ${meta['topicName'] ?? ''}');
       case 'quiz_perfect':
-        return ('💯', 'dat diem tuyet doi bai kiem tra!');
+        return ('💯', 'đạt điểm tuyệt đối bài kiểm tra!');
       default:
-        return ('📌', 'co hoat dong moi');
+        return ('📌', 'có hoạt động mới');
     }
   }
 
   String _timeAgo(DateTime dt) {
     final diff = DateTime.now().difference(dt);
-    if (diff.inMinutes < 1) return 'Vua xong';
-    if (diff.inMinutes < 60) return '${diff.inMinutes} phut truoc';
-    if (diff.inHours < 24) return '${diff.inHours} gio truoc';
-    return '${diff.inDays} ngay truoc';
+    if (diff.inMinutes < 1) return 'Vừa xong';
+    if (diff.inMinutes < 60) return '${diff.inMinutes} phút trước';
+    if (diff.inHours < 24) return '${diff.inHours} giờ trước';
+    return '${diff.inDays} ngày trước';
   }
 }

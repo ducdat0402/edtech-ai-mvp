@@ -60,10 +60,10 @@ class AuthService {
           try {
             dataMap = jsonDecode(responseData) as Map<String, dynamic>;
           } catch (_) {
-            return {'success': false, 'message': 'Invalid response format'};
+            return {'success': false, 'message': 'Định dạng phản hồi không hợp lệ'};
           }
         } else {
-          return {'success': false, 'message': 'Unexpected response format'};
+          return {'success': false, 'message': 'Phản hồi không đúng định dạng'};
         }
 
         final token = dataMap['accessToken'] ?? dataMap['access_token'];
@@ -76,16 +76,16 @@ class AuthService {
             'user': dataMap['user'] ?? dataMap,
           };
         }
-        return {'success': false, 'message': 'No token received'};
+        return {'success': false, 'message': 'Không nhận được mã đăng nhập'};
       }
-      return {'success': false, 'message': 'Google login failed'};
+      return {'success': false, 'message': 'Đăng nhập Google thất bại'};
     } catch (e) {
       if (e is DioException) {
         if (e.response != null) {
           final data = e.response!.data;
           final msg = data is Map
-              ? (data['message'] ?? 'Google login failed')
-              : 'Google login failed';
+              ? (data['message'] ?? 'Đăng nhập Google thất bại')
+              : 'Đăng nhập Google thất bại';
           return {'success': false, 'message': msg.toString()};
         }
         if (e.type == DioExceptionType.connectionTimeout ||
@@ -138,12 +138,12 @@ class AuthService {
 
       return {
         'success': false,
-        'message': response.data['message'] ?? 'Registration failed',
+        'message': response.data['message'] ?? 'Đăng ký thất bại',
       };
     } catch (e) {
       // Handle DioException
       if (e is DioException) {
-        String errorMessage = 'Registration failed';
+        String errorMessage = 'Đăng ký thất bại';
         
         // Try to extract error message from response
         if (e.response != null) {
@@ -151,12 +151,12 @@ class AuthService {
           if (data is Map<String, dynamic>) {
             errorMessage = data['message'] ?? 
                           (data['error'] is String ? data['error'] : null) ??
-                          'Registration failed';
+                          'Đăng ký thất bại';
           }
         } else if (e.type == DioExceptionType.connectionTimeout) {
-          errorMessage = 'Connection timeout. Please check your internet connection.';
+          errorMessage = 'Hết thời gian kết nối. Vui lòng kiểm tra mạng.';
         } else if (e.type == DioExceptionType.receiveTimeout) {
-          errorMessage = 'Server response timeout. Please try again.';
+          errorMessage = 'Máy chủ phản hồi quá lâu. Vui lòng thử lại.';
         } else if (e.message != null) {
           errorMessage = e.message!;
         }
@@ -214,13 +214,13 @@ class AuthService {
             }
             return {
               'success': false,
-              'message': 'Invalid response format from server',
+              'message': 'Máy chủ trả về dữ liệu không hợp lệ',
             };
           }
         } else {
           return {
             'success': false,
-            'message': 'Unexpected response format: ${responseData.runtimeType}',
+            'message': 'Phản hồi không hợp lệ (${responseData.runtimeType})',
           };
         }
         
@@ -248,14 +248,14 @@ class AuthService {
           }
           return {
             'success': false,
-            'message': 'No token received from server',
+            'message': 'Máy chủ không trả về mã đăng nhập',
           };
         }
       }
 
       return {
         'success': false,
-        'message': response.data['message'] ?? 'Login failed',
+        'message': response.data['message'] ?? 'Đăng nhập thất bại',
       };
     } catch (e) {
       // Handle DioException
@@ -265,11 +265,11 @@ class AuthService {
           final statusCode = e.response!.statusCode;
           final data = e.response!.data;
           
-          String errorMessage = 'Login failed';
+          String errorMessage = 'Đăng nhập thất bại';
           if (data is Map<String, dynamic>) {
             errorMessage = data['message'] ?? 
                           (data['error'] is String ? data['error'] : null) ??
-                          'Login failed';
+                          'Đăng nhập thất bại';
           }
           
           return {
@@ -280,11 +280,11 @@ class AuthService {
         }
         
         // Network errors
-        String errorMessage = 'Login failed';
+        String errorMessage = 'Đăng nhập thất bại';
         if (e.type == DioExceptionType.connectionTimeout) {
-          errorMessage = 'Connection timeout. Please check your internet connection.';
+          errorMessage = 'Hết thời gian kết nối. Vui lòng kiểm tra mạng.';
         } else if (e.type == DioExceptionType.receiveTimeout) {
-          errorMessage = 'Server response timeout. Please try again.';
+          errorMessage = 'Máy chủ phản hồi quá lâu. Vui lòng thử lại.';
         } else if (e.message != null) {
           errorMessage = e.message!;
         }
@@ -320,7 +320,7 @@ class AuthService {
         return last;
       }
     }
-    last ??= {'success': false, 'message': 'Google login failed'};
+    last ??= {'success': false, 'message': 'Đăng nhập Google thất bại'};
     last.remove('retryable');
     return last;
   }
