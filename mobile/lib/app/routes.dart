@@ -25,6 +25,7 @@ import 'package:edtech_mobile/features/leaderboard/screens/leaderboard_screen.da
 import 'package:edtech_mobile/features/currency/screens/currency_screen.dart';
 import 'package:edtech_mobile/features/profile/screens/profile_screen.dart';
 import 'package:edtech_mobile/features/profile/screens/journey_log_screen.dart';
+import 'package:edtech_mobile/features/profile/screens/competencies_screen.dart';
 import 'package:edtech_mobile/features/admin/screens/admin_panel_screen.dart';
 import 'package:edtech_mobile/features/learning_nodes/screens/my_contributions_screen.dart';
 import 'package:edtech_mobile/features/payment/screens/payment_screen.dart';
@@ -268,6 +269,10 @@ GoRouter createAppRouter(AuthSessionController authSession) {
         GoRoute(
           path: 'journey',
           builder: (context, state) => const JourneyLogScreen(),
+        ),
+        GoRoute(
+          path: 'competencies',
+          builder: (context, state) => const CompetenciesScreen(),
         ),
         GoRoute(
           path: 'contributions',

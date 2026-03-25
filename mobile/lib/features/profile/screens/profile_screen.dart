@@ -674,6 +674,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 onTap: () => context.go('/profile/journey'),
               ),
               _buildMenuCard(
+                icon: Icons.radar_rounded,
+                title: 'Năng lực',
+                subtitle: 'Xem biểu đồ năng lực & các chỉ số',
+                color: AppColors.cyanNeon,
+                onTap: () => context.go('/profile/competencies'),
+              ),
+              _buildMenuCard(
                 icon: Icons.workspace_premium,
                 title: 'Nhận kim cương',
                 subtitle: 'Mở khóa chức năng nâng cao',
