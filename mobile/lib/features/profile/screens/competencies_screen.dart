@@ -19,6 +19,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
   late _CompetencySectionData _learning;
   late _CompetencySectionData _human;
   String? _memoryTooltip;
+  String? _logicalTooltip;
 
   static const List<_CompetencyItem> _learningTemplate = [
     _CompetencyItem(
@@ -141,6 +142,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
       _loading = true;
       _error = null;
       _memoryTooltip = null;
+      _logicalTooltip = null;
     });
 
     try {
@@ -152,6 +154,10 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
       _memoryTooltip = _buildMemoryTooltip(
         formula: data['formulaInfo'] is Map ? data['formulaInfo']['memory'] : null,
       );
+      _logicalTooltip = _buildLogicalTooltip(
+        formula:
+            data['formulaInfo'] is Map ? data['formulaInfo']['logicalThinking'] : null,
+      );
 
       if (!mounted) return;
       setState(() {
@@ -162,6 +168,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
           template: _learningTemplate,
           values: learningValues,
           memoryTooltip: _memoryTooltip,
+          logicalTooltip: _logicalTooltip,
         );
         _human = _buildSection(
           title: 'Năng lực con người',
@@ -202,6 +209,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
     required List<_CompetencyItem> template,
     required Map<String, double> values,
     String? memoryTooltip,
+    String? logicalTooltip,
   }) {
     final items = template
         .map((t) => _CompetencyItem(
@@ -217,6 +225,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
       color: color,
       items: items,
       memoryTooltip: memoryTooltip,
+      logicalTooltip: logicalTooltip,
     );
   }
 
@@ -251,6 +260,24 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
     if (qCount == 0) {
       lines.add(
         '• Bạn chưa có lịch sử nộp quiz — bắt đầu làm quiz để phần ghi nhớ được tính đầy đủ.',
+      );
+    }
+    return lines.join('\n');
+  }
+
+  String? _buildLogicalTooltip({dynamic formula}) {
+    final attemptCount =
+        formula is Map ? ((formula['attemptCount'] ?? 0) as num).toInt() : 0;
+    final lines = <String>[
+      'Cách tăng điểm Tư duy logic:',
+      '• Làm kỹ các câu suy luận đa bước (inference, sequence, compare, classification).',
+      '• Tránh đoán nhanh; loại trừ đáp án sai theo từng bước lập luận.',
+      '• Khi làm lại quiz, tập trung cải thiện các câu có tỷ lệ đóng góp cao vào logical_thinking.',
+      '• Rà lại phần giải thích sau mỗi câu sai để sửa cách suy luận.',
+    ];
+    if (attemptCount == 0) {
+      lines.add(
+        '• Bạn chưa có dữ liệu quiz gần đây — làm end-quiz để bắt đầu có điểm logic.',
       );
     }
     return lines.join('\n');
@@ -345,12 +372,14 @@ class _CompetencySectionData {
   final Color color;
   final List<_CompetencyItem> items;
   final String? memoryTooltip;
+  final String? logicalTooltip;
   const _CompetencySectionData({
     required this.title,
     required this.subtitle,
     required this.color,
     required this.items,
     this.memoryTooltip,
+    this.logicalTooltip,
   });
 
   double get average =>
@@ -410,6 +439,7 @@ class _CompetencySection extends StatelessWidget {
                             color: section.color,
                             items: section.items,
                             memoryTooltip: section.memoryTooltip,
+                            logicalTooltip: section.logicalTooltip,
                           ),
                         ],
                       )
@@ -429,7 +459,8 @@ class _CompetencySection extends StatelessWidget {
                               child: _MetricList(
                                   color: section.color,
                                   items: section.items,
-                                  memoryTooltip: section.memoryTooltip)),
+                                  memoryTooltip: section.memoryTooltip,
+                                  logicalTooltip: section.logicalTooltip)),
                         ],
                       ),
               ],
@@ -489,10 +520,12 @@ class _MetricList extends StatelessWidget {
   final Color color;
   final List<_CompetencyItem> items;
   final String? memoryTooltip;
+  final String? logicalTooltip;
   const _MetricList({
     required this.color,
     required this.items,
     this.memoryTooltip,
+    this.logicalTooltip,
   });
 
   @override
@@ -500,7 +533,12 @@ class _MetricList extends StatelessWidget {
     return Column(
       children: items
           .map((e) =>
-              _MetricRow(color: color, item: e, memoryTooltip: memoryTooltip))
+              _MetricRow(
+                color: color,
+                item: e,
+                memoryTooltip: memoryTooltip,
+                logicalTooltip: logicalTooltip,
+              ))
           .toList(),
     );
   }
@@ -510,16 +548,22 @@ class _MetricRow extends StatelessWidget {
   final Color color;
   final _CompetencyItem item;
   final String? memoryTooltip;
+  final String? logicalTooltip;
   const _MetricRow({
     required this.color,
     required this.item,
     this.memoryTooltip,
+    this.logicalTooltip,
   });
 
   @override
   Widget build(BuildContext context) {
     final v = item.value.clamp(0, 100).toDouble();
     final showMemoryTooltip = item.key == 'memory' && memoryTooltip != null;
+    final showLogicalTooltip =
+        item.key == 'logical_thinking' && logicalTooltip != null;
+    final tooltipMessage =
+        showMemoryTooltip ? memoryTooltip! : (showLogicalTooltip ? logicalTooltip! : null);
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -553,9 +597,9 @@ class _MetricRow extends StatelessWidget {
                         ),
                       ),
                     ),
-                    if (showMemoryTooltip)
+                    if (tooltipMessage != null)
                       Tooltip(
-                        message: memoryTooltip!,
+                        message: tooltipMessage,
                         triggerMode: TooltipTriggerMode.tap,
                         child: Padding(
                           padding: const EdgeInsets.only(left: 8),

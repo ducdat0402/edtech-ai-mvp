@@ -115,6 +115,8 @@ export class LearningNode {
       question: string;
       options: Array<{ text: string; explanation: string }>;
       correctAnswer: number;
+      logicTypes?: string[];
+      competencyMix?: Record<string, number>;
     }>;
     passingScore: number;
   } | null;

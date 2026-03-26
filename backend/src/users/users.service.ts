@@ -30,7 +30,8 @@ export class UsersService {
    * - Recall (v2): từ lịch sử nộp end-quiz — delayed recall 3–14 ngày, stability ≥7 ngày, lần làm đầu.
    */
   async getCompetencies(userId: string) {
-    const since = new Date(Date.now() - 120 * 24 * 60 * 60 * 1000);
+    const memorySince = new Date(Date.now() - 120 * 24 * 60 * 60 * 1000);
+    const logicalSince = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
     const [currency, completedNodes, completedLast7Days, quizAttempts] =
       await Promise.all([
@@ -53,7 +54,7 @@ export class UsersService {
         this.quizAttemptRepository.find({
           where: {
             userId,
-            createdAt: MoreThanOrEqual(since),
+            createdAt: MoreThanOrEqual(memorySince),
           },
           order: { createdAt: 'ASC' },
           take: 5000,
@@ -74,11 +75,12 @@ export class UsersService {
     const memoryScore = hasQuizSignal
       ? Math.round(behavioralScore * 0.15 + recall.recallScore * 0.85)
       : behavioralScore;
+    const logical = this.computeLogicalThinkingMetrics(quizAttempts, logicalSince);
 
     return {
       learningMetrics: [
         { key: 'memory', value: memoryScore },
-        { key: 'logical_thinking', value: 0 },
+        { key: 'logical_thinking', value: logical.score },
         { key: 'processing_speed', value: 0 },
         { key: 'practical_application', value: 0 },
         { key: 'metacognition', value: 0 },
@@ -113,7 +115,49 @@ export class UsersService {
           blendBehaviorWeight: hasQuizSignal ? 0.15 : 1,
           blendRecallWeight: hasQuizSignal ? 0.85 : 0,
         },
+        logicalThinking: {
+          version: 1,
+          windowDays: 30,
+          attemptCount: logical.attemptCount,
+          weightedTotal: logical.weightedTotal,
+          weightedCorrect: logical.weightedCorrect,
+          score: logical.score,
+        },
       },
+    };
+  }
+
+  private computeLogicalThinkingMetrics(
+    attempts: LearningQuizAttempt[],
+    since: Date,
+  ): {
+    score: number;
+    attemptCount: number;
+    weightedTotal: number;
+    weightedCorrect: number;
+  } {
+    const filtered = attempts.filter((a) => a.createdAt >= since);
+    let weightedTotal = 0;
+    let weightedCorrect = 0;
+
+    for (const a of filtered) {
+      const rows = Array.isArray(a.questionResults) ? a.questionResults : [];
+      for (const row of rows) {
+        const weight = Math.max(0, row.logicalWeight ?? 0);
+        if (weight <= 0) continue;
+        weightedTotal += weight;
+        if (row.isCorrect) weightedCorrect += weight;
+      }
+    }
+
+    const score =
+      weightedTotal > 0 ? Math.round((weightedCorrect / weightedTotal) * 100) : 0;
+
+    return {
+      score,
+      attemptCount: filtered.length,
+      weightedTotal: Math.round(weightedTotal * 1000) / 1000,
+      weightedCorrect: Math.round(weightedCorrect * 1000) / 1000,
     };
   }
 

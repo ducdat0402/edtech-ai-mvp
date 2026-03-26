@@ -39,6 +39,14 @@ export class LearningQuizAttempt {
   @Column({ type: 'int' })
   correctCount: number;
 
+  @Column({ type: 'jsonb', default: [] })
+  questionResults: Array<{
+    questionIndex: number;
+    isCorrect: boolean;
+    competencyMix: Record<string, number>;
+    logicalWeight: number;
+  }>;
+
   @CreateDateColumn()
   createdAt: Date;
 }

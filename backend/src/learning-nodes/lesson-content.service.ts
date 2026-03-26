@@ -35,6 +35,12 @@ export class LessonContentService {
     passed: boolean;
     totalQuestions: number;
     correctCount: number;
+    questionResults: Array<{
+      questionIndex: number;
+      isCorrect: boolean;
+      competencyMix: Record<string, number>;
+      logicalWeight: number;
+    }>;
   }): Promise<void> {
     await this.quizAttemptRepository.save(
       this.quizAttemptRepository.create({
@@ -45,8 +51,30 @@ export class LessonContentService {
         passed: params.passed,
         totalQuestions: params.totalQuestions,
         correctCount: params.correctCount,
+        questionResults: params.questionResults,
       }),
     );
+  }
+
+  private normalizeCompetencyMix(
+    rawMix: unknown,
+    fallback: Record<string, number> = { logical_thinking: 1 },
+  ): Record<string, number> {
+    if (!rawMix || typeof rawMix !== 'object' || Array.isArray(rawMix)) {
+      return fallback;
+    }
+    const entries = Object.entries(rawMix as Record<string, unknown>).filter(
+      ([k, v]) => k.trim() && typeof v === 'number' && Number.isFinite(v) && v > 0,
+    ) as Array<[string, number]>;
+    if (entries.length === 0) return fallback;
+    const sum = entries.reduce((s, [, v]) => s + v, 0);
+    if (sum <= 0) return fallback;
+
+    const normalized: Record<string, number> = {};
+    for (const [k, v] of entries) {
+      normalized[k] = Math.round((v / sum) * 1000) / 1000;
+    }
+    return normalized;
   }
 
   private async contributorPayload(
@@ -170,6 +198,10 @@ YÊU CẦU:
 - Mỗi đáp án có giải thích tại sao đúng/sai
 - Câu hỏi phải kiểm tra hiểu biết, không chỉ nhớ
 - Độ khó: dễ -> trung bình -> khó (tăng dần)
+- Mỗi câu phải có:
+  - "logicTypes": mảng tag suy luận, ví dụ ["inference"], ["sequence", "compare"]
+  - "competencyMix": object tỷ lệ đóng góp chỉ số, ví dụ { "logical_thinking": 0.7, "practical_application": 0.3 }
+- competencyMix phải có tổng gần bằng 1
 
 Trả về JSON:
 {
@@ -182,7 +214,12 @@ Trả về JSON:
         { "text": "Đáp án C", "explanation": "Giải thích" },
         { "text": "Đáp án D", "explanation": "Giải thích" }
       ],
-      "correctAnswer": 0
+      "correctAnswer": 0,
+      "logicTypes": ["inference"],
+      "competencyMix": {
+        "logical_thinking": 0.7,
+        "practical_application": 0.3
+      }
     }
   ]
 }
@@ -196,9 +233,18 @@ CHỈ TRẢ VỀ JSON.`;
 
       const cleaned = response.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
       const parsed = JSON.parse(cleaned);
+      const questions = Array.isArray(parsed.questions) ? parsed.questions : [];
 
       return {
-        questions: parsed.questions || [],
+        questions: questions.map((q: any) => ({
+          ...q,
+          logicTypes: Array.isArray(q.logicTypes)
+            ? q.logicTypes
+                .filter((x: unknown) => typeof x === 'string' && x.trim())
+                .map((x: string) => x.trim())
+            : [],
+          competencyMix: this.normalizeCompetencyMix(q.competencyMix),
+        })),
         passingScore: 70,
       };
     } catch (error) {
@@ -245,6 +291,17 @@ CHỈ TRẢ VỀ JSON.`;
         explanation: selectedOption?.explanation || '',
       };
     });
+    const questionResults = questions.map((q, index) => {
+      const competencyMix = this.normalizeCompetencyMix(
+        (q as { competencyMix?: unknown }).competencyMix,
+      );
+      return {
+        questionIndex: index,
+        isCorrect: answers[index] === q.correctAnswer,
+        competencyMix,
+        logicalWeight: competencyMix.logical_thinking ?? 0,
+      };
+    });
 
     const score = Math.round((correctCount / questions.length) * 100);
     const passingScore = node.endQuiz.passingScore || 70;
@@ -258,6 +315,7 @@ CHỈ TRẢ VỀ JSON.`;
       passed,
       totalQuestions: questions.length,
       correctCount,
+      questionResults,
     });
 
     return {
@@ -312,6 +370,17 @@ CHỈ TRẢ VỀ JSON.`;
         explanation: selectedOption?.explanation || '',
       };
     });
+    const questionResults = questions.map((q, index) => {
+      const competencyMix = this.normalizeCompetencyMix(
+        (q as { competencyMix?: unknown }).competencyMix,
+      );
+      return {
+        questionIndex: index,
+        isCorrect: answers[index] === q.correctAnswer,
+        competencyMix,
+        logicalWeight: competencyMix.logical_thinking ?? 0,
+      };
+    });
 
     const score = Math.round((correctCount / questions.length) * 100);
     const passingScore = endQuiz.passingScore || 70;
@@ -325,6 +394,7 @@ CHỈ TRẢ VỀ JSON.`;
       passed,
       totalQuestions: questions.length,
       correctCount,
+      questionResults,
     });
 
     return {

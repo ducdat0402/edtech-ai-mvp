@@ -65,6 +65,8 @@ export interface EndQuizQuestion {
   question: string;
   options: Array<{ text: string; explanation: string }>;
   correctAnswer: number;
+  logicTypes?: string[];
+  competencyMix?: Record<string, number>;
 }
 
 export interface EndQuizData {
@@ -194,6 +196,40 @@ export function validateEndQuiz(endQuiz: any): { valid: boolean; errors: string[
     if (!q.options || q.options.length !== 4) errors.push(`Quiz question ${i + 1}: exactly 4 options required`);
     if (q.correctAnswer === undefined || q.correctAnswer < 0 || q.correctAnswer > 3) {
       errors.push(`Quiz question ${i + 1}: correctAnswer must be 0-3`);
+    }
+    if (q.logicTypes !== undefined) {
+      if (!Array.isArray(q.logicTypes) || q.logicTypes.some((x: unknown) => typeof x !== 'string' || !x.trim())) {
+        errors.push(`Quiz question ${i + 1}: logicTypes must be an array of non-empty strings`);
+      }
+    }
+    if (q.competencyMix !== undefined) {
+      if (typeof q.competencyMix !== 'object' || q.competencyMix === null || Array.isArray(q.competencyMix)) {
+        errors.push(`Quiz question ${i + 1}: competencyMix must be an object`);
+      } else {
+        const entries = Object.entries(q.competencyMix as Record<string, unknown>);
+        if (entries.length === 0) {
+          errors.push(`Quiz question ${i + 1}: competencyMix must have at least 1 key`);
+        } else {
+          let sum = 0;
+          for (const [k, v] of entries) {
+            if (!k.trim()) {
+              errors.push(`Quiz question ${i + 1}: competencyMix key cannot be empty`);
+              continue;
+            }
+            if (typeof v !== 'number' || Number.isNaN(v)) {
+              errors.push(`Quiz question ${i + 1}: competencyMix[${k}] must be a number`);
+              continue;
+            }
+            if (v < 0 || v > 1) {
+              errors.push(`Quiz question ${i + 1}: competencyMix[${k}] must be in [0, 1]`);
+            }
+            sum += v;
+          }
+          if (sum < 0.95 || sum > 1.05) {
+            errors.push(`Quiz question ${i + 1}: competencyMix weights must sum approximately to 1`);
+          }
+        }
+      }
     }
   });
 
