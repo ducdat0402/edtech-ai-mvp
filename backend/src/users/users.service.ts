@@ -33,7 +33,13 @@ export class UsersService {
     const memorySince = new Date(Date.now() - 120 * 24 * 60 * 60 * 1000);
     const logicalSince = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
-    const [currency, completedNodes, completedLast7Days, quizAttempts] =
+    const [
+      currency,
+      completedNodes,
+      completedLast7Days,
+      completedLast30,
+      quizAttempts,
+    ] =
       await Promise.all([
         this.currencyRepository.findOne({
           where: { userId },
@@ -50,6 +56,15 @@ export class UsersService {
               new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
             ),
           },
+        }),
+        this.progressRepository.find({
+          where: {
+            userId,
+            isCompleted: true,
+            completedAt: MoreThanOrEqual(logicalSince),
+          },
+          select: ['completedAt'],
+          take: 5000,
         }),
         this.quizAttemptRepository.find({
           where: {
@@ -85,6 +100,10 @@ export class UsersService {
       quizAttempts,
       logicalSince,
     );
+    const persistence = this.computeLearningPersistenceMetrics(
+      completedLast30.map((x) => x.completedAt).filter((x): x is Date => !!x),
+      streak,
+    );
 
     return {
       learningMetrics: [
@@ -93,7 +112,7 @@ export class UsersService {
         { key: 'processing_speed', value: processing.score },
         { key: 'practical_application', value: practical.score },
         { key: 'metacognition', value: metacognition.score },
-        { key: 'learning_persistence', value: 0 },
+        { key: 'learning_persistence', value: persistence.score },
         { key: 'knowledge_absorption', value: 0 },
       ],
       humanMetrics: [
@@ -168,7 +187,71 @@ export class UsersService {
           avgAbsError: metacognition.avgAbsError,
           score: metacognition.score,
         },
+        learningPersistence: {
+          version: 1,
+          windowDays: 30,
+          activeDays: persistence.activeDays,
+          weeklyConsistency: persistence.weeklyConsistency,
+          currentStreak: streak,
+          streakNorm: persistence.streakNorm,
+          activeDayNorm: persistence.activeDayNorm,
+          consistencyNorm: persistence.consistencyNorm,
+          score: persistence.score,
+        },
       },
+    };
+  }
+
+  private computeLearningPersistenceMetrics(
+    completedDates: Date[],
+    currentStreak: number,
+  ): {
+    score: number;
+    activeDays: number;
+    weeklyConsistency: number;
+    streakNorm: number;
+    activeDayNorm: number;
+    consistencyNorm: number;
+  } {
+    const now = Date.now();
+    const dayKeys = new Set<string>();
+    const weekBuckets = new Map<number, Set<string>>();
+
+    for (const d of completedDates) {
+      const t = d.getTime();
+      const daysAgo = Math.floor((now - t) / (24 * 60 * 60 * 1000));
+      if (daysAgo < 0 || daysAgo >= 30) continue;
+
+      const dayKey = d.toISOString().slice(0, 10);
+      dayKeys.add(dayKey);
+
+      const weekIndex = Math.min(3, Math.floor(daysAgo / 7));
+      if (!weekBuckets.has(weekIndex)) weekBuckets.set(weekIndex, new Set());
+      weekBuckets.get(weekIndex)!.add(dayKey);
+    }
+
+    const activeDays = dayKeys.size;
+    let weeklyConsistency = 0;
+    for (let i = 0; i < 4; i++) {
+      const n = weekBuckets.get(i)?.size ?? 0;
+      if (n >= 3) weeklyConsistency++;
+    }
+
+    const streakNorm = Math.min(1, currentStreak / 14);
+    const activeDayNorm = Math.min(1, activeDays / 20);
+    const consistencyNorm = weeklyConsistency / 4;
+
+    const score = Math.round(
+      (streakNorm * 0.35 + activeDayNorm * 0.4 + consistencyNorm * 0.25) * 100,
+    );
+
+    return {
+      score,
+      activeDays,
+      weeklyConsistency,
+      streakNorm: Math.round(streakNorm * 1000) / 1000,
+      activeDayNorm: Math.round(activeDayNorm * 1000) / 1000,
+      consistencyNorm: Math.round(consistencyNorm * 1000) / 1000,
     };
   }
 

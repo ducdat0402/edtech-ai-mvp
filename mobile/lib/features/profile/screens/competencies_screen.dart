@@ -23,6 +23,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
   String? _processingTooltip;
   String? _practicalTooltip;
   String? _metacognitionTooltip;
+  String? _persistenceTooltip;
 
   static const List<_CompetencyItem> _learningTemplate = [
     _CompetencyItem(
@@ -149,6 +150,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
       _processingTooltip = null;
       _practicalTooltip = null;
       _metacognitionTooltip = null;
+      _persistenceTooltip = null;
     });
 
     try {
@@ -181,6 +183,11 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
             ? data['formulaInfo']['metacognition']
             : null,
       );
+      _persistenceTooltip = _buildPersistenceTooltip(
+        formula: data['formulaInfo'] is Map
+            ? data['formulaInfo']['learningPersistence']
+            : null,
+      );
 
       if (!mounted) return;
       setState(() {
@@ -195,6 +202,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
           processingTooltip: _processingTooltip,
           practicalTooltip: _practicalTooltip,
           metacognitionTooltip: _metacognitionTooltip,
+          persistenceTooltip: _persistenceTooltip,
         );
         _human = _buildSection(
           title: 'Năng lực con người',
@@ -241,6 +249,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
     String? processingTooltip,
     String? practicalTooltip,
     String? metacognitionTooltip,
+    String? persistenceTooltip,
   }) {
     final items = template
         .map((t) => _CompetencyItem(
@@ -260,6 +269,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
       processingTooltip: processingTooltip,
       practicalTooltip: practicalTooltip,
       metacognitionTooltip: metacognitionTooltip,
+      persistenceTooltip: persistenceTooltip,
     );
   }
 
@@ -384,6 +394,24 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
     return lines.join('\n');
   }
 
+  String? _buildPersistenceTooltip({dynamic formula}) {
+    final activeDays =
+        formula is Map ? ((formula['activeDays'] ?? 0) as num).toInt() : 0;
+    final weeklyConsistency =
+        formula is Map ? ((formula['weeklyConsistency'] ?? 0) as num).toInt() : 0;
+    final lines = <String>[
+      'Cách tăng điểm Bền bỉ học tập:',
+      '• Học đều nhiều ngày trong tuần, tránh dồn bài vào một ngày.',
+      '• Giữ streak liên tục để tạo nhịp học ổn định.',
+      '• Mỗi tuần cố gắng có ít nhất 3 ngày học.',
+      '• Duy trì nhịp này qua nhiều tuần liên tiếp.',
+    ];
+    if (activeDays < 10 || weeklyConsistency < 2) {
+      lines.add('• Bạn cần tăng tần suất học theo tuần để điểm lên rõ hơn.');
+    }
+    return lines.join('\n');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -477,6 +505,7 @@ class _CompetencySectionData {
   final String? processingTooltip;
   final String? practicalTooltip;
   final String? metacognitionTooltip;
+  final String? persistenceTooltip;
   const _CompetencySectionData({
     required this.title,
     required this.subtitle,
@@ -487,6 +516,7 @@ class _CompetencySectionData {
     this.processingTooltip,
     this.practicalTooltip,
     this.metacognitionTooltip,
+    this.persistenceTooltip,
   });
 
   double get average => items.isEmpty
@@ -551,6 +581,7 @@ class _CompetencySection extends StatelessWidget {
                             processingTooltip: section.processingTooltip,
                             practicalTooltip: section.practicalTooltip,
                             metacognitionTooltip: section.metacognitionTooltip,
+                            persistenceTooltip: section.persistenceTooltip,
                           ),
                         ],
                       )
@@ -575,7 +606,9 @@ class _CompetencySection extends StatelessWidget {
                                   processingTooltip: section.processingTooltip,
                                   practicalTooltip: section.practicalTooltip,
                                   metacognitionTooltip:
-                                      section.metacognitionTooltip)),
+                                      section.metacognitionTooltip,
+                                  persistenceTooltip:
+                                      section.persistenceTooltip)),
                         ],
                       ),
               ],
@@ -639,6 +672,7 @@ class _MetricList extends StatelessWidget {
   final String? processingTooltip;
   final String? practicalTooltip;
   final String? metacognitionTooltip;
+  final String? persistenceTooltip;
   const _MetricList({
     required this.color,
     required this.items,
@@ -647,6 +681,7 @@ class _MetricList extends StatelessWidget {
     this.processingTooltip,
     this.practicalTooltip,
     this.metacognitionTooltip,
+    this.persistenceTooltip,
   });
 
   @override
@@ -661,6 +696,7 @@ class _MetricList extends StatelessWidget {
                 processingTooltip: processingTooltip,
                 practicalTooltip: practicalTooltip,
                 metacognitionTooltip: metacognitionTooltip,
+                persistenceTooltip: persistenceTooltip,
               ))
           .toList(),
     );
@@ -675,6 +711,7 @@ class _MetricRow extends StatelessWidget {
   final String? processingTooltip;
   final String? practicalTooltip;
   final String? metacognitionTooltip;
+  final String? persistenceTooltip;
   const _MetricRow({
     required this.color,
     required this.item,
@@ -683,6 +720,7 @@ class _MetricRow extends StatelessWidget {
     this.processingTooltip,
     this.practicalTooltip,
     this.metacognitionTooltip,
+    this.persistenceTooltip,
   });
 
   @override
@@ -697,6 +735,8 @@ class _MetricRow extends StatelessWidget {
         item.key == 'practical_application' && practicalTooltip != null;
     final showMetacognitionTooltip =
         item.key == 'metacognition' && metacognitionTooltip != null;
+    final showPersistenceTooltip =
+        item.key == 'learning_persistence' && persistenceTooltip != null;
     final tooltipMessage = showMemoryTooltip
         ? memoryTooltip!
         : (showLogicalTooltip
@@ -705,7 +745,9 @@ class _MetricRow extends StatelessWidget {
                 ? processingTooltip!
                 : (showPracticalTooltip
                     ? practicalTooltip!
-                    : (showMetacognitionTooltip ? metacognitionTooltip! : null))));
+                    : (showMetacognitionTooltip
+                        ? metacognitionTooltip!
+                        : (showPersistenceTooltip ? persistenceTooltip! : null)))));
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
