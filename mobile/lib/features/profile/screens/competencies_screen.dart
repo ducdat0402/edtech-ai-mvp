@@ -21,6 +21,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
   String? _memoryTooltip;
   String? _logicalTooltip;
   String? _processingTooltip;
+  String? _practicalTooltip;
 
   static const List<_CompetencyItem> _learningTemplate = [
     _CompetencyItem(
@@ -145,6 +146,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
       _memoryTooltip = null;
       _logicalTooltip = null;
       _processingTooltip = null;
+      _practicalTooltip = null;
     });
 
     try {
@@ -164,6 +166,11 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
         formula:
             data['formulaInfo'] is Map ? data['formulaInfo']['processingSpeed'] : null,
       );
+      _practicalTooltip = _buildPracticalTooltip(
+        formula: data['formulaInfo'] is Map
+            ? data['formulaInfo']['practicalApplication']
+            : null,
+      );
 
       if (!mounted) return;
       setState(() {
@@ -176,6 +183,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
           memoryTooltip: _memoryTooltip,
           logicalTooltip: _logicalTooltip,
           processingTooltip: _processingTooltip,
+          practicalTooltip: _practicalTooltip,
         );
         _human = _buildSection(
           title: 'Năng lực con người',
@@ -218,6 +226,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
     String? memoryTooltip,
     String? logicalTooltip,
     String? processingTooltip,
+    String? practicalTooltip,
   }) {
     final items = template
         .map((t) => _CompetencyItem(
@@ -235,6 +244,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
       memoryTooltip: memoryTooltip,
       logicalTooltip: logicalTooltip,
       processingTooltip: processingTooltip,
+      practicalTooltip: practicalTooltip,
     );
   }
 
@@ -309,6 +319,29 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
         '• Cần thêm dữ liệu trả lời (ít nhất $minSamples câu hợp lệ) để điểm ổn định.',
       );
     }
+    return lines.join('\n');
+  }
+
+  String? _buildPracticalTooltip({dynamic formula}) {
+    final weightedTotal =
+        formula is Map ? (formula['weightedTotal'] ?? 0) as num : 0;
+    final minWeightedTotal =
+        formula is Map ? (formula['minWeightedTotal'] ?? 8) as num : 8;
+    final provisional =
+        formula is Map ? (formula['provisional'] ?? false) as bool : false;
+
+    final lines = <String>[
+      'Cách tăng điểm Ứng dụng thực tế:',
+      '• Ưu tiên câu hỏi tình huống mới, có ngữ cảnh rõ ràng.',
+      '• Trước khi chọn đáp án, xác định mục tiêu và ràng buộc của tình huống.',
+      '• So sánh ưu/nhược từng phương án, tránh chọn theo cảm tính.',
+      '• Sau câu sai, áp dụng lại ngay vào câu tương tự ở bài làm sau.',
+    ];
+
+    if (provisional || weightedTotal < minWeightedTotal) {
+      lines.add('• Cần thêm dữ liệu câu có trọng số ứng dụng để điểm ổn định.');
+    }
+
     return lines.join('\n');
   }
 
@@ -403,6 +436,7 @@ class _CompetencySectionData {
   final String? memoryTooltip;
   final String? logicalTooltip;
   final String? processingTooltip;
+  final String? practicalTooltip;
   const _CompetencySectionData({
     required this.title,
     required this.subtitle,
@@ -411,6 +445,7 @@ class _CompetencySectionData {
     this.memoryTooltip,
     this.logicalTooltip,
     this.processingTooltip,
+    this.practicalTooltip,
   });
 
   double get average =>
@@ -472,6 +507,7 @@ class _CompetencySection extends StatelessWidget {
                             memoryTooltip: section.memoryTooltip,
                             logicalTooltip: section.logicalTooltip,
                             processingTooltip: section.processingTooltip,
+                            practicalTooltip: section.practicalTooltip,
                           ),
                         ],
                       )
@@ -493,7 +529,8 @@ class _CompetencySection extends StatelessWidget {
                                   items: section.items,
                                   memoryTooltip: section.memoryTooltip,
                                   logicalTooltip: section.logicalTooltip,
-                                  processingTooltip: section.processingTooltip)),
+                                  processingTooltip: section.processingTooltip,
+                                  practicalTooltip: section.practicalTooltip)),
                         ],
                       ),
               ],
@@ -555,12 +592,14 @@ class _MetricList extends StatelessWidget {
   final String? memoryTooltip;
   final String? logicalTooltip;
   final String? processingTooltip;
+  final String? practicalTooltip;
   const _MetricList({
     required this.color,
     required this.items,
     this.memoryTooltip,
     this.logicalTooltip,
     this.processingTooltip,
+    this.practicalTooltip,
   });
 
   @override
@@ -574,6 +613,7 @@ class _MetricList extends StatelessWidget {
                 memoryTooltip: memoryTooltip,
                 logicalTooltip: logicalTooltip,
                 processingTooltip: processingTooltip,
+                practicalTooltip: practicalTooltip,
               ))
           .toList(),
     );
@@ -586,12 +626,14 @@ class _MetricRow extends StatelessWidget {
   final String? memoryTooltip;
   final String? logicalTooltip;
   final String? processingTooltip;
+  final String? practicalTooltip;
   const _MetricRow({
     required this.color,
     required this.item,
     this.memoryTooltip,
     this.logicalTooltip,
     this.processingTooltip,
+    this.practicalTooltip,
   });
 
   @override
@@ -602,11 +644,15 @@ class _MetricRow extends StatelessWidget {
         item.key == 'logical_thinking' && logicalTooltip != null;
     final showProcessingTooltip =
         item.key == 'processing_speed' && processingTooltip != null;
+    final showPracticalTooltip =
+        item.key == 'practical_application' && practicalTooltip != null;
     final tooltipMessage = showMemoryTooltip
         ? memoryTooltip!
         : (showLogicalTooltip
             ? logicalTooltip!
-            : (showProcessingTooltip ? processingTooltip! : null));
+            : (showProcessingTooltip
+                ? processingTooltip!
+                : (showPracticalTooltip ? practicalTooltip! : null)));
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),

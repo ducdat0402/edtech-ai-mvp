@@ -76,6 +76,10 @@ export class UsersService {
       ? Math.round(behavioralScore * 0.15 + recall.recallScore * 0.85)
       : behavioralScore;
     const logical = this.computeLogicalThinkingMetrics(quizAttempts, logicalSince);
+    const practical = this.computePracticalApplicationMetrics(
+      quizAttempts,
+      logicalSince,
+    );
     const processing = this.computeProcessingSpeedMetrics(quizAttempts, logicalSince);
 
     return {
@@ -83,7 +87,7 @@ export class UsersService {
         { key: 'memory', value: memoryScore },
         { key: 'logical_thinking', value: logical.score },
         { key: 'processing_speed', value: processing.score },
-        { key: 'practical_application', value: 0 },
+        { key: 'practical_application', value: practical.score },
         { key: 'metacognition', value: 0 },
         { key: 'learning_persistence', value: 0 },
         { key: 'knowledge_absorption', value: 0 },
@@ -138,7 +142,69 @@ export class UsersService {
           provisional: processing.provisional,
           score: processing.score,
         },
+        practicalApplication: {
+          version: 1,
+          windowDays: 30,
+          minWeightedTotal: 8,
+          attemptCount: practical.attemptCount,
+          weightedTotal: practical.weightedTotal,
+          weightedCorrect: practical.weightedCorrect,
+          accuracy: practical.accuracy,
+          provisional: practical.provisional,
+          score: practical.score,
+        },
       },
+    };
+  }
+
+  private computePracticalApplicationMetrics(
+    attempts: LearningQuizAttempt[],
+    since: Date,
+  ): {
+    score: number;
+    attemptCount: number;
+    weightedTotal: number;
+    weightedCorrect: number;
+    accuracy: number;
+    minWeightedTotal: number;
+    provisional: boolean;
+  } {
+    const minWeightedTotal = 8.0;
+    const filtered = attempts.filter((a) => a.createdAt >= since);
+
+    let weightedTotal = 0;
+    let weightedCorrect = 0;
+
+    for (const a of filtered) {
+      const rows = Array.isArray(a.questionResults) ? a.questionResults : [];
+      for (const row of rows) {
+        const mix =
+          row && typeof row === 'object' && !Array.isArray(row)
+            ? (row as any).competencyMix
+            : null;
+        const weightRaw = mix?.practical_application;
+        const weight =
+          typeof weightRaw === 'number' && Number.isFinite(weightRaw)
+            ? Math.max(0, weightRaw)
+            : 0;
+        if (weight <= 0) continue;
+        weightedTotal += weight;
+        if (row.isCorrect) weightedCorrect += weight;
+      }
+    }
+
+    const accuracy = weightedTotal > 0 ? weightedCorrect / weightedTotal : 0;
+    const provisional = weightedTotal < minWeightedTotal;
+    const score = provisional ? 0 : Math.round(accuracy * 100);
+
+    return {
+      score,
+      attemptCount: filtered.length,
+      weightedTotal: Math.round(weightedTotal * 1000) / 1000,
+      weightedCorrect: Math.round(weightedCorrect * 1000) / 1000,
+      accuracy: Math.round(accuracy * 1000) / 1000,
+      minWeightedTotal,
+      provisional,
     };
   }
 
