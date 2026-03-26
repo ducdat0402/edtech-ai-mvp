@@ -112,6 +112,7 @@ export class UsersService {
       quizAttempts,
       logicalSince,
     );
+    const creativity = this.computeCreativityMetrics(quizAttempts, logicalSince);
 
     return {
       learningMetrics: [
@@ -125,7 +126,7 @@ export class UsersService {
       ],
       humanMetrics: [
         { key: 'systems_thinking', value: systemsThinking.score },
-        { key: 'creativity', value: 0 },
+        { key: 'creativity', value: creativity.score },
         { key: 'communication', value: 0 },
         { key: 'self_leadership', value: 0 },
         { key: 'discipline', value: 0 },
@@ -227,6 +228,17 @@ export class UsersService {
           provisional: systemsThinking.provisional,
           score: systemsThinking.score,
         },
+        creativity: {
+          version: 1,
+          windowDays: 30,
+          minWeightedTotal: creativity.minWeightedTotal,
+          attemptCount: creativity.attemptCount,
+          weightedTotal: creativity.weightedTotal,
+          weightedCorrect: creativity.weightedCorrect,
+          accuracy: creativity.accuracy,
+          provisional: creativity.provisional,
+          score: creativity.score,
+        },
       },
     };
   }
@@ -258,6 +270,59 @@ export class UsersService {
             ? (row as any).competencyMix
             : null;
         const weightRaw = mix?.systems_thinking;
+        const weight =
+          typeof weightRaw === 'number' && Number.isFinite(weightRaw)
+            ? Math.max(0, weightRaw)
+            : 0;
+        if (weight <= 0) continue;
+        weightedTotal += weight;
+        if (row.isCorrect) weightedCorrect += weight;
+      }
+    }
+
+    const accuracy = weightedTotal > 0 ? weightedCorrect / weightedTotal : 0;
+    const provisional = weightedTotal < minWeightedTotal;
+    const score = provisional ? 0 : Math.round(accuracy * 100);
+
+    return {
+      score,
+      windowDays: 30,
+      minWeightedTotal,
+      attemptCount: filtered.length,
+      weightedTotal: Math.round(weightedTotal * 1000) / 1000,
+      weightedCorrect: Math.round(weightedCorrect * 1000) / 1000,
+      accuracy: Math.round(accuracy * 1000) / 1000,
+      provisional,
+    };
+  }
+
+  private computeCreativityMetrics(
+    attempts: LearningQuizAttempt[],
+    since: Date,
+  ): {
+    score: number;
+    windowDays: number;
+    minWeightedTotal: number;
+    attemptCount: number;
+    weightedTotal: number;
+    weightedCorrect: number;
+    accuracy: number;
+    provisional: boolean;
+  } {
+    const minWeightedTotal = 8.0;
+    const filtered = attempts.filter((a) => a.createdAt >= since);
+
+    let weightedTotal = 0;
+    let weightedCorrect = 0;
+
+    for (const a of filtered) {
+      const rows = Array.isArray(a.questionResults) ? a.questionResults : [];
+      for (const row of rows) {
+        const mix =
+          row && typeof row === 'object' && !Array.isArray(row)
+            ? (row as any).competencyMix
+            : null;
+        const weightRaw = mix?.creativity;
         const weight =
           typeof weightRaw === 'number' && Number.isFinite(weightRaw)
             ? Math.max(0, weightRaw)
