@@ -151,7 +151,6 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
       final humanValues = _extractMetricValues(data['humanMetrics']);
       _memoryTooltip = _buildMemoryTooltip(
         formula: data['formulaInfo'] is Map ? data['formulaInfo']['memory'] : null,
-        memoryScore: learningValues['memory'] ?? 0,
       );
 
       if (!mounted) return;
@@ -221,86 +220,39 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
     );
   }
 
-  String? _buildMemoryTooltip({dynamic formula, required double memoryScore}) {
+  /// Tooltip chỉ hướng dẫn cách tăng điểm (không hiển thị công thức).
+  String? _buildMemoryTooltip({dynamic formula}) {
     if (formula is! Map) return null;
 
     final version = formula['version'];
     if (version == 2) {
-      return _buildMemoryTooltipV2(formula, memoryScore);
+      return _memoryIncreaseHintsV2(formula);
     }
 
-    final completedNodes = (formula['completedNodes'] ?? 0) as num;
-    final currentStreak = (formula['currentStreak'] ?? 0) as num;
-    final completedLast7Days = (formula['completedLast7Days'] ?? 0) as num;
-
-    final completedNorm = math.min(1.0, completedNodes.toDouble() / 80.0);
-    final streakNorm = math.min(1.0, currentStreak.toDouble() / 14.0);
-    final weeklyNorm = math.min(1.0, completedLast7Days.toDouble() / 12.0);
-
-    final calc = (completedNorm * 0.55 + streakNorm * 0.30 + weeklyNorm * 0.15) *
-        100.0;
-    final rounded = calc.round();
-
-    final increaseHints = [
-      'Hoàn thành nhiều bài học (completedNodes)',
-      'Duy trì chuỗi ngày (currentStreak)',
-      'Hoàn thành bài trong 7 ngày gần nhất (completedLast7Days)',
-    ].join('\n- ');
-
-    return 'Ghi nhớ đang tính từ:\n'
-        '- completedNodes = $completedNodes (trọng số 55%)\n'
-        '- currentStreak = $currentStreak (trọng số 30%)\n'
-        '- completedLast7Days = $completedLast7Days (trọng số 15%)\n\n'
-        'Cách tính:\n'
-        'completedNorm=min(1, completedNodes/80)\n'
-        'streakNorm=min(1, currentStreak/14)\n'
-        'weeklyNorm=min(1, completedLast7Days/12)\n'
-        'MemoryScore=round((completedNorm*0.55 + streakNorm*0.30 + weeklyNorm*0.15)*100)\n\n'
-        'Kết quả hệ thống ≈ $rounded (bên UI: ${memoryScore.toStringAsFixed(0)})\n\n'
-        'Cách để tăng điểm:\n- $increaseHints';
+    return _memoryIncreaseHintsV1();
   }
 
-  /// Memory v2: recall từ lịch sử quiz + nền hành vi học.
-  String _buildMemoryTooltipV2(Map formula, double memoryScore) {
-    final behavioral = (formula['behavioralScore'] ?? 0) as num;
-    final recall = (formula['recallScore'] ?? 0) as num;
+  String _memoryIncreaseHintsV1() {
+    return 'Cách tăng điểm Ghi nhớ:\n'
+        '• Hoàn thành thêm bài học.\n'
+        '• Giữ chuỗi ngày học liên tiếp.\n'
+        '• Hoàn thành nhiều bài trong 7 ngày gần nhất.';
+  }
+
+  String _memoryIncreaseHintsV2(Map formula) {
     final qCount = (formula['quizAttemptCount'] ?? 0) as num;
-    final bW = (formula['blendBehaviorWeight'] ?? 1) as num;
-    final rW = (formula['blendRecallWeight'] ?? 0) as num;
-
-    final delayedN = (formula['delayedRecallSampleCount'] ?? 0) as num;
-    final delayedAvg = formula['delayedRecallAvgScore'];
-    final stabN = (formula['stabilitySampleCount'] ?? 0) as num;
-    final stabR = formula['stabilityAvgRatio'];
-    final ftN = (formula['firstTryCount'] ?? 0) as num;
-    final ftRate = formula['firstTryPassRate'];
-
-    final approx =
-        (behavioral.toDouble() * bW.toDouble() + recall.toDouble() * rW.toDouble())
-            .round();
-
     final lines = <String>[
-      'Ghi nhớ v2 = nền hành vi + recall từ quiz.',
-      '',
-      'Nền hành vi (behavioralScore) ≈ $behavioral — dùng khi chưa có quiz hoặc trộn 15%.',
-      'Recall (recallScore) ≈ $recall — từ lịch sử nộp end-quiz (120 ngày gần nhất).',
-      '',
-      'Recall gồm (chuẩn hoá theo từng nhóm node+dạng bài):',
-      '- Delayed recall: lần sau cách lần trước 3–14 ngày → điểm lần sau (trọng số 50% trong phần recall).',
-      '- Stability: hai lần liên tiếp cách ≥7 ngày → min(1, điểm sau/điểm trước) (35%).',
-      '- Lần làm đầu đạt quiz: tỷ lệ pass lần đầu (20%).',
-      '',
-      'Số liệu của bạn:',
-      '- quizAttemptCount: $qCount',
-      '- delayedRecall: n=$delayedN, điểm TB=$delayedAvg',
-      '- stability: n=$stabN, tỷ lệ giữ điểm TB=$stabR',
-      '- firstTry: n=$ftN, tỷ lệ pass=$ftRate',
-      '',
-      'Điểm hiển thị ≈ $approx (UI: ${memoryScore.toStringAsFixed(0)}).',
-      '',
-      'Cách tăng: làm lại quiz sau vài ngày (3–14) để tăng delayed recall; ôn lại sau ≥7 ngày để ổn định điểm; làm đúng ngay lần đầu.',
+      'Cách tăng điểm Ghi nhớ:',
+      '• Học đều và giữ streak — hỗ trợ phần nền của chỉ số.',
+      '• Làm end-quiz bài học; quay lại làm sau vài ngày (khoảng 3–14 ngày) để củng cố trí nhớ.',
+      '• Ôn quiz: sau lần trước ít nhất khoảng 7 ngày, cố giữ hoặc cải thiện điểm.',
+      '• Cố gắng đạt yêu cầu quiz ngay lần đầu làm.',
     ];
-
+    if (qCount == 0) {
+      lines.add(
+        '• Bạn chưa có lịch sử nộp quiz — bắt đầu làm quiz để phần ghi nhớ được tính đầy đủ.',
+      );
+    }
     return lines.join('\n');
   }
 
