@@ -4,9 +4,10 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { MoreThanOrEqual, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { UserCurrency } from '../user-currency/entities/user-currency.entity';
+import { UserProgress } from '../user-progress/entities/user-progress.entity';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -16,7 +17,75 @@ export class UsersService {
     private usersRepository: Repository<User>,
     @InjectRepository(UserCurrency)
     private currencyRepository: Repository<UserCurrency>,
+    @InjectRepository(UserProgress)
+    private progressRepository: Repository<UserProgress>,
   ) {}
+
+  /**
+   * Snapshot năng lực (MVP): mới tính chỉ số "memory", metric khác giữ 0.
+   * Công thức memory dùng dữ liệu có sẵn để test tăng/giảm theo hoạt động học:
+   * - completedNodes (all-time): 55%
+   * - currentStreak: 30%
+   * - completions 7 ngày gần nhất: 15%
+   */
+  async getCompetencies(userId: string) {
+    const [currency, completedNodes, completedLast7Days] = await Promise.all([
+      this.currencyRepository.findOne({
+        where: { userId },
+        select: ['currentStreak'],
+      }),
+      this.progressRepository.count({
+        where: { userId, isCompleted: true },
+      }),
+      this.progressRepository.count({
+        where: {
+          userId,
+          isCompleted: true,
+          completedAt: MoreThanOrEqual(
+            new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+          ),
+        },
+      }),
+    ]);
+
+    const streak = currency?.currentStreak ?? 0;
+    const completedNorm = Math.min(1, completedNodes / 80); // 80 bài -> full
+    const streakNorm = Math.min(1, streak / 14); // 14 ngày -> full
+    const weeklyNorm = Math.min(1, completedLast7Days / 12); // 12 bài/tuần -> full
+
+    const memoryScore = Math.round(
+      (completedNorm * 0.55 + streakNorm * 0.30 + weeklyNorm * 0.15) * 100,
+    );
+
+    return {
+      learningMetrics: [
+        { key: 'memory', value: memoryScore },
+        { key: 'logical_thinking', value: 0 },
+        { key: 'processing_speed', value: 0 },
+        { key: 'practical_application', value: 0 },
+        { key: 'metacognition', value: 0 },
+        { key: 'learning_persistence', value: 0 },
+        { key: 'knowledge_absorption', value: 0 },
+      ],
+      humanMetrics: [
+        { key: 'systems_thinking', value: 0 },
+        { key: 'creativity', value: 0 },
+        { key: 'communication', value: 0 },
+        { key: 'self_leadership', value: 0 },
+        { key: 'discipline', value: 0 },
+        { key: 'growth_mindset', value: 0 },
+        { key: 'critical_thinking', value: 0 },
+        { key: 'collaboration', value: 0 },
+      ],
+      formulaInfo: {
+        memory: {
+          completedNodes,
+          currentStreak: streak,
+          completedLast7Days,
+        },
+      },
+    };
+  }
 
   async create(email: string, password: string, fullName?: string): Promise<User> {
     const hashedPassword = await bcrypt.hash(password, 10);

@@ -318,6 +318,14 @@ class ApiService {
     return {};
   }
 
+  Future<Map<String, dynamic>> getUserCompetencies() async {
+    final response = await _apiClient.get(ApiConstants.userCompetencies);
+    final data = response.data;
+    if (data is Map<String, dynamic>) return data;
+    if (data is Map) return Map<String, dynamic>.from(data);
+    return {};
+  }
+
   Future<Map<String, dynamic>> getSubjectLeaderboard(
     String subjectId, {
     int limit = 100,

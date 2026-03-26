@@ -38,6 +38,11 @@ export class UsersController {
     return this.usersService.getPublicProfile(userId);
   }
 
+  @Get('competencies')
+  async getCompetencies(@Request() req) {
+    return this.usersService.getCompetencies(req.user.id);
+  }
+
   @Patch('switch-role')
   async switchRole(
     @Request() req,

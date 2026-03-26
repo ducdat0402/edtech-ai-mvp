@@ -152,6 +152,7 @@ class ApiConstants {
   static const String switchRole = '/users/switch-role';
   /// Hồ sơ công khai (đã đăng nhập) — leaderboard, không có email.
   static String userPublicProfile(String userId) => '/users/public/$userId';
+  static const String userCompetencies = '/users/competencies';
 
   // Pending Contributions (Contributor mode)
   static const String myPendingContributions = '/pending-contributions/my';
