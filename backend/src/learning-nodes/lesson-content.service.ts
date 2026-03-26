@@ -343,7 +343,9 @@ YÊU CẦU:
 - Độ khó: dễ -> trung bình -> khó (tăng dần)
 - Mỗi câu phải có:
   - "logicTypes": mảng tag suy luận, ví dụ ["inference"], ["sequence", "compare"]
-  - "competencyMix": object tỷ lệ đóng góp chỉ số, ví dụ { "logical_thinking": 0.45, "practical_application": 0.25, "systems_thinking": 0.20, "creativity": 0.10 }
+  - "competencyMix": object tỷ lệ đóng góp chỉ số, ví dụ { "logical_thinking": 0.35, "practical_application": 0.20, "systems_thinking": 0.20, "creativity": 0.10, "critical_thinking": 0.15 }
+- Với mỗi quiz, phải có ít nhất 1-2 câu có trọng số "critical_thinking" >= 0.4
+- Ưu tiên câu dạng đánh giá lập luận, phát hiện giả định ẩn, so sánh bằng chứng
 - competencyMix phải có tổng gần bằng 1
 
 Trả về JSON:
@@ -360,10 +362,11 @@ Trả về JSON:
       "correctAnswer": 0,
       "logicTypes": ["inference"],
       "competencyMix": {
-        "logical_thinking": 0.45,
-        "practical_application": 0.25,
+        "logical_thinking": 0.35,
+        "practical_application": 0.20,
         "systems_thinking": 0.20,
-        "creativity": 0.10
+        "creativity": 0.10,
+        "critical_thinking": 0.15
       }
     }
   ]

@@ -167,6 +167,10 @@ export class UsersService {
       quizAttempts,
       logicalSince,
     );
+    const criticalThinking = this.computeCriticalThinkingMetrics(
+      quizAttempts,
+      logicalSince,
+    );
 
     return {
       learningMetrics: [
@@ -185,7 +189,7 @@ export class UsersService {
         { key: 'self_leadership', value: selfLeadership.score },
         { key: 'discipline', value: discipline.score },
         { key: 'growth_mindset', value: growthMindset.score },
-        { key: 'critical_thinking', value: 0 },
+        { key: 'critical_thinking', value: criticalThinking.score },
         { key: 'collaboration', value: 0 },
       ],
       formulaInfo: {
@@ -337,7 +341,107 @@ export class UsersService {
           provisional: growthMindset.provisional,
           score: growthMindset.score,
         },
+        criticalThinking: {
+          version: 1,
+          windowDays: 30,
+          minWeightedTotal: criticalThinking.minWeightedTotal,
+          failGroups: criticalThinking.failGroups,
+          weightedTotal: criticalThinking.weightedTotal,
+          weightedCorrect: criticalThinking.weightedCorrect,
+          weightedAccuracy: criticalThinking.weightedAccuracy,
+          retryAfterFailRate: criticalThinking.retryAfterFailRate,
+          improvementAfterRetry: criticalThinking.improvementAfterRetry,
+          provisional: criticalThinking.provisional,
+          score: criticalThinking.score,
+        },
       },
+    };
+  }
+
+  private computeCriticalThinkingMetrics(
+    attempts: LearningQuizAttempt[],
+    since: Date,
+  ): {
+    score: number;
+    minWeightedTotal: number;
+    failGroups: number;
+    weightedTotal: number;
+    weightedCorrect: number;
+    weightedAccuracy: number;
+    retryAfterFailRate: number;
+    improvementAfterRetry: number;
+    provisional: boolean;
+  } {
+    const filtered = attempts.filter((a) => a.createdAt >= since);
+    let weightedTotal = 0;
+    let weightedCorrect = 0;
+    for (const a of filtered) {
+      const rows = Array.isArray(a.questionResults) ? a.questionResults : [];
+      for (const row of rows) {
+        const mix =
+          row && typeof row === 'object' && !Array.isArray(row)
+            ? (row as any).competencyMix
+            : null;
+        const raw = mix?.critical_thinking;
+        const w =
+          typeof raw === 'number' && Number.isFinite(raw) ? Math.max(0, raw) : 0;
+        if (w <= 0) continue;
+        weightedTotal += w;
+        if (row.isCorrect) weightedCorrect += w;
+      }
+    }
+    const weightedAccuracy = weightedTotal > 0 ? weightedCorrect / weightedTotal : 0;
+
+    const groups = new Map<string, LearningQuizAttempt[]>();
+    for (const a of filtered) {
+      const key = `${a.nodeId}\u0000${a.lessonType ?? ''}`;
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key)!.push(a);
+    }
+    let failGroups = 0;
+    let retryGroups = 0;
+    let totalGain = 0;
+    for (const arr of groups.values()) {
+      const sorted = [...arr].sort(
+        (x, y) => x.createdAt.getTime() - y.createdAt.getTime(),
+      );
+      if (!sorted.length) continue;
+      const first = sorted[0];
+      if (first.score >= 70) continue;
+      failGroups++;
+      const retries = sorted.slice(1);
+      if (retries.length > 0) {
+        retryGroups++;
+        const bestRetry = retries.reduce((m, x) => Math.max(m, x.score), 0);
+        totalGain += Math.max(0, bestRetry - first.score);
+      }
+    }
+    const retryAfterFailRate = failGroups ? retryGroups / failGroups : 0;
+    const improvementAfterRetry = retryGroups
+      ? Math.min(1, (totalGain / retryGroups) / 35)
+      : 0;
+
+    const minWeightedTotal = 8;
+    const provisional = weightedTotal < minWeightedTotal || failGroups < 3;
+    const score = provisional
+      ? 0
+      : Math.round(
+          (weightedAccuracy * 0.7 +
+            retryAfterFailRate * 0.2 +
+            improvementAfterRetry * 0.1) *
+            100,
+        );
+
+    return {
+      score: Math.max(0, Math.min(100, score)),
+      minWeightedTotal,
+      failGroups,
+      weightedTotal: Math.round(weightedTotal * 1000) / 1000,
+      weightedCorrect: Math.round(weightedCorrect * 1000) / 1000,
+      weightedAccuracy: Math.round(weightedAccuracy * 1000) / 1000,
+      retryAfterFailRate: Math.round(retryAfterFailRate * 1000) / 1000,
+      improvementAfterRetry: Math.round(improvementAfterRetry * 1000) / 1000,
+      provisional,
     };
   }
 
