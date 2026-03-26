@@ -36,6 +36,8 @@ import { UserBadge } from '../weekly-rewards/entities/user-badge.entity';
 import { WeeklyRewardHistory } from '../weekly-rewards/entities/weekly-reward-history.entity';
 import { LearningQuizAttempt } from '../learning-nodes/entities/learning-quiz-attempt.entity';
 import { LearningCommunicationAttempt } from '../learning-nodes/entities/learning-communication-attempt.entity';
+import { UserWeeklyPlan } from '../self-leadership/entities/user-weekly-plan.entity';
+import { SelfLeadershipCheckin } from '../self-leadership/entities/self-leadership-checkin.entity';
 
 @Injectable()
 export class TypeOrmConfigService implements TypeOrmOptionsFactory {
@@ -100,6 +102,8 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
         WeeklyRewardHistory,
         LearningQuizAttempt,
         LearningCommunicationAttempt,
+        UserWeeklyPlan,
+        SelfLeadershipCheckin,
       ],
       synchronize: !isProduction || this.configService.get<string>('ENABLE_SYNC') === 'true',
       logging: !isProduction ? ['error', 'warn'] : ['error'],

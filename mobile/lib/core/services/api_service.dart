@@ -200,6 +200,55 @@ class ApiService {
     return Map<String, dynamic>.from(response.data);
   }
 
+  Future<Map<String, dynamic>> upsertWeeklyPlan({
+    required int targetSessions,
+    required int targetLessons,
+    required List<int> plannedDays,
+  }) async {
+    final response = await _apiClient.post(
+      ApiConstants.upsertWeeklyPlan,
+      data: {
+        'targetSessions': targetSessions,
+        'targetLessons': targetLessons,
+        'plannedDays': plannedDays,
+      },
+    );
+    return Map<String, dynamic>.from(response.data);
+  }
+
+  Future<Map<String, dynamic>?> getCurrentWeeklyPlan() async {
+    final response = await _apiClient.get(ApiConstants.currentWeeklyPlan);
+    final data = response.data;
+    if (data == null) return null;
+    return Map<String, dynamic>.from(data);
+  }
+
+  Future<Map<String, dynamic>> submitSelfLeadershipCheckin({
+    required bool followedPlan,
+    String? nodeId,
+    String? lessonType,
+    String? deviationReason,
+    String? nextAction,
+  }) async {
+    final response = await _apiClient.post(
+      ApiConstants.submitSelfLeadershipCheckin,
+      data: {
+        'followedPlan': followedPlan,
+        if (nodeId != null && nodeId.isNotEmpty) 'nodeId': nodeId,
+        if (lessonType != null && lessonType.isNotEmpty) 'lessonType': lessonType,
+        if (deviationReason != null && deviationReason.isNotEmpty)
+          'deviationReason': deviationReason,
+        if (nextAction != null && nextAction.isNotEmpty) 'nextAction': nextAction,
+      },
+    );
+    return Map<String, dynamic>.from(response.data);
+  }
+
+  Future<Map<String, dynamic>> getCurrentWeeklyReview() async {
+    final response = await _apiClient.get(ApiConstants.currentWeeklyReview);
+    return Map<String, dynamic>.from(response.data);
+  }
+
   // Uploads
   Future<String> uploadImage(String imagePath) async {
     final response = await _apiClient.postFile(

@@ -47,6 +47,8 @@ class _EndQuizScreenState extends State<EndQuizScreen>
   Map<String, dynamic>? _rewardData; // Cascade rewards from completeLessonType
   bool _isSubmittingCommunication = false;
   Map<String, dynamic>? _communicationResult;
+  bool _isSubmittingSelfLeadership = false;
+  bool _selfLeadershipCheckedIn = false;
 
   // ═══════════════════════════════════════════════════════════════════
   // ANIMATIONS
@@ -421,6 +423,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
       _showResults = false;
       _quizResult = null;
       _communicationResult = null;
+      _selfLeadershipCheckedIn = false;
       _confettiParticles.clear();
     });
     _scoreController.reset();
@@ -550,6 +553,116 @@ class _EndQuizScreenState extends State<EndQuizScreen>
           content: Text('Không gửi được bài giảng lại: $e'),
           backgroundColor: AppColors.errorNeon,
         ),
+      );
+    }
+  }
+
+  Future<void> _submitSelfLeadershipCheckin() async {
+    bool followedPlan = true;
+    final reasonController = TextEditingController();
+    final actionController = TextEditingController();
+    String? errorText;
+    final accepted = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (dialogContext, setStateDialog) {
+            return AlertDialog(
+              title: const Text('Check-in kế hoạch tuần'),
+              content: SizedBox(
+                width: 520,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Phiên học này bạn có bám theo kế hoạch tuần không?'),
+                    const SizedBox(height: 8),
+                    SegmentedButton<bool>(
+                      segments: const [
+                        ButtonSegment(value: true, label: Text('Có')),
+                        ButtonSegment(value: false, label: Text('Chưa')),
+                      ],
+                      selected: {followedPlan},
+                      onSelectionChanged: (values) {
+                        setStateDialog(() {
+                          followedPlan = values.first;
+                          errorText = null;
+                        });
+                      },
+                    ),
+                    if (!followedPlan) ...[
+                      const SizedBox(height: 10),
+                      TextField(
+                        controller: reasonController,
+                        maxLines: 2,
+                        decoration: const InputDecoration(
+                          labelText: 'Lý do lệch kế hoạch (tuỳ chọn)',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: actionController,
+                        maxLines: 2,
+                        decoration: InputDecoration(
+                          labelText: 'Hành động điều chỉnh cho phiên tới',
+                          border: const OutlineInputBorder(),
+                          errorText: errorText,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(false),
+                  child: const Text('Để sau'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    if (!followedPlan && actionController.text.trim().isEmpty) {
+                      setStateDialog(() {
+                        errorText = 'Nhập 1 hành động điều chỉnh ngắn.';
+                      });
+                      return;
+                    }
+                    Navigator.of(dialogContext).pop(true);
+                  },
+                  child: const Text('Gửi check-in'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (!mounted || accepted != true) return;
+    setState(() => _isSubmittingSelfLeadership = true);
+    try {
+      final apiService = Provider.of<ApiService>(context, listen: false);
+      await apiService.submitSelfLeadershipCheckin(
+        followedPlan: followedPlan,
+        nodeId: widget.nodeId,
+        lessonType: widget.lessonType,
+        deviationReason: reasonController.text.trim(),
+        nextAction: actionController.text.trim(),
+      );
+      if (!mounted) return;
+      setState(() {
+        _selfLeadershipCheckedIn = true;
+        _isSubmittingSelfLeadership = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Đã lưu check-in kế hoạch tuần.')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isSubmittingSelfLeadership = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Không gửi được check-in: $e')),
       );
     }
   }
@@ -1384,6 +1497,24 @@ class _EndQuizScreenState extends State<EndQuizScreen>
                 ),
               ),
             if (_isSubmittingCommunication)
+              const Padding(
+                padding: EdgeInsets.only(top: 8),
+                child: LinearProgressIndicator(minHeight: 3),
+              ),
+            const SizedBox(height: 10),
+            SizedBox(
+              width: double.infinity,
+              child: GamingButtonOutlined(
+                text: _selfLeadershipCheckedIn
+                    ? 'Đã check-in kế hoạch tuần'
+                    : 'Check-in kế hoạch tuần',
+                onPressed: (_isSubmittingSelfLeadership || _selfLeadershipCheckedIn)
+                    ? null
+                    : _submitSelfLeadershipCheckin,
+                icon: Icons.task_alt_rounded,
+              ),
+            ),
+            if (_isSubmittingSelfLeadership)
               const Padding(
                 padding: EdgeInsets.only(top: 8),
                 child: LinearProgressIndicator(minHeight: 3),

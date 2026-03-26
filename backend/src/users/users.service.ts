@@ -10,6 +10,8 @@ import { UserCurrency } from '../user-currency/entities/user-currency.entity';
 import { UserProgress } from '../user-progress/entities/user-progress.entity';
 import { LearningQuizAttempt } from '../learning-nodes/entities/learning-quiz-attempt.entity';
 import { LearningCommunicationAttempt } from '../learning-nodes/entities/learning-communication-attempt.entity';
+import { UserWeeklyPlan } from '../self-leadership/entities/user-weekly-plan.entity';
+import { SelfLeadershipCheckin } from '../self-leadership/entities/self-leadership-checkin.entity';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -25,6 +27,10 @@ export class UsersService {
     private quizAttemptRepository: Repository<LearningQuizAttempt>,
     @InjectRepository(LearningCommunicationAttempt)
     private communicationAttemptRepository: Repository<LearningCommunicationAttempt>,
+    @InjectRepository(UserWeeklyPlan)
+    private weeklyPlanRepository: Repository<UserWeeklyPlan>,
+    @InjectRepository(SelfLeadershipCheckin)
+    private selfLeadershipCheckinRepository: Repository<SelfLeadershipCheckin>,
   ) {}
 
   /**
@@ -43,6 +49,8 @@ export class UsersService {
       completedLast30,
       quizAttempts,
       communicationAttempts,
+      weeklyPlans,
+      selfLeadershipCheckins,
     ] =
       await Promise.all([
         this.currencyRepository.findOne({
@@ -67,7 +75,7 @@ export class UsersService {
             isCompleted: true,
             completedAt: MoreThanOrEqual(logicalSince),
           },
-          select: ['completedAt'],
+          select: ['completedAt', 'nodeId'],
           take: 5000,
         }),
         this.quizAttemptRepository.find({
@@ -79,6 +87,22 @@ export class UsersService {
           take: 5000,
         }),
         this.communicationAttemptRepository.find({
+          where: {
+            userId,
+            createdAt: MoreThanOrEqual(logicalSince),
+          },
+          order: { createdAt: 'ASC' },
+          take: 5000,
+        }),
+        this.weeklyPlanRepository.find({
+          where: {
+            userId,
+            createdAt: MoreThanOrEqual(logicalSince),
+          },
+          order: { createdAt: 'ASC' },
+          take: 100,
+        }),
+        this.selfLeadershipCheckinRepository.find({
           where: {
             userId,
             createdAt: MoreThanOrEqual(logicalSince),
@@ -129,6 +153,12 @@ export class UsersService {
       communicationAttempts,
       logicalSince,
     );
+    const selfLeadership = this.computeSelfLeadershipMetrics(
+      completedLast30.map((x) => ({ completedAt: x.completedAt, nodeId: x.nodeId })),
+      weeklyPlans,
+      selfLeadershipCheckins,
+      logicalSince,
+    );
 
     return {
       learningMetrics: [
@@ -144,7 +174,7 @@ export class UsersService {
         { key: 'systems_thinking', value: systemsThinking.score },
         { key: 'creativity', value: creativity.score },
         { key: 'communication', value: communication.score },
-        { key: 'self_leadership', value: 0 },
+        { key: 'self_leadership', value: selfLeadership.score },
         { key: 'discipline', value: 0 },
         { key: 'growth_mindset', value: 0 },
         { key: 'critical_thinking', value: 0 },
@@ -264,7 +294,139 @@ export class UsersService {
           provisional: communication.provisional,
           score: communication.score,
         },
+        selfLeadership: {
+          version: 1,
+          windowDays: 30,
+          weekCount: selfLeadership.weekCount,
+          minWeeks: selfLeadership.minWeeks,
+          goalCommitment: selfLeadership.goalCommitment,
+          executionDiscipline: selfLeadership.executionDiscipline,
+          selfCorrection: selfLeadership.selfCorrection,
+          provisional: selfLeadership.provisional,
+          score: selfLeadership.score,
+        },
       },
+    };
+  }
+
+  private computeSelfLeadershipMetrics(
+    completed: Array<{ completedAt: Date | null; nodeId: string }>,
+    plans: UserWeeklyPlan[],
+    checkins: SelfLeadershipCheckin[],
+    since: Date,
+  ): {
+    score: number;
+    weekCount: number;
+    minWeeks: number;
+    goalCommitment: number;
+    executionDiscipline: number;
+    selfCorrection: number;
+    provisional: boolean;
+  } {
+    const weekMap = new Map<
+      string,
+      {
+        plan?: UserWeeklyPlan;
+        completedDates: Date[];
+        completedLessons: Set<string>;
+        checkins: SelfLeadershipCheckin[];
+      }
+    >();
+    const ensure = (weekStart: string) => {
+      if (!weekMap.has(weekStart)) {
+        weekMap.set(weekStart, {
+          completedDates: [],
+          completedLessons: new Set(),
+          checkins: [],
+        });
+      }
+      return weekMap.get(weekStart)!;
+    };
+
+    const toWeekStart = (d: Date) => {
+      const x = new Date(d);
+      const day = x.getDay();
+      const diff = day === 0 ? -6 : 1 - day;
+      x.setDate(x.getDate() + diff);
+      x.setHours(0, 0, 0, 0);
+      return x.toISOString().slice(0, 10);
+    };
+
+    for (const p of plans) {
+      ensure(p.weekStart).plan = p;
+    }
+    for (const c of completed) {
+      if (!c.completedAt || c.completedAt < since) continue;
+      const wk = toWeekStart(c.completedAt);
+      const row = ensure(wk);
+      row.completedDates.push(c.completedAt);
+      row.completedLessons.add(c.nodeId);
+    }
+    for (const c of checkins) {
+      if (c.createdAt < since) continue;
+      ensure(c.weekStart).checkins.push(c);
+    }
+
+    const weeks = [...weekMap.values()].filter((w) => w.plan);
+    const weekCount = weeks.length;
+    const minWeeks = 2;
+    if (!weekCount) {
+      return {
+        score: 0,
+        weekCount,
+        minWeeks,
+        goalCommitment: 0,
+        executionDiscipline: 0,
+        selfCorrection: 0,
+        provisional: true,
+      };
+    }
+
+    let goalCommitmentSum = 0;
+    let executionDisciplineSum = 0;
+    let selfCorrectionSum = 0;
+
+    for (const w of weeks) {
+      const plan = w.plan!;
+      const sessionRatio = Math.min(1, w.completedDates.length / Math.max(1, plan.targetSessions));
+      const lessonRatio = Math.min(1, w.completedLessons.size / Math.max(1, plan.targetLessons));
+      const goalCommitment = (sessionRatio * 0.6 + lessonRatio * 0.4) * 100;
+
+      const learnedDays = new Set(w.completedDates.map((d) => d.getDay()));
+      const targetDays = new Set((plan.plannedDays ?? []).map((d) => Number(d)));
+      let overlap = 0;
+      for (const d of learnedDays) if (targetDays.has(d)) overlap++;
+      const executionDiscipline = targetDays.size
+        ? Math.min(1, overlap / targetDays.size) * 100
+        : 0;
+
+      const deviated = w.checkins.filter((x) => !x.followedPlan);
+      const corrected = deviated.filter((x) => !!x.nextAction?.trim()).length;
+      const selfCorrection = deviated.length
+        ? Math.min(1, corrected / deviated.length) * 100
+        : 100;
+
+      goalCommitmentSum += goalCommitment;
+      executionDisciplineSum += executionDiscipline;
+      selfCorrectionSum += selfCorrection;
+    }
+
+    const goalCommitment = goalCommitmentSum / weekCount;
+    const executionDiscipline = executionDisciplineSum / weekCount;
+    const selfCorrection = selfCorrectionSum / weekCount;
+    const provisional = weekCount < minWeeks;
+    const score = provisional
+      ? 0
+      : Math.round(goalCommitment * 0.4 + executionDiscipline * 0.35 + selfCorrection * 0.25);
+
+    return {
+      score: Math.max(0, Math.min(100, score)),
+      weekCount,
+      minWeeks,
+      goalCommitment: Math.round(goalCommitment * 10) / 10,
+      executionDiscipline: Math.round(executionDiscipline * 10) / 10,
+      selfCorrection: Math.round(selfCorrection * 10) / 10,
+      provisional,
     };
   }
 

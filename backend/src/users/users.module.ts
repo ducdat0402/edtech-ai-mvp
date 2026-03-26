@@ -7,6 +7,8 @@ import { UserCurrency } from '../user-currency/entities/user-currency.entity';
 import { UserProgress } from '../user-progress/entities/user-progress.entity';
 import { LearningQuizAttempt } from '../learning-nodes/entities/learning-quiz-attempt.entity';
 import { LearningCommunicationAttempt } from '../learning-nodes/entities/learning-communication-attempt.entity';
+import { UserWeeklyPlan } from '../self-leadership/entities/user-weekly-plan.entity';
+import { SelfLeadershipCheckin } from '../self-leadership/entities/self-leadership-checkin.entity';
 
 @Module({
   imports: [
@@ -16,6 +18,8 @@ import { LearningCommunicationAttempt } from '../learning-nodes/entities/learnin
       UserProgress,
       LearningQuizAttempt,
       LearningCommunicationAttempt,
+      UserWeeklyPlan,
+      SelfLeadershipCheckin,
     ]),
   ],
   controllers: [UsersController],

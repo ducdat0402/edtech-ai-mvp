@@ -33,6 +33,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { FriendsModule } from './friends/friends.module';
 import { DmModule } from './direct-message/dm.module';
 import { WeeklyRewardsModule } from './weekly-rewards/weekly-rewards.module';
+import { SelfLeadershipModule } from './self-leadership/self-leadership.module';
 import { TypeOrmConfigService } from './config/typeorm.config';
 
 @Module({
@@ -76,6 +77,7 @@ import { TypeOrmConfigService } from './config/typeorm.config';
     FriendsModule,
     DmModule,
     WeeklyRewardsModule,
+    SelfLeadershipModule,
   ],
 })
 export class AppModule {}

@@ -121,6 +121,12 @@ class ApiConstants {
   static String submitCommunicationAttempt(String nodeId) =>
       '/nodes/$nodeId/communication-attempt';
 
+  // Self leadership
+  static const String upsertWeeklyPlan = '/self-leadership/weekly-plan';
+  static const String currentWeeklyPlan = '/self-leadership/weekly-plan/current';
+  static const String submitSelfLeadershipCheckin = '/self-leadership/checkin';
+  static const String currentWeeklyReview = '/self-leadership/weekly-review/current';
+
   // Lesson Type Contents
   static String lessonTypeContentsByNode(String nodeId) => '/lesson-type-contents/node/$nodeId';
   static String lessonTypeContentByType(String nodeId, String lessonType) => '/lesson-type-contents/node/$nodeId/$lessonType';

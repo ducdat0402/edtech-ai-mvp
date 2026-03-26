@@ -152,7 +152,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           children: [
             ListTile(
               leading: Icon(Icons.photo_library_rounded, color: _accentColor),
-              title: Text('Chọn ảnh từ thư viện',
+              title: const Text('Chọn ảnh từ thư viện',
                   style: TextStyle(color: AppColors.textPrimary)),
               onTap: () {
                 Navigator.pop(ctx);
@@ -162,7 +162,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             if (!kIsWeb)
               ListTile(
                 leading: Icon(Icons.camera_alt_rounded, color: _accentColor),
-                title: Text('Chụp ảnh',
+                title: const Text('Chụp ảnh',
                     style: TextStyle(color: AppColors.textPrimary)),
                 onTap: () {
                   Navigator.pop(ctx);
@@ -173,7 +173,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ListTile(
                 leading:
                     const Icon(Icons.delete_outline, color: AppColors.errorNeon),
-                title: Text('Xóa ảnh đại diện',
+                title: const Text('Xóa ảnh đại diện',
                     style: TextStyle(color: AppColors.errorNeon)),
                 onTap: () {
                   Navigator.pop(ctx);
@@ -285,8 +285,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           decoration: InputDecoration(
             hintText: 'Tên của bạn',
             hintStyle:
-                TextStyle(color: AppColors.textTertiary),
-            counterStyle: TextStyle(color: AppColors.textTertiary),
+                const TextStyle(color: AppColors.textTertiary),
+            counterStyle: const TextStyle(color: AppColors.textTertiary),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(color: _borderColor),
@@ -687,6 +687,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 color: AppColors.coinGold,
                 onTap: () => context.push('/payment'),
               ),
+              _buildMenuCard(
+                icon: Icons.flag_circle_rounded,
+                title: 'Cam kết tuần',
+                subtitle: 'Thiết lập kế hoạch để tăng Lãnh đạo bản thân',
+                color: AppColors.orangeNeon,
+                onTap: () => context.push('/self-leadership/weekly-plan'),
+              ),
             ],
           ),
 
@@ -917,7 +924,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Center(
               child: Container(
                 padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: Colors.black45,
                   shape: BoxShape.circle,
                 ),

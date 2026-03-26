@@ -50,6 +50,7 @@ import 'package:edtech_mobile/features/dm/screens/conversations_screen.dart';
 import 'package:edtech_mobile/features/dm/screens/chat_room_screen.dart';
 import 'package:edtech_mobile/features/auth/screens/forgot_password_screen.dart';
 import 'package:edtech_mobile/features/leaderboard/screens/weekly_rewards_history_screen.dart';
+import 'package:edtech_mobile/features/self_leadership/screens/weekly_plan_screen.dart';
 import 'package:edtech_mobile/core/auth/auth_session_controller.dart';
 import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 
@@ -236,6 +237,10 @@ GoRouter createAppRouter(AuthSessionController authSession) {
     GoRoute(
       path: '/weekly-rewards-history',
       builder: (context, state) => const WeeklyRewardsHistoryScreen(),
+    ),
+    GoRoute(
+      path: '/self-leadership/weekly-plan',
+      builder: (context, state) => const WeeklyPlanScreen(),
     ),
     GoRoute(
       path: '/friends',

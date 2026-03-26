@@ -28,6 +28,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
   String? _systemsThinkingTooltip;
   String? _creativityTooltip;
   String? _communicationTooltip;
+  String? _selfLeadershipTooltip;
 
   static const List<_CompetencyItem> _learningTemplate = [
     _CompetencyItem(
@@ -159,6 +160,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
       _systemsThinkingTooltip = null;
       _creativityTooltip = null;
       _communicationTooltip = null;
+      _selfLeadershipTooltip = null;
     });
 
     try {
@@ -214,6 +216,10 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
         formula:
             data['formulaInfo'] is Map ? data['formulaInfo']['communication'] : null,
       );
+      _selfLeadershipTooltip = _buildSelfLeadershipTooltip(
+        formula:
+            data['formulaInfo'] is Map ? data['formulaInfo']['selfLeadership'] : null,
+      );
 
       if (!mounted) return;
       setState(() {
@@ -240,6 +246,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
           systemsThinkingTooltip: _systemsThinkingTooltip,
           creativityTooltip: _creativityTooltip,
           communicationTooltip: _communicationTooltip,
+          selfLeadershipTooltip: _selfLeadershipTooltip,
         );
         _loading = false;
       });
@@ -284,6 +291,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
     String? systemsThinkingTooltip,
     String? creativityTooltip,
     String? communicationTooltip,
+    String? selfLeadershipTooltip,
   }) {
     final items = template
         .map((t) => _CompetencyItem(
@@ -308,6 +316,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
       systemsThinkingTooltip: systemsThinkingTooltip,
       creativityTooltip: creativityTooltip,
       communicationTooltip: communicationTooltip,
+      selfLeadershipTooltip: selfLeadershipTooltip,
     );
   }
 
@@ -547,6 +556,25 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
     return lines.join('\n');
   }
 
+  String? _buildSelfLeadershipTooltip({dynamic formula}) {
+    if (formula is! Map) return null;
+    final weekCount = ((formula['weekCount'] ?? 0) as num).toInt();
+    final minWeeks = ((formula['minWeeks'] ?? 2) as num).toInt();
+    final provisional = (formula['provisional'] ?? false) as bool;
+    final lines = <String>[
+      'Cách tăng điểm Lãnh đạo bản thân:',
+      '• Đặt cam kết tuần rõ ràng, vừa sức và đo được.',
+      '• Học đúng các ngày đã cam kết để tạo nhịp ổn định.',
+      '• Khi lệch kế hoạch, ghi lại 1 hành động điều chỉnh cho phiên sau.',
+      '• Cuối tuần review mục tiêu và tăng dần độ thử thách.',
+    ];
+    if (provisional || weekCount < minWeeks) {
+      lines.add('• Cần thêm dữ liệu ít nhất 2 tuần để điểm ổn định.');
+      lines.add('• Điểm đang tạm thời do chưa đủ dữ liệu đo.');
+    }
+    return lines.join('\n');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -645,6 +673,7 @@ class _CompetencySectionData {
   final String? systemsThinkingTooltip;
   final String? creativityTooltip;
   final String? communicationTooltip;
+  final String? selfLeadershipTooltip;
   const _CompetencySectionData({
     required this.title,
     required this.subtitle,
@@ -660,6 +689,7 @@ class _CompetencySectionData {
     this.systemsThinkingTooltip,
     this.creativityTooltip,
     this.communicationTooltip,
+    this.selfLeadershipTooltip,
   });
 
   double get average => items.isEmpty
@@ -730,6 +760,7 @@ class _CompetencySection extends StatelessWidget {
                                 section.systemsThinkingTooltip,
                             creativityTooltip: section.creativityTooltip,
                             communicationTooltip: section.communicationTooltip,
+                            selfLeadershipTooltip: section.selfLeadershipTooltip,
                           ),
                         ],
                       )
@@ -763,7 +794,9 @@ class _CompetencySection extends StatelessWidget {
                                   creativityTooltip:
                                       section.creativityTooltip,
                                   communicationTooltip:
-                                      section.communicationTooltip)),
+                                      section.communicationTooltip,
+                                  selfLeadershipTooltip:
+                                      section.selfLeadershipTooltip)),
                         ],
                       ),
               ],
@@ -832,6 +865,7 @@ class _MetricList extends StatelessWidget {
   final String? systemsThinkingTooltip;
   final String? creativityTooltip;
   final String? communicationTooltip;
+  final String? selfLeadershipTooltip;
   const _MetricList({
     required this.color,
     required this.items,
@@ -845,6 +879,7 @@ class _MetricList extends StatelessWidget {
     this.systemsThinkingTooltip,
     this.creativityTooltip,
     this.communicationTooltip,
+    this.selfLeadershipTooltip,
   });
 
   @override
@@ -864,6 +899,7 @@ class _MetricList extends StatelessWidget {
                 systemsThinkingTooltip: systemsThinkingTooltip,
                 creativityTooltip: creativityTooltip,
                 communicationTooltip: communicationTooltip,
+                selfLeadershipTooltip: selfLeadershipTooltip,
               ))
           .toList(),
     );
@@ -883,6 +919,7 @@ class _MetricRow extends StatelessWidget {
   final String? systemsThinkingTooltip;
   final String? creativityTooltip;
   final String? communicationTooltip;
+  final String? selfLeadershipTooltip;
   const _MetricRow({
     required this.color,
     required this.item,
@@ -896,6 +933,7 @@ class _MetricRow extends StatelessWidget {
     this.systemsThinkingTooltip,
     this.creativityTooltip,
     this.communicationTooltip,
+    this.selfLeadershipTooltip,
   });
 
   @override
@@ -908,6 +946,8 @@ class _MetricRow extends StatelessWidget {
         item.key == 'creativity' && creativityTooltip != null;
     final showCommunicationTooltip =
         item.key == 'communication' && communicationTooltip != null;
+    final showSelfLeadershipTooltip =
+        item.key == 'self_leadership' && selfLeadershipTooltip != null;
     final showLogicalTooltip =
         item.key == 'logical_thinking' && logicalTooltip != null;
     final showProcessingTooltip =
@@ -926,6 +966,8 @@ class _MetricRow extends StatelessWidget {
             ? creativityTooltip!
             : (showCommunicationTooltip
                 ? communicationTooltip!
+                : (showSelfLeadershipTooltip
+                    ? selfLeadershipTooltip!
             : (showMemoryTooltip
             ? memoryTooltip!
             : (showLogicalTooltip
@@ -940,7 +982,7 @@ class _MetricRow extends StatelessWidget {
                                 ? persistenceTooltip!
                                 : (showKnowledgeTooltip
                                     ? knowledgeTooltip!
-                                    : null)))))))));
+                                    : null))))))))));
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
