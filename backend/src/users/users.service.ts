@@ -159,6 +159,10 @@ export class UsersService {
       selfLeadershipCheckins,
       logicalSince,
     );
+    const discipline = this.computeDisciplineMetrics(
+      completedLast30.map((x) => x.completedAt).filter((x): x is Date => !!x),
+      logicalSince,
+    );
 
     return {
       learningMetrics: [
@@ -175,7 +179,7 @@ export class UsersService {
         { key: 'creativity', value: creativity.score },
         { key: 'communication', value: communication.score },
         { key: 'self_leadership', value: selfLeadership.score },
-        { key: 'discipline', value: 0 },
+        { key: 'discipline', value: discipline.score },
         { key: 'growth_mindset', value: 0 },
         { key: 'critical_thinking', value: 0 },
         { key: 'collaboration', value: 0 },
@@ -305,7 +309,106 @@ export class UsersService {
           provisional: selfLeadership.provisional,
           score: selfLeadership.score,
         },
+        discipline: {
+          version: 1,
+          windowDays: 30,
+          activeDays: discipline.activeDays,
+          activeDayScore: discipline.activeDayScore,
+          weeklyRhythmWeeks: discipline.weeklyRhythmWeeks,
+          weeklyRhythmScore: discipline.weeklyRhythmScore,
+          timeSlotStabilityScore: discipline.timeSlotStabilityScore,
+          dominantHours: discipline.dominantHours,
+          provisional: discipline.provisional,
+          score: discipline.score,
+        },
       },
+    };
+  }
+
+  private computeDisciplineMetrics(
+    completedDates: Date[],
+    since: Date,
+  ): {
+    score: number;
+    activeDays: number;
+    activeDayScore: number;
+    weeklyRhythmWeeks: number;
+    weeklyRhythmScore: number;
+    timeSlotStabilityScore: number;
+    dominantHours: number[];
+    provisional: boolean;
+  } {
+    const filtered = completedDates
+      .filter((d) => d >= since)
+      .sort((a, b) => a.getTime() - b.getTime());
+
+    const dayKeys = new Set<string>();
+    const weekBuckets = new Map<string, Set<string>>();
+    const hourCounts = new Map<number, number>();
+
+    const toWeekStart = (d: Date) => {
+      const x = new Date(d);
+      const day = x.getDay();
+      const diff = day === 0 ? -6 : 1 - day;
+      x.setDate(x.getDate() + diff);
+      x.setHours(0, 0, 0, 0);
+      return x.toISOString().slice(0, 10);
+    };
+
+    for (const d of filtered) {
+      const dayKey = d.toISOString().slice(0, 10);
+      dayKeys.add(dayKey);
+
+      const wk = toWeekStart(d);
+      if (!weekBuckets.has(wk)) weekBuckets.set(wk, new Set());
+      weekBuckets.get(wk)!.add(dayKey);
+
+      const h = d.getHours();
+      hourCounts.set(h, (hourCounts.get(h) ?? 0) + 1);
+    }
+
+    const activeDays = dayKeys.size;
+    const activeDayScore = Math.min(100, Math.round((activeDays / 20) * 100));
+
+    let weeklyRhythmWeeks = 0;
+    for (const days of weekBuckets.values()) {
+      if (days.size >= 3) weeklyRhythmWeeks++;
+    }
+    const weeklyRhythmScore = Math.min(
+      100,
+      Math.round((weeklyRhythmWeeks / 4) * 100),
+    );
+
+    const topHours = [...hourCounts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 2);
+    const dominantHours = topHours.map(([h]) => h);
+    const totalSessions = filtered.length;
+    const dominantSessions = topHours.reduce((s, [, c]) => s + c, 0);
+    const timeSlotStabilityScore =
+      totalSessions > 0
+        ? Math.round(Math.min(1, dominantSessions / totalSessions) * 100)
+        : 0;
+
+    const weekCount = weekBuckets.size;
+    const provisional = activeDays < 10 || weekCount < 2;
+    const score = provisional
+      ? 0
+      : Math.round(
+          activeDayScore * 0.4 +
+            weeklyRhythmScore * 0.35 +
+            timeSlotStabilityScore * 0.25,
+        );
+
+    return {
+      score: Math.max(0, Math.min(100, score)),
+      activeDays,
+      activeDayScore,
+      weeklyRhythmWeeks,
+      weeklyRhythmScore,
+      timeSlotStabilityScore,
+      dominantHours,
+      provisional,
     };
   }
 
