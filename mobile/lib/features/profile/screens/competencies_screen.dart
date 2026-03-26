@@ -25,6 +25,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
   String? _metacognitionTooltip;
   String? _persistenceTooltip;
   String? _knowledgeTooltip;
+  String? _systemsThinkingTooltip;
 
   static const List<_CompetencyItem> _learningTemplate = [
     _CompetencyItem(
@@ -153,6 +154,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
       _metacognitionTooltip = null;
       _persistenceTooltip = null;
       _knowledgeTooltip = null;
+      _systemsThinkingTooltip = null;
     });
 
     try {
@@ -195,6 +197,11 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
             ? data['formulaInfo']['knowledgeAbsorption']
             : null,
       );
+      _systemsThinkingTooltip = _buildSystemsThinkingTooltip(
+        formula: data['formulaInfo'] is Map
+            ? data['formulaInfo']['systemsThinking']
+            : null,
+      );
 
       if (!mounted) return;
       setState(() {
@@ -218,6 +225,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
           color: AppColors.orangeNeon,
           template: _humanTemplate,
           values: humanValues,
+          systemsThinkingTooltip: _systemsThinkingTooltip,
         );
         _loading = false;
       });
@@ -259,6 +267,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
     String? metacognitionTooltip,
     String? persistenceTooltip,
     String? knowledgeTooltip,
+    String? systemsThinkingTooltip,
   }) {
     final items = template
         .map((t) => _CompetencyItem(
@@ -280,6 +289,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
       metacognitionTooltip: metacognitionTooltip,
       persistenceTooltip: persistenceTooltip,
       knowledgeTooltip: knowledgeTooltip,
+      systemsThinkingTooltip: systemsThinkingTooltip,
     );
   }
 
@@ -448,6 +458,31 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
     return lines.join('\n');
   }
 
+  String? _buildSystemsThinkingTooltip({dynamic formula}) {
+    if (formula is! Map) return null;
+
+    final weightedTotal =
+        (formula['weightedTotal'] ?? 0) as num; // sum of systems weights
+    final minWeightedTotal =
+        (formula['minWeightedTotal'] ?? 8) as num; // stability threshold
+    final provisional = (formula['provisional'] ?? false) as bool;
+
+    final lines = <String>[
+      'Cách tăng điểm Tư duy hệ thống:',
+      '• Khi gặp vấn đề, xác định yếu tố và mối quan hệ giữa chúng.',
+      '• Dự đoán tác động dây chuyền khi thay đổi 1 phần trong hệ.',
+      '• So sánh trade-off: tăng 1 mục có thể làm giảm mục khác.',
+      '• Trả lời theo logic “nguyên nhân -> kết quả”, không theo cảm tính.',
+    ];
+
+    if (provisional || weightedTotal < minWeightedTotal) {
+      lines.add('• Cần thêm dữ liệu câu có trọng số “systems_thinking” để điểm ổn định.');
+      lines.add('• Điểm đang tạm thời do chưa đủ dữ liệu đo.');
+    }
+
+    return lines.join('\n');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -543,6 +578,7 @@ class _CompetencySectionData {
   final String? metacognitionTooltip;
   final String? persistenceTooltip;
   final String? knowledgeTooltip;
+  final String? systemsThinkingTooltip;
   const _CompetencySectionData({
     required this.title,
     required this.subtitle,
@@ -555,6 +591,7 @@ class _CompetencySectionData {
     this.metacognitionTooltip,
     this.persistenceTooltip,
     this.knowledgeTooltip,
+    this.systemsThinkingTooltip,
   });
 
   double get average => items.isEmpty
@@ -621,6 +658,8 @@ class _CompetencySection extends StatelessWidget {
                             metacognitionTooltip: section.metacognitionTooltip,
                             persistenceTooltip: section.persistenceTooltip,
                             knowledgeTooltip: section.knowledgeTooltip,
+                            systemsThinkingTooltip:
+                                section.systemsThinkingTooltip,
                           ),
                         ],
                       )
@@ -648,7 +687,9 @@ class _CompetencySection extends StatelessWidget {
                                       section.metacognitionTooltip,
                                   persistenceTooltip:
                                       section.persistenceTooltip,
-                                  knowledgeTooltip: section.knowledgeTooltip)),
+                                  knowledgeTooltip: section.knowledgeTooltip,
+                                  systemsThinkingTooltip:
+                                      section.systemsThinkingTooltip)),
                         ],
                       ),
               ],
@@ -714,6 +755,7 @@ class _MetricList extends StatelessWidget {
   final String? metacognitionTooltip;
   final String? persistenceTooltip;
   final String? knowledgeTooltip;
+  final String? systemsThinkingTooltip;
   const _MetricList({
     required this.color,
     required this.items,
@@ -724,6 +766,7 @@ class _MetricList extends StatelessWidget {
     this.metacognitionTooltip,
     this.persistenceTooltip,
     this.knowledgeTooltip,
+    this.systemsThinkingTooltip,
   });
 
   @override
@@ -740,6 +783,7 @@ class _MetricList extends StatelessWidget {
                 metacognitionTooltip: metacognitionTooltip,
                 persistenceTooltip: persistenceTooltip,
                 knowledgeTooltip: knowledgeTooltip,
+                systemsThinkingTooltip: systemsThinkingTooltip,
               ))
           .toList(),
     );
@@ -756,6 +800,7 @@ class _MetricRow extends StatelessWidget {
   final String? metacognitionTooltip;
   final String? persistenceTooltip;
   final String? knowledgeTooltip;
+  final String? systemsThinkingTooltip;
   const _MetricRow({
     required this.color,
     required this.item,
@@ -766,12 +811,15 @@ class _MetricRow extends StatelessWidget {
     this.metacognitionTooltip,
     this.persistenceTooltip,
     this.knowledgeTooltip,
+    this.systemsThinkingTooltip,
   });
 
   @override
   Widget build(BuildContext context) {
     final v = item.value.clamp(0, 100).toDouble();
     final showMemoryTooltip = item.key == 'memory' && memoryTooltip != null;
+    final showSystemsThinkingTooltip =
+        item.key == 'systems_thinking' && systemsThinkingTooltip != null;
     final showLogicalTooltip =
         item.key == 'logical_thinking' && logicalTooltip != null;
     final showProcessingTooltip =
@@ -784,19 +832,23 @@ class _MetricRow extends StatelessWidget {
         item.key == 'learning_persistence' && persistenceTooltip != null;
     final showKnowledgeTooltip =
         item.key == 'knowledge_absorption' && knowledgeTooltip != null;
-    final tooltipMessage = showMemoryTooltip
-        ? memoryTooltip!
-        : (showLogicalTooltip
-            ? logicalTooltip!
-            : (showProcessingTooltip
-                ? processingTooltip!
-                : (showPracticalTooltip
-                    ? practicalTooltip!
-                    : (showMetacognitionTooltip
-                        ? metacognitionTooltip!
-                        : (showPersistenceTooltip
-                            ? persistenceTooltip!
-                            : (showKnowledgeTooltip ? knowledgeTooltip! : null))))));
+    final tooltipMessage = showSystemsThinkingTooltip
+        ? systemsThinkingTooltip!
+        : (showMemoryTooltip
+            ? memoryTooltip!
+            : (showLogicalTooltip
+                ? logicalTooltip!
+                : (showProcessingTooltip
+                    ? processingTooltip!
+                    : (showPracticalTooltip
+                        ? practicalTooltip!
+                        : (showMetacognitionTooltip
+                            ? metacognitionTooltip!
+                            : (showPersistenceTooltip
+                                ? persistenceTooltip!
+                                : (showKnowledgeTooltip
+                                    ? knowledgeTooltip!
+                                    : null)))))));
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),

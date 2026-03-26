@@ -222,7 +222,7 @@ YÊU CẦU:
 - Độ khó: dễ -> trung bình -> khó (tăng dần)
 - Mỗi câu phải có:
   - "logicTypes": mảng tag suy luận, ví dụ ["inference"], ["sequence", "compare"]
-  - "competencyMix": object tỷ lệ đóng góp chỉ số, ví dụ { "logical_thinking": 0.7, "practical_application": 0.3 }
+  - "competencyMix": object tỷ lệ đóng góp chỉ số, ví dụ { "logical_thinking": 0.55, "practical_application": 0.25, "systems_thinking": 0.20 }
 - competencyMix phải có tổng gần bằng 1
 
 Trả về JSON:
@@ -239,8 +239,9 @@ Trả về JSON:
       "correctAnswer": 0,
       "logicTypes": ["inference"],
       "competencyMix": {
-        "logical_thinking": 0.7,
-        "practical_application": 0.3
+        "logical_thinking": 0.55,
+        "practical_application": 0.25,
+        "systems_thinking": 0.20
       }
     }
   ]
