@@ -190,10 +190,11 @@ export class LearningNodesController {
   @Post(':id/submit-quiz')
   @UseGuards(JwtAuthGuard)
   async submitEndQuiz(
+    @Request() req,
     @Param('id') id: string,
     @Body() body: { answers: number[] },
   ) {
-    return this.lessonContentService.submitEndQuiz(id, body.answers);
+    return this.lessonContentService.submitEndQuiz(id, body.answers, req.user.id);
   }
 
   /**
@@ -202,11 +203,17 @@ export class LearningNodesController {
   @Post(':id/submit-quiz/:lessonType')
   @UseGuards(JwtAuthGuard)
   async submitEndQuizForType(
+    @Request() req,
     @Param('id') id: string,
     @Param('lessonType') lessonType: string,
     @Body() body: { answers: number[] },
   ) {
-    return this.lessonContentService.submitEndQuizForType(id, lessonType, body.answers);
+    return this.lessonContentService.submitEndQuizForType(
+      id,
+      lessonType,
+      body.answers,
+      req.user.id,
+    );
   }
 
   /**

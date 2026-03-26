@@ -8,6 +8,7 @@ import { MoreThanOrEqual, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { UserCurrency } from '../user-currency/entities/user-currency.entity';
 import { UserProgress } from '../user-progress/entities/user-progress.entity';
+import { LearningQuizAttempt } from '../learning-nodes/entities/learning-quiz-attempt.entity';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -19,43 +20,60 @@ export class UsersService {
     private currencyRepository: Repository<UserCurrency>,
     @InjectRepository(UserProgress)
     private progressRepository: Repository<UserProgress>,
+    @InjectRepository(LearningQuizAttempt)
+    private quizAttemptRepository: Repository<LearningQuizAttempt>,
   ) {}
 
   /**
-   * Snapshot năng lực (MVP): mới tính chỉ số "memory", metric khác giữ 0.
-   * Công thức memory dùng dữ liệu có sẵn để test tăng/giảm theo hoạt động học:
-   * - completedNodes (all-time): 55%
-   * - currentStreak: 30%
-   * - completions 7 ngày gần nhất: 15%
+   * Snapshot năng lực (MVP): chỉ số "memory" = Memory v2.
+   * - Hành vi học (v1): completedNodes, streak, 7 ngày — giữ làm nền khi chưa có quiz.
+   * - Recall (v2): từ lịch sử nộp end-quiz — delayed recall 3–14 ngày, stability ≥7 ngày, lần làm đầu.
    */
   async getCompetencies(userId: string) {
-    const [currency, completedNodes, completedLast7Days] = await Promise.all([
-      this.currencyRepository.findOne({
-        where: { userId },
-        select: ['currentStreak'],
-      }),
-      this.progressRepository.count({
-        where: { userId, isCompleted: true },
-      }),
-      this.progressRepository.count({
-        where: {
-          userId,
-          isCompleted: true,
-          completedAt: MoreThanOrEqual(
-            new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-          ),
-        },
-      }),
-    ]);
+    const since = new Date(Date.now() - 120 * 24 * 60 * 60 * 1000);
+
+    const [currency, completedNodes, completedLast7Days, quizAttempts] =
+      await Promise.all([
+        this.currencyRepository.findOne({
+          where: { userId },
+          select: ['currentStreak'],
+        }),
+        this.progressRepository.count({
+          where: { userId, isCompleted: true },
+        }),
+        this.progressRepository.count({
+          where: {
+            userId,
+            isCompleted: true,
+            completedAt: MoreThanOrEqual(
+              new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+            ),
+          },
+        }),
+        this.quizAttemptRepository.find({
+          where: {
+            userId,
+            createdAt: MoreThanOrEqual(since),
+          },
+          order: { createdAt: 'ASC' },
+          take: 5000,
+        }),
+      ]);
 
     const streak = currency?.currentStreak ?? 0;
-    const completedNorm = Math.min(1, completedNodes / 80); // 80 bài -> full
-    const streakNorm = Math.min(1, streak / 14); // 14 ngày -> full
-    const weeklyNorm = Math.min(1, completedLast7Days / 12); // 12 bài/tuần -> full
+    const completedNorm = Math.min(1, completedNodes / 80);
+    const streakNorm = Math.min(1, streak / 14);
+    const weeklyNorm = Math.min(1, completedLast7Days / 12);
 
-    const memoryScore = Math.round(
-      (completedNorm * 0.55 + streakNorm * 0.30 + weeklyNorm * 0.15) * 100,
+    const behavioralScore = Math.round(
+      (completedNorm * 0.55 + streakNorm * 0.3 + weeklyNorm * 0.15) * 100,
     );
+
+    const recall = this.computeMemoryRecallMetrics(quizAttempts);
+    const hasQuizSignal = quizAttempts.length > 0;
+    const memoryScore = hasQuizSignal
+      ? Math.round(behavioralScore * 0.15 + recall.recallScore * 0.85)
+      : behavioralScore;
 
     return {
       learningMetrics: [
@@ -79,11 +97,117 @@ export class UsersService {
       ],
       formulaInfo: {
         memory: {
+          version: 2,
           completedNodes,
           currentStreak: streak,
           completedLast7Days,
+          behavioralScore,
+          quizAttemptCount: quizAttempts.length,
+          delayedRecallSampleCount: recall.delayedRecallSampleCount,
+          delayedRecallAvgScore: recall.delayedRecallAvgScore,
+          stabilitySampleCount: recall.stabilitySampleCount,
+          stabilityAvgRatio: recall.stabilityAvgRatio,
+          firstTryCount: recall.firstTryCount,
+          firstTryPassRate: recall.firstTryPassRate,
+          recallScore: recall.recallScore,
+          blendBehaviorWeight: hasQuizSignal ? 0.15 : 1,
+          blendRecallWeight: hasQuizSignal ? 0.85 : 0,
         },
       },
+    };
+  }
+
+  /**
+   * Gom theo (nodeId + lessonType), tính proxy recall / retention từ các lần nộp quiz.
+   */
+  private computeMemoryRecallMetrics(attempts: LearningQuizAttempt[]): {
+    recallScore: number;
+    delayedRecallSampleCount: number;
+    delayedRecallAvgScore: number;
+    stabilitySampleCount: number;
+    stabilityAvgRatio: number;
+    firstTryCount: number;
+    firstTryPassRate: number;
+  } {
+    const MS_PER_DAY = 24 * 60 * 60 * 1000;
+    const groups = new Map<string, LearningQuizAttempt[]>();
+    for (const a of attempts) {
+      const k = `${a.nodeId}\u0000${a.lessonType ?? ''}`;
+      if (!groups.has(k)) groups.set(k, []);
+      groups.get(k)!.push(a);
+    }
+
+    const delayedScores: number[] = [];
+    const stabilityRatios: number[] = [];
+    const firstPassed: number[] = [];
+
+    for (const list of groups.values()) {
+      const sorted = [...list].sort(
+        (x, y) => x.createdAt.getTime() - y.createdAt.getTime(),
+      );
+      if (sorted.length === 0) continue;
+      firstPassed.push(sorted[0].passed ? 1 : 0);
+
+      for (let i = 1; i < sorted.length; i++) {
+        const prev = sorted[i - 1];
+        const cur = sorted[i];
+        const days =
+          (cur.createdAt.getTime() - prev.createdAt.getTime()) / MS_PER_DAY;
+        if (days >= 3 && days <= 14) {
+          delayedScores.push(cur.score);
+        }
+        if (days >= 7) {
+          if (prev.score > 0) {
+            stabilityRatios.push(Math.min(1, cur.score / prev.score));
+          } else {
+            stabilityRatios.push(cur.score / 100);
+          }
+        }
+      }
+    }
+
+    const mean = (xs: number[]) =>
+      xs.length ? xs.reduce((s, x) => s + x, 0) / xs.length : 0;
+
+    const delayedRecallSampleCount = delayedScores.length;
+    const delayedRecallAvgScore = delayedRecallSampleCount
+      ? Math.round(mean(delayedScores) * 10) / 10
+      : 0;
+
+    const stabilitySampleCount = stabilityRatios.length;
+    const stabilityAvgRatio = stabilitySampleCount
+      ? Math.round(mean(stabilityRatios) * 1000) / 1000
+      : 0;
+
+    const firstTryCount = firstPassed.length;
+    const firstTryPassRate = firstTryCount ? mean(firstPassed) : 0;
+
+    let wSum = 0;
+    let acc = 0;
+    if (delayedRecallSampleCount) {
+      acc += (mean(delayedScores) / 100) * 0.5;
+      wSum += 0.5;
+    }
+    if (stabilitySampleCount) {
+      acc += mean(stabilityRatios) * 0.35;
+      wSum += 0.35;
+    }
+    if (firstTryCount) {
+      acc += firstTryPassRate * 0.2;
+      wSum += 0.2;
+    }
+
+    const recallScore = wSum > 0 ? Math.round((acc / wSum) * 100) : 0;
+
+    return {
+      recallScore,
+      delayedRecallSampleCount,
+      delayedRecallAvgScore,
+      stabilitySampleCount,
+      stabilityAvgRatio,
+      firstTryCount,
+      firstTryPassRate:
+        Math.round(firstTryPassRate * 1000) / 1000,
     };
   }
 

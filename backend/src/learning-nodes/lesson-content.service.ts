@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { LearningNode } from './entities/learning-node.entity';
+import { LearningQuizAttempt } from './entities/learning-quiz-attempt.entity';
 import { AiService } from '../ai/ai.service';
 import {
   LessonType,
@@ -19,10 +20,34 @@ export class LessonContentService {
   constructor(
     @InjectRepository(LearningNode)
     private readonly nodeRepository: Repository<LearningNode>,
+    @InjectRepository(LearningQuizAttempt)
+    private readonly quizAttemptRepository: Repository<LearningQuizAttempt>,
     private readonly aiService: AiService,
     private readonly lessonTypeContentsService: LessonTypeContentsService,
     private readonly usersService: UsersService,
   ) {}
+
+  private async recordQuizAttempt(params: {
+    userId: string;
+    nodeId: string;
+    lessonType: string | null;
+    score: number;
+    passed: boolean;
+    totalQuestions: number;
+    correctCount: number;
+  }): Promise<void> {
+    await this.quizAttemptRepository.save(
+      this.quizAttemptRepository.create({
+        userId: params.userId,
+        nodeId: params.nodeId,
+        lessonType: params.lessonType,
+        score: params.score,
+        passed: params.passed,
+        totalQuestions: params.totalQuestions,
+        correctCount: params.correctCount,
+      }),
+    );
+  }
 
   private async contributorPayload(
     contributorId: string | null | undefined,
@@ -189,6 +214,7 @@ CHỈ TRẢ VỀ JSON.`;
   async submitEndQuiz(
     nodeId: string,
     answers: number[],
+    userId: string,
   ): Promise<EndQuizResultDto> {
     const node = await this.nodeRepository.findOne({ where: { id: nodeId } });
     if (!node) throw new NotFoundException('Learning node not found');
@@ -222,9 +248,20 @@ CHỈ TRẢ VỀ JSON.`;
 
     const score = Math.round((correctCount / questions.length) * 100);
     const passingScore = node.endQuiz.passingScore || 70;
+    const passed = score >= passingScore;
+
+    await this.recordQuizAttempt({
+      userId,
+      nodeId,
+      lessonType: null,
+      score,
+      passed,
+      totalQuestions: questions.length,
+      correctCount,
+    });
 
     return {
-      passed: score >= passingScore,
+      passed,
       score,
       totalQuestions: questions.length,
       correctCount,
@@ -239,6 +276,7 @@ CHỈ TRẢ VỀ JSON.`;
     nodeId: string,
     lessonType: string,
     answers: number[],
+    userId: string,
   ): Promise<EndQuizResultDto> {
     // Try to get from lesson_type_contents table first
     const typeContent = await this.lessonTypeContentsService.getByNodeIdAndType(nodeId, lessonType);
@@ -277,9 +315,20 @@ CHỈ TRẢ VỀ JSON.`;
 
     const score = Math.round((correctCount / questions.length) * 100);
     const passingScore = endQuiz.passingScore || 70;
+    const passed = score >= passingScore;
+
+    await this.recordQuizAttempt({
+      userId,
+      nodeId,
+      lessonType,
+      score,
+      passed,
+      totalQuestions: questions.length,
+      correctCount,
+    });
 
     return {
-      passed: score >= passingScore,
+      passed,
       score,
       totalQuestions: questions.length,
       correctCount,
