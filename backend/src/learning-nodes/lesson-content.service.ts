@@ -35,6 +35,7 @@ export class LessonContentService {
     passed: boolean;
     totalQuestions: number;
     correctCount: number;
+    confidencePercent: number | null;
     questionResults: Array<{
       questionIndex: number;
       isCorrect: boolean;
@@ -52,6 +53,7 @@ export class LessonContentService {
         passed: params.passed,
         totalQuestions: params.totalQuestions,
         correctCount: params.correctCount,
+        confidencePercent: params.confidencePercent,
         questionResults: params.questionResults,
       }),
     );
@@ -83,6 +85,18 @@ export class LessonContentService {
     const rounded = Math.round(value);
     if (rounded <= 0) return null;
     return Math.min(120000, rounded);
+  }
+
+  private normalizeConfidencePercent(value: unknown): number | null {
+    if (value === undefined || value === null) return null;
+    if (typeof value !== 'number' || !Number.isFinite(value)) {
+      throw new BadRequestException('confidencePercent must be a number in [0, 100]');
+    }
+    const rounded = Math.round(value);
+    if (rounded < 0 || rounded > 100) {
+      throw new BadRequestException('confidencePercent must be in [0, 100]');
+    }
+    return rounded;
   }
 
   private async contributorPayload(
@@ -269,6 +283,7 @@ CHỈ TRẢ VỀ JSON.`;
     nodeId: string,
     answers: number[],
     userId: string,
+    confidencePercent?: number,
     responseTimesMs?: number[],
   ): Promise<EndQuizResultDto> {
     const node = await this.nodeRepository.findOne({ where: { id: nodeId } });
@@ -321,6 +336,8 @@ CHỈ TRẢ VỀ JSON.`;
     const score = Math.round((correctCount / questions.length) * 100);
     const passingScore = node.endQuiz.passingScore || 70;
     const passed = score >= passingScore;
+    const normalizedConfidence =
+      this.normalizeConfidencePercent(confidencePercent);
 
     await this.recordQuizAttempt({
       userId,
@@ -330,6 +347,7 @@ CHỈ TRẢ VỀ JSON.`;
       passed,
       totalQuestions: questions.length,
       correctCount,
+      confidencePercent: normalizedConfidence,
       questionResults,
     });
 
@@ -350,6 +368,7 @@ CHỈ TRẢ VỀ JSON.`;
     lessonType: string,
     answers: number[],
     userId: string,
+    confidencePercent?: number,
     responseTimesMs?: number[],
   ): Promise<EndQuizResultDto> {
     // Try to get from lesson_type_contents table first
@@ -407,6 +426,8 @@ CHỈ TRẢ VỀ JSON.`;
     const score = Math.round((correctCount / questions.length) * 100);
     const passingScore = endQuiz.passingScore || 70;
     const passed = score >= passingScore;
+    const normalizedConfidence =
+      this.normalizeConfidencePercent(confidencePercent);
 
     await this.recordQuizAttempt({
       userId,
@@ -416,6 +437,7 @@ CHỈ TRẢ VỀ JSON.`;
       passed,
       totalQuestions: questions.length,
       correctCount,
+      confidencePercent: normalizedConfidence,
       questionResults,
     });
 

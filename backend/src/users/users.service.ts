@@ -81,6 +81,10 @@ export class UsersService {
       logicalSince,
     );
     const processing = this.computeProcessingSpeedMetrics(quizAttempts, logicalSince);
+    const metacognition = this.computeMetacognitionMetrics(
+      quizAttempts,
+      logicalSince,
+    );
 
     return {
       learningMetrics: [
@@ -88,7 +92,7 @@ export class UsersService {
         { key: 'logical_thinking', value: logical.score },
         { key: 'processing_speed', value: processing.score },
         { key: 'practical_application', value: practical.score },
-        { key: 'metacognition', value: 0 },
+        { key: 'metacognition', value: metacognition.score },
         { key: 'learning_persistence', value: 0 },
         { key: 'knowledge_absorption', value: 0 },
       ],
@@ -153,6 +157,17 @@ export class UsersService {
           provisional: practical.provisional,
           score: practical.score,
         },
+        metacognition: {
+          version: 1,
+          windowDays: 30,
+          minSamples: metacognition.minSamples,
+          validSamples: metacognition.validSamples,
+          provisional: metacognition.provisional,
+          avgConfidence: metacognition.avgConfidence,
+          avgAccuracy: metacognition.avgAccuracy,
+          avgAbsError: metacognition.avgAbsError,
+          score: metacognition.score,
+        },
       },
     };
   }
@@ -205,6 +220,72 @@ export class UsersService {
       accuracy: Math.round(accuracy * 1000) / 1000,
       minWeightedTotal,
       provisional,
+    };
+  }
+
+  private computeMetacognitionMetrics(
+    attempts: LearningQuizAttempt[],
+    since: Date,
+  ): {
+    score: number;
+    windowDays: number;
+    minSamples: number;
+    validSamples: number;
+    provisional: boolean;
+    avgConfidence: number;
+    avgAccuracy: number;
+    avgAbsError: number;
+  } {
+    const windowDays = 30;
+    const minSamples = 20;
+    const filtered = attempts.filter((a) => a.createdAt >= since);
+
+    let validSamples = 0;
+    let sumScores = 0;
+    let sumConfidence = 0;
+    let sumAccuracy = 0;
+    let sumAbsError = 0;
+
+    for (const a of filtered) {
+      if (a.confidencePercent === null || a.confidencePercent === undefined) {
+        continue;
+      }
+      const total = a.totalQuestions ?? 0;
+      if (!total || total <= 0) continue;
+
+      const conf = Math.min(100, Math.max(0, a.confidencePercent));
+      const accuracyPct = (a.correctCount / total) * 100;
+      const absError = Math.abs(conf - accuracyPct);
+
+      const attemptScore = Math.round(
+        Math.min(100, Math.max(0, 100 - absError)),
+      );
+
+      validSamples++;
+      sumScores += attemptScore;
+      sumConfidence += conf;
+      sumAccuracy += accuracyPct;
+      sumAbsError += absError;
+    }
+
+    const provisional = validSamples < minSamples;
+    const avgScore = validSamples ? sumScores / validSamples : 0;
+
+    return {
+      score: provisional ? 0 : Math.round(avgScore),
+      windowDays,
+      minSamples,
+      validSamples,
+      provisional,
+      avgConfidence: validSamples
+        ? Math.round((sumConfidence / validSamples) * 10) / 10
+        : 0,
+      avgAccuracy: validSamples
+        ? Math.round((sumAccuracy / validSamples) * 10) / 10
+        : 0,
+      avgAbsError: validSamples
+        ? Math.round((sumAbsError / validSamples) * 10) / 10
+        : 0,
     };
   }
 

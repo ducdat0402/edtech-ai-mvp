@@ -166,10 +166,21 @@ class ApiService {
     return Map<String, dynamic>.from(response.data);
   }
 
-  Future<Map<String, dynamic>> submitEndQuiz(String nodeId, List<int> answers) async {
+  Future<Map<String, dynamic>> submitEndQuiz(
+    String nodeId,
+    List<int> answers, {
+    List<int>? responseTimesMs,
+    int? confidencePercent,
+  }) async {
+    final body = <String, dynamic>{
+      'answers': answers,
+      if (responseTimesMs != null) 'responseTimesMs': responseTimesMs,
+      if (confidencePercent != null) 'confidencePercent': confidencePercent,
+    };
+
     final response = await _apiClient.post(
       ApiConstants.submitEndQuiz(nodeId),
-      data: {'answers': answers},
+      data: body,
     );
     return Map<String, dynamic>.from(response.data);
   }
@@ -441,10 +452,20 @@ class ApiService {
     String nodeId,
     String lessonType,
     List<int> answers,
+    {
+    List<int>? responseTimesMs,
+    int? confidencePercent,
+  }
   ) async {
+    final body = <String, dynamic>{
+      'answers': answers,
+      if (responseTimesMs != null) 'responseTimesMs': responseTimesMs,
+      if (confidencePercent != null)
+        'confidencePercent': confidencePercent,
+    };
     final response = await _apiClient.post(
       ApiConstants.submitEndQuizForType(nodeId, lessonType),
-      data: {'answers': answers},
+      data: body,
     );
     return Map<String, dynamic>.from(response.data);
   }

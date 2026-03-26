@@ -22,6 +22,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
   String? _logicalTooltip;
   String? _processingTooltip;
   String? _practicalTooltip;
+  String? _metacognitionTooltip;
 
   static const List<_CompetencyItem> _learningTemplate = [
     _CompetencyItem(
@@ -147,6 +148,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
       _logicalTooltip = null;
       _processingTooltip = null;
       _practicalTooltip = null;
+      _metacognitionTooltip = null;
     });
 
     try {
@@ -156,19 +158,27 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
       final learningValues = _extractMetricValues(data['learningMetrics']);
       final humanValues = _extractMetricValues(data['humanMetrics']);
       _memoryTooltip = _buildMemoryTooltip(
-        formula: data['formulaInfo'] is Map ? data['formulaInfo']['memory'] : null,
+        formula:
+            data['formulaInfo'] is Map ? data['formulaInfo']['memory'] : null,
       );
       _logicalTooltip = _buildLogicalTooltip(
-        formula:
-            data['formulaInfo'] is Map ? data['formulaInfo']['logicalThinking'] : null,
+        formula: data['formulaInfo'] is Map
+            ? data['formulaInfo']['logicalThinking']
+            : null,
       );
       _processingTooltip = _buildProcessingTooltip(
-        formula:
-            data['formulaInfo'] is Map ? data['formulaInfo']['processingSpeed'] : null,
+        formula: data['formulaInfo'] is Map
+            ? data['formulaInfo']['processingSpeed']
+            : null,
       );
       _practicalTooltip = _buildPracticalTooltip(
         formula: data['formulaInfo'] is Map
             ? data['formulaInfo']['practicalApplication']
+            : null,
+      );
+      _metacognitionTooltip = _buildMetacognitionTooltip(
+        formula: data['formulaInfo'] is Map
+            ? data['formulaInfo']['metacognition']
             : null,
       );
 
@@ -184,6 +194,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
           logicalTooltip: _logicalTooltip,
           processingTooltip: _processingTooltip,
           practicalTooltip: _practicalTooltip,
+          metacognitionTooltip: _metacognitionTooltip,
         );
         _human = _buildSection(
           title: 'Năng lực con người',
@@ -211,7 +222,9 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
       final key = e['key']?.toString();
       final valueRaw = e['value'];
       if (key == null || key.isEmpty) continue;
-      final value = valueRaw is num ? valueRaw.toDouble() : double.tryParse('$valueRaw') ?? 0;
+      final value = valueRaw is num
+          ? valueRaw.toDouble()
+          : double.tryParse('$valueRaw') ?? 0;
       out[key] = value.clamp(0, 100).toDouble();
     }
     return out;
@@ -227,6 +240,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
     String? logicalTooltip,
     String? processingTooltip,
     String? practicalTooltip,
+    String? metacognitionTooltip,
   }) {
     final items = template
         .map((t) => _CompetencyItem(
@@ -245,6 +259,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
       logicalTooltip: logicalTooltip,
       processingTooltip: processingTooltip,
       practicalTooltip: practicalTooltip,
+      metacognitionTooltip: metacognitionTooltip,
     );
   }
 
@@ -345,6 +360,30 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
     return lines.join('\n');
   }
 
+  String? _buildMetacognitionTooltip({dynamic formula}) {
+    if (formula is! Map) return null;
+
+    final validSamples =
+        (formula['validSamples'] ?? 0) as num;
+    final minSamples =
+        (formula['minSamples'] ?? 20) as num;
+    final provisional = (formula['provisional'] ?? false) as bool;
+
+    final lines = <String>[
+      'Cách tăng điểm Siêu nhận thức:',
+      '• Ước lượng tự tin sát với xác suất đúng của bạn (đừng quá cao/đừng quá thấp).',
+      '• Làm xong bài, xem kết quả để điều chỉnh cách đánh giá “mình biết đến đâu”.',
+      '• Khi gặp câu tương tự lần sau, áp dụng đúng mức tự tin bạn vừa calibrate.',
+      '• Tránh đoán bừa: đoán chỉ nên đi kèm tự tin thấp.',
+    ];
+
+    if (provisional || validSamples < minSamples) {
+      lines.add('• Cần thêm dữ liệu quiz có confidence để điểm ổn định.');
+    }
+
+    return lines.join('\n');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -437,6 +476,7 @@ class _CompetencySectionData {
   final String? logicalTooltip;
   final String? processingTooltip;
   final String? practicalTooltip;
+  final String? metacognitionTooltip;
   const _CompetencySectionData({
     required this.title,
     required this.subtitle,
@@ -446,10 +486,12 @@ class _CompetencySectionData {
     this.logicalTooltip,
     this.processingTooltip,
     this.practicalTooltip,
+    this.metacognitionTooltip,
   });
 
-  double get average =>
-      items.isEmpty ? 0 : items.map((e) => e.value).reduce((a, b) => a + b) / items.length;
+  double get average => items.isEmpty
+      ? 0
+      : items.map((e) => e.value).reduce((a, b) => a + b) / items.length;
 }
 
 class _CompetencyItem {
@@ -508,6 +550,7 @@ class _CompetencySection extends StatelessWidget {
                             logicalTooltip: section.logicalTooltip,
                             processingTooltip: section.processingTooltip,
                             practicalTooltip: section.practicalTooltip,
+                            metacognitionTooltip: section.metacognitionTooltip,
                           ),
                         ],
                       )
@@ -530,7 +573,9 @@ class _CompetencySection extends StatelessWidget {
                                   memoryTooltip: section.memoryTooltip,
                                   logicalTooltip: section.logicalTooltip,
                                   processingTooltip: section.processingTooltip,
-                                  practicalTooltip: section.practicalTooltip)),
+                                  practicalTooltip: section.practicalTooltip,
+                                  metacognitionTooltip:
+                                      section.metacognitionTooltip)),
                         ],
                       ),
               ],
@@ -593,6 +638,7 @@ class _MetricList extends StatelessWidget {
   final String? logicalTooltip;
   final String? processingTooltip;
   final String? practicalTooltip;
+  final String? metacognitionTooltip;
   const _MetricList({
     required this.color,
     required this.items,
@@ -600,20 +646,21 @@ class _MetricList extends StatelessWidget {
     this.logicalTooltip,
     this.processingTooltip,
     this.practicalTooltip,
+    this.metacognitionTooltip,
   });
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: items
-          .map((e) =>
-              _MetricRow(
+          .map((e) => _MetricRow(
                 color: color,
                 item: e,
                 memoryTooltip: memoryTooltip,
                 logicalTooltip: logicalTooltip,
                 processingTooltip: processingTooltip,
                 practicalTooltip: practicalTooltip,
+                metacognitionTooltip: metacognitionTooltip,
               ))
           .toList(),
     );
@@ -627,6 +674,7 @@ class _MetricRow extends StatelessWidget {
   final String? logicalTooltip;
   final String? processingTooltip;
   final String? practicalTooltip;
+  final String? metacognitionTooltip;
   const _MetricRow({
     required this.color,
     required this.item,
@@ -634,6 +682,7 @@ class _MetricRow extends StatelessWidget {
     this.logicalTooltip,
     this.processingTooltip,
     this.practicalTooltip,
+    this.metacognitionTooltip,
   });
 
   @override
@@ -646,13 +695,17 @@ class _MetricRow extends StatelessWidget {
         item.key == 'processing_speed' && processingTooltip != null;
     final showPracticalTooltip =
         item.key == 'practical_application' && practicalTooltip != null;
+    final showMetacognitionTooltip =
+        item.key == 'metacognition' && metacognitionTooltip != null;
     final tooltipMessage = showMemoryTooltip
         ? memoryTooltip!
         : (showLogicalTooltip
             ? logicalTooltip!
             : (showProcessingTooltip
                 ? processingTooltip!
-                : (showPracticalTooltip ? practicalTooltip! : null)));
+                : (showPracticalTooltip
+                    ? practicalTooltip!
+                    : (showMetacognitionTooltip ? metacognitionTooltip! : null))));
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -690,8 +743,8 @@ class _MetricRow extends StatelessWidget {
                       Tooltip(
                         message: tooltipMessage,
                         triggerMode: TooltipTriggerMode.tap,
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 8),
+                        child: const Padding(
+                          padding: EdgeInsets.only(left: 8),
                           child: Icon(
                             Icons.info_outline_rounded,
                             size: 16,
@@ -727,7 +780,8 @@ class _MetricRow extends StatelessWidget {
                     activeTrackColor: color.withValues(alpha: 0.9),
                     thumbColor: color,
                     overlayShape: SliderComponentShape.noOverlay,
-                    thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                    thumbShape:
+                        const RoundSliderThumbShape(enabledThumbRadius: 6),
                   ),
                   child: Slider(
                     value: v / 100.0,
@@ -757,9 +811,11 @@ class _RadarChart extends StatelessWidget {
       RadarChartData(
         radarBackgroundColor: Colors.transparent,
         borderData: FlBorderData(show: false),
-        radarBorderData: BorderSide(color: AppColors.borderPrimary),
-        tickBorderData: BorderSide(color: AppColors.borderPrimary.withValues(alpha: 0.7)),
-        gridBorderData: BorderSide(color: AppColors.borderPrimary.withValues(alpha: 0.4)),
+        radarBorderData: const BorderSide(color: AppColors.borderPrimary),
+        tickBorderData:
+            BorderSide(color: AppColors.borderPrimary.withValues(alpha: 0.7)),
+        gridBorderData:
+            BorderSide(color: AppColors.borderPrimary.withValues(alpha: 0.4)),
         ticksTextStyle: AppTextStyles.caption.copyWith(
           color: AppColors.textTertiary,
           fontSize: 10,
@@ -787,4 +843,3 @@ class _RadarChart extends StatelessWidget {
     );
   }
 }
-

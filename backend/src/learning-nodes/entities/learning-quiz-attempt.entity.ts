@@ -39,6 +39,9 @@ export class LearningQuizAttempt {
   @Column({ type: 'int' })
   correctCount: number;
 
+  @Column({ type: 'int', nullable: true })
+  confidencePercent: number | null;
+
   @Column({ type: 'jsonb', default: [] })
   questionResults: Array<{
     questionIndex: number;

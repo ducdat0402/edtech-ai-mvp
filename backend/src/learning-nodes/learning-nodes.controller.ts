@@ -192,12 +192,18 @@ export class LearningNodesController {
   async submitEndQuiz(
     @Request() req,
     @Param('id') id: string,
-    @Body() body: { answers: number[]; responseTimesMs?: number[] },
+    @Body()
+    body: {
+      answers: number[];
+      responseTimesMs?: number[];
+      confidencePercent?: number;
+    },
   ) {
     return this.lessonContentService.submitEndQuiz(
       id,
       body.answers,
       req.user.id,
+      body.confidencePercent,
       body.responseTimesMs,
     );
   }
@@ -211,13 +217,19 @@ export class LearningNodesController {
     @Request() req,
     @Param('id') id: string,
     @Param('lessonType') lessonType: string,
-    @Body() body: { answers: number[]; responseTimesMs?: number[] },
+    @Body()
+    body: {
+      answers: number[];
+      responseTimesMs?: number[];
+      confidencePercent?: number;
+    },
   ) {
     return this.lessonContentService.submitEndQuizForType(
       id,
       lessonType,
       body.answers,
       req.user.id,
+      body.confidencePercent,
       body.responseTimesMs,
     );
   }

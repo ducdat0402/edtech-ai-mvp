@@ -57,6 +57,7 @@ mobile/ios/Flutter/Generated.xcconfig
 mobile/ios/Flutter/ephemeral/
 mobile/android/.gradle/
 mobile/android/app/build/
+mobile/build/
 mobile/android/local.properties
 mobile/android/.idea/
 mobile/android/.vscode/

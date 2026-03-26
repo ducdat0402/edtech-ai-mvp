@@ -186,6 +186,10 @@ class _EndQuizScreenState extends State<EndQuizScreen>
       return;
     }
 
+    final int? confidencePercent = await _askConfidencePercent();
+    if (!mounted) return;
+    if (confidencePercent == null) return;
+
     setState(() => _isSubmitting = true);
 
     try {
@@ -204,6 +208,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
             widget.nodeId,
             widget.lessonType!,
             answers,
+            confidencePercent: confidencePercent,
           );
         } catch (_) {
           // Fallback to local evaluation if API fails
@@ -212,18 +217,17 @@ class _EndQuizScreenState extends State<EndQuizScreen>
       } else {
         // Fallback: try legacy API, then local evaluation
         try {
-          result = await apiService.submitEndQuiz(widget.nodeId, answers);
+          result = await apiService.submitEndQuiz(
+            widget.nodeId,
+            answers,
+            confidencePercent: confidencePercent,
+          );
         } catch (_) {
           result = _evaluateLocally();
         }
       }
 
       if (!mounted) return;
-
-      final totalQs = _questions.length;
-      final correct = _readCorrectCountFromQuizResult(result, totalQs);
-      final scorePct = (result['score'] as num?)?.toDouble() ??
-          (totalQs > 0 ? (correct * 100.0 / totalQs) : 0.0);
 
       setState(() {
         _quizResult = result;
@@ -266,18 +270,54 @@ class _EndQuizScreenState extends State<EndQuizScreen>
     }
   }
 
-  int _readCorrectCountFromQuizResult(Map<String, dynamic> result, int totalQs) {
-    final c = result['correctCount'];
-    if (c is num) return c.toInt();
-    final resultsList = result['results'] as List<dynamic>?;
-    if (resultsList != null) {
-      var n = 0;
-      for (final item in resultsList) {
-        if (item is Map && item['isCorrect'] == true) n++;
-      }
-      return n;
-    }
-    return 0;
+  Future<int?> _askConfidencePercent() async {
+    int value = 70;
+    return showDialog<int?>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Tự đánh giá mức tự tin'),
+          content: StatefulBuilder(
+            builder: (context, setStateDialog) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Slider(
+                    value: value.toDouble(),
+                    min: 0,
+                    max: 100,
+                    divisions: 100,
+                    label: '$value%',
+                    onChanged: (v) {
+                      setStateDialog(() => value = v.round());
+                    },
+                  ),
+                  Text(
+                    '$value%',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 6),
+                  const Text(
+                    'Bạn ước lượng đáp án của bạn đúng với xác suất bao nhiêu?',
+                  ),
+                ],
+              );
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(null),
+              child: const Text('Bỏ qua'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(value),
+              child: const Text('Xác nhận'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   /// Đóng màn test cuối bài + màn dạng bài hiện tại → quay lại màn 4 dạng bài (hoặc màn trước đó).
