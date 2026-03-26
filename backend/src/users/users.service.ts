@@ -104,6 +104,10 @@ export class UsersService {
       completedLast30.map((x) => x.completedAt).filter((x): x is Date => !!x),
       streak,
     );
+    const knowledge = this.computeKnowledgeAbsorptionMetrics(
+      quizAttempts,
+      logicalSince,
+    );
 
     return {
       learningMetrics: [
@@ -113,7 +117,7 @@ export class UsersService {
         { key: 'practical_application', value: practical.score },
         { key: 'metacognition', value: metacognition.score },
         { key: 'learning_persistence', value: persistence.score },
-        { key: 'knowledge_absorption', value: 0 },
+        { key: 'knowledge_absorption', value: knowledge.score },
       ],
       humanMetrics: [
         { key: 'systems_thinking', value: 0 },
@@ -198,7 +202,73 @@ export class UsersService {
           consistencyNorm: persistence.consistencyNorm,
           score: persistence.score,
         },
+        knowledgeAbsorption: {
+          version: 1,
+          windowDays: 30,
+          groupCount: knowledge.groupCount,
+          gainGroupCount: knowledge.gainGroupCount,
+          avgGain: knowledge.avgGain,
+          mastery: knowledge.mastery,
+          provisional: knowledge.provisional,
+          score: knowledge.score,
+        },
       },
+    };
+  }
+
+  private computeKnowledgeAbsorptionMetrics(
+    attempts: LearningQuizAttempt[],
+    since: Date,
+  ): {
+    score: number;
+    groupCount: number;
+    gainGroupCount: number;
+    avgGain: number;
+    mastery: number;
+    provisional: boolean;
+  } {
+    const filtered = attempts.filter((a) => a.createdAt >= since);
+    const groups = new Map<string, LearningQuizAttempt[]>();
+    for (const a of filtered) {
+      const key = `${a.nodeId}\u0000${a.lessonType ?? ''}`;
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key)!.push(a);
+    }
+
+    let sumMastery = 0;
+    let masteryCount = 0;
+    let sumGain = 0;
+    let gainCount = 0;
+
+    for (const arr of groups.values()) {
+      const sorted = [...arr].sort(
+        (x, y) => x.createdAt.getTime() - y.createdAt.getTime(),
+      );
+      if (sorted.length === 0) continue;
+      const first = sorted[0].score;
+      const best = sorted.reduce((m, x) => Math.max(m, x.score), 0);
+      sumMastery += best;
+      masteryCount++;
+      if (sorted.length >= 2) {
+        sumGain += Math.max(0, best - first);
+        gainCount++;
+      }
+    }
+
+    const mastery = masteryCount ? sumMastery / masteryCount : 0;
+    const avgGain = gainCount ? sumGain / gainCount : 0;
+    const provisional = gainCount < 2;
+    const score = provisional
+      ? Math.round(mastery * 0.7)
+      : Math.round(avgGain * 0.6 + mastery * 0.4);
+
+    return {
+      score: Math.max(0, Math.min(100, score)),
+      groupCount: masteryCount,
+      gainGroupCount: gainCount,
+      avgGain: Math.round(avgGain * 10) / 10,
+      mastery: Math.round(mastery * 10) / 10,
+      provisional,
     };
   }
 
