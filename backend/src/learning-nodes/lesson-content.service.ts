@@ -40,6 +40,7 @@ export class LessonContentService {
       isCorrect: boolean;
       competencyMix: Record<string, number>;
       logicalWeight: number;
+      responseTimeMs: number | null;
     }>;
   }): Promise<void> {
     await this.quizAttemptRepository.save(
@@ -75,6 +76,13 @@ export class LessonContentService {
       normalized[k] = Math.round((v / sum) * 1000) / 1000;
     }
     return normalized;
+  }
+
+  private normalizeResponseTimeMs(value: unknown): number | null {
+    if (typeof value !== 'number' || !Number.isFinite(value)) return null;
+    const rounded = Math.round(value);
+    if (rounded <= 0) return null;
+    return Math.min(120000, rounded);
   }
 
   private async contributorPayload(
@@ -261,6 +269,7 @@ CHỈ TRẢ VỀ JSON.`;
     nodeId: string,
     answers: number[],
     userId: string,
+    responseTimesMs?: number[],
   ): Promise<EndQuizResultDto> {
     const node = await this.nodeRepository.findOne({ where: { id: nodeId } });
     if (!node) throw new NotFoundException('Learning node not found');
@@ -273,6 +282,11 @@ CHỈ TRẢ VỀ JSON.`;
     if (answers.length !== questions.length) {
       throw new BadRequestException(
         `Expected ${questions.length} answers, got ${answers.length}`,
+      );
+    }
+    if (responseTimesMs && responseTimesMs.length !== questions.length) {
+      throw new BadRequestException(
+        `Expected ${questions.length} response times, got ${responseTimesMs.length}`,
       );
     }
 
@@ -300,6 +314,7 @@ CHỈ TRẢ VỀ JSON.`;
         isCorrect: answers[index] === q.correctAnswer,
         competencyMix,
         logicalWeight: competencyMix.logical_thinking ?? 0,
+        responseTimeMs: this.normalizeResponseTimeMs(responseTimesMs?.[index]),
       };
     });
 
@@ -335,6 +350,7 @@ CHỈ TRẢ VỀ JSON.`;
     lessonType: string,
     answers: number[],
     userId: string,
+    responseTimesMs?: number[],
   ): Promise<EndQuizResultDto> {
     // Try to get from lesson_type_contents table first
     const typeContent = await this.lessonTypeContentsService.getByNodeIdAndType(nodeId, lessonType);
@@ -352,6 +368,11 @@ CHỈ TRẢ VỀ JSON.`;
     if (answers.length !== questions.length) {
       throw new BadRequestException(
         `Expected ${questions.length} answers, got ${answers.length}`,
+      );
+    }
+    if (responseTimesMs && responseTimesMs.length !== questions.length) {
+      throw new BadRequestException(
+        `Expected ${questions.length} response times, got ${responseTimesMs.length}`,
       );
     }
 
@@ -379,6 +400,7 @@ CHỈ TRẢ VỀ JSON.`;
         isCorrect: answers[index] === q.correctAnswer,
         competencyMix,
         logicalWeight: competencyMix.logical_thinking ?? 0,
+        responseTimeMs: this.normalizeResponseTimeMs(responseTimesMs?.[index]),
       };
     });
 

@@ -76,12 +76,13 @@ export class UsersService {
       ? Math.round(behavioralScore * 0.15 + recall.recallScore * 0.85)
       : behavioralScore;
     const logical = this.computeLogicalThinkingMetrics(quizAttempts, logicalSince);
+    const processing = this.computeProcessingSpeedMetrics(quizAttempts, logicalSince);
 
     return {
       learningMetrics: [
         { key: 'memory', value: memoryScore },
         { key: 'logical_thinking', value: logical.score },
-        { key: 'processing_speed', value: 0 },
+        { key: 'processing_speed', value: processing.score },
         { key: 'practical_application', value: 0 },
         { key: 'metacognition', value: 0 },
         { key: 'learning_persistence', value: 0 },
@@ -123,8 +124,94 @@ export class UsersService {
           weightedCorrect: logical.weightedCorrect,
           score: logical.score,
         },
+        processingSpeed: {
+          version: 1,
+          windowDays: 30,
+          fastSec: processing.fastSec,
+          slowSec: processing.slowSec,
+          minSamples: processing.minSamples,
+          validSamples: processing.validSamples,
+          correctCount: processing.correctCount,
+          accuracy: processing.accuracy,
+          medianTimeSec: processing.medianTimeSec,
+          timeNorm: processing.timeNorm,
+          provisional: processing.provisional,
+          score: processing.score,
+        },
       },
     };
+  }
+
+  private computeProcessingSpeedMetrics(
+    attempts: LearningQuizAttempt[],
+    since: Date,
+  ): {
+    score: number;
+    windowDays: number;
+    fastSec: number;
+    slowSec: number;
+    minSamples: number;
+    validSamples: number;
+    correctCount: number;
+    accuracy: number;
+    medianTimeSec: number;
+    timeNorm: number;
+    provisional: boolean;
+  } {
+    const fastSec = 6;
+    const slowSec = 20;
+    const minSamples = 20;
+    const minValidMs = 400;
+    const filtered = attempts.filter((a) => a.createdAt >= since);
+
+    const timesMs: number[] = [];
+    let correctCount = 0;
+    for (const a of filtered) {
+      const rows = Array.isArray(a.questionResults) ? a.questionResults : [];
+      for (const row of rows) {
+        const raw = row.responseTimeMs;
+        if (typeof raw !== 'number' || !Number.isFinite(raw)) continue;
+        const ms = Math.min(120000, Math.max(0, Math.round(raw)));
+        if (ms < minValidMs) continue;
+        timesMs.push(ms);
+        if (row.isCorrect) correctCount++;
+      }
+    }
+
+    const validSamples = timesMs.length;
+    const accuracy = validSamples > 0 ? correctCount / validSamples : 0;
+    const medianTimeSec =
+      validSamples > 0 ? this.median(timesMs) / 1000 : 0;
+    const rawTimeNorm = (slowSec - medianTimeSec) / (slowSec - fastSec);
+    const timeNorm = Math.min(1, Math.max(0, rawTimeNorm));
+    const provisional = validSamples < minSamples;
+    const score = provisional
+      ? 0
+      : Math.round((accuracy * 0.65 + timeNorm * 0.35) * 100);
+
+    return {
+      score,
+      windowDays: 30,
+      fastSec,
+      slowSec,
+      minSamples,
+      validSamples,
+      correctCount,
+      accuracy: Math.round(accuracy * 1000) / 1000,
+      medianTimeSec: Math.round(medianTimeSec * 100) / 100,
+      timeNorm: Math.round(timeNorm * 1000) / 1000,
+      provisional,
+    };
+  }
+
+  private median(values: number[]): number {
+    if (values.length === 0) return 0;
+    const sorted = [...values].sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    if (sorted.length % 2 === 0) {
+      return (sorted[mid - 1] + sorted[mid]) / 2;
+    }
+    return sorted[mid];
   }
 
   private computeLogicalThinkingMetrics(

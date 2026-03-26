@@ -45,6 +45,7 @@ export class LearningQuizAttempt {
     isCorrect: boolean;
     competencyMix: Record<string, number>;
     logicalWeight: number;
+    responseTimeMs: number | null;
   }>;
 
   @CreateDateColumn()

@@ -20,6 +20,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
   late _CompetencySectionData _human;
   String? _memoryTooltip;
   String? _logicalTooltip;
+  String? _processingTooltip;
 
   static const List<_CompetencyItem> _learningTemplate = [
     _CompetencyItem(
@@ -143,6 +144,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
       _error = null;
       _memoryTooltip = null;
       _logicalTooltip = null;
+      _processingTooltip = null;
     });
 
     try {
@@ -158,6 +160,10 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
         formula:
             data['formulaInfo'] is Map ? data['formulaInfo']['logicalThinking'] : null,
       );
+      _processingTooltip = _buildProcessingTooltip(
+        formula:
+            data['formulaInfo'] is Map ? data['formulaInfo']['processingSpeed'] : null,
+      );
 
       if (!mounted) return;
       setState(() {
@@ -169,6 +175,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
           values: learningValues,
           memoryTooltip: _memoryTooltip,
           logicalTooltip: _logicalTooltip,
+          processingTooltip: _processingTooltip,
         );
         _human = _buildSection(
           title: 'Năng lực con người',
@@ -210,6 +217,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
     required Map<String, double> values,
     String? memoryTooltip,
     String? logicalTooltip,
+    String? processingTooltip,
   }) {
     final items = template
         .map((t) => _CompetencyItem(
@@ -226,6 +234,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
       items: items,
       memoryTooltip: memoryTooltip,
       logicalTooltip: logicalTooltip,
+      processingTooltip: processingTooltip,
     );
   }
 
@@ -278,6 +287,26 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
     if (attemptCount == 0) {
       lines.add(
         '• Bạn chưa có dữ liệu quiz gần đây — làm end-quiz để bắt đầu có điểm logic.',
+      );
+    }
+    return lines.join('\n');
+  }
+
+  String? _buildProcessingTooltip({dynamic formula}) {
+    final validSamples =
+        formula is Map ? ((formula['validSamples'] ?? 0) as num).toInt() : 0;
+    final minSamples =
+        formula is Map ? ((formula['minSamples'] ?? 20) as num).toInt() : 20;
+    final lines = <String>[
+      'Cách tăng điểm Tốc độ xử lý:',
+      '• Ưu tiên trả lời đúng trước, rồi mới tối ưu tốc độ.',
+      '• Luyện đều mỗi ngày để rút ngắn thời gian xử lý câu hỏi quen dạng.',
+      '• Đọc đề theo từng ý chính, loại trừ nhanh đáp án sai rõ ràng.',
+      '• Sau khi làm xong, xem lại câu sai để lần sau ra quyết định nhanh hơn.',
+    ];
+    if (validSamples < minSamples) {
+      lines.add(
+        '• Cần thêm dữ liệu trả lời (ít nhất $minSamples câu hợp lệ) để điểm ổn định.',
       );
     }
     return lines.join('\n');
@@ -373,6 +402,7 @@ class _CompetencySectionData {
   final List<_CompetencyItem> items;
   final String? memoryTooltip;
   final String? logicalTooltip;
+  final String? processingTooltip;
   const _CompetencySectionData({
     required this.title,
     required this.subtitle,
@@ -380,6 +410,7 @@ class _CompetencySectionData {
     required this.items,
     this.memoryTooltip,
     this.logicalTooltip,
+    this.processingTooltip,
   });
 
   double get average =>
@@ -440,6 +471,7 @@ class _CompetencySection extends StatelessWidget {
                             items: section.items,
                             memoryTooltip: section.memoryTooltip,
                             logicalTooltip: section.logicalTooltip,
+                            processingTooltip: section.processingTooltip,
                           ),
                         ],
                       )
@@ -460,7 +492,8 @@ class _CompetencySection extends StatelessWidget {
                                   color: section.color,
                                   items: section.items,
                                   memoryTooltip: section.memoryTooltip,
-                                  logicalTooltip: section.logicalTooltip)),
+                                  logicalTooltip: section.logicalTooltip,
+                                  processingTooltip: section.processingTooltip)),
                         ],
                       ),
               ],
@@ -521,11 +554,13 @@ class _MetricList extends StatelessWidget {
   final List<_CompetencyItem> items;
   final String? memoryTooltip;
   final String? logicalTooltip;
+  final String? processingTooltip;
   const _MetricList({
     required this.color,
     required this.items,
     this.memoryTooltip,
     this.logicalTooltip,
+    this.processingTooltip,
   });
 
   @override
@@ -538,6 +573,7 @@ class _MetricList extends StatelessWidget {
                 item: e,
                 memoryTooltip: memoryTooltip,
                 logicalTooltip: logicalTooltip,
+                processingTooltip: processingTooltip,
               ))
           .toList(),
     );
@@ -549,11 +585,13 @@ class _MetricRow extends StatelessWidget {
   final _CompetencyItem item;
   final String? memoryTooltip;
   final String? logicalTooltip;
+  final String? processingTooltip;
   const _MetricRow({
     required this.color,
     required this.item,
     this.memoryTooltip,
     this.logicalTooltip,
+    this.processingTooltip,
   });
 
   @override
@@ -562,8 +600,13 @@ class _MetricRow extends StatelessWidget {
     final showMemoryTooltip = item.key == 'memory' && memoryTooltip != null;
     final showLogicalTooltip =
         item.key == 'logical_thinking' && logicalTooltip != null;
-    final tooltipMessage =
-        showMemoryTooltip ? memoryTooltip! : (showLogicalTooltip ? logicalTooltip! : null);
+    final showProcessingTooltip =
+        item.key == 'processing_speed' && processingTooltip != null;
+    final tooltipMessage = showMemoryTooltip
+        ? memoryTooltip!
+        : (showLogicalTooltip
+            ? logicalTooltip!
+            : (showProcessingTooltip ? processingTooltip! : null));
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),

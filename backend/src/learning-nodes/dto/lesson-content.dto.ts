@@ -85,6 +85,7 @@ export interface UpdateLessonContentDto {
 
 export interface SubmitEndQuizDto {
   answers: number[]; // array of selected option indices
+  responseTimesMs?: number[]; // per-question response time from client
 }
 
 export interface EndQuizResultDto {
