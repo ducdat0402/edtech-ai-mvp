@@ -5,6 +5,7 @@ import { LessonContentService } from './lesson-content.service';
 import { LearningNodesController } from './learning-nodes.controller';
 import { LearningNode } from './entities/learning-node.entity';
 import { LearningQuizAttempt } from './entities/learning-quiz-attempt.entity';
+import { LearningCommunicationAttempt } from './entities/learning-communication-attempt.entity';
 import { AiModule } from '../ai/ai.module';
 import { DomainsModule } from '../domains/domains.module';
 import { GenerationProgressService } from './generation-progress.service';
@@ -15,7 +16,11 @@ import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([LearningNode, LearningQuizAttempt]),
+    TypeOrmModule.forFeature([
+      LearningNode,
+      LearningQuizAttempt,
+      LearningCommunicationAttempt,
+    ]),
     AiModule,
     forwardRef(() => DomainsModule),
     LessonTypeContentsModule,

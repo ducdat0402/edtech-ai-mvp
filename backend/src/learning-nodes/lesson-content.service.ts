@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { LearningNode } from './entities/learning-node.entity';
 import { LearningQuizAttempt } from './entities/learning-quiz-attempt.entity';
+import { LearningCommunicationAttempt } from './entities/learning-communication-attempt.entity';
 import { AiService } from '../ai/ai.service';
 import {
   LessonType,
@@ -22,6 +23,8 @@ export class LessonContentService {
     private readonly nodeRepository: Repository<LearningNode>,
     @InjectRepository(LearningQuizAttempt)
     private readonly quizAttemptRepository: Repository<LearningQuizAttempt>,
+    @InjectRepository(LearningCommunicationAttempt)
+    private readonly communicationAttemptRepository: Repository<LearningCommunicationAttempt>,
     private readonly aiService: AiService,
     private readonly lessonTypeContentsService: LessonTypeContentsService,
     private readonly usersService: UsersService,
@@ -97,6 +100,124 @@ export class LessonContentService {
       throw new BadRequestException('confidencePercent must be in [0, 100]');
     }
     return rounded;
+  }
+
+  private normalizeCommunicationText(value: unknown): string {
+    if (typeof value !== 'string') {
+      throw new BadRequestException('responseText must be a string');
+    }
+    const text = value.trim().replace(/\s+/g, ' ');
+    if (!text) {
+      throw new BadRequestException('responseText is required');
+    }
+    const words = text.split(' ').filter(Boolean);
+    if (words.length < 40) {
+      throw new BadRequestException('responseText must be at least 40 words');
+    }
+    return text;
+  }
+
+  private async scoreCommunicationText(params: {
+    nodeTitle: string;
+    lessonType: string | null;
+    contentSummary: string;
+    responseText: string;
+  }): Promise<{
+    clarity: number;
+    structure: number;
+    coverage: number;
+    audienceFit: number;
+    conciseness: number;
+    totalScore: number;
+    feedbackShort: string;
+  }> {
+    const prompt = `Bạn là giám khảo chấm năng lực "Giao tiếp & diễn đạt" cho học sinh.
+
+BỐI CẢNH:
+- Bài học: "${params.nodeTitle}"
+- Loại bài: ${params.lessonType ?? 'unknown'}
+- Tóm tắt kiến thức gốc:
+${params.contentSummary}
+
+BÀI GIẢNG LẠI CỦA HỌC SINH (tiếng Việt):
+${params.responseText}
+
+Hãy chấm theo rubric (0-100):
+- clarity: rõ ràng, dễ hiểu
+- structure: bố cục/mạch diễn đạt
+- coverage: độ bao phủ ý chính của bài học
+- audienceFit: phù hợp người mới học
+- conciseness: gọn, không lan man
+
+Tổng điểm:
+totalScore = round(clarity*0.25 + structure*0.2 + coverage*0.3 + audienceFit*0.15 + conciseness*0.1)
+
+Viết feedbackShort (1-2 câu tiếng Việt), chỉ nêu điểm mạnh/yếu chính, không quá 240 ký tự.
+
+TRẢ VỀ JSON DUY NHẤT:
+{
+  "clarity": 0,
+  "structure": 0,
+  "coverage": 0,
+  "audienceFit": 0,
+  "conciseness": 0,
+  "totalScore": 0,
+  "feedbackShort": ""
+}`;
+
+    const fallback = {
+      clarity: 60,
+      structure: 60,
+      coverage: 60,
+      audienceFit: 60,
+      conciseness: 60,
+      totalScore: 60,
+      feedbackShort:
+        'Bài giảng lại có nền tảng tốt. Hãy trình bày ngắn gọn hơn và làm rõ các ý chính để người mới dễ theo dõi.',
+    };
+
+    try {
+      const response = await this.aiService.chat([{ role: 'user', content: prompt }]);
+      const cleaned = response
+        .replace(/```json\n?/g, '')
+        .replace(/```\n?/g, '')
+        .trim();
+      const parsed = JSON.parse(cleaned) as Record<string, unknown>;
+      const readScore = (k: string, def = 60) => {
+        const n = Number(parsed[k]);
+        if (!Number.isFinite(n)) return def;
+        return Math.max(0, Math.min(100, Math.round(n)));
+      };
+      const clarity = readScore('clarity');
+      const structure = readScore('structure');
+      const coverage = readScore('coverage');
+      const audienceFit = readScore('audienceFit');
+      const conciseness = readScore('conciseness');
+      const weighted = Math.round(
+        clarity * 0.25 +
+          structure * 0.2 +
+          coverage * 0.3 +
+          audienceFit * 0.15 +
+          conciseness * 0.1,
+      );
+      const totalScore = readScore('totalScore', weighted);
+      const feedbackRaw =
+        typeof parsed.feedbackShort === 'string' ? parsed.feedbackShort.trim() : '';
+      const feedbackShort = feedbackRaw
+        ? feedbackRaw.slice(0, 240)
+        : fallback.feedbackShort;
+      return {
+        clarity,
+        structure,
+        coverage,
+        audienceFit,
+        conciseness,
+        totalScore,
+        feedbackShort,
+      };
+    } catch {
+      return fallback;
+    }
   }
 
   private async contributorPayload(
@@ -449,6 +570,60 @@ CHỈ TRẢ VỀ JSON.`;
       totalQuestions: questions.length,
       correctCount,
       results,
+    };
+  }
+
+  async submitCommunicationAttempt(params: {
+    nodeId: string;
+    userId: string;
+    responseText: string;
+    lessonType?: string;
+  }): Promise<{
+    totalScore: number;
+    aiScores: {
+      clarity: number;
+      structure: number;
+      coverage: number;
+      audienceFit: number;
+      conciseness: number;
+    };
+    feedbackShort: string;
+  }> {
+    const node = await this.nodeRepository.findOne({ where: { id: params.nodeId } });
+    if (!node) throw new NotFoundException('Learning node not found');
+    const normalizedText = this.normalizeCommunicationText(params.responseText);
+    const contentSummary = this.extractContentSummary(
+      (node.lessonType as LessonType) ?? 'text',
+      node.lessonData ?? {},
+    );
+    const scored = await this.scoreCommunicationText({
+      nodeTitle: node.title,
+      lessonType: params.lessonType ?? node.lessonType ?? null,
+      contentSummary,
+      responseText: normalizedText,
+    });
+    const aiScores = {
+      clarity: scored.clarity,
+      structure: scored.structure,
+      coverage: scored.coverage,
+      audienceFit: scored.audienceFit,
+      conciseness: scored.conciseness,
+    };
+    await this.communicationAttemptRepository.save(
+      this.communicationAttemptRepository.create({
+        userId: params.userId,
+        nodeId: params.nodeId,
+        lessonType: params.lessonType ?? node.lessonType ?? null,
+        responseText: normalizedText,
+        aiScores,
+        feedbackShort: scored.feedbackShort,
+        totalScore: scored.totalScore,
+      }),
+    );
+    return {
+      totalScore: scored.totalScore,
+      aiScores,
+      feedbackShort: scored.feedbackShort,
     };
   }
 

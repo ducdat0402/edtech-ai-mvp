@@ -185,6 +185,21 @@ class ApiService {
     return Map<String, dynamic>.from(response.data);
   }
 
+  Future<Map<String, dynamic>> submitCommunicationAttempt(
+    String nodeId, {
+    required String responseText,
+    String? lessonType,
+  }) async {
+    final response = await _apiClient.post(
+      ApiConstants.submitCommunicationAttempt(nodeId),
+      data: {
+        'responseText': responseText,
+        if (lessonType != null && lessonType.isNotEmpty) 'lessonType': lessonType,
+      },
+    );
+    return Map<String, dynamic>.from(response.data);
+  }
+
   // Uploads
   Future<String> uploadImage(String imagePath) async {
     final response = await _apiClient.postFile(

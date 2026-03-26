@@ -45,6 +45,8 @@ class _EndQuizScreenState extends State<EndQuizScreen>
   bool _showResults = false;
   Map<String, dynamic>? _quizResult;
   Map<String, dynamic>? _rewardData; // Cascade rewards from completeLessonType
+  bool _isSubmittingCommunication = false;
+  Map<String, dynamic>? _communicationResult;
 
   // ═══════════════════════════════════════════════════════════════════
   // ANIMATIONS
@@ -418,12 +420,138 @@ class _EndQuizScreenState extends State<EndQuizScreen>
       _selectedAnswers.clear();
       _showResults = false;
       _quizResult = null;
+      _communicationResult = null;
       _confettiParticles.clear();
     });
     _scoreController.reset();
     _confettiController.reset();
     _questionController.reset();
     _questionController.forward();
+  }
+
+  Future<void> _submitCommunicationReflection() async {
+    final controller = TextEditingController();
+    String? errorText;
+
+    final text = await showDialog<String?>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (dialogContext, setStateDialog) {
+            final words = controller.text
+                .trim()
+                .split(RegExp(r'\s+'))
+                .where((w) => w.isNotEmpty)
+                .length;
+            return AlertDialog(
+              title: const Text('Giảng lại kiến thức'),
+              content: SizedBox(
+                width: 520,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Giảng lại kiến thức cho người khác là một cách học giúp bạn nhớ lâu hơn. '
+                      'Hãy giải thích lại bài học này thật rõ ràng bằng tiếng Việt.',
+                    ),
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: controller,
+                      autofocus: true,
+                      maxLines: 8,
+                      minLines: 6,
+                      onChanged: (_) => setStateDialog(() {
+                        errorText = null;
+                      }),
+                      decoration: InputDecoration(
+                        hintText:
+                            'Viết tối thiểu 40 từ theo gợi ý mẫu bên dưới.',
+                        errorText: errorText,
+                        border: const OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text('Gợi ý mẫu 3 dòng:'),
+                    const Text('• Khái niệm chính là gì?'),
+                    const Text('• Ví dụ thực tế ngắn'),
+                    const Text('• Khi nào áp dụng?'),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Số từ hiện tại: $words (tối thiểu 40)',
+                      style: AppTextStyles.caption
+                          .copyWith(color: AppColors.textTertiary),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(null),
+                  child: const Text('Để sau'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    final raw = controller.text.trim();
+                    final wc = raw
+                        .split(RegExp(r'\s+'))
+                        .where((w) => w.isNotEmpty)
+                        .length;
+                    if (wc < 40) {
+                      setStateDialog(() {
+                        errorText = 'Cần tối thiểu 40 từ để hệ thống chấm.';
+                      });
+                      return;
+                    }
+                    Navigator.of(dialogContext).pop(raw);
+                  },
+                  child: const Text('Gửi bài giảng lại'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (!mounted || text == null || text.isEmpty) return;
+    setState(() => _isSubmittingCommunication = true);
+    try {
+      final apiService = Provider.of<ApiService>(context, listen: false);
+      final result = await apiService.submitCommunicationAttempt(
+        widget.nodeId,
+        responseText: text,
+        lessonType: widget.lessonType,
+      );
+      if (!mounted) return;
+      setState(() {
+        _communicationResult = result;
+        _isSubmittingCommunication = false;
+      });
+      final totalScore = (result['totalScore'] as num?)?.toInt() ?? 0;
+      final feedback = (result['feedbackShort'] as String?) ?? '';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            feedback.isNotEmpty
+                ? 'Điểm giao tiếp: $totalScore. $feedback'
+                : 'Đã lưu bài giảng lại. Điểm giao tiếp: $totalScore.',
+          ),
+          backgroundColor: AppColors.successNeon,
+          duration: const Duration(seconds: 4),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isSubmittingCommunication = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Không gửi được bài giảng lại: $e'),
+          backgroundColor: AppColors.errorNeon,
+        ),
+      );
+    }
   }
 
   void _generateConfettiParticles() {
@@ -1224,6 +1352,44 @@ class _EndQuizScreenState extends State<EndQuizScreen>
         children: [
           // Show reward summary if available
           if (passed && _rewardData != null) _buildRewardSummary(),
+          if (passed) ...[
+            SizedBox(
+              width: double.infinity,
+              child: GamingButtonOutlined(
+                text: _communicationResult == null
+                    ? 'Giảng lại kiến thức (tự nguyện)'
+                    : 'Đã gửi bài giảng lại',
+                onPressed: (_isSubmittingCommunication ||
+                        _communicationResult != null)
+                    ? null
+                    : _submitCommunicationReflection,
+                icon: Icons.record_voice_over_rounded,
+              ),
+            ),
+            const SizedBox(height: 10),
+            if (_communicationResult != null)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.bgTertiary.withValues(alpha: 0.35),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.borderPrimary),
+                ),
+                child: Text(
+                  'Điểm giao tiếp: ${(_communicationResult?['totalScore'] ?? 0)}'
+                  '${(_communicationResult?['feedbackShort'] is String && (_communicationResult?['feedbackShort'] as String).isNotEmpty) ? '\n${_communicationResult?['feedbackShort']}' : ''}',
+                  style: AppTextStyles.bodySmall
+                      .copyWith(color: AppColors.textSecondary),
+                ),
+              ),
+            if (_isSubmittingCommunication)
+              const Padding(
+                padding: EdgeInsets.only(top: 8),
+                child: LinearProgressIndicator(minHeight: 3),
+              ),
+            const SizedBox(height: 10),
+          ],
 
           Row(
             children: [

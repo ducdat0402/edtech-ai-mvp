@@ -235,6 +235,28 @@ export class LearningNodesController {
   }
 
   /**
+   * Submit communication reflection (voluntary)
+   */
+  @Post(':id/communication-attempt')
+  @UseGuards(JwtAuthGuard)
+  async submitCommunicationAttempt(
+    @Request() req,
+    @Param('id') id: string,
+    @Body()
+    body: {
+      responseText: string;
+      lessonType?: string;
+    },
+  ) {
+    return this.lessonContentService.submitCommunicationAttempt({
+      nodeId: id,
+      userId: req.user.id,
+      responseText: body.responseText,
+      lessonType: body.lessonType,
+    });
+  }
+
+  /**
    * Get lesson data for a specific type (from lesson_type_contents)
    */
   @Get(':id/lesson/:lessonType')

@@ -9,6 +9,7 @@ import { User } from './entities/user.entity';
 import { UserCurrency } from '../user-currency/entities/user-currency.entity';
 import { UserProgress } from '../user-progress/entities/user-progress.entity';
 import { LearningQuizAttempt } from '../learning-nodes/entities/learning-quiz-attempt.entity';
+import { LearningCommunicationAttempt } from '../learning-nodes/entities/learning-communication-attempt.entity';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -22,6 +23,8 @@ export class UsersService {
     private progressRepository: Repository<UserProgress>,
     @InjectRepository(LearningQuizAttempt)
     private quizAttemptRepository: Repository<LearningQuizAttempt>,
+    @InjectRepository(LearningCommunicationAttempt)
+    private communicationAttemptRepository: Repository<LearningCommunicationAttempt>,
   ) {}
 
   /**
@@ -39,6 +42,7 @@ export class UsersService {
       completedLast7Days,
       completedLast30,
       quizAttempts,
+      communicationAttempts,
     ] =
       await Promise.all([
         this.currencyRepository.findOne({
@@ -70,6 +74,14 @@ export class UsersService {
           where: {
             userId,
             createdAt: MoreThanOrEqual(memorySince),
+          },
+          order: { createdAt: 'ASC' },
+          take: 5000,
+        }),
+        this.communicationAttemptRepository.find({
+          where: {
+            userId,
+            createdAt: MoreThanOrEqual(logicalSince),
           },
           order: { createdAt: 'ASC' },
           take: 5000,
@@ -113,6 +125,10 @@ export class UsersService {
       logicalSince,
     );
     const creativity = this.computeCreativityMetrics(quizAttempts, logicalSince);
+    const communication = this.computeCommunicationMetrics(
+      communicationAttempts,
+      logicalSince,
+    );
 
     return {
       learningMetrics: [
@@ -127,7 +143,7 @@ export class UsersService {
       humanMetrics: [
         { key: 'systems_thinking', value: systemsThinking.score },
         { key: 'creativity', value: creativity.score },
-        { key: 'communication', value: 0 },
+        { key: 'communication', value: communication.score },
         { key: 'self_leadership', value: 0 },
         { key: 'discipline', value: 0 },
         { key: 'growth_mindset', value: 0 },
@@ -239,7 +255,53 @@ export class UsersService {
           provisional: creativity.provisional,
           score: creativity.score,
         },
+        communication: {
+          version: 1,
+          windowDays: 30,
+          minSamples: communication.minSamples,
+          sampleCount: communication.sampleCount,
+          avgBestScore: communication.avgBestScore,
+          provisional: communication.provisional,
+          score: communication.score,
+        },
       },
+    };
+  }
+
+  private computeCommunicationMetrics(
+    attempts: LearningCommunicationAttempt[],
+    since: Date,
+  ): {
+    score: number;
+    minSamples: number;
+    sampleCount: number;
+    avgBestScore: number;
+    provisional: boolean;
+  } {
+    const minSamples = 3;
+    const filtered = attempts.filter((a) => a.createdAt >= since);
+    const bestByLesson = new Map<string, number>();
+
+    for (const a of filtered) {
+      const key = `${a.nodeId}\u0000${a.lessonType ?? ''}`;
+      const prev = bestByLesson.get(key) ?? 0;
+      if (a.totalScore > prev) bestByLesson.set(key, a.totalScore);
+    }
+
+    const bestScores = [...bestByLesson.values()];
+    const sampleCount = bestScores.length;
+    const avgBestScore = sampleCount
+      ? bestScores.reduce((s, x) => s + x, 0) / sampleCount
+      : 0;
+    const provisional = sampleCount < minSamples;
+    const score = provisional ? 0 : Math.round(avgBestScore);
+
+    return {
+      score: Math.max(0, Math.min(100, score)),
+      minSamples,
+      sampleCount,
+      avgBestScore: Math.round(avgBestScore * 10) / 10,
+      provisional,
     };
   }
 

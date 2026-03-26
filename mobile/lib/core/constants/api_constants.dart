@@ -118,6 +118,8 @@ class ApiConstants {
   static const String generateQuizExplanations = '/nodes/generate-quiz-explanations';
   static String submitEndQuiz(String nodeId) => '/nodes/$nodeId/submit-quiz';
   static String submitEndQuizForType(String nodeId, String lessonType) => '/nodes/$nodeId/submit-quiz/$lessonType';
+  static String submitCommunicationAttempt(String nodeId) =>
+      '/nodes/$nodeId/communication-attempt';
 
   // Lesson Type Contents
   static String lessonTypeContentsByNode(String nodeId) => '/lesson-type-contents/node/$nodeId';
