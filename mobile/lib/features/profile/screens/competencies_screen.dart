@@ -30,6 +30,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
   String? _communicationTooltip;
   String? _selfLeadershipTooltip;
   String? _disciplineTooltip;
+  String? _growthMindsetTooltip;
 
   static const List<_CompetencyItem> _learningTemplate = [
     _CompetencyItem(
@@ -163,6 +164,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
       _communicationTooltip = null;
       _selfLeadershipTooltip = null;
       _disciplineTooltip = null;
+      _growthMindsetTooltip = null;
     });
 
     try {
@@ -226,6 +228,10 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
         formula:
             data['formulaInfo'] is Map ? data['formulaInfo']['discipline'] : null,
       );
+      _growthMindsetTooltip = _buildGrowthMindsetTooltip(
+        formula:
+            data['formulaInfo'] is Map ? data['formulaInfo']['growthMindset'] : null,
+      );
 
       if (!mounted) return;
       setState(() {
@@ -254,6 +260,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
           communicationTooltip: _communicationTooltip,
           selfLeadershipTooltip: _selfLeadershipTooltip,
           disciplineTooltip: _disciplineTooltip,
+          growthMindsetTooltip: _growthMindsetTooltip,
         );
         _loading = false;
       });
@@ -300,6 +307,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
     String? communicationTooltip,
     String? selfLeadershipTooltip,
     String? disciplineTooltip,
+    String? growthMindsetTooltip,
   }) {
     final items = template
         .map((t) => _CompetencyItem(
@@ -326,6 +334,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
       communicationTooltip: communicationTooltip,
       selfLeadershipTooltip: selfLeadershipTooltip,
       disciplineTooltip: disciplineTooltip,
+      growthMindsetTooltip: growthMindsetTooltip,
     );
   }
 
@@ -603,6 +612,24 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
     return lines.join('\n');
   }
 
+  String? _buildGrowthMindsetTooltip({dynamic formula}) {
+    if (formula is! Map) return null;
+    final failGroups = ((formula['failGroups'] ?? 0) as num).toInt();
+    final provisional = (formula['provisional'] ?? false) as bool;
+    final lines = <String>[
+      'Cách tăng điểm Mindset tăng trưởng:',
+      '• Sau khi sai, quay lại làm lại sớm thay vì bỏ qua.',
+      '• Xem kỹ lý do sai và đổi chiến lược trước lần thử tiếp theo.',
+      '• So sánh điểm trước/sau mỗi lần thử để thấy tiến bộ thật.',
+      '• Ưu tiên cải thiện ở các bài từng làm chưa tốt.',
+    ];
+    if (provisional || failGroups < 3) {
+      lines.add('• Cần thêm dữ liệu fail -> retry để điểm ổn định.');
+      lines.add('• Điểm đang tạm thời do chưa đủ dữ liệu đo.');
+    }
+    return lines.join('\n');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -703,6 +730,7 @@ class _CompetencySectionData {
   final String? communicationTooltip;
   final String? selfLeadershipTooltip;
   final String? disciplineTooltip;
+  final String? growthMindsetTooltip;
   const _CompetencySectionData({
     required this.title,
     required this.subtitle,
@@ -720,6 +748,7 @@ class _CompetencySectionData {
     this.communicationTooltip,
     this.selfLeadershipTooltip,
     this.disciplineTooltip,
+    this.growthMindsetTooltip,
   });
 
   double get average => items.isEmpty
@@ -792,6 +821,7 @@ class _CompetencySection extends StatelessWidget {
                             communicationTooltip: section.communicationTooltip,
                             selfLeadershipTooltip: section.selfLeadershipTooltip,
                             disciplineTooltip: section.disciplineTooltip,
+                            growthMindsetTooltip: section.growthMindsetTooltip,
                           ),
                         ],
                       )
@@ -829,7 +859,9 @@ class _CompetencySection extends StatelessWidget {
                                   selfLeadershipTooltip:
                                       section.selfLeadershipTooltip,
                                   disciplineTooltip:
-                                      section.disciplineTooltip)),
+                                      section.disciplineTooltip,
+                                  growthMindsetTooltip:
+                                      section.growthMindsetTooltip)),
                         ],
                       ),
               ],
@@ -900,6 +932,7 @@ class _MetricList extends StatelessWidget {
   final String? communicationTooltip;
   final String? selfLeadershipTooltip;
   final String? disciplineTooltip;
+  final String? growthMindsetTooltip;
   const _MetricList({
     required this.color,
     required this.items,
@@ -915,6 +948,7 @@ class _MetricList extends StatelessWidget {
     this.communicationTooltip,
     this.selfLeadershipTooltip,
     this.disciplineTooltip,
+    this.growthMindsetTooltip,
   });
 
   @override
@@ -936,6 +970,7 @@ class _MetricList extends StatelessWidget {
                 communicationTooltip: communicationTooltip,
                 selfLeadershipTooltip: selfLeadershipTooltip,
                 disciplineTooltip: disciplineTooltip,
+                growthMindsetTooltip: growthMindsetTooltip,
               ))
           .toList(),
     );
@@ -957,6 +992,7 @@ class _MetricRow extends StatelessWidget {
   final String? communicationTooltip;
   final String? selfLeadershipTooltip;
   final String? disciplineTooltip;
+  final String? growthMindsetTooltip;
   const _MetricRow({
     required this.color,
     required this.item,
@@ -972,6 +1008,7 @@ class _MetricRow extends StatelessWidget {
     this.communicationTooltip,
     this.selfLeadershipTooltip,
     this.disciplineTooltip,
+    this.growthMindsetTooltip,
   });
 
   @override
@@ -988,6 +1025,8 @@ class _MetricRow extends StatelessWidget {
         item.key == 'self_leadership' && selfLeadershipTooltip != null;
     final showDisciplineTooltip =
         item.key == 'discipline' && disciplineTooltip != null;
+    final showGrowthMindsetTooltip =
+        item.key == 'growth_mindset' && growthMindsetTooltip != null;
     final showLogicalTooltip =
         item.key == 'logical_thinking' && logicalTooltip != null;
     final showProcessingTooltip =
@@ -1010,6 +1049,8 @@ class _MetricRow extends StatelessWidget {
                     ? selfLeadershipTooltip!
                     : (showDisciplineTooltip
                         ? disciplineTooltip!
+                        : (showGrowthMindsetTooltip
+                            ? growthMindsetTooltip!
             : (showMemoryTooltip
             ? memoryTooltip!
             : (showLogicalTooltip
@@ -1024,7 +1065,7 @@ class _MetricRow extends StatelessWidget {
                                 ? persistenceTooltip!
                                 : (showKnowledgeTooltip
                                     ? knowledgeTooltip!
-                                    : null)))))))))));
+                                    : null))))))))))));
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),

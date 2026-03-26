@@ -163,6 +163,10 @@ export class UsersService {
       completedLast30.map((x) => x.completedAt).filter((x): x is Date => !!x),
       logicalSince,
     );
+    const growthMindset = this.computeGrowthMindsetMetrics(
+      quizAttempts,
+      logicalSince,
+    );
 
     return {
       learningMetrics: [
@@ -180,7 +184,7 @@ export class UsersService {
         { key: 'communication', value: communication.score },
         { key: 'self_leadership', value: selfLeadership.score },
         { key: 'discipline', value: discipline.score },
-        { key: 'growth_mindset', value: 0 },
+        { key: 'growth_mindset', value: growthMindset.score },
         { key: 'critical_thinking', value: 0 },
         { key: 'collaboration', value: 0 },
       ],
@@ -321,7 +325,100 @@ export class UsersService {
           provisional: discipline.provisional,
           score: discipline.score,
         },
+        growthMindset: {
+          version: 1,
+          windowDays: 30,
+          failGroups: growthMindset.failGroups,
+          retryGroups: growthMindset.retryGroups,
+          improvedGroups: growthMindset.improvedGroups,
+          retryAfterFailRate: growthMindset.retryAfterFailRate,
+          improvementAfterRetry: growthMindset.improvementAfterRetry,
+          persistenceOnHard: growthMindset.persistenceOnHard,
+          provisional: growthMindset.provisional,
+          score: growthMindset.score,
+        },
       },
+    };
+  }
+
+  private computeGrowthMindsetMetrics(
+    attempts: LearningQuizAttempt[],
+    since: Date,
+  ): {
+    score: number;
+    failGroups: number;
+    retryGroups: number;
+    improvedGroups: number;
+    retryAfterFailRate: number;
+    improvementAfterRetry: number;
+    persistenceOnHard: number;
+    provisional: boolean;
+  } {
+    const filtered = attempts.filter((a) => a.createdAt >= since);
+    const groups = new Map<string, LearningQuizAttempt[]>();
+    for (const a of filtered) {
+      const key = `${a.nodeId}\u0000${a.lessonType ?? ''}`;
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key)!.push(a);
+    }
+
+    let failGroups = 0;
+    let retryGroups = 0;
+    let improvedGroups = 0;
+    let totalGain = 0;
+    let hardFailGroups = 0;
+    let hardFailPersistent = 0;
+
+    for (const arr of groups.values()) {
+      const sorted = [...arr].sort(
+        (x, y) => x.createdAt.getTime() - y.createdAt.getTime(),
+      );
+      if (!sorted.length) continue;
+      const first = sorted[0];
+      if (first.score >= 70) continue;
+      failGroups++;
+
+      const retries = sorted.slice(1);
+      if (retries.length > 0) {
+        retryGroups++;
+        const bestRetry = retries.reduce((m, x) => Math.max(m, x.score), 0);
+        const gain = Math.max(0, bestRetry - first.score);
+        totalGain += gain;
+        if (bestRetry > first.score) improvedGroups++;
+      }
+
+      if (first.score < 50) {
+        hardFailGroups++;
+        if (retries.length > 0) hardFailPersistent++;
+      }
+    }
+
+    const retryAfterFailRate = failGroups ? (retryGroups / failGroups) * 100 : 0;
+    const improvementAfterRetry = retryGroups
+      ? Math.min(100, (totalGain / retryGroups) * 2)
+      : 0;
+    const persistenceOnHard = hardFailGroups
+      ? (hardFailPersistent / hardFailGroups) * 100
+      : 0;
+
+    const provisional = failGroups < 3;
+    const score = provisional
+      ? 0
+      : Math.round(
+          retryAfterFailRate * 0.4 +
+            improvementAfterRetry * 0.4 +
+            persistenceOnHard * 0.2,
+        );
+
+    return {
+      score: Math.max(0, Math.min(100, score)),
+      failGroups,
+      retryGroups,
+      improvedGroups,
+      retryAfterFailRate: Math.round(retryAfterFailRate * 10) / 10,
+      improvementAfterRetry: Math.round(improvementAfterRetry * 10) / 10,
+      persistenceOnHard: Math.round(persistenceOnHard * 10) / 10,
+      provisional,
     };
   }
 
