@@ -12,6 +12,9 @@ import { LearningQuizAttempt } from '../learning-nodes/entities/learning-quiz-at
 import { LearningCommunicationAttempt } from '../learning-nodes/entities/learning-communication-attempt.entity';
 import { UserWeeklyPlan } from '../self-leadership/entities/user-weekly-plan.entity';
 import { SelfLeadershipCheckin } from '../self-leadership/entities/self-leadership-checkin.entity';
+import { ChatMessage } from '../world-chat/entities/chat-message.entity';
+import { DirectMessage } from '../direct-message/entities/direct-message.entity';
+import { Friendship, FriendshipStatus } from '../friends/entities/friendship.entity';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -31,6 +34,12 @@ export class UsersService {
     private weeklyPlanRepository: Repository<UserWeeklyPlan>,
     @InjectRepository(SelfLeadershipCheckin)
     private selfLeadershipCheckinRepository: Repository<SelfLeadershipCheckin>,
+    @InjectRepository(ChatMessage)
+    private chatMessageRepository: Repository<ChatMessage>,
+    @InjectRepository(DirectMessage)
+    private directMessageRepository: Repository<DirectMessage>,
+    @InjectRepository(Friendship)
+    private friendshipRepository: Repository<Friendship>,
   ) {}
 
   /**
@@ -167,6 +176,10 @@ export class UsersService {
       quizAttempts,
       logicalSince,
     );
+    const collaboration = await this.computeCollaborationMetrics(
+      userId,
+      logicalSince,
+    );
     const criticalThinking = this.computeCriticalThinkingMetrics(
       quizAttempts,
       logicalSince,
@@ -190,7 +203,7 @@ export class UsersService {
         { key: 'discipline', value: discipline.score },
         { key: 'growth_mindset', value: growthMindset.score },
         { key: 'critical_thinking', value: criticalThinking.score },
-        { key: 'collaboration', value: 0 },
+        { key: 'collaboration', value: collaboration.score },
       ],
       formulaInfo: {
         memory: {
@@ -354,7 +367,127 @@ export class UsersService {
           provisional: criticalThinking.provisional,
           score: criticalThinking.score,
         },
+        collaboration: {
+          version: 1,
+          windowDays: 30,
+          publicMessageCount: collaboration.publicMessageCount,
+          dmSentCount: collaboration.dmSentCount,
+          uniquePeerCount: collaboration.uniquePeerCount,
+          reciprocalPeerCount: collaboration.reciprocalPeerCount,
+          acceptedFriendCount: collaboration.acceptedFriendCount,
+          engagementScore: collaboration.engagementScore,
+          diversityScore: collaboration.diversityScore,
+          reciprocityScore: collaboration.reciprocityScore,
+          friendBaseScore: collaboration.friendBaseScore,
+          provisional: collaboration.provisional,
+          score: collaboration.score,
+        },
       },
+    };
+  }
+
+  private async computeCollaborationMetrics(
+    userId: string,
+    since: Date,
+  ): Promise<{
+    score: number;
+    publicMessageCount: number;
+    dmSentCount: number;
+    uniquePeerCount: number;
+    reciprocalPeerCount: number;
+    acceptedFriendCount: number;
+    engagementScore: number;
+    diversityScore: number;
+    reciprocityScore: number;
+    friendBaseScore: number;
+    provisional: boolean;
+  }> {
+    const [publicMessages, directMessages, acceptedFriendCount] = await Promise.all([
+      this.chatMessageRepository.find({
+        where: {
+          userId,
+          createdAt: MoreThanOrEqual(since),
+        },
+        select: ['id', 'createdAt'],
+        take: 5000,
+      }),
+      this.directMessageRepository.find({
+        where: [
+          { senderId: userId, createdAt: MoreThanOrEqual(since) },
+          { receiverId: userId, createdAt: MoreThanOrEqual(since) },
+        ],
+        select: ['senderId', 'receiverId', 'createdAt'],
+        take: 5000,
+      }),
+      this.friendshipRepository.count({
+        where: [
+          { requesterId: userId, status: FriendshipStatus.ACCEPTED },
+          { addresseeId: userId, status: FriendshipStatus.ACCEPTED },
+        ],
+      }),
+    ]);
+
+    const publicMessageCount = publicMessages.length;
+    const dmSent = directMessages.filter((x) => x.senderId === userId);
+    const dmSentCount = dmSent.length;
+
+    const sentPeers = new Set<string>();
+    const recvPeers = new Set<string>();
+    const allPeers = new Set<string>();
+    for (const m of directMessages) {
+      const peerId = m.senderId === userId ? m.receiverId : m.senderId;
+      if (!peerId || peerId === userId) continue;
+      allPeers.add(peerId);
+      if (m.senderId === userId) sentPeers.add(peerId);
+      if (m.receiverId === userId) recvPeers.add(peerId);
+    }
+
+    let reciprocalPeerCount = 0;
+    for (const peer of allPeers) {
+      if (sentPeers.has(peer) && recvPeers.has(peer)) reciprocalPeerCount++;
+    }
+    const uniquePeerCount = allPeers.size;
+
+    const engagementScore = Math.min(
+      100,
+      Math.round(((publicMessageCount + dmSentCount) / 20) * 100),
+    );
+    const diversityScore = Math.min(
+      100,
+      Math.round((uniquePeerCount / 5) * 100),
+    );
+    const reciprocityScore = Math.min(
+      100,
+      Math.round((reciprocalPeerCount / 3) * 100),
+    );
+    const friendBaseScore = Math.min(
+      100,
+      Math.round((acceptedFriendCount / 5) * 100),
+    );
+
+    const totalInteractions = publicMessageCount + dmSentCount;
+    const provisional = totalInteractions < 8 || uniquePeerCount < 2;
+    const score = provisional
+      ? 0
+      : Math.round(
+          engagementScore * 0.35 +
+            diversityScore * 0.3 +
+            reciprocityScore * 0.25 +
+            friendBaseScore * 0.1,
+        );
+
+    return {
+      score: Math.max(0, Math.min(100, score)),
+      publicMessageCount,
+      dmSentCount,
+      uniquePeerCount,
+      reciprocalPeerCount,
+      acceptedFriendCount,
+      engagementScore,
+      diversityScore,
+      reciprocityScore,
+      friendBaseScore,
+      provisional,
     };
   }
 

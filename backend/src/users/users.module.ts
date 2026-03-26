@@ -9,6 +9,9 @@ import { LearningQuizAttempt } from '../learning-nodes/entities/learning-quiz-at
 import { LearningCommunicationAttempt } from '../learning-nodes/entities/learning-communication-attempt.entity';
 import { UserWeeklyPlan } from '../self-leadership/entities/user-weekly-plan.entity';
 import { SelfLeadershipCheckin } from '../self-leadership/entities/self-leadership-checkin.entity';
+import { ChatMessage } from '../world-chat/entities/chat-message.entity';
+import { DirectMessage } from '../direct-message/entities/direct-message.entity';
+import { Friendship } from '../friends/entities/friendship.entity';
 
 @Module({
   imports: [
@@ -20,6 +23,9 @@ import { SelfLeadershipCheckin } from '../self-leadership/entities/self-leadersh
       LearningCommunicationAttempt,
       UserWeeklyPlan,
       SelfLeadershipCheckin,
+      ChatMessage,
+      DirectMessage,
+      Friendship,
     ]),
   ],
   controllers: [UsersController],

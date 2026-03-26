@@ -32,6 +32,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
   String? _disciplineTooltip;
   String? _growthMindsetTooltip;
   String? _criticalThinkingTooltip;
+  String? _collaborationTooltip;
 
   static const List<_CompetencyItem> _learningTemplate = [
     _CompetencyItem(
@@ -167,6 +168,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
       _disciplineTooltip = null;
       _growthMindsetTooltip = null;
       _criticalThinkingTooltip = null;
+      _collaborationTooltip = null;
     });
 
     try {
@@ -239,6 +241,10 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
             ? data['formulaInfo']['criticalThinking']
             : null,
       );
+      _collaborationTooltip = _buildCollaborationTooltip(
+        formula:
+            data['formulaInfo'] is Map ? data['formulaInfo']['collaboration'] : null,
+      );
 
       if (!mounted) return;
       setState(() {
@@ -269,6 +275,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
           disciplineTooltip: _disciplineTooltip,
           growthMindsetTooltip: _growthMindsetTooltip,
           criticalThinkingTooltip: _criticalThinkingTooltip,
+          collaborationTooltip: _collaborationTooltip,
         );
         _loading = false;
       });
@@ -317,6 +324,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
     String? disciplineTooltip,
     String? growthMindsetTooltip,
     String? criticalThinkingTooltip,
+    String? collaborationTooltip,
   }) {
     final items = template
         .map((t) => _CompetencyItem(
@@ -345,6 +353,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
       disciplineTooltip: disciplineTooltip,
       growthMindsetTooltip: growthMindsetTooltip,
       criticalThinkingTooltip: criticalThinkingTooltip,
+      collaborationTooltip: collaborationTooltip,
     );
   }
 
@@ -658,6 +667,27 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
     return lines.join('\n');
   }
 
+  String? _buildCollaborationTooltip({dynamic formula}) {
+    if (formula is! Map) return null;
+    final peerCount = ((formula['uniquePeerCount'] ?? 0) as num).toInt();
+    final interactions =
+        ((formula['publicMessageCount'] ?? 0) as num).toInt() +
+        ((formula['dmSentCount'] ?? 0) as num).toInt();
+    final provisional = (formula['provisional'] ?? false) as bool;
+    final lines = <String>[
+      'Cách tăng điểm Cộng tác & chia sẻ:',
+      '• Chủ động chia sẻ cách giải hoặc ghi chú hữu ích cho người khác.',
+      '• Tham gia thảo luận với nhiều bạn khác nhau, không chỉ một nhóm cố định.',
+      '• Tạo trao đổi hai chiều: hỏi, phản hồi, và follow-up sau khi nhận góp ý.',
+      '• Duy trì nhịp tương tác đều đặn theo tuần thay vì chỉ hoạt động ngắt quãng.',
+    ];
+    if (provisional || interactions < 8 || peerCount < 2) {
+      lines.add('• Cần thêm dữ liệu tương tác xã hội để điểm ổn định.');
+      lines.add('• Điểm đang tạm thời do chưa đủ dữ liệu đo.');
+    }
+    return lines.join('\n');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -760,6 +790,7 @@ class _CompetencySectionData {
   final String? disciplineTooltip;
   final String? growthMindsetTooltip;
   final String? criticalThinkingTooltip;
+  final String? collaborationTooltip;
   const _CompetencySectionData({
     required this.title,
     required this.subtitle,
@@ -779,6 +810,7 @@ class _CompetencySectionData {
     this.disciplineTooltip,
     this.growthMindsetTooltip,
     this.criticalThinkingTooltip,
+    this.collaborationTooltip,
   });
 
   double get average => items.isEmpty
@@ -854,6 +886,7 @@ class _CompetencySection extends StatelessWidget {
                             growthMindsetTooltip: section.growthMindsetTooltip,
                             criticalThinkingTooltip:
                                 section.criticalThinkingTooltip,
+                            collaborationTooltip: section.collaborationTooltip,
                           ),
                         ],
                       )
@@ -895,7 +928,9 @@ class _CompetencySection extends StatelessWidget {
                                   growthMindsetTooltip:
                                       section.growthMindsetTooltip,
                                   criticalThinkingTooltip:
-                                      section.criticalThinkingTooltip)),
+                                      section.criticalThinkingTooltip,
+                                  collaborationTooltip:
+                                      section.collaborationTooltip)),
                         ],
                       ),
               ],
@@ -968,6 +1003,7 @@ class _MetricList extends StatelessWidget {
   final String? disciplineTooltip;
   final String? growthMindsetTooltip;
   final String? criticalThinkingTooltip;
+  final String? collaborationTooltip;
   const _MetricList({
     required this.color,
     required this.items,
@@ -985,6 +1021,7 @@ class _MetricList extends StatelessWidget {
     this.disciplineTooltip,
     this.growthMindsetTooltip,
     this.criticalThinkingTooltip,
+    this.collaborationTooltip,
   });
 
   @override
@@ -1008,6 +1045,7 @@ class _MetricList extends StatelessWidget {
                 disciplineTooltip: disciplineTooltip,
                 growthMindsetTooltip: growthMindsetTooltip,
                 criticalThinkingTooltip: criticalThinkingTooltip,
+                collaborationTooltip: collaborationTooltip,
               ))
           .toList(),
     );
@@ -1031,6 +1069,7 @@ class _MetricRow extends StatelessWidget {
   final String? disciplineTooltip;
   final String? growthMindsetTooltip;
   final String? criticalThinkingTooltip;
+  final String? collaborationTooltip;
   const _MetricRow({
     required this.color,
     required this.item,
@@ -1048,6 +1087,7 @@ class _MetricRow extends StatelessWidget {
     this.disciplineTooltip,
     this.growthMindsetTooltip,
     this.criticalThinkingTooltip,
+    this.collaborationTooltip,
   });
 
   @override
@@ -1068,6 +1108,8 @@ class _MetricRow extends StatelessWidget {
         item.key == 'growth_mindset' && growthMindsetTooltip != null;
     final showCriticalThinkingTooltip =
         item.key == 'critical_thinking' && criticalThinkingTooltip != null;
+    final showCollaborationTooltip =
+        item.key == 'collaboration' && collaborationTooltip != null;
     final showLogicalTooltip =
         item.key == 'logical_thinking' && logicalTooltip != null;
     final showProcessingTooltip =
@@ -1094,6 +1136,8 @@ class _MetricRow extends StatelessWidget {
                             ? growthMindsetTooltip!
                             : (showCriticalThinkingTooltip
                                 ? criticalThinkingTooltip!
+                                : (showCollaborationTooltip
+                                    ? collaborationTooltip!
             : (showMemoryTooltip
             ? memoryTooltip!
             : (showLogicalTooltip
@@ -1108,7 +1152,7 @@ class _MetricRow extends StatelessWidget {
                                 ? persistenceTooltip!
                                 : (showKnowledgeTooltip
                                     ? knowledgeTooltip!
-                                    : null)))))))))))));
+                                    : null))))))))))))));
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
