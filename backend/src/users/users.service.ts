@@ -259,7 +259,7 @@ export class UsersService {
     const avgGain = gainCount ? sumGain / gainCount : 0;
     const provisional = gainCount < 2;
     const score = provisional
-      ? Math.round(mastery * 0.7)
+      ? 0
       : Math.round(avgGain * 0.6 + mastery * 0.4);
 
     return {

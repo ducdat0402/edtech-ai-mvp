@@ -338,6 +338,8 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
   }
 
   String? _buildProcessingTooltip({dynamic formula}) {
+    final provisional =
+        formula is Map ? (formula['provisional'] ?? false) as bool : false;
     final validSamples =
         formula is Map ? ((formula['validSamples'] ?? 0) as num).toInt() : 0;
     final minSamples =
@@ -353,6 +355,9 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
       lines.add(
         '• Cần thêm dữ liệu trả lời (ít nhất $minSamples câu hợp lệ) để điểm ổn định.',
       );
+    }
+    if (provisional) {
+      lines.add('• Điểm đang tạm thời do chưa đủ dữ liệu đo.');
     }
     return lines.join('\n');
   }
@@ -375,6 +380,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
 
     if (provisional || weightedTotal < minWeightedTotal) {
       lines.add('• Cần thêm dữ liệu câu có trọng số ứng dụng để điểm ổn định.');
+      lines.add('• Điểm đang tạm thời do chưa đủ dữ liệu đo.');
     }
 
     return lines.join('\n');
@@ -399,6 +405,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
 
     if (provisional || validSamples < minSamples) {
       lines.add('• Cần thêm dữ liệu quiz có confidence để điểm ổn định.');
+      lines.add('• Điểm đang tạm thời do chưa đủ dữ liệu đo.');
     }
 
     return lines.join('\n');
@@ -425,6 +432,8 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
   String? _buildKnowledgeTooltip({dynamic formula}) {
     final gainGroups =
         formula is Map ? ((formula['gainGroupCount'] ?? 0) as num).toInt() : 0;
+    final provisional =
+        formula is Map ? (formula['provisional'] ?? false) as bool : false;
     final lines = <String>[
       'Cách tăng điểm Tiếp thu kiến thức:',
       '• Sau khi làm quiz, xem kỹ câu sai và phần giải thích.',
@@ -432,8 +441,9 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
       '• Tập trung cải thiện các phần bạn hay sai, không chỉ làm cho đủ lượt.',
       '• Theo dõi tiến bộ qua nhiều lần làm để tăng learning gain.',
     ];
-    if (gainGroups < 2) {
+    if (gainGroups < 2 || provisional) {
       lines.add('• Cần thêm các lần làm lại cùng bài để hệ thống đo mức tiến bộ rõ hơn.');
+      lines.add('• Điểm đang tạm thời do chưa đủ dữ liệu đo.');
     }
     return lines.join('\n');
   }
