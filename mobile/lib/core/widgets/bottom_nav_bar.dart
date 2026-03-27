@@ -40,7 +40,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
         context.go('/dashboard');
         break;
       case 1:
-        context.go('/quests');
+        context.go('/subjects');
         break;
       case 2:
         context.go('/leaderboard');
@@ -66,8 +66,8 @@ class _BottomNavBarState extends State<BottomNavBar> {
           label: 'Tổng quan',
         ),
         const BottomNavigationBarItem(
-          icon: Icon(Icons.task_alt),
-          label: 'Nhiệm vụ',
+          icon: Icon(Icons.menu_book),
+          label: 'Môn học',
         ),
         const BottomNavigationBarItem(
           icon: Icon(Icons.leaderboard),

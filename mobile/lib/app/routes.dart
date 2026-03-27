@@ -11,6 +11,7 @@ import 'package:edtech_mobile/features/onboarding/screens/onboarding_chat_screen
 import 'package:edtech_mobile/features/placement_test/screens/placement_test_screen.dart';
 import 'package:edtech_mobile/features/placement_test/screens/analysis_complete_screen.dart';
 import 'package:edtech_mobile/features/subjects/screens/subject_intro_screen.dart';
+import 'package:edtech_mobile/features/subjects/screens/subjects_hub_screen.dart';
 import 'package:edtech_mobile/features/subjects/screens/subject_learning_goals_screen.dart';
 import 'package:edtech_mobile/features/subjects/screens/personal_mind_map_screen.dart';
 import 'package:edtech_mobile/features/subjects/screens/learning_path_choice_screen.dart';
@@ -117,6 +118,10 @@ GoRouter createAppRouter(AuthSessionController authSession) {
         final testId = state.pathParameters['testId']!;
         return AnalysisCompleteScreen(testId: testId);
       },
+    ),
+    GoRoute(
+      path: '/subjects',
+      builder: (context, state) => const SubjectsHubScreen(),
     ),
     GoRoute(
       path: '/subjects/:id/intro',
