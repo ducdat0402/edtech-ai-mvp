@@ -229,36 +229,168 @@ function makeEndQuiz(title: string, scenario: string, pack: SubjectPack, seed: n
 
 function makeTextLessonData(node: NodeRow, scenario: string, pack: SubjectPack) {
   if (node.subjectName === 'Bóng rổ') {
-    return {
-      sections: [
+    const seed = hashSeed(`${node.title}|${scenario}|basketball`) % 6;
+    const title = node.title;
+    const playbook = [
+      'Horns',
+      '5-out',
+      'Spain PnR',
+      'Chicago action',
+      'Drag screen',
+      'Pistol action',
+    ][seed];
+
+    const sectionVariants = [
+      [
         {
-          title: `${node.title} - Bối cảnh trận đấu`,
-          content: `Tình huống thực tế: ${scenario}. Mục tiêu là đưa ra phương án thi đấu phù hợp diễn biến trên sân.`,
+          title: `${title} - Case thất bại`,
+          content:
+            `Case: ${scenario}. Đội thua nhịp vì xử lý quá vội ở 4 phút đầu hiệp.\n\n` +
+            `Bài học tập trung vào cách nhận diện lỗi hệ thống (spacing lệch, chuyền mạo hiểm, shot selection xấu) thay vì đổ lỗi từng cá nhân.`,
         },
         {
-          title: `${node.title} - Đọc trận đấu`,
+          title: `${title} - Mổ băng 3 pha`,
           content:
-            'Quan sát spacing, nhịp độ, mismatch, tỷ lệ ném, turnover và foul trouble để xác định vấn đề cốt lõi.',
+            'Pha 1: bóng vào cánh nhưng không có weak-side cut.\nPha 2: pick-and-roll bị trap nhưng short-roll đến chậm.\nPha 3: defensive closeout trễ 1 nhịp.\n\nTừ 3 pha này, xác định nguyên nhân gốc trước khi gọi timeout.',
         },
         {
-          title: `${node.title} - Chiến thuật tấn công/phòng ngự`,
+          title: `${title} - Sửa lỗi theo thứ tự`,
           content:
-            'Chọn phương án phù hợp như pick-and-roll, handoff, switch, drop coverage hoặc zone dựa trên điểm mạnh/yếu hiện tại.',
+            'Ưu tiên sửa 1) kiểm soát turnover, 2) shot quality, 3) rebound phòng ngự.\n\nKhông sửa mọi thứ cùng lúc; mỗi lần chỉnh chỉ 1-2 quy tắc thi đấu để đội hấp thụ được.',
         },
         {
-          title: `${node.title} - Quản trị nhân sự và thể lực`,
+          title: `${title} - KPI sau điều chỉnh`,
           content:
-            'Phân phối phút thi đấu cho đội hình chính/dự bị, giữ cường độ hợp lý và tận dụng line-up có hiệu suất tốt.',
-        },
-        {
-          title: `${node.title} - Chỉ số theo dõi`,
-          content:
-            'Theo dõi KPI như eFG%, turnover rate, defensive rating, rebound rate để điều chỉnh chiến thuật theo thời gian thực.',
+            'Theo dõi eFG% 5 phút tiếp theo, turnover rate theo line-up, và số điểm thua từ transition defense để biết chỉnh sửa có hiệu lực hay chưa.',
         },
       ],
+      [
+        {
+          title: `${title} - Case thành công`,
+          content:
+            `Tình huống: ${scenario}. Đội lật thế trận nhờ thay đổi coverage đúng thời điểm.\n\n` +
+            'Mục tiêu bài đọc: tách rõ "vì sao chiến thuật mới hiệu quả" để tái sử dụng ở trận khác.',
+        },
+        {
+          title: `${title} - Công thức chiến thuật`,
+          content:
+            `Áp dụng ${playbook} ở tấn công để kéo giãn help-defense.\n` +
+            'Phòng ngự chuyển từ drop sang switch có chọn lọc để cắt nhịp pull-up 3 của đối thủ.',
+        },
+        {
+          title: `${title} - Điều kiện để lặp lại`,
+          content:
+            'Chiến thuật chỉ tái dùng được khi đủ 3 điều kiện: personnel phù hợp, nhịp trận phù hợp, và bench unit giữ turnover thấp.',
+        },
+        {
+          title: `${title} - Checklist trận kế tiếp`,
+          content:
+            'Trước trận: chuẩn bị 2 coverage dự phòng.\nTrong trận: kiểm tra mismatch mỗi 3 phút.\nSau trận: chốt 3 quyết định hiệu quả nhất để lưu playbook nội bộ.',
+        },
+      ],
+      [
+        {
+          title: `${title} - So sánh 2 phương án`,
+          content:
+            `Bối cảnh: ${scenario}. So sánh phương án A (tăng pace) và phương án B (giảm pace, tăng half-court execution).`,
+        },
+        {
+          title: `${title} - Bảng trade-off`,
+          content:
+            'Phương án A: tạo nhiều pha dứt điểm sớm nhưng rủi ro turnover cao.\nPhương án B: giảm nhịp trận, kiểm soát bóng tốt hơn nhưng cần execution kỷ luật.',
+        },
+        {
+          title: `${title} - Quy tắc chọn phương án`,
+          content:
+            'Nếu lineup hiện tại có ball-handler ổn định và rebound tốt -> ưu tiên A.\nNếu đội đang mất kiểm soát bóng và foul trouble -> ưu tiên B.',
+        },
+        {
+          title: `${title} - Cơ chế đổi phương án`,
+          content:
+            'Đặt ngưỡng chuyển đổi: turnover liên tiếp >= 3 hoặc đối thủ ghi 8 điểm trong 2 phút thì chuyển ngay sang phương án dự phòng.',
+        },
+      ],
+      [
+        {
+          title: `${title} - Debug lỗi chiến thuật`,
+          content:
+            `Tình huống: ${scenario}. Đội gọi đúng bài nhưng hiệu quả thấp do timing và spacing sai.\n\n` +
+            'Bài này giống "debug session": tìm bug chiến thuật thay vì thay cả hệ thống.',
+        },
+        {
+          title: `${title} - Triệu chứng`,
+          content:
+            'Triệu chứng 1: screen angle xấu khiến defender dễ lách.\nTriệu chứng 2: weak-side đứng chết, không tạo passing lane.\nTriệu chứng 3: closeout phòng ngự chậm sau khi mất bóng.',
+        },
+        {
+          title: `${title} - Root cause`,
+          content:
+            'Nguyên nhân gốc là quy tắc ra quyết định chưa rõ ở 2 giây đầu mỗi possession. Cần chuẩn hóa tín hiệu gọi bài và vị trí ưu tiên nhận bóng.',
+        },
+        {
+          title: `${title} - Patch áp dụng 1 trận`,
+          content:
+            `Patch 1: cố định trigger của ${playbook}.\nPatch 2: thêm quy tắc first-pass an toàn.\nPatch 3: timeout review sau mỗi run 6-0 của đối thủ.`,
+        },
+      ],
+      [
+        {
+          title: `${title} - Kế hoạch 10 phút cuối trận`,
+          content:
+            `Bối cảnh: ${scenario}. 10 phút cuối thường quyết định thắng-thua vì sai số nhỏ tích lũy thành chênh lệch lớn.`,
+        },
+        {
+          title: `${title} - Phân bổ nhân sự`,
+          content:
+            'Giữ 2 ball-handler cùng sân để giảm turnover.\nPhân chia phút của big man theo foul count.\nƯu tiên lineup có defensive communication tốt.',
+        },
+        {
+          title: `${title} - Script timeout`,
+          content:
+            'Timeout 1: chặn run đầu tiên.\nTimeout 2: reset nhịp tấn công nếu possession liên tiếp không tạo advantage.\nTimeout 3: khóa phương án phòng ngự cuối trận.',
+        },
+        {
+          title: `${title} - Bộ chỉ số chốt trận`,
+          content:
+            'Theo dõi FT rate, second-chance points, points allowed in paint và quality của 3 shot cuối cùng.',
+        },
+      ],
+      [
+        {
+          title: `${title} - Phản biện quyết định phổ biến`,
+          content:
+            `Tình huống: ${scenario}. Nhiều đội chọn giải pháp quen tay nhưng không phù hợp context.\n\n` +
+            'Bài đọc này phản biện 3 ngộ nhận chiến thuật thường gặp.',
+        },
+        {
+          title: `${title} - Ngộ nhận 1`,
+          content:
+            '“Ném 3 nhiều là hiện đại nên luôn đúng.” Sai nếu shot quality thấp và không có offensive rebound structure.',
+        },
+        {
+          title: `${title} - Ngộ nhận 2`,
+          content:
+            '“Switch hết là an toàn.” Sai nếu personnel không chịu được post mismatch hoặc communication không đủ nhanh.',
+        },
+        {
+          title: `${title} - Ngộ nhận 3`,
+          content:
+            '“Cuối trận cứ đưa bóng cho ngôi sao.” Sai nếu không chuẩn bị 2nd action khi phương án đầu bị khóa.',
+        },
+      ],
+    ];
+
+    const quizVariants = [
+      `Ở case "${scenario}", dấu hiệu nào cho thấy đội cần timeout sớm?`,
+      `Trong bài "${title}", quyết định nào giúp giảm turnover nhanh nhất?`,
+      `Khi áp dụng ${playbook}, yếu tố nào cần kiểm soát đầu tiên?`,
+    ];
+
+    return {
+      sections: sectionVariants[seed],
       inlineQuizzes: [
         {
-          question: `Trong tình huống "${scenario}", hành động nào hợp lý nhất ở đầu hiệp?`,
+          question: quizVariants[seed % quizVariants.length],
           options: [
             { text: 'Giữ nguyên nhịp chơi cũ dù đang thua chuỗi điểm', explanation: 'Thiếu điều chỉnh theo diễn biến.' },
             { text: 'Đọc mismatch và chọn set play phù hợp', explanation: 'Đúng vì dựa trên dữ kiện thực tế trên sân.' },
@@ -289,12 +421,12 @@ function makeTextLessonData(node: NodeRow, scenario: string, pack: SubjectPack) 
         },
       ],
       summary:
-        `Tổng kết ${node.title}: đọc trận đấu đúng -> chọn chiến thuật phù hợp -> tối ưu line-up -> theo dõi chỉ số để điều chỉnh.`,
+        `Tổng kết ${node.title}: archetype #${seed + 1} giúp bạn luyện đọc trận, chọn phương án và điều chỉnh chiến thuật theo dữ kiện thực chiến.`,
       learningObjectives: [
-        'Phân tích diễn biến trận đấu bằng dữ liệu trên sân',
-        'Chọn chiến thuật tấn công/phòng ngự theo ngữ cảnh',
-        'Tối ưu phân bổ phút thi đấu và line-up',
-        'Theo dõi KPI chuyên môn để điều chỉnh kịp thời',
+        'Đọc đúng tín hiệu trận đấu trước khi can thiệp',
+        'Chọn chiến thuật theo context thay vì theo thói quen',
+        'Đánh giá trade-off giữa pacing, lineup và rủi ro',
+        'Thiết lập vòng theo dõi để điều chỉnh trong trận',
       ],
     };
   }
@@ -364,29 +496,170 @@ function makeTextLessonData(node: NodeRow, scenario: string, pack: SubjectPack) 
   const q2 = q2Bank[(seed + 1) % q2Bank.length];
   const q3 = q3Bank[(seed + 2) % q3Bank.length];
 
-  return {
-    sections: [
+  const sectionVariants = [
+    [
       {
-        title: `${node.title} - Bối cảnh`,
-        content: `Bài "${node.title}" thuộc ${topicTag} (${domainTag}). Tình huống thực tế: ${scenario}. ${actor} cần đưa ra ${output} trong điều kiện ${resource}.`,
+        title: `${node.title} - Case bối cảnh`,
+        content:
+          `Bài "${node.title}" thuộc ${topicTag} (${domainTag}). Tình huống: ${scenario}. ${actor} cần đưa ra ${output} trong giới hạn ${resource}.\n\n` +
+          `Mục tiêu của case là xác định đúng bài toán trước khi tranh luận phương án.`,
       },
       {
-        title: `${node.title} - Khung phân tích`,
-        content: `Trọng tâm phân tích của bài này là ${lens}. Từ đó, làm rõ mục tiêu, ràng buộc, tiêu chí đo lường và thứ tự ưu tiên trước khi đề xuất phương án.`,
+        title: `${node.title} - Chẩn đoán trọng tâm`,
+        content: `Trọng tâm phân tích là ${lens}. Ưu tiên tách nguyên nhân gốc khỏi triệu chứng để tránh xử lý sai điểm nghẽn.`,
       },
       {
-        title: `${node.title} - Bằng chứng và phản biện`,
-        content: `Thực hành ${evidence}; đồng thời kiểm tra điểm mù lập luận bằng phản biện ngược để tăng độ chắc của kết luận trong "${scenario}".`,
+        title: `${node.title} - Dữ liệu và phản biện`,
+        content: `Thực hành ${evidence}. Dùng phản biện ngược để kiểm tra độ bền của kết luận.`,
       },
       {
-        title: `${node.title} - Quyết định và trade-off`,
-        content: `Áp dụng cách ${tradeoff} để cân bằng hiệu quả - rủi ro - nguồn lực, thay vì chọn theo cảm tính hoặc theo phương án quen tay.`,
+        title: `${node.title} - Quyết định`,
+        content: `Áp dụng ${tradeoff} để chốt phương án có cơ sở, không chọn theo cảm tính.`,
       },
       {
-        title: `${node.title} - Theo dõi cải tiến`,
-        content: `Sau khi triển khai, ${loop}, kèm quy tắc điều chỉnh rõ ràng khi kết quả thực tế lệch mục tiêu ban đầu.`,
+        title: `${node.title} - Vòng cải tiến`,
+        content: `Sau triển khai, ${loop}. Biến quyết định thành chu trình học liên tục.`,
       },
     ],
+    [
+      {
+        title: `${node.title} - So sánh 2 phương án`,
+        content:
+          `Với tình huống "${scenario}", đặt cạnh phương án A/B theo tiêu chí: hiệu quả, rủi ro, thời gian triển khai, và chi phí cơ hội.`,
+      },
+      {
+        title: `${node.title} - Trade-off ngắn hạn/dài hạn`,
+        content:
+          'Phương án ngắn hạn có thể cải thiện chỉ số nhanh nhưng tạo nợ vận hành. Phương án dài hạn bền hơn nhưng cần năng lực thực thi ổn định.',
+      },
+      {
+        title: `${node.title} - Tiêu chí bắt buộc`,
+        content:
+          'Xác định tiêu chí không thể vi phạm trước (compliance, chất lượng tối thiểu, SLA...) để loại phương án không đạt.',
+      },
+      {
+        title: `${node.title} - Quy tắc chốt`,
+        content:
+          `Chọn phương án tối đa hóa mục tiêu chính và không vượt ngưỡng rủi ro. Sau đó lập checkpoint để ${loop}.`,
+      },
+      {
+        title: `${node.title} - Bài học rút ra`,
+        content:
+          'Không có lựa chọn hoàn hảo tuyệt đối; chỉ có lựa chọn phù hợp nhất với bối cảnh và năng lực thực thi hiện tại.',
+      },
+    ],
+    [
+      {
+        title: `${node.title} - Debug lỗi thường gặp`,
+        content:
+          `Trong "${scenario}", kết quả kém thường đến từ lỗi định nghĩa vấn đề hoặc lỗi chất lượng dữ liệu đầu vào.`,
+      },
+      {
+        title: `${node.title} - Triệu chứng`,
+        content:
+          'Dấu hiệu phổ biến: KPI dao động mạnh, quyết định thay đổi liên tục, đội ngũ không thống nhất tiêu chí đánh giá.',
+      },
+      {
+        title: `${node.title} - Root cause`,
+        content:
+          `Áp dụng ${lens}; soát lại giả định ẩn, chất lượng nguồn tin và tính đo lường của tiêu chí thành công.`,
+      },
+      {
+        title: `${node.title} - Patch ngắn hạn`,
+        content:
+          `Thực hiện 1-2 thay đổi nhỏ có thể đo được hiệu quả ngay (quick win), đồng thời giữ phương án dự phòng khi dữ liệu mới xuất hiện.`,
+      },
+      {
+        title: `${node.title} - Chuẩn hóa dài hạn`,
+        content:
+          'Chuyển bài học thành checklist vận hành để giảm lặp lỗi cho các tình huống tương tự về sau.',
+      },
+    ],
+    [
+      {
+        title: `${node.title} - Checklist thực chiến`,
+        content:
+          `Checklist áp dụng cho tình huống "${scenario}" trong ${topicTag}: dùng khi cần ra quyết định nhanh nhưng vẫn có cấu trúc.`,
+      },
+      {
+        title: `${node.title} - Bước 1: Khóa mục tiêu`,
+        content:
+          'Viết rõ mục tiêu chính/phụ, tiêu chí đo lường, và ngưỡng chấp nhận rủi ro trước khi bàn phương án.',
+      },
+      {
+        title: `${node.title} - Bước 2: Kiểm chứng dữ liệu`,
+        content:
+          `Thực hành ${evidence}; ưu tiên dữ liệu có thể kiểm tra chéo và có bối cảnh đầy đủ.`,
+      },
+      {
+        title: `${node.title} - Bước 3: Chốt phương án`,
+        content:
+          `Áp dụng ${tradeoff}; ghi rõ lý do chọn/bỏ từng phương án để dễ review sau triển khai.`,
+      },
+      {
+        title: `${node.title} - Bước 4: Theo dõi`,
+        content:
+          `Thiết lập vòng theo dõi ${metric}, có ngưỡng cảnh báo và cơ chế escalation rõ ràng.`,
+      },
+    ],
+    [
+      {
+        title: `${node.title} - Phản biện quan điểm phổ biến`,
+        content:
+          `Bài này dùng tình huống "${scenario}" để phản biện các quan điểm nghe hợp lý nhưng dễ sai khi thiếu dữ liệu.`,
+      },
+      {
+        title: `${node.title} - Quan điểm 1`,
+        content:
+          '“Cách quen thuộc sẽ an toàn hơn.” Thực tế, phương án quen có thể không phù hợp khi bối cảnh thay đổi.',
+      },
+      {
+        title: `${node.title} - Quan điểm 2`,
+        content:
+          '“Đợi đủ 100% dữ liệu rồi quyết.” Trong môi trường thực tế, trì hoãn quá mức cũng là một dạng rủi ro.',
+      },
+      {
+        title: `${node.title} - Quan điểm 3`,
+        content:
+          '“Chỉ cần tối ưu chỉ số chính.” Bỏ qua chỉ số phụ có thể tạo tác dụng phụ làm hỏng kết quả tổng thể.',
+      },
+      {
+        title: `${node.title} - Khung phản biện chuẩn`,
+        content:
+          'Luôn kiểm tra giả định, phản ví dụ, và chi phí cơ hội trước khi kết luận.',
+      },
+    ],
+    [
+      {
+        title: `${node.title} - Kế hoạch 30-60-90`,
+        content:
+          `Tình huống "${scenario}" được triển khai theo 3 chặng để giảm rủi ro và tăng khả năng học từ dữ liệu thật.`,
+      },
+      {
+        title: `${node.title} - Chặng 30`,
+        content:
+          'Thử nghiệm giới hạn phạm vi, kiểm chứng giả định quan trọng nhất, đo tín hiệu sớm.',
+      },
+      {
+        title: `${node.title} - Chặng 60`,
+        content:
+          'Mở rộng khi chỉ số ổn định, chuẩn hóa quy trình phối hợp, và thiết lập review liên phòng ban.',
+      },
+      {
+        title: `${node.title} - Chặng 90`,
+        content:
+          'Tối ưu hiệu suất dài hạn, khóa tài liệu vận hành, và đưa bài học vào tiêu chuẩn nội bộ.',
+      },
+      {
+        title: `${node.title} - Điều kiện chuyển chặng`,
+        content:
+          'Chỉ chuyển giai đoạn khi KPI đạt ngưỡng và rủi ro nằm trong biên kiểm soát.',
+      },
+    ],
+  ];
+
+  return {
+    sections: sectionVariants[seed % sectionVariants.length],
     inlineQuizzes: [
       {
         question: q1,
