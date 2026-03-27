@@ -289,7 +289,7 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
   }
 
   Widget _buildSectionCard(Map<String, dynamic> section) {
-    final sectionTitle =
+    final rawSectionTitle =
         (section['title'] ?? section['heading'] ?? '').toString();
     final content =
         (section['content'] ??
@@ -298,12 +298,24 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
                 section['body'] ??
                 '')
             .toString();
+    final titlePrefix = '${widget.title} - ';
+    final sectionTitle = rawSectionTitle.startsWith(titlePrefix)
+        ? rawSectionTitle.substring(titlePrefix.length).trim()
+        : rawSectionTitle;
     final examples =
         (section['examples'] as List?)?.cast<Map<String, dynamic>>() ?? [];
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
-      child: Column(
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppColors.bgSecondary,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.borderPrimary),
+        ),
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (sectionTitle.isNotEmpty)
@@ -333,6 +345,7 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
             ...examples.map((example) => _buildExampleItem(example)),
           ],
         ],
+      ),
       ),
     );
   }
