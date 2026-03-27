@@ -95,19 +95,40 @@ class _ImageGalleryLessonScreenState extends State<ImageGalleryLessonScreen> {
           // Counter
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+            child: Column(
               children: [
-                const Icon(Icons.photo_library, color: AppColors.purpleNeon, size: 18),
-                const SizedBox(width: 8),
-                Text(
-                  'Hinh ${_currentPage + 1}/$totalImages',
-                  style: const TextStyle(
-                    color: AppColors.purpleNeon,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.photo_library, color: AppColors.purpleNeon, size: 18),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Hinh ${_currentPage + 1}/$totalImages',
+                      style: const TextStyle(
+                        color: AppColors.purpleNeon,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                 ),
+                if (totalImages > 1) ...[
+                  const SizedBox(height: 6),
+                  const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.swipe, color: AppColors.textTertiary, size: 14),
+                      SizedBox(width: 6),
+                      Text(
+                        'Vuốt trái/phải để xem ảnh tiếp theo',
+                        style: TextStyle(
+                          color: AppColors.textTertiary,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),

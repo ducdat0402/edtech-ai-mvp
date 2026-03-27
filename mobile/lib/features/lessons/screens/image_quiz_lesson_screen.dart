@@ -126,6 +126,23 @@ class _ImageQuizLessonScreenState extends State<ImageQuizLessonScreen> {
                     minHeight: 6,
                   ),
                 ),
+                if (totalSlides > 1) ...[
+                  const SizedBox(height: 8),
+                  const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.swipe, color: AppColors.textTertiary, size: 14),
+                      SizedBox(width: 6),
+                      Text(
+                        'Vuốt trái/phải để sang câu tiếp theo',
+                        style: TextStyle(
+                          color: AppColors.textTertiary,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),
