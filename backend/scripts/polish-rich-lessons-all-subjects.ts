@@ -113,6 +113,14 @@ function competencyMix(seed: number): Record<string, number> {
   return bank[seed % bank.length];
 }
 
+function hashSeed(input: string): number {
+  let h = 0;
+  for (let i = 0; i < input.length; i++) {
+    h = (h * 31 + input.charCodeAt(i)) >>> 0;
+  }
+  return h;
+}
+
 function makeEndQuiz(title: string, scenario: string, pack: SubjectPack, seed: number) {
   const actor = pack.vocab.actor;
   const metric = pack.vocab.metric;
@@ -295,35 +303,93 @@ function makeTextLessonData(node: NodeRow, scenario: string, pack: SubjectPack) 
   const resource = pack.vocab.resource;
   const output = pack.vocab.output;
   const metric = pack.vocab.metric;
+  const seed = hashSeed(`${node.subjectName}|${node.domainName ?? ''}|${node.topicName ?? ''}|${node.title}`);
+
+  const diagnosisLenses = [
+    'xác định điểm nghẽn chính từ dữ kiện hiện có',
+    'tách nguyên nhân gốc và triệu chứng để tránh xử lý sai trọng tâm',
+    'xác minh giả định ẩn trước khi chốt hướng hành động',
+    'soát lại tiêu chí thành công để tránh tối ưu lệch mục tiêu',
+  ];
+  const evidenceActions = [
+    'lập bảng nguồn dữ liệu theo độ tin cậy và độ mới',
+    'đối chiếu dữ kiện trái chiều bằng kiểm tra chéo',
+    'tìm phản ví dụ để thử độ bền của lập luận',
+    'đánh dấu vùng dữ liệu còn thiếu để tránh kết luận quá sớm',
+  ];
+  const tradeoffStyles = [
+    'so sánh lợi ích ngắn hạn và chi phí dài hạn',
+    'đánh giá phương án theo tác động, rủi ro, và khả năng triển khai',
+    'xếp hạng lựa chọn theo tiêu chí bắt buộc và tiêu chí mong muốn',
+    'kết hợp phân tích định lượng với ràng buộc thực thi thực tế',
+  ];
+  const improvementLoops = [
+    `thiết kế vòng theo dõi ${metric} theo mốc tuần/tháng`,
+    'đặt ngưỡng cảnh báo sớm để kịp điều chỉnh chiến lược',
+    'lập nhịp review định kỳ giữa kết quả thực tế và giả định ban đầu',
+    'ghi lại bài học sau mỗi lần điều chỉnh để tái sử dụng cho ca tương tự',
+  ];
+
+  const lens = diagnosisLenses[seed % diagnosisLenses.length];
+  const evidence = evidenceActions[(seed + 1) % evidenceActions.length];
+  const tradeoff = tradeoffStyles[(seed + 2) % tradeoffStyles.length];
+  const loop = improvementLoops[(seed + 3) % improvementLoops.length];
+
+  const domainTag =
+    node.domainName && node.domainName.trim().length > 0
+      ? node.domainName.trim()
+      : 'Domain thực hành';
+  const topicTag =
+    node.topicName && node.topicName.trim().length > 0
+      ? node.topicName.trim()
+      : 'Topic trọng tâm';
+
+  const q1Bank = [
+    `Trong bối cảnh "${scenario}", bước mở đầu nào giúp ${actor} tránh lệch mục tiêu?`,
+    `Với bài "${node.title}", hành động nào nên thực hiện trước để ra ${output} chất lượng?`,
+    `Ở chủ đề "${topicTag}", điều gì cần làm đầu tiên khi xử lý "${scenario}"?`,
+  ];
+  const q2Bank = [
+    `Trong "${node.title}", cách kiểm tra bằng chứng nào đáng tin nhất cho tình huống "${scenario}"?`,
+    `Khi dữ liệu mâu thuẫn trong "${scenario}", hướng xử lý nào phù hợp nhất với ${domainTag}?`,
+    `Để giảm thiên lệch khi đánh giá "${scenario}", bạn nên làm gì?`,
+  ];
+  const q3Bank = [
+    `Sau khi chọn phương án cho "${scenario}", bước nào giúp tối ưu ${metric}?`,
+    `Trong bài "${node.title}", hoạt động theo dõi nào nên ưu tiên sau triển khai?`,
+    `Ở "${topicTag}", cách cải tiến liên tục nào phù hợp nhất sau khi ra quyết định?`,
+  ];
+
+  const q1 = q1Bank[seed % q1Bank.length];
+  const q2 = q2Bank[(seed + 1) % q2Bank.length];
+  const q3 = q3Bank[(seed + 2) % q3Bank.length];
+
   return {
     sections: [
       {
         title: `${node.title} - Bối cảnh`,
-        content: `Tình huống thực tế: ${scenario}. ${actor} cần đưa ra ${output} trong điều kiện ${resource}.`,
+        content: `Bài "${node.title}" thuộc ${topicTag} (${domainTag}). Tình huống thực tế: ${scenario}. ${actor} cần đưa ra ${output} trong điều kiện ${resource}.`,
       },
       {
         title: `${node.title} - Khung phân tích`,
-        content:
-          'Làm rõ mục tiêu, ràng buộc, tiêu chí đo lường, và giả định ẩn trước khi đề xuất phương án.',
+        content: `Trọng tâm phân tích của bài này là ${lens}. Từ đó, làm rõ mục tiêu, ràng buộc, tiêu chí đo lường và thứ tự ưu tiên trước khi đề xuất phương án.`,
       },
       {
         title: `${node.title} - Bằng chứng và phản biện`,
-        content:
-          'Thu thập dữ liệu từ nhiều nguồn, đánh giá độ tin cậy, tìm phản ví dụ và điểm mù lập luận.',
+        content: `Thực hành ${evidence}; đồng thời kiểm tra điểm mù lập luận bằng phản biện ngược để tăng độ chắc của kết luận trong "${scenario}".`,
       },
       {
         title: `${node.title} - Quyết định và trade-off`,
-        content:
-          'So sánh lợi ích/chi phí ngắn hạn-dài hạn, cân bằng rủi ro, và chọn phương án phù hợp nhất.',
+        content: `Áp dụng cách ${tradeoff} để cân bằng hiệu quả - rủi ro - nguồn lực, thay vì chọn theo cảm tính hoặc theo phương án quen tay.`,
       },
       {
         title: `${node.title} - Theo dõi cải tiến`,
-        content: `Thiết kế KPI theo dõi ${metric}, định nghĩa ngưỡng cảnh báo và cơ chế điều chỉnh kịp thời.`,
+        content: `Sau khi triển khai, ${loop}, kèm quy tắc điều chỉnh rõ ràng khi kết quả thực tế lệch mục tiêu ban đầu.`,
       },
     ],
     inlineQuizzes: [
       {
-        question: `Trong "${scenario}", bước khởi đầu đúng nhất là gì?`,
+        question: q1,
         options: [
           { text: 'Chọn nhanh theo cảm tính', explanation: 'Thiếu cơ sở đánh giá.' },
           { text: 'Làm rõ mục tiêu và ràng buộc', explanation: 'Đúng vì tạo nền quyết định rõ ràng.' },
@@ -333,7 +399,7 @@ function makeTextLessonData(node: NodeRow, scenario: string, pack: SubjectPack) 
         correctAnswer: 1,
       },
       {
-        question: `Khi dữ liệu mâu thuẫn trong "${scenario}", nên làm gì?`,
+        question: q2,
         options: [
           { text: 'Loại bỏ dữ liệu khó hiểu', explanation: 'Mất thông tin quan trọng.' },
           { text: 'Ưu tiên dữ liệu hợp ý mình', explanation: 'Thiên lệch xác nhận.' },
@@ -343,7 +409,7 @@ function makeTextLessonData(node: NodeRow, scenario: string, pack: SubjectPack) 
         correctAnswer: 2,
       },
       {
-        question: `Sau khi chốt phương án cho "${scenario}", điều gì quan trọng nhất?`,
+        question: q3,
         options: [
           { text: 'Không cần theo dõi thêm', explanation: 'Thiếu vòng phản hồi.' },
           { text: 'Theo dõi KPI và điều chỉnh', explanation: 'Đúng vì hỗ trợ cải tiến liên tục.' },
@@ -353,12 +419,13 @@ function makeTextLessonData(node: NodeRow, scenario: string, pack: SubjectPack) 
         correctAnswer: 1,
       },
     ],
-    summary: `Tổng kết ${node.title}: phân tích vấn đề -> phản biện bằng chứng -> quyết định -> theo dõi điều chỉnh.`,
+    summary:
+      `Tổng kết ${node.title}: đi từ phân tích theo trọng tâm bài học, kiểm định bằng chứng, so sánh trade-off, rồi thiết lập vòng theo dõi để cải tiến liên tục.`,
     learningObjectives: [
-      'Xây khung mục tiêu và ràng buộc rõ ràng',
-      'Đánh giá bằng chứng và kiểm tra giả định',
-      'So sánh trade-off giữa các phương án',
-      'Theo dõi KPI và cải tiến quyết định',
+      `Nắm cách xử lý tình huống "${scenario}" theo khung có cấu trúc`,
+      'Đánh giá bằng chứng, phản biện giả định và giảm thiên lệch',
+      'So sánh trade-off theo tiêu chí phù hợp bối cảnh bài học',
+      `Thiết kế vòng theo dõi ${metric} và điều chỉnh kịp thời`,
     ],
   };
 }
