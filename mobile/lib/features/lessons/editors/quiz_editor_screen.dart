@@ -70,6 +70,31 @@ class _QuizEditorScreenState extends State<QuizEditorScreen> {
     'creativity': 'Sáng tạo',
     'critical_thinking': 'Tư duy phản biện',
   };
+  static const Map<String, String> _logicTypeLabels = {
+    'inference': 'Suy luận',
+    'compare': 'So sánh',
+    'sequence': 'Trình tự',
+    'assumption_check': 'Kiểm tra giả định',
+    'source_reliability': 'Độ tin cậy nguồn',
+    'argument_strength': 'Độ mạnh lập luận',
+    'counterexample': 'Phản ví dụ',
+  };
+  static const Map<String, String> _logicTypeTooltips = {
+    'inference': 'Đánh giá khả năng rút kết luận từ dữ kiện cho trước.',
+    'compare': 'Đo năng lực so sánh nhiều phương án theo tiêu chí.',
+    'sequence': 'Kiểm tra hiểu biết về thứ tự bước và hệ quả.',
+    'assumption_check': 'Kiểm tra khả năng nhận diện giả định ẩn.',
+    'source_reliability': 'Đánh giá khả năng phân biệt nguồn tin đáng tin.',
+    'argument_strength': 'Đo khả năng nhận biết lập luận mạnh/yếu.',
+    'counterexample': 'Kiểm tra khả năng dùng phản ví dụ để phản biện.',
+  };
+  static const Map<String, String> _competencyTooltips = {
+    'logical_thinking': 'Mức đo tư duy logic và lập luận có cấu trúc.',
+    'practical_application': 'Mức đo khả năng áp dụng vào tình huống thực tế.',
+    'systems_thinking': 'Mức đo khả năng nhìn mối liên hệ và tác động hệ thống.',
+    'creativity': 'Mức đo khả năng đề xuất hướng giải quyết mới.',
+    'critical_thinking': 'Mức đo khả năng phản biện và kiểm tra giả định.',
+  };
 
   @override
   void initState() {
@@ -1048,12 +1073,26 @@ class _QuizEditorScreenState extends State<QuizEditorScreen> {
           const SizedBox(height: 8),
           const Divider(color: AppColors.borderPrimary),
           const SizedBox(height: 8),
-          const Text(
-            'Tag đánh giá cho câu hỏi',
-            style: TextStyle(
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.w700,
-            ),
+          Row(
+            children: [
+              const Text(
+                'Tag đánh giá cho câu hỏi',
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Tooltip(
+                message:
+                    'Chọn kiểu tư duy mà câu hỏi đang đo. Có thể chọn nhiều tag.',
+                child: const Icon(
+                  Icons.info_outline,
+                  size: 16,
+                  color: AppColors.textTertiary,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 8),
           Wrap(
@@ -1072,7 +1111,8 @@ class _QuizEditorScreenState extends State<QuizEditorScreen> {
                     }
                   });
                 },
-                label: Text(tag),
+                label: Text(_logicTypeLabels[tag] ?? tag),
+                tooltip: _logicTypeTooltips[tag],
                 selectedColor: AppColors.cyanNeon.withValues(alpha: 0.2),
                 checkmarkColor: AppColors.cyanNeon,
                 side: const BorderSide(color: AppColors.borderPrimary),
@@ -1097,12 +1137,26 @@ class _QuizEditorScreenState extends State<QuizEditorScreen> {
                   Row(
                     children: [
                       Expanded(
-                        child: Text(
-                          label,
-                          style: const TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 13,
-                          ),
+                        child: Row(
+                          children: [
+                            Text(
+                              label,
+                              style: const TextStyle(
+                                color: AppColors.textSecondary,
+                                fontSize: 13,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Tooltip(
+                              message: _competencyTooltips[key] ??
+                                  'Tỷ trọng đóng góp của câu hỏi vào chỉ số này.',
+                              child: const Icon(
+                                Icons.info_outline,
+                                size: 14,
+                                color: AppColors.textTertiary,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       Text(
@@ -1132,6 +1186,14 @@ class _QuizEditorScreenState extends State<QuizEditorScreen> {
               ),
             );
           }),
+          const SizedBox(height: 4),
+          const Text(
+            'Gợi ý: tổng các thanh kéo phải bằng 1.00 để câu hỏi được lưu.',
+            style: TextStyle(
+              color: AppColors.textTertiary,
+              fontSize: 12,
+            ),
+          ),
           Builder(
             builder: (_) {
               final sum =
