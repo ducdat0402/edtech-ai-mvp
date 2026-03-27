@@ -31,6 +31,8 @@ type SubjectPack = {
   };
 };
 
+const SUBJECT_FILTER = process.env.SUBJECT_NAME?.trim() ?? '';
+
 const PACKS: Record<string, SubjectPack> = {
   'Bóng rổ': {
     scenarios: [
@@ -218,6 +220,77 @@ function makeEndQuiz(title: string, scenario: string, pack: SubjectPack, seed: n
 }
 
 function makeTextLessonData(node: NodeRow, scenario: string, pack: SubjectPack) {
+  if (node.subjectName === 'Bóng rổ') {
+    return {
+      sections: [
+        {
+          title: `${node.title} - Bối cảnh trận đấu`,
+          content: `Tình huống thực tế: ${scenario}. Mục tiêu là đưa ra phương án thi đấu phù hợp diễn biến trên sân.`,
+        },
+        {
+          title: `${node.title} - Đọc trận đấu`,
+          content:
+            'Quan sát spacing, nhịp độ, mismatch, tỷ lệ ném, turnover và foul trouble để xác định vấn đề cốt lõi.',
+        },
+        {
+          title: `${node.title} - Chiến thuật tấn công/phòng ngự`,
+          content:
+            'Chọn phương án phù hợp như pick-and-roll, handoff, switch, drop coverage hoặc zone dựa trên điểm mạnh/yếu hiện tại.',
+        },
+        {
+          title: `${node.title} - Quản trị nhân sự và thể lực`,
+          content:
+            'Phân phối phút thi đấu cho đội hình chính/dự bị, giữ cường độ hợp lý và tận dụng line-up có hiệu suất tốt.',
+        },
+        {
+          title: `${node.title} - Chỉ số theo dõi`,
+          content:
+            'Theo dõi KPI như eFG%, turnover rate, defensive rating, rebound rate để điều chỉnh chiến thuật theo thời gian thực.',
+        },
+      ],
+      inlineQuizzes: [
+        {
+          question: `Trong tình huống "${scenario}", hành động nào hợp lý nhất ở đầu hiệp?`,
+          options: [
+            { text: 'Giữ nguyên nhịp chơi cũ dù đang thua chuỗi điểm', explanation: 'Thiếu điều chỉnh theo diễn biến.' },
+            { text: 'Đọc mismatch và chọn set play phù hợp', explanation: 'Đúng vì dựa trên dữ kiện thực tế trên sân.' },
+            { text: 'Liên tục ném 3 điểm dù hiệu suất thấp', explanation: 'Rủi ro khi shot selection kém.' },
+            { text: 'Chờ hết hiệp mới điều chỉnh', explanation: 'Phản hồi quá chậm.' },
+          ],
+          correctAnswer: 1,
+        },
+        {
+          question: `Khi đối thủ liên tục ghi điểm từ pick-and-roll trong "${scenario}", nên làm gì?`,
+          options: [
+            { text: 'Không đổi cách phòng ngự để giữ ổn định', explanation: 'Dễ tiếp tục thủng điểm.' },
+            { text: 'Điều chỉnh coverage (switch/drop/hedge) theo personnel', explanation: 'Đúng vì giải quyết nguyên nhân trực tiếp.' },
+            { text: 'Tăng tốc tấn công để bù điểm', explanation: 'Không xử lý vấn đề phòng ngự gốc.' },
+            { text: 'Thay ngẫu nhiên cầu thủ', explanation: 'Thiếu cơ sở chiến thuật.' },
+          ],
+          correctAnswer: 1,
+        },
+        {
+          question: `Sau khi đổi chiến thuật trong "${scenario}", ưu tiên theo dõi chỉ số nào?`,
+          options: [
+            { text: 'Số pha xử lý highlight', explanation: 'Không phản ánh hiệu quả đội hình.' },
+            { text: 'Tỷ lệ ném hiệu quả, turnover và rebound', explanation: 'Đúng vì phản ánh chất lượng vận hành.' },
+            { text: 'Số lần hò hét của HLV', explanation: 'Không phải KPI chuyên môn.' },
+            { text: 'Thời lượng hội ý', explanation: 'Không đủ để đánh giá hiệu quả.' },
+          ],
+          correctAnswer: 1,
+        },
+      ],
+      summary:
+        `Tổng kết ${node.title}: đọc trận đấu đúng -> chọn chiến thuật phù hợp -> tối ưu line-up -> theo dõi chỉ số để điều chỉnh.`,
+      learningObjectives: [
+        'Phân tích diễn biến trận đấu bằng dữ liệu trên sân',
+        'Chọn chiến thuật tấn công/phòng ngự theo ngữ cảnh',
+        'Tối ưu phân bổ phút thi đấu và line-up',
+        'Theo dõi KPI chuyên môn để điều chỉnh kịp thời',
+      ],
+    };
+  }
+
   const actor = pack.vocab.actor;
   const resource = pack.vocab.resource;
   const output = pack.vocab.output;
@@ -406,7 +479,14 @@ async function main() {
     const subjectsRs = await client.query(
       `select id, name from subjects order by "createdAt" asc`,
     );
-    const subjects = subjectsRs.rows as SubjectRow[];
+    let subjects = subjectsRs.rows as SubjectRow[];
+    if (SUBJECT_FILTER) {
+      const keyword = SUBJECT_FILTER.toLowerCase();
+      subjects = subjects.filter((s) => s.name.toLowerCase().includes(keyword));
+      if (!subjects.length) {
+        throw new Error(`No subjects matched SUBJECT_NAME=${SUBJECT_FILTER}`);
+      }
+    }
     if (!subjects.length) throw new Error('No subjects found');
 
     for (let sIdx = 0; sIdx < subjects.length; sIdx++) {
