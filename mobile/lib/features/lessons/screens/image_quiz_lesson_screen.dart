@@ -66,6 +66,8 @@ class _ImageQuizLessonScreenState extends State<ImageQuizLessonScreen> {
   @override
   Widget build(BuildContext context) {
     final totalSlides = _slides.length;
+    final answeredCount = _selectedAnswers.values.whereType<int>().length;
+    final hasAnsweredAllSlides = totalSlides > 0 && answeredCount >= totalSlides;
 
     return Scaffold(
       backgroundColor: AppColors.bgPrimary,
@@ -143,38 +145,57 @@ class _ImageQuizLessonScreenState extends State<ImageQuizLessonScreen> {
             ),
           ),
 
-          // Bottom button
+          // Bottom section: only show test button when all slides answered
           Padding(
             padding: const EdgeInsets.all(16),
-            child: SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => EndQuizScreen(
-                        nodeId: widget.nodeId,
-                        title: widget.title,
-                        lessonType: widget.lessonType ?? 'image_quiz',
-                        questions: (widget.endQuiz?['questions'] as List?)?.cast<dynamic>(),
+            child: hasAnsweredAllSlides
+                ? SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => EndQuizScreen(
+                              nodeId: widget.nodeId,
+                              title: widget.title,
+                              lessonType: widget.lessonType ?? 'image_quiz',
+                              questions:
+                                  (widget.endQuiz?['questions'] as List?)?.cast<dynamic>(),
+                            ),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.purpleNeon,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: const Text(
+                        'Làm bài kiểm tra',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                     ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.purpleNeon,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                  )
+                : Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: AppColors.bgSecondary,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: AppColors.borderPrimary),
+                    ),
+                    child: Text(
+                      'Hãy trả lời hết tất cả slide trước khi làm bài kiểm tra '
+                      '($answeredCount/$totalSlides).',
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 14,
+                      ),
+                    ),
                   ),
-                ),
-                child: const Text(
-                  'Làm bài kiểm tra',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
           ),
         ],
       ),
