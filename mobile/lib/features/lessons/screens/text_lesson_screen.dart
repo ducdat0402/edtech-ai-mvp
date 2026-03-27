@@ -33,9 +33,62 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
   final Set<int> _checkedObjectives = {};
 
   List<Map<String, dynamic>> get _sections {
-    final raw =
-        widget.lessonData['sections'] ?? widget.lessonData['content'] ?? [];
-    if (raw is List) return List<Map<String, dynamic>>.from(raw);
+    final raw = widget.lessonData['sections'] ?? widget.lessonData['content'];
+    if (raw is List) {
+      return List<Map<String, dynamic>>.from(
+        raw
+            .whereType<Map>()
+            .map((e) => Map<String, dynamic>.from(e))
+            .toList(),
+      );
+    }
+    if (raw is String && raw.trim().isNotEmpty) {
+      return [
+        {
+          'title': 'Nội dung bài học',
+          'content': raw.trim(),
+        }
+      ];
+    }
+    if (raw is Map) {
+      final map = Map<String, dynamic>.from(raw);
+      final mapText = (map['content'] ??
+              map['text'] ??
+              map['description'] ??
+              map['body'] ??
+              '')
+          .toString()
+          .trim();
+      if (mapText.isNotEmpty) {
+        return [
+          {
+            'title': (map['title'] ?? map['heading'] ?? 'Nội dung bài học')
+                .toString(),
+            'content': mapText,
+          }
+        ];
+      }
+    }
+
+    final fallbackText = (widget.lessonData['text'] ??
+            widget.lessonData['body'] ??
+            widget.lessonData['article'] ??
+            widget.lessonData['articleText'] ??
+            widget.lessonData['description'] ??
+            widget.lessonData['lessonText'] ??
+            widget.lessonData['markdown'] ??
+            widget.lessonData['contentText'] ??
+            '')
+        .toString()
+        .trim();
+    if (fallbackText.isNotEmpty) {
+      return [
+        {
+          'title': 'Nội dung bài học',
+          'content': fallbackText,
+        }
+      ];
+    }
     return [];
   }
 
@@ -207,33 +260,29 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
 
   List<Widget> _buildSectionsWithQuizzes() {
     final widgets = <Widget>[];
-    int quizIndex = 0;
 
     for (int i = 0; i < _sections.length; i++) {
       final section = _sections[i];
       widgets.add(_buildSectionCard(section));
-
-      // Check if there's a quiz after this section
-      if (quizIndex < _inlineQuizzes.length) {
-        final quiz = _inlineQuizzes[quizIndex];
-        final afterSection =
-            quiz['afterSection'] ?? quiz['position'] ?? quizIndex;
-        final sectionPos = afterSection is int
-            ? afterSection
-            : int.tryParse(afterSection.toString()) ?? quizIndex;
-
-        if (sectionPos == i ||
-            (sectionPos <= i && quizIndex < _inlineQuizzes.length)) {
-          widgets.add(_buildInlineQuiz(quizIndex, quiz));
-          quizIndex++;
-        }
-      }
     }
 
-    // Add remaining quizzes
-    while (quizIndex < _inlineQuizzes.length) {
-      widgets.add(_buildInlineQuiz(quizIndex, _inlineQuizzes[quizIndex]));
-      quizIndex++;
+    // Always place quiz part after reading content to avoid "all questions" feeling.
+    if (_inlineQuizzes.isNotEmpty) {
+      widgets.add(const SizedBox(height: 6));
+      widgets.add(
+        const Text(
+          'Câu hỏi ôn tập',
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      );
+      widgets.add(const SizedBox(height: 10));
+      for (int quizIndex = 0; quizIndex < _inlineQuizzes.length; quizIndex++) {
+        widgets.add(_buildInlineQuiz(quizIndex, _inlineQuizzes[quizIndex]));
+      }
     }
 
     return widgets;
@@ -242,7 +291,13 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
   Widget _buildSectionCard(Map<String, dynamic> section) {
     final sectionTitle =
         (section['title'] ?? section['heading'] ?? '').toString();
-    final content = (section['content'] ?? section['text'] ?? '').toString();
+    final content =
+        (section['content'] ??
+                section['text'] ??
+                section['description'] ??
+                section['body'] ??
+                '')
+            .toString();
     final examples =
         (section['examples'] as List?)?.cast<Map<String, dynamic>>() ?? [];
 
