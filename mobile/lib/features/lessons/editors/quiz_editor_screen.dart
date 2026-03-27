@@ -54,6 +54,22 @@ class _QuizEditorScreenState extends State<QuizEditorScreen> {
 
   static const int _minQuestions = 5;
   static const int _maxQuestions = 7;
+  static const List<String> _logicTypeOptions = [
+    'inference',
+    'compare',
+    'sequence',
+    'assumption_check',
+    'source_reliability',
+    'argument_strength',
+    'counterexample',
+  ];
+  static const Map<String, String> _competencyLabels = {
+    'logical_thinking': 'Tư duy logic',
+    'practical_application': 'Áp dụng thực tiễn',
+    'systems_thinking': 'Tư duy hệ thống',
+    'creativity': 'Sáng tạo',
+    'critical_thinking': 'Tư duy phản biện',
+  };
 
   @override
   void initState() {
@@ -71,6 +87,21 @@ class _QuizEditorScreenState extends State<QuizEditorScreen> {
           final qd = _QuestionData();
           qd.questionController.text = m['question'] as String? ?? '';
           qd.correctAnswer = m['correctAnswer'] as int? ?? 0;
+          final logicTypes = m['logicTypes'] as List?;
+          if (logicTypes != null) {
+            qd.logicTypes.addAll(
+              logicTypes.map((e) => e.toString()).where((e) => e.trim().isNotEmpty),
+            );
+          }
+          final competencyMix = m['competencyMix'];
+          if (competencyMix is Map) {
+            for (final key in _competencyLabels.keys) {
+              final raw = competencyMix[key];
+              if (raw is num && raw.isFinite) {
+                qd.competencyMix[key] = raw.toDouble().clamp(0, 1);
+              }
+            }
+          }
           final options = m['options'] as List? ?? [];
           for (int i = 0; i < options.length && i < 4; i++) {
             final opt = options[i] as Map<String, dynamic>;
@@ -523,6 +554,18 @@ class _QuizEditorScreenState extends State<QuizEditorScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+    for (int i = 0; i < _questions.length; i++) {
+      final issue = _validateQuestionSignals(i, _questions[i]);
+      if (issue != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(issue),
+            backgroundColor: AppColors.warningNeon,
+          ),
+        );
+        return;
+      }
+    }
 
     if (_questions.length < _minQuestions) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -599,6 +642,17 @@ class _QuizEditorScreenState extends State<QuizEditorScreen> {
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
+  }
+
+  String? _validateQuestionSignals(int index, _QuestionData question) {
+    if (question.logicTypes.isEmpty) {
+      return 'Câu ${index + 1}: hãy chọn ít nhất 1 logic type.';
+    }
+    final sum = question.competencyMix.values.fold<double>(0, (a, b) => a + b);
+    if ((sum - 1).abs() > 0.01) {
+      return 'Câu ${index + 1}: tổng competencyMix phải bằng 1.0 (hiện ${sum.toStringAsFixed(2)}).';
+    }
+    return null;
   }
 
   InputDecoration _inputDecoration(String label) {
@@ -990,6 +1044,109 @@ class _QuizEditorScreenState extends State<QuizEditorScreen> {
               ),
             );
           }),
+
+          const SizedBox(height: 8),
+          const Divider(color: AppColors.borderPrimary),
+          const SizedBox(height: 8),
+          const Text(
+            'Tag đánh giá cho câu hỏi',
+            style: TextStyle(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: _logicTypeOptions.map((tag) {
+              final selected = question.logicTypes.contains(tag);
+              return FilterChip(
+                selected: selected,
+                onSelected: (v) {
+                  setState(() {
+                    if (v) {
+                      question.logicTypes.add(tag);
+                    } else {
+                      question.logicTypes.remove(tag);
+                    }
+                  });
+                },
+                label: Text(tag),
+                selectedColor: AppColors.cyanNeon.withValues(alpha: 0.2),
+                checkmarkColor: AppColors.cyanNeon,
+                side: const BorderSide(color: AppColors.borderPrimary),
+                labelStyle: TextStyle(
+                  color: selected ? AppColors.cyanNeon : AppColors.textSecondary,
+                  fontSize: 12,
+                ),
+                backgroundColor: AppColors.bgTertiary,
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 12),
+          ..._competencyLabels.entries.map((entry) {
+            final key = entry.key;
+            final label = entry.value;
+            final value = question.competencyMix[key] ?? 0.0;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          label,
+                          style: const TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        value.toStringAsFixed(2),
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Slider(
+                    value: value,
+                    min: 0,
+                    max: 1,
+                    divisions: 20,
+                    activeColor: AppColors.purpleNeon,
+                    inactiveColor: AppColors.bgTertiary,
+                    onChanged: (v) {
+                      setState(() {
+                        question.competencyMix[key] = v;
+                      });
+                    },
+                  ),
+                ],
+              ),
+            );
+          }),
+          Builder(
+            builder: (_) {
+              final sum =
+                  question.competencyMix.values.fold<double>(0, (a, b) => a + b);
+              final ok = (sum - 1).abs() <= 0.01;
+              return Text(
+                'Tổng competencyMix: ${sum.toStringAsFixed(2)} ${ok ? '(OK)' : '(cần = 1.00)'}',
+                style: TextStyle(
+                  color: ok ? AppColors.successNeon : AppColors.warningNeon,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              );
+            },
+          ),
         ],
       ),
     );
@@ -1282,6 +1439,14 @@ class _QuestionData {
   final List<TextEditingController> explanationControllers =
       List.generate(4, (_) => TextEditingController());
   int correctAnswer = 0;
+  final Set<String> logicTypes = <String>{'inference'};
+  final Map<String, double> competencyMix = <String, double>{
+    'logical_thinking': 0.3,
+    'practical_application': 0.2,
+    'systems_thinking': 0.2,
+    'creativity': 0.1,
+    'critical_thinking': 0.2,
+  };
 
   void dispose() {
     questionController.dispose();
@@ -1303,6 +1468,8 @@ class _QuestionData {
         };
       }),
       'correctAnswer': correctAnswer,
+      'logicTypes': logicTypes.toList(),
+      'competencyMix': competencyMix,
     };
   }
 }
