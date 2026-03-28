@@ -100,21 +100,43 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
               : RefreshIndicator(
                   onRefresh: _loadData,
                   color: AppColors.purpleNeon,
-                  child: ListView(
-                    padding: const EdgeInsets.all(16),
-                    children: [
-                      _buildHeroCard(),
-                      const SizedBox(height: 14),
-                      _buildContributorBanner(),
-                      const SizedBox(height: 14),
-                      ..._subjects.map(_buildSubjectCard),
+                  child: CustomScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    slivers: [
+                      SliverPadding(
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+                        sliver: SliverList(
+                          delegate: SliverChildListDelegate([
+                            _buildHeroCard(),
+                            const SizedBox(height: 14),
+                            _buildContributorBanner(),
+                            const SizedBox(height: 14),
+                          ]),
+                        ),
+                      ),
                       if (_subjects.isEmpty)
-                        const Padding(
-                          padding: EdgeInsets.only(top: 36),
+                        const SliverFillRemaining(
+                          hasScrollBody: false,
                           child: Center(
                             child: Text(
                               'Chưa có môn học nào',
                               style: TextStyle(color: AppColors.textSecondary),
+                            ),
+                          ),
+                        )
+                      else
+                        SliverPadding(
+                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                          sliver: SliverGrid(
+                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              mainAxisSpacing: 12,
+                              crossAxisSpacing: 12,
+                              childAspectRatio: 0.78,
+                            ),
+                            delegate: SliverChildBuilderDelegate(
+                              (context, index) => _buildSubjectTile(_subjects[index]),
+                              childCount: _subjects.length,
                             ),
                           ),
                         ),
@@ -243,120 +265,256 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
     return palette[hash % palette.length];
   }
 
-  Widget _buildSubjectCard(Map<String, dynamic> subject) {
+  Map<String, dynamic>? _metadata(Map<String, dynamic> subject) {
+    final m = subject['metadata'];
+    if (m is Map<String, dynamic>) return m;
+    if (m is Map) return Map<String, dynamic>.from(m);
+    return null;
+  }
+
+  Color _accentFromSubject(Map<String, dynamic> subject, String name) {
+    final meta = _metadata(subject);
+    final c = meta?['color']?.toString();
+    if (c != null && c.startsWith('#') && c.length >= 7) {
+      try {
+        return Color(int.parse(c.substring(1, 7), radix: 16) + 0xFF000000);
+      } catch (_) {}
+    }
+    return Color(_subjectColor(name));
+  }
+
+  /// Admin can set `metadata.coverImageUrl`; otherwise a generated illustration URL (Pollinations).
+  String _coverUrlForSubject(Map<String, dynamic> subject) {
+    final meta = _metadata(subject);
+    final custom = meta?['coverImageUrl']?.toString().trim();
+    if (custom != null && custom.isNotEmpty) {
+      return custom;
+    }
+    final id = (subject['id'] ?? '').toString();
+    final name = (subject['name'] ?? 'subject').toString();
+    final seed = id.isEmpty ? name.hashCode.abs() : id.hashCode.abs();
+    final prompt = Uri.encodeComponent(
+      'Minimal stylish flat illustration for an educational course titled "$name", '
+      'purple and teal neon glow on dark background, abstract, no text, no letters, no words',
+    );
+    return 'https://image.pollinations.ai/prompt/$prompt?width=480&height=560&nologo=true&model=flux&seed=$seed';
+  }
+
+  Widget _subjectIconBadge(Map<String, dynamic> subject, String name, Color accent) {
+    final meta = _metadata(subject);
+    final iconRaw = meta?['icon']?.toString().trim();
+    final Widget inner;
+    if (iconRaw != null && iconRaw.isNotEmpty) {
+      final hasPicto = RegExp(r'\p{Extended_Pictographic}', unicode: true).hasMatch(iconRaw);
+      if (hasPicto) {
+        inner = Text(iconRaw, style: const TextStyle(fontSize: 22, height: 1));
+      } else if (iconRaw.length == 1) {
+        inner = Text(
+          iconRaw.toUpperCase(),
+          style: TextStyle(color: accent, fontWeight: FontWeight.w800, fontSize: 16),
+        );
+      } else {
+        inner = Text(
+          name.isNotEmpty ? name.substring(0, 1).toUpperCase() : '?',
+          style: TextStyle(color: accent, fontWeight: FontWeight.w800, fontSize: 16),
+        );
+      }
+    } else {
+      inner = Text(
+        name.isNotEmpty ? name.substring(0, 1).toUpperCase() : '?',
+        style: TextStyle(color: accent, fontWeight: FontWeight.w800, fontSize: 16),
+      );
+    }
+    return Container(
+      width: 40,
+      height: 40,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.45),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+      ),
+      child: inner,
+    );
+  }
+
+  Widget _buildSubjectTile(Map<String, dynamic> subject) {
     final id = (subject['id'] ?? '').toString();
     final name = (subject['name'] ?? 'Môn học').toString();
     final description = (subject['description'] ?? '').toString();
-    return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      padding: const EdgeInsets.all(15),
-      decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.borderPrimary),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.15),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          )
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    final coverUrl = _coverUrlForSubject(subject);
+    final accent = _accentFromSubject(subject, name);
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: Stack(
+        fit: StackFit.expand,
         children: [
-          Row(
-            children: [
-              Container(
-                width: 34,
-                height: 34,
+          Image.network(
+            coverUrl,
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: double.infinity,
+            loadingBuilder: (context, child, progress) {
+              if (progress == null) return child;
+              return Container(
+                color: AppColors.bgSecondary,
                 alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: Color(_subjectColor(name)).withValues(alpha: 0.18),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(
-                    color: Color(_subjectColor(name)).withValues(alpha: 0.4),
+                child: const SizedBox(
+                  width: 28,
+                  height: 28,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: AppColors.purpleNeon,
                   ),
                 ),
-                child: Text(
-                  name.isNotEmpty ? name.substring(0, 1).toUpperCase() : '?',
-                  style: TextStyle(
-                    color: Color(_subjectColor(name)),
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  name,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 16,
-                  ),
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppColors.bgTertiary,
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: const Text(
-                  'Môn học',
-                  style: TextStyle(
-                    color: AppColors.textTertiary,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          if (description.isNotEmpty)
-            Text(
-              description,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+              );
+            },
+            errorBuilder: (_, __, ___) => Container(
+              color: accent.withValues(alpha: 0.25),
+              alignment: Alignment.center,
+              child: Icon(Icons.menu_book_rounded, color: accent.withValues(alpha: 0.9), size: 40),
             ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () => context.push('/subjects/$id/intro'),
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: AppColors.cyanNeon, width: 1),
-                    foregroundColor: AppColors.cyanNeon,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.black.withValues(alpha: 0.05),
+                  Colors.black.withValues(alpha: 0.45),
+                  Colors.black.withValues(alpha: 0.88),
+                ],
+                stops: const [0.0, 0.5, 1.0],
+              ),
+            ),
+          ),
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 52,
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () => context.push('/subjects/$id/intro'),
+                child: const SizedBox.expand(),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 10,
+            left: 10,
+            child: IgnorePointer(child: _subjectIconBadge(subject, name, accent)),
+          ),
+          Positioned(
+            left: 10,
+            right: 10,
+            bottom: 52,
+            child: IgnorePointer(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    name,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 14,
+                      height: 1.2,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black.withValues(alpha: 0.85),
+                          blurRadius: 10,
+                        ),
+                      ],
                     ),
                   ),
-                  child: const Text('Vào học'),
+                  if (description.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      description,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.72),
+                        fontSize: 11,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black.withValues(alpha: 0.9),
+                            blurRadius: 8,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.transparent,
+                    Colors.black.withValues(alpha: 0.92),
+                  ],
                 ),
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: _isContributor
-                      ? () => context.push(
-                            '/contributor/mind-map?subjectId=$id&subjectName=${Uri.encodeComponent(name)}',
-                          )
-                      : () => context.go('/profile'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.purpleNeon,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => context.push('/subjects/$id/intro'),
+                      style: OutlinedButton.styleFrom(
+                        visualDensity: VisualDensity.compact,
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        side: BorderSide(color: Colors.white.withValues(alpha: 0.55)),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      child: const Text('Học', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
                     ),
                   ),
-                  child: Text(_isContributor ? 'Đóng góp bài học' : 'Bật Contributor'),
-                ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: _isContributor
+                          ? () => context.push(
+                                '/contributor/mind-map?subjectId=$id&subjectName=${Uri.encodeComponent(name)}',
+                              )
+                          : () => context.go('/profile'),
+                      style: ElevatedButton.styleFrom(
+                        visualDensity: VisualDensity.compact,
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        backgroundColor: AppColors.purpleNeon,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      child: Text(
+                        _isContributor ? 'Đóng góp' : 'Contributor',
+                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ],
       ),

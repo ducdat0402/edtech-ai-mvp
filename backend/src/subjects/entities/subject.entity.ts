@@ -31,6 +31,8 @@ export class Subject {
     icon?: string;
     color?: string;
     estimatedDays?: number;
+    /** Optional cover shown on subject tiles (admin-set URL). */
+    coverImageUrl?: string;
   };
 
   @Column({ type: 'jsonb', nullable: true })
