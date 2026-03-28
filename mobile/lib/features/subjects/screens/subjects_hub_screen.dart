@@ -381,7 +381,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
     );
   }
 
-  static const double _tileActionBarHeight = 46;
+  static const double _tileActionBarHeight = 52;
 
   Widget _buildSubjectTile(Map<String, dynamic> subject) {
     final id = (subject['id'] ?? '').toString();
@@ -489,7 +489,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
             right: 0,
             bottom: 0,
             child: Container(
-              padding: const EdgeInsets.fromLTRB(6, 0, 6, 6),
+              padding: const EdgeInsets.fromLTRB(6, 2, 6, 7),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
@@ -507,22 +507,22 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                       onPressed: () => context.push('/subjects/$id/intro'),
                       style: OutlinedButton.styleFrom(
                         visualDensity: VisualDensity.compact,
-                        padding: const EdgeInsets.symmetric(vertical: 4),
-                        minimumSize: Size.zero,
+                        padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 4),
+                        minimumSize: const Size(0, 34),
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         side: BorderSide(color: Colors.white.withValues(alpha: 0.45)),
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(9),
                         ),
                       ),
                       child: const FittedBox(
                         fit: BoxFit.scaleDown,
-                        child: Text('Học', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
+                        child: Text('Học', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600)),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 5),
+                  const SizedBox(width: 6),
                   Expanded(
                     child: ElevatedButton(
                       onPressed: _isContributor
@@ -532,20 +532,20 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                           : () => context.go('/profile'),
                       style: ElevatedButton.styleFrom(
                         visualDensity: VisualDensity.compact,
-                        padding: const EdgeInsets.symmetric(vertical: 4),
-                        minimumSize: Size.zero,
+                        padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 4),
+                        minimumSize: const Size(0, 34),
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         backgroundColor: AppColors.purpleNeon,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(9),
                         ),
                       ),
                       child: FittedBox(
                         fit: BoxFit.scaleDown,
                         child: Text(
                           _isContributor ? 'Đóng góp' : 'Contributor',
-                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+                          style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600),
                         ),
                       ),
                     ),
