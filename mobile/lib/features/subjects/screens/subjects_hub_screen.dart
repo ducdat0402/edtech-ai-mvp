@@ -126,13 +126,13 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                         )
                       else
                         SliverPadding(
-                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                          padding: const EdgeInsets.fromLTRB(14, 0, 14, 20),
                           sliver: SliverGrid(
-                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              mainAxisSpacing: 12,
-                              crossAxisSpacing: 12,
-                              childAspectRatio: 0.78,
+                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: _gridCrossAxisCount(MediaQuery.sizeOf(context).width),
+                              mainAxisSpacing: 10,
+                              crossAxisSpacing: 10,
+                              childAspectRatio: 0.92,
                             ),
                             delegate: SliverChildBuilderDelegate(
                               (context, index) => _buildSubjectTile(_subjects[index]),
@@ -283,110 +283,143 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
     return Color(_subjectColor(name));
   }
 
-  /// Admin can set `metadata.coverImageUrl`; otherwise a generated illustration URL (Pollinations).
-  String _coverUrlForSubject(Map<String, dynamic> subject) {
-    final meta = _metadata(subject);
-    final custom = meta?['coverImageUrl']?.toString().trim();
-    if (custom != null && custom.isNotEmpty) {
-      return custom;
-    }
-    final id = (subject['id'] ?? '').toString();
-    final name = (subject['name'] ?? 'subject').toString();
-    final seed = id.isEmpty ? name.hashCode.abs() : id.hashCode.abs();
-    final prompt = Uri.encodeComponent(
-      'Minimal stylish flat illustration for an educational course titled "$name", '
-      'purple and teal neon glow on dark background, abstract, no text, no letters, no words',
-    );
-    return 'https://image.pollinations.ai/prompt/$prompt?width=480&height=560&nologo=true&model=flux&seed=$seed';
+  int _gridCrossAxisCount(double width) {
+    if (width >= 520) return 4;
+    if (width >= 340) return 3;
+    return 2;
   }
 
-  Widget _subjectIconBadge(Map<String, dynamic> subject, String name, Color accent) {
+  /// Optional admin cover; otherwise tiles use icon watermark + gradient (no remote image).
+  String? _customCoverUrl(Map<String, dynamic> subject) {
+    final meta = _metadata(subject);
+    final custom = meta?['coverImageUrl']?.toString().trim();
+    if (custom == null || custom.isEmpty) return null;
+    return custom;
+  }
+
+  Widget _subjectIconWatermark(Map<String, dynamic> subject, String name, Color accent) {
     final meta = _metadata(subject);
     final iconRaw = meta?['icon']?.toString().trim();
-    final Widget inner;
     if (iconRaw != null && iconRaw.isNotEmpty) {
       final hasPicto = RegExp(r'\p{Extended_Pictographic}', unicode: true).hasMatch(iconRaw);
       if (hasPicto) {
-        inner = Text(iconRaw, style: const TextStyle(fontSize: 22, height: 1));
-      } else if (iconRaw.length == 1) {
-        inner = Text(
-          iconRaw.toUpperCase(),
-          style: TextStyle(color: accent, fontWeight: FontWeight.w800, fontSize: 16),
-        );
-      } else {
-        inner = Text(
-          name.isNotEmpty ? name.substring(0, 1).toUpperCase() : '?',
-          style: TextStyle(color: accent, fontWeight: FontWeight.w800, fontSize: 16),
+        return Text(
+          iconRaw,
+          style: TextStyle(
+            fontSize: 88,
+            height: 1,
+            color: Colors.white.withValues(alpha: 0.2),
+            shadows: [
+              Shadow(color: accent.withValues(alpha: 0.35), blurRadius: 24),
+            ],
+          ),
         );
       }
-    } else {
-      inner = Text(
-        name.isNotEmpty ? name.substring(0, 1).toUpperCase() : '?',
-        style: TextStyle(color: accent, fontWeight: FontWeight.w800, fontSize: 16),
-      );
+      if (iconRaw.length == 1) {
+        return Text(
+          iconRaw.toUpperCase(),
+          style: TextStyle(
+            fontSize: 80,
+            fontWeight: FontWeight.w900,
+            color: accent.withValues(alpha: 0.22),
+            height: 1,
+          ),
+        );
+      }
     }
-    return Container(
-      width: 40,
-      height: 40,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.45),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+    final letter = name.isNotEmpty ? name.substring(0, 1).toUpperCase() : '?';
+    return Text(
+      letter,
+      style: TextStyle(
+        fontSize: 80,
+        fontWeight: FontWeight.w900,
+        color: Colors.white.withValues(alpha: 0.14),
+        height: 1,
       ),
-      child: inner,
     );
   }
+
+  Widget _iconBackdrop(Map<String, dynamic> subject, String name, Color accent) {
+    final base = Color.lerp(accent, const Color(0xFF0A0A0F), 0.72) ?? AppColors.bgSecondary;
+    final deep = Color.lerp(accent, Colors.black, 0.55) ?? AppColors.bgSecondary;
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            base,
+            AppColors.bgSecondary,
+            deep,
+          ],
+          stops: const [0.0, 0.45, 1.0],
+        ),
+      ),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Positioned.fill(
+            child: IgnorePointer(
+              child: Align(
+                alignment: const Alignment(0, -0.25),
+                child: FractionallySizedBox(
+                  widthFactor: 0.95,
+                  heightFactor: 0.55,
+                  child: Transform.rotate(
+                    angle: -0.1,
+                    child: FittedBox(
+                      fit: BoxFit.contain,
+                      child: _subjectIconWatermark(subject, name, accent),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static const double _tileActionBarHeight = 46;
 
   Widget _buildSubjectTile(Map<String, dynamic> subject) {
     final id = (subject['id'] ?? '').toString();
     final name = (subject['name'] ?? 'Môn học').toString();
     final description = (subject['description'] ?? '').toString();
-    final coverUrl = _coverUrlForSubject(subject);
+    final coverUrl = _customCoverUrl(subject);
     final accent = _accentFromSubject(subject, name);
 
     return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(12),
       child: Stack(
         fit: StackFit.expand,
         children: [
-          Image.network(
-            coverUrl,
-            fit: BoxFit.cover,
-            width: double.infinity,
-            height: double.infinity,
-            loadingBuilder: (context, child, progress) {
-              if (progress == null) return child;
-              return Container(
-                color: AppColors.bgSecondary,
-                alignment: Alignment.center,
-                child: const SizedBox(
-                  width: 28,
-                  height: 28,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: AppColors.purpleNeon,
-                  ),
-                ),
-              );
-            },
-            errorBuilder: (_, __, ___) => Container(
-              color: accent.withValues(alpha: 0.25),
-              alignment: Alignment.center,
-              child: Icon(Icons.menu_book_rounded, color: accent.withValues(alpha: 0.9), size: 40),
-            ),
-          ),
+          if (coverUrl != null)
+            Image.network(
+              coverUrl,
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: double.infinity,
+              loadingBuilder: (context, child, progress) {
+                if (progress == null) return child;
+                return _iconBackdrop(subject, name, accent);
+              },
+              errorBuilder: (_, __, ___) => _iconBackdrop(subject, name, accent),
+            )
+          else
+            _iconBackdrop(subject, name, accent),
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Colors.black.withValues(alpha: 0.05),
-                  Colors.black.withValues(alpha: 0.45),
-                  Colors.black.withValues(alpha: 0.88),
+                  Colors.black.withValues(alpha: 0.02),
+                  Colors.black.withValues(alpha: 0.35),
+                  Colors.black.withValues(alpha: 0.82),
                 ],
-                stops: const [0.0, 0.5, 1.0],
+                stops: const [0.0, 0.55, 1.0],
               ),
             ),
           ),
@@ -394,7 +427,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
             top: 0,
             left: 0,
             right: 0,
-            bottom: 52,
+            bottom: _tileActionBarHeight,
             child: Material(
               color: Colors.transparent,
               child: InkWell(
@@ -404,14 +437,9 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
             ),
           ),
           Positioned(
-            top: 10,
-            left: 10,
-            child: IgnorePointer(child: _subjectIconBadge(subject, name, accent)),
-          ),
-          Positioned(
-            left: 10,
-            right: 10,
-            bottom: 52,
+            left: 8,
+            right: 8,
+            bottom: _tileActionBarHeight,
             child: IgnorePointer(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -424,29 +452,29 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w800,
-                      fontSize: 14,
-                      height: 1.2,
+                      fontSize: 12.5,
+                      height: 1.15,
                       shadows: [
                         Shadow(
-                          color: Colors.black.withValues(alpha: 0.85),
-                          blurRadius: 10,
+                          color: Colors.black.withValues(alpha: 0.9),
+                          blurRadius: 8,
                         ),
                       ],
                     ),
                   ),
                   if (description.isNotEmpty) ...[
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 2),
                     Text(
                       description,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.72),
-                        fontSize: 11,
+                        color: Colors.white.withValues(alpha: 0.7),
+                        fontSize: 10,
                         shadows: [
                           Shadow(
-                            color: Colors.black.withValues(alpha: 0.9),
-                            blurRadius: 8,
+                            color: Colors.black.withValues(alpha: 0.95),
+                            blurRadius: 6,
                           ),
                         ],
                       ),
@@ -461,14 +489,14 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
             right: 0,
             bottom: 0,
             child: Container(
-              padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+              padding: const EdgeInsets.fromLTRB(6, 0, 6, 6),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
                     Colors.transparent,
-                    Colors.black.withValues(alpha: 0.92),
+                    Colors.black.withValues(alpha: 0.9),
                   ],
                 ),
               ),
@@ -479,17 +507,22 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                       onPressed: () => context.push('/subjects/$id/intro'),
                       style: OutlinedButton.styleFrom(
                         visualDensity: VisualDensity.compact,
-                        padding: const EdgeInsets.symmetric(vertical: 6),
-                        side: BorderSide(color: Colors.white.withValues(alpha: 0.55)),
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        side: BorderSide(color: Colors.white.withValues(alpha: 0.45)),
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      child: const Text('Học', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                      child: const FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text('Học', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 6),
+                  const SizedBox(width: 5),
                   Expanded(
                     child: ElevatedButton(
                       onPressed: _isContributor
@@ -499,16 +532,21 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                           : () => context.go('/profile'),
                       style: ElevatedButton.styleFrom(
                         visualDensity: VisualDensity.compact,
-                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         backgroundColor: AppColors.purpleNeon,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      child: Text(
-                        _isContributor ? 'Đóng góp' : 'Contributor',
-                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          _isContributor ? 'Đóng góp' : 'Contributor',
+                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+                        ),
                       ),
                     ),
                   ),
