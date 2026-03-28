@@ -75,7 +75,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
         ),
         BottomNavigationBarItem(
           icon: _buildFriendsIcon(),
-          label: 'Bạn bè',
+          label: 'Cộng đồng',
         ),
         const BottomNavigationBarItem(
           icon: Icon(Icons.person),
@@ -87,14 +87,14 @@ class _BottomNavBarState extends State<BottomNavBar> {
 
   Widget _buildFriendsIcon() {
     if (_pendingCount <= 0) {
-      return const Icon(Icons.people);
+      return const Icon(Icons.groups_rounded);
     }
     return Badge(
       label: Text(
         _pendingCount > 9 ? '9+' : '$_pendingCount',
         style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
       ),
-      child: const Icon(Icons.people),
+      child: const Icon(Icons.groups_rounded),
     );
   }
 }

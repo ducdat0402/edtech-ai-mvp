@@ -81,6 +81,11 @@ export class FriendsController {
     return { count };
   }
 
+  @Get('relationship/:userId')
+  async getRelationship(@Request() req, @Param('userId') peerId: string) {
+    return this.friendsService.getRelationshipWith(req.user.id, peerId);
+  }
+
   // ─── Discovery ──────────────────────────────────────────
 
   @Get('search')

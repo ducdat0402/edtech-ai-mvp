@@ -190,6 +190,13 @@ class ApiConstants {
   static String unfriend(String friendshipId) => '/friends/$friendshipId';
   static String blockUser(String userId) => '/friends/block/$userId';
   static String unblockUser(String userId) => '/friends/block/$userId';
+  static String friendRelationship(String userId) => '/friends/relationship/$userId';
+
+  // Community (status feed)
+  static const String communityStatuses = '/community/statuses';
+  static String communityStatus(String id) => '/community/statuses/$id';
+  static String communityStatusReact(String id) => '/community/statuses/$id/react';
+  static String communityStatusComments(String id) => '/community/statuses/$id/comments';
 
   // Direct messages (DM)
   static const String dmConversations = '/dm/conversations';

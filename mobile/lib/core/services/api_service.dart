@@ -1108,6 +1108,68 @@ class ApiService {
     return {'users': <dynamic>[]};
   }
 
+  Future<Map<String, dynamic>> getFriendRelationship(String userId) async {
+    final response = await _apiClient.get(ApiConstants.friendRelationship(userId));
+    final data = response.data;
+    if (data is Map<String, dynamic>) return data;
+    return Map<String, dynamic>.from(data as Map);
+  }
+
+  Future<Map<String, dynamic>> listCommunityStatuses({int limit = 20, String? before}) async {
+    final response = await _apiClient.get(
+      ApiConstants.communityStatuses,
+      queryParameters: {
+        'limit': limit,
+        if (before != null) 'before': before,
+      },
+    );
+    final data = response.data;
+    if (data is Map<String, dynamic>) return data;
+    return Map<String, dynamic>.from(data as Map);
+  }
+
+  Future<Map<String, dynamic>> createCommunityStatus(String content) async {
+    final response = await _apiClient.post(
+      ApiConstants.communityStatuses,
+      data: {'content': content},
+    );
+    final data = response.data;
+    if (data is Map<String, dynamic>) return data;
+    return Map<String, dynamic>.from(data as Map);
+  }
+
+  Future<void> deleteCommunityStatus(String id) async {
+    await _apiClient.delete(ApiConstants.communityStatus(id));
+  }
+
+  Future<Map<String, dynamic>> reactCommunityStatus(String id, String kind) async {
+    final response = await _apiClient.post(
+      ApiConstants.communityStatusReact(id),
+      data: {'kind': kind},
+    );
+    final data = response.data;
+    if (data is Map<String, dynamic>) return data;
+    return Map<String, dynamic>.from(data as Map);
+  }
+
+  Future<List<dynamic>> listCommunityComments(String statusId, {int limit = 50}) async {
+    final response = await _apiClient.get(
+      ApiConstants.communityStatusComments(statusId),
+      queryParameters: {'limit': limit},
+    );
+    return List<Map<String, dynamic>>.from(response.data as List);
+  }
+
+  Future<Map<String, dynamic>> addCommunityComment(String statusId, String content) async {
+    final response = await _apiClient.post(
+      ApiConstants.communityStatusComments(statusId),
+      data: {'content': content},
+    );
+    final data = response.data;
+    if (data is Map<String, dynamic>) return data;
+    return Map<String, dynamic>.from(data as Map);
+  }
+
   // Direct messages (DM)
   Future<List<dynamic>> getDmConversations() async {
     final response = await _apiClient.get(ApiConstants.dmConversations);

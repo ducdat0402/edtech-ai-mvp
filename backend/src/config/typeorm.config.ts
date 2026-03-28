@@ -38,6 +38,9 @@ import { LearningQuizAttempt } from '../learning-nodes/entities/learning-quiz-at
 import { LearningCommunicationAttempt } from '../learning-nodes/entities/learning-communication-attempt.entity';
 import { UserWeeklyPlan } from '../self-leadership/entities/user-weekly-plan.entity';
 import { SelfLeadershipCheckin } from '../self-leadership/entities/self-leadership-checkin.entity';
+import { CommunityStatus } from '../community/entities/community-status.entity';
+import { CommunityStatusReaction } from '../community/entities/community-status-reaction.entity';
+import { CommunityStatusComment } from '../community/entities/community-status-comment.entity';
 
 @Injectable()
 export class TypeOrmConfigService implements TypeOrmOptionsFactory {
@@ -104,6 +107,9 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
         LearningCommunicationAttempt,
         UserWeeklyPlan,
         SelfLeadershipCheckin,
+        CommunityStatus,
+        CommunityStatusReaction,
+        CommunityStatusComment,
       ],
       synchronize: !isProduction || this.configService.get<string>('ENABLE_SYNC') === 'true',
       logging: !isProduction ? ['error', 'warn'] : ['error'],

@@ -31,6 +31,7 @@ import { ShopModule } from './shop/shop.module';
 import { WorldChatModule } from './world-chat/world-chat.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { FriendsModule } from './friends/friends.module';
+import { CommunityModule } from './community/community.module';
 import { DmModule } from './direct-message/dm.module';
 import { WeeklyRewardsModule } from './weekly-rewards/weekly-rewards.module';
 import { SelfLeadershipModule } from './self-leadership/self-leadership.module';
@@ -75,6 +76,7 @@ import { TypeOrmConfigService } from './config/typeorm.config';
     WorldChatModule,
     NotificationsModule,
     FriendsModule,
+    CommunityModule,
     DmModule,
     WeeklyRewardsModule,
     SelfLeadershipModule,

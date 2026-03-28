@@ -58,6 +58,11 @@ export class FriendsService {
     return !!block;
   }
 
+  /** Peer user IDs involved in a block (either direction). Used by feeds / community. */
+  async getBlockedPeers(userId: string): Promise<string[]> {
+    return this.getBlockedUserIds(userId);
+  }
+
   private async getBlockedUserIds(userId: string): Promise<string[]> {
     const blocks = await this.blockRepository.find({
       where: [{ blockerId: userId }, { blockedId: userId }],
@@ -594,6 +599,36 @@ export class FriendsService {
         },
       })),
       total,
+    };
+  }
+
+  async getRelationshipWith(
+    viewerId: string,
+    peerId: string,
+  ): Promise<{
+    friendshipStatus: string | null;
+    friendshipId: string | null;
+    isRequester: boolean | null;
+  }> {
+    if (viewerId === peerId) {
+      return { friendshipStatus: 'self', friendshipId: null, isRequester: null };
+    }
+    if (await this.isBlocked(viewerId, peerId)) {
+      return { friendshipStatus: 'blocked', friendshipId: null, isRequester: null };
+    }
+    const f = await this.friendshipRepository.findOne({
+      where: [
+        { requesterId: viewerId, addresseeId: peerId },
+        { requesterId: peerId, addresseeId: viewerId },
+      ],
+    });
+    if (!f) {
+      return { friendshipStatus: null, friendshipId: null, isRequester: null };
+    }
+    return {
+      friendshipStatus: f.status,
+      friendshipId: f.id,
+      isRequester: f.requesterId === viewerId,
     };
   }
 }
