@@ -18,11 +18,32 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
   String? _error;
   bool _isContributor = false;
   List<Map<String, dynamic>> _subjects = [];
+  bool _showSearchField = false;
+  final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
     _loadData();
+    _searchController.addListener(() => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _searchFocusNode.dispose();
+    super.dispose();
+  }
+
+  List<Map<String, dynamic>> get _filteredSubjects {
+    final q = _searchController.text.trim().toLowerCase();
+    if (q.isEmpty) return _subjects;
+    return _subjects.where((s) {
+      final name = (s['name'] ?? '').toString().toLowerCase();
+      final desc = (s['description'] ?? '').toString().toLowerCase();
+      return name.contains(q) || desc.contains(q);
+    }).toList();
   }
 
   Future<void> _loadData() async {
@@ -71,6 +92,30 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
             fontWeight: FontWeight.bold,
           ),
         ),
+        actions: [
+          if (!_loading && _error == null)
+            IconButton(
+              tooltip: _showSearchField ? 'Đóng tìm kiếm' : 'Tìm kiếm môn học',
+              onPressed: () {
+                setState(() {
+                  _showSearchField = !_showSearchField;
+                  if (!_showSearchField) {
+                    _searchController.clear();
+                    _searchFocusNode.unfocus();
+                  }
+                });
+                if (_showSearchField) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    _searchFocusNode.requestFocus();
+                  });
+                }
+              },
+              icon: Icon(
+                _showSearchField ? Icons.close : Icons.search,
+                color: AppColors.textPrimary,
+              ),
+            ),
+        ],
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator(color: AppColors.purpleNeon))
@@ -107,6 +152,10 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                         padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
                         sliver: SliverList(
                           delegate: SliverChildListDelegate([
+                            if (_showSearchField) ...[
+                              _buildSearchField(),
+                              const SizedBox(height: 12),
+                            ],
                             _buildHeroCard(),
                             const SizedBox(height: 14),
                             _buildContributorBanner(),
@@ -124,6 +173,23 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                             ),
                           ),
                         )
+                      else if (_filteredSubjects.isEmpty)
+                        const SliverToBoxAdapter(
+                          child: Padding(
+                            padding: EdgeInsets.fromLTRB(24, 32, 24, 48),
+                            child: Center(
+                              child: Text(
+                                'Không tìm thấy môn học phù hợp.\nThử từ khóa khác hoặc xóa ô tìm kiếm.',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: AppColors.textSecondary,
+                                  fontSize: 14,
+                                  height: 1.4,
+                                ),
+                              ),
+                            ),
+                          ),
+                        )
                       else
                         SliverPadding(
                           padding: const EdgeInsets.fromLTRB(14, 0, 14, 20),
@@ -135,8 +201,8 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                               childAspectRatio: 0.92,
                             ),
                             delegate: SliverChildBuilderDelegate(
-                              (context, index) => _buildSubjectTile(_subjects[index]),
-                              childCount: _subjects.length,
+                              (context, index) => _buildSubjectTile(_filteredSubjects[index]),
+                              childCount: _filteredSubjects.length,
                             ),
                           ),
                         ),
@@ -144,6 +210,48 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                   ),
                 ),
       bottomNavigationBar: const BottomNavBar(currentIndex: 1),
+    );
+  }
+
+  Widget _buildSearchField() {
+    return TextField(
+      controller: _searchController,
+      focusNode: _searchFocusNode,
+      style: const TextStyle(color: AppColors.textPrimary, fontSize: 15),
+      cursorColor: AppColors.purpleNeon,
+      decoration: InputDecoration(
+        hintText: 'Tìm theo tên hoặc mô tả môn học…',
+        hintStyle: TextStyle(color: AppColors.textSecondary.withValues(alpha: 0.85), fontSize: 14),
+        prefixIcon: const Icon(Icons.search, color: AppColors.textSecondary, size: 22),
+        suffixIcon: _searchController.text.isEmpty
+            ? null
+            : IconButton(
+                tooltip: 'Xóa',
+                icon: const Icon(Icons.clear, color: AppColors.textSecondary),
+                onPressed: () {
+                  _searchController.clear();
+                  setState(() {});
+                },
+              ),
+        filled: true,
+        fillColor: AppColors.bgSecondary,
+        isDense: true,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
+        border: const OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(12)),
+          borderSide: BorderSide(color: AppColors.borderPrimary),
+        ),
+        enabledBorder: const OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(12)),
+          borderSide: BorderSide(color: AppColors.borderPrimary),
+        ),
+        focusedBorder: const OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(12)),
+          borderSide: BorderSide(color: AppColors.purpleNeon, width: 1.2),
+        ),
+      ),
+      textInputAction: TextInputAction.search,
+      onSubmitted: (_) => _searchFocusNode.unfocus(),
     );
   }
 
