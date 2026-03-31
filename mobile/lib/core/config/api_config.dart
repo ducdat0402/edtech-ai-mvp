@@ -16,7 +16,8 @@ class ApiConfig {
 
 //  static const String baseUrl = 'http://localhost:3000/api/v1';
   static const String baseUrl =
-      'https://edtech-ai-backend-tbq7.onrender.com/api/v1';
+      // 'https://edtech-ai-backend-tbq7.onrender.com/api/v1';
+      'https://api.gamistu.com/api/v1';
 
   /// URL đầy đủ để tải ảnh/static (API nằm dưới `/api/v1`, file tĩnh thường ở gốc host).
   static String absoluteMediaUrl(String? path) {
