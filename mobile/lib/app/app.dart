@@ -46,7 +46,7 @@ class _EdTechAppState extends State<EdTechApp> {
         Provider<DmSocketService>.value(value: dmSocketService),
       ],
       child: MaterialApp.router(
-        title: 'EdTech AI MVP',
+        title: 'Gamistu - Learn more smartly',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.darkTheme,
         routerConfig: _router,
