@@ -78,6 +78,15 @@ class LevelCard extends StatelessWidget {
   /// Khi true: không vẽ nền/bóng (dùng trong thanh top cố định — gradient do cha bọc).
   final bool topBarStrip;
 
+  /// Hiển thị xu / kim cương / chuỗi ngày bên phải thanh strip (thu nhỏ thanh EXP).
+  final int? stripCoins;
+  final int? stripDiamonds;
+  final int? stripStreak;
+  final VoidCallback? onStripCoinsTap;
+  final VoidCallback? onStripDiamondsTap;
+  final VoidCallback? onStripStreakTap;
+  final Key? stripResourcesKey;
+
   const LevelCard({
     super.key,
     required this.level,
@@ -90,11 +99,24 @@ class LevelCard extends StatelessWidget {
     this.onAvatarTap,
     this.onShowTitles,
     this.topBarStrip = false,
+    this.stripCoins,
+    this.stripDiamonds,
+    this.stripStreak,
+    this.onStripCoinsTap,
+    this.onStripDiamondsTap,
+    this.onStripStreakTap,
+    this.stripResourcesKey,
   });
 
   double get progress =>
       xpForNextLevel > 0 ? (currentXP / xpForNextLevel).clamp(0.0, 1.0) : 0.0;
   Color get levelColor => AppColors.getLevelColor(level);
+
+  bool get _showStripResources =>
+      topBarStrip &&
+      stripCoins != null &&
+      stripDiamonds != null &&
+      stripStreak != null;
 
   @override
   Widget build(BuildContext context) {
@@ -224,44 +246,96 @@ class LevelCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Expanded(
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: LinearProgressIndicator(
-                        value: progress,
-                        minHeight: strip ? 4 : 6,
-                        backgroundColor: Colors.white.withOpacity(0.22),
-                        valueColor:
-                            const AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
+                    flex: _showStripResources ? 2 : 1,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: LinearProgressIndicator(
+                              value: progress,
+                              minHeight: strip
+                                  ? (_showStripResources ? 3 : 4)
+                                  : 6,
+                              backgroundColor: Colors.white.withOpacity(0.22),
+                              valueColor: const AlwaysStoppedAnimation<Color>(
+                                  Colors.white),
+                            ),
+                          ),
+                        ),
+                        if (!strip) ...[
+                          const SizedBox(width: 6),
+                          Text(
+                            '$totalXP XP',
+                            style: AppTextStyles.labelSmall.copyWith(
+                              color: Colors.white.withOpacity(0.9),
+                              fontWeight: FontWeight.w600,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                        if (onShowTitles != null)
+                          IconButton(
+                            onPressed: onShowTitles,
+                            tooltip: strip ? 'Chi tiết XP' : 'Danh hiệu',
+                            icon: Icon(
+                              Icons.info_outline_rounded,
+                              size: strip ? 16 : 20,
+                              color: Colors.white.withOpacity(0.92),
+                            ),
+                            padding: EdgeInsets.zero,
+                            constraints: BoxConstraints(
+                              minWidth: strip ? 26 : 32,
+                              minHeight: strip ? 26 : 32,
+                            ),
+                            visualDensity: VisualDensity.compact,
+                          ),
+                      ],
                     ),
                   ),
-                  if (!strip) ...[
-                    SizedBox(width: strip ? 4 : 6),
-                    Text(
-                      '$totalXP XP',
-                      style: AppTextStyles.labelSmall.copyWith(
-                        color: Colors.white.withOpacity(0.9),
-                        fontWeight: FontWeight.w600,
-                        fontSize: 11,
+                  if (_showStripResources) ...[
+                    const SizedBox(width: 6),
+                    Expanded(
+                      flex: 3,
+                      child: KeyedSubtree(
+                        key: stripResourcesKey,
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerRight,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                _stripResourceChip(
+                                  icon: Icons.diamond_rounded,
+                                  color: AppColors.cyanNeon,
+                                  value: stripDiamonds!,
+                                  onTap: onStripDiamondsTap,
+                                ),
+                                _stripResourceDivider(),
+                                _stripResourceChip(
+                                  icon: Icons.monetization_on_rounded,
+                                  color: AppColors.coinGold,
+                                  value: stripCoins!,
+                                  onTap: onStripCoinsTap,
+                                ),
+                                _stripResourceDivider(),
+                                _stripResourceChip(
+                                  icon: Icons.local_fire_department_rounded,
+                                  color: AppColors.streakOrange,
+                                  value: stripStreak!,
+                                  suffix: '🔥',
+                                  onTap: onStripStreakTap,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ],
-                  if (onShowTitles != null)
-                    IconButton(
-                      onPressed: onShowTitles,
-                      tooltip: strip ? 'Chi tiết XP' : 'Danh hiệu',
-                      icon: Icon(
-                        Icons.info_outline_rounded,
-                        size: strip ? 17 : 20,
-                        color: Colors.white.withOpacity(0.92),
-                      ),
-                      padding: EdgeInsets.zero,
-                      constraints: BoxConstraints(
-                        minWidth: strip ? 28 : 32,
-                        minHeight: strip ? 28 : 32,
-                      ),
-                      visualDensity: VisualDensity.compact,
-                    ),
                 ],
               ),
               if (!strip) ...[
@@ -314,6 +388,56 @@ class LevelCard extends StatelessWidget {
         ],
       ),
       child: content,
+    );
+  }
+
+  Widget _stripResourceDivider() {
+    return Container(
+      width: 1,
+      height: 14,
+      margin: const EdgeInsets.symmetric(horizontal: 5),
+      color: Colors.white.withOpacity(0.35),
+    );
+  }
+
+  Widget _stripResourceChip({
+    required IconData icon,
+    required Color color,
+    required int value,
+    String suffix = '',
+    VoidCallback? onTap,
+  }) {
+    final row = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 13, color: color),
+        const SizedBox(width: 3),
+        Text(
+          '$value$suffix',
+          style: TextStyle(
+            color: Colors.white.withOpacity(0.95),
+            fontSize: 10,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
+    );
+    if (onTap == null) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2),
+        child: row,
+      );
+    }
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+          child: row,
+        ),
+      ),
     );
   }
 

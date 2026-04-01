@@ -61,7 +61,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         key: _statsRowKey,
         title: 'Tài nguyên của bạn',
         description:
-            'Xu để mua vật phẩm, kim cương để mở khóa bài học, chuỗi ngày theo dõi số ngày học liên tiếp.',
+            'Kim cương, xu và chuỗi ngày nằm bên phải thanh trên. Chạm để nạp tiền, cửa hàng hoặc ví.',
         icon: Icons.account_balance_wallet,
         stepLabel: 'Bước 2/5',
       ),
@@ -286,9 +286,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildResourceStatRow(
-                              _dashboardData!['stats'] ?? {}),
-                          const SizedBox(height: 24),
                           if (_motivation != null &&
                               _motivation!['quote'] != null) ...[
                             _buildMotivationCard(_motivation!),
@@ -342,6 +339,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ? rawName.trim()
         : 'Bạn học';
     final levelColor = AppColors.getLevelColor(level);
+    final coins = stats['totalCoins'] ?? stats['coins'] ?? 0;
+    final diamonds = stats['totalDiamonds'] ?? stats['diamonds'] ?? 0;
+    final streak = stats['currentStreak'] ?? stats['streak'] ?? 0;
 
     return KeyedSubtree(
       key: _levelCardKey,
@@ -372,6 +372,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
               avatarUrl: _userProfile?['avatarUrl'] as String?,
               onAvatarTap: () => context.push('/profile'),
               onShowTitles: () => _showLevelTitlesDialog(),
+              stripCoins: coins is int ? coins : int.tryParse('$coins') ?? 0,
+              stripDiamonds:
+                  diamonds is int ? diamonds : int.tryParse('$diamonds') ?? 0,
+              stripStreak:
+                  streak is int ? streak : int.tryParse('$streak') ?? 0,
+              onStripCoinsTap: () => context.push('/shop'),
+              onStripDiamondsTap: () => context.push('/payment'),
+              onStripStreakTap: () => context.push('/currency'),
+              stripResourcesKey: _statsRowKey,
             ),
           ),
         ),
@@ -385,106 +394,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SkeletonCard(height: 100),
-          SizedBox(height: 24),
           SkeletonCard(height: 150),
           SizedBox(height: 24),
           SkeletonCard(height: 120),
         ],
-      ),
-    );
-  }
-
-  Widget _buildResourceStatRow(Map<String, dynamic> stats) {
-    final coins = stats['totalCoins'] ?? stats['coins'] ?? 0;
-    final diamonds = stats['totalDiamonds'] ?? stats['diamonds'] ?? 0;
-    final streak = stats['currentStreak'] ?? stats['streak'] ?? 0;
-
-    return Row(
-      key: _statsRowKey,
-      children: [
-        Expanded(
-          child: _buildStatCard(
-            icon: Icons.monetization_on_rounded,
-            label: 'Xu',
-            value: coins is int ? coins : 0,
-            color: AppColors.coinGold,
-            onTap: () => context.push('/shop'),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _buildStatCard(
-            icon: Icons.diamond_rounded,
-            label: 'Kim cương',
-            value: diamonds is int ? diamonds : 0,
-            color: AppColors.cyanNeon,
-            onTap: () => context.push('/payment'),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _buildStatCard(
-            icon: Icons.local_fire_department_rounded,
-            label: 'Chuỗi ngày',
-            value: streak is int ? streak : 0,
-            color: AppColors.streakOrange,
-            onTap: () => context.push('/currency'),
-            suffix: '🔥',
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatCard({
-    required IconData icon,
-    required String label,
-    required int value,
-    required Color color,
-    VoidCallback? onTap,
-    String? suffix,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-        decoration: BoxDecoration(
-          color: AppColors.bgSecondary,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.borderPrimary),
-          boxShadow: [
-            BoxShadow(
-              color: color.withOpacity(0.1),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: color, size: 28),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  '$value',
-                  style: AppTextStyles.numberMedium.copyWith(color: color),
-                ),
-                if (suffix != null) ...[
-                  const SizedBox(width: 2),
-                  Text(suffix, style: const TextStyle(fontSize: 14)),
-                ],
-              ],
-            ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: AppTextStyles.labelSmall,
-            ),
-          ],
-        ),
       ),
     );
   }
