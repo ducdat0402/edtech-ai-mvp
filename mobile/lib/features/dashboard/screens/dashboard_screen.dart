@@ -26,6 +26,7 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   Map<String, dynamic>? _dashboardData;
   Map<String, dynamic>? _motivation;
+  Map<String, dynamic>? _userProfile;
   bool _isLoading = true;
   String? _error;
   String _userRole = 'user';
@@ -151,6 +152,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       if (!mounted) return;
       setState(() {
         _dashboardData = dashboard;
+        _userProfile = profile;
         _userRole = profile?['role'] as String? ?? 'user';
         _motivation = motivation;
         _isLoading = false;
@@ -382,7 +384,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SkeletonCard(height: 120),
+          SkeletonCard(height: 92),
           SizedBox(height: 24),
           SkeletonCard(height: 100),
           SizedBox(height: 24),
@@ -404,18 +406,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final diamonds = stats['totalDiamonds'] ?? stats['diamonds'] ?? 0;
     final streak = stats['currentStreak'] ?? stats['streak'] ?? 0;
 
+    final rawName = _userProfile?['fullName'] as String?;
+    final displayName =
+        (rawName != null && rawName.trim().isNotEmpty) ? rawName.trim() : 'Bạn học';
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        GestureDetector(
+        KeyedSubtree(
           key: _levelCardKey,
-          onTap: () => _showLevelTitlesDialog(),
           child: LevelCard(
             level: level,
             title: _getLevelTitle(level),
             currentXP: currentXP,
             xpForNextLevel: xpForNextLevel,
             totalXP: totalXP,
+            displayName: displayName,
+            avatarUrl: _userProfile?['avatarUrl'] as String?,
+            onAvatarTap: () => context.push('/profile'),
+            onShowTitles: () => _showLevelTitlesDialog(),
           ),
         ),
         const SizedBox(height: 20),
@@ -526,6 +535,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     showDialog(
       context: context,
       builder: (context) => Dialog(
+        backgroundColor: AppColors.bgSecondary,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: ConstrainedBox(
           constraints: BoxConstraints(
@@ -542,11 +552,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     Icon(Icons.military_tech,
                         color: Colors.amber.shade700, size: 28),
                     const SizedBox(width: 8),
-                    const Text(
+                    Text(
                       'Danh hiệu',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
+                      style: AppTextStyles.h3.copyWith(
+                        color: AppColors.textPrimary,
                       ),
                     ),
                   ],
@@ -554,9 +563,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 const SizedBox(height: 6),
                 Text(
                   'Level hiện tại: $currentLevel',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey.shade600,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.textSecondary,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -583,9 +591,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 _buildLevelTitleRow('Thần đồng', '76+', Icons.diamond,
                     Colors.amber, currentLevel >= 76),
                 const SizedBox(height: 12),
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Đóng'),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(
+                      'Đóng',
+                      style: TextStyle(color: AppColors.cyanNeon),
+                    ),
+                  ),
                 ),
               ],
             ),

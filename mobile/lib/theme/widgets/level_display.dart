@@ -1,4 +1,6 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:edtech_mobile/core/config/api_config.dart';
 import '../colors.dart';
 import '../gradients.dart';
 import '../text_styles.dart';
@@ -61,13 +63,17 @@ class LevelBadge extends StatelessWidget {
   }
 }
 
-/// Level card with title and progress
+/// Level card with title and progress (compact dashboard strip).
 class LevelCard extends StatelessWidget {
   final int level;
   final String title;
   final int currentXP;
   final int xpForNextLevel;
   final int totalXP;
+  final String displayName;
+  final String? avatarUrl;
+  final VoidCallback? onAvatarTap;
+  final VoidCallback? onShowTitles;
 
   const LevelCard({
     super.key,
@@ -76,161 +82,222 @@ class LevelCard extends StatelessWidget {
     required this.currentXP,
     required this.xpForNextLevel,
     required this.totalXP,
+    this.displayName = 'Bạn học',
+    this.avatarUrl,
+    this.onAvatarTap,
+    this.onShowTitles,
   });
 
-  double get progress => xpForNextLevel > 0 ? (currentXP / xpForNextLevel).clamp(0.0, 1.0) : 0.0;
+  double get progress =>
+      xpForNextLevel > 0 ? (currentXP / xpForNextLevel).clamp(0.0, 1.0) : 0.0;
   Color get levelColor => AppColors.getLevelColor(level);
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: AppGradients.forLevel(level),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: levelColor.withOpacity(0.4),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
+    final resolvedAvatar = ApiConfig.absoluteMediaUrl(avatarUrl);
+    final hasPhoto = resolvedAvatar.isNotEmpty;
+
+    Widget avatar = SizedBox(
+      width: 52,
+      height: 52,
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.center,
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white.withOpacity(0.95), width: 2),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.25),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: ClipOval(
+              child: hasPhoto
+                  ? CachedNetworkImage(
+                      imageUrl: resolvedAvatar,
+                      fit: BoxFit.cover,
+                      placeholder: (_, __) => Container(
+                        color: Colors.white.withOpacity(0.15),
+                        child: const Center(
+                          child: SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        ),
+                      ),
+                      errorWidget: (_, __, ___) => _levelNumberFallback(),
+                    )
+                  : _levelNumberFallback(),
+            ),
+          ),
+          Positioned(
+            left: -2,
+            bottom: -2,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+              decoration: BoxDecoration(
+                color: const Color(0xFFB91C1C),
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: Colors.white.withOpacity(0.85)),
+              ),
+              child: Text(
+                'Lv.$level',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 9,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
           ),
         ],
       ),
-      child: Column(
+    );
+
+    if (onAvatarTap != null) {
+      avatar = Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onAvatarTap,
+          customBorder: const CircleBorder(),
+          child: avatar,
+        ),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 10, 10, 10),
+      decoration: BoxDecoration(
+        gradient: AppGradients.forLevel(level),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: levelColor.withOpacity(0.35),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Row(
-            children: [
-              // Level circle
-              Container(
-                width: 72,
-                height: 72,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.2),
-                  border: Border.all(color: Colors.white, width: 3),
-                ),
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        '$level',
-                        style: AppTextStyles.levelDisplay.copyWith(
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
+          avatar,
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  displayName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.bodyBold.copyWith(
+                    color: Colors.white,
+                    fontSize: 15,
                   ),
                 ),
-              ),
-              const SizedBox(width: 20),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                const SizedBox(height: 2),
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.labelSmall.copyWith(
+                    color: Colors.white.withOpacity(0.85),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Row(
-                      children: [
-                        Text(
-                          'Level',
-                          style: AppTextStyles.labelMedium.copyWith(
-                            color: Colors.white70,
-                          ),
+                    Expanded(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: LinearProgressIndicator(
+                          value: progress,
+                          minHeight: 6,
+                          backgroundColor: Colors.white.withOpacity(0.22),
+                          valueColor:
+                              const AlwaysStoppedAnimation<Color>(Colors.white),
                         ),
-                        const Spacer(),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            '$totalXP XP',
-                            style: AppTextStyles.labelSmall.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(width: 6),
                     Text(
-                      title,
-                      style: AppTextStyles.h3.copyWith(
-                        color: Colors.white,
+                      '$totalXP XP',
+                      style: AppTextStyles.labelSmall.copyWith(
+                        color: Colors.white.withOpacity(0.9),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 11,
+                      ),
+                    ),
+                    if (onShowTitles != null)
+                      IconButton(
+                        onPressed: onShowTitles,
+                        tooltip: 'Danh hiệu',
+                        icon: Icon(
+                          Icons.info_outline_rounded,
+                          size: 20,
+                          color: Colors.white.withOpacity(0.92),
+                        ),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(
+                          minWidth: 32,
+                          minHeight: 32,
+                        ),
+                        visualDensity: VisualDensity.compact,
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Row(
+                  children: [
+                    Text(
+                      'Cấp tiếp: ${level + 1}',
+                      style: AppTextStyles.labelSmall.copyWith(
+                        color: Colors.white.withOpacity(0.65),
+                        fontSize: 10,
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      '$currentXP / $xpForNextLevel · ${(progress * 100).toStringAsFixed(1)}%',
+                      style: AppTextStyles.labelSmall.copyWith(
+                        color: Colors.white.withOpacity(0.85),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          // Progress bar
-          Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Level ${level + 1}',
-                    style: AppTextStyles.labelSmall.copyWith(
-                      color: Colors.white70,
-                    ),
-                  ),
-                  Text(
-                    '$currentXP / $xpForNextLevel',
-                    style: AppTextStyles.labelSmall.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Stack(
-                children: [
-                  Container(
-                    height: 10,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                  ),
-                  FractionallySizedBox(
-                    widthFactor: progress,
-                    child: Container(
-                      height: 10,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(5),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.white.withOpacity(0.5),
-                            blurRadius: 8,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Text(
-                    '${(progress * 100).toStringAsFixed(1)}%',
-                    style: AppTextStyles.labelMedium.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _levelNumberFallback() {
+    return Container(
+      color: Colors.white.withOpacity(0.2),
+      alignment: Alignment.center,
+      child: Text(
+        '$level',
+        style: TextStyle(
+          fontFamily: AppTextStyles.fontUI,
+          fontSize: 18,
+          fontWeight: FontWeight.w800,
+          color: Colors.white,
+        ),
       ),
     );
   }
