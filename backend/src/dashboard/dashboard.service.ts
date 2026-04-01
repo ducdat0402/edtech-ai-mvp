@@ -9,6 +9,8 @@ import { LearningNodesService } from '../learning-nodes/learning-nodes.service';
 import { QuestsService } from '../quests/quests.service';
 import { LearningNode } from '../learning-nodes/entities/learning-node.entity';
 import { UserProgress } from '../user-progress/entities/user-progress.entity';
+import { UnlockTransactionsService } from '../unlock-transactions/unlock-transactions.service';
+import { FREE_LESSONS_PER_DAY } from '../unlock-transactions/lesson-access.constants';
 
 @Injectable()
 export class DashboardService {
@@ -19,6 +21,7 @@ export class DashboardService {
     private subjectsService: SubjectsService,
     private nodesService: LearningNodesService,
     private questsService: QuestsService,
+    private unlockService: UnlockTransactionsService,
     @InjectRepository(LearningNode)
     private nodeRepository: Repository<LearningNode>,
     @InjectRepository(UserProgress)
@@ -175,6 +178,65 @@ export class DashboardService {
     const currentLevel = currency.level || 1;
     const levelInfo = this.currencyService.getLevelInfo(totalXP, currentLevel);
 
+    const usedFreeLessonsToday =
+      await this.unlockService.countFreeLessonOpensToday(userId);
+    const remainingFreeLessonsToday = Math.max(
+      0,
+      FREE_LESSONS_PER_DAY - usedFreeLessonsToday,
+    );
+
+    const latestProgress = await this.progressRepository.findOne({
+      where: { userId },
+      select: ['nodeId', 'updatedAt'],
+      order: { updatedAt: 'DESC' },
+    });
+
+    let continueLearning: Record<string, unknown> = {
+      recentSubject: null,
+      nextFreeLessons: [],
+      remainingFreeLessonsToday,
+      freeLessonsPerDay: FREE_LESSONS_PER_DAY,
+    };
+
+    if (latestProgress?.nodeId) {
+      const latestNode = allNodes.find((n) => n.id === latestProgress.nodeId);
+      const recentSubject = latestNode
+        ? allSubjects.find((s) => s.id === latestNode.subjectId)
+        : null;
+
+      if (recentSubject) {
+        const candidates = (nodesBySubject.get(recentSubject.id) || [])
+          .filter((n) => !completedNodeIds.includes(n.id))
+          .slice(0, 2);
+
+        const nextFreeLessons = await Promise.all(
+          candidates.map(async (n) => {
+            const access = await this.unlockService.canAccessNode(userId, n.id);
+            return {
+              id: n.id,
+              title: n.title,
+              icon: n.metadata?.icon || '📖',
+              subjectId: recentSubject.id,
+              subjectName: recentSubject.name,
+              isLocked: !access.canAccess,
+              diamondCost: access.diamondCost ?? 50,
+            };
+          }),
+        );
+
+        continueLearning = {
+          recentSubject: {
+            id: recentSubject.id,
+            name: recentSubject.name,
+            icon: recentSubject.metadata?.icon || '📚',
+          },
+          nextFreeLessons,
+          remainingFreeLessonsToday,
+          freeLessonsPerDay: FREE_LESSONS_PER_DAY,
+        };
+      }
+    }
+
     return {
       stats: {
         totalXP,
@@ -193,6 +255,7 @@ export class DashboardService {
       },
       activeLearning,
       currentLearningNodes,
+      continueLearning,
       dailyQuests,
       subjects: allSubjectsWithInfo,
     };

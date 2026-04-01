@@ -293,6 +293,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           ],
                           _buildOnboardingBanner(),
                           const SizedBox(height: 24),
+                          _buildContinueLearningSection(
+                            _dashboardData!['continueLearning']
+                                as Map<String, dynamic>?,
+                          ),
+                          const SizedBox(height: 24),
                           KeyedSubtree(
                             key: _subjectsKey,
                             child: _buildSubjectsSection(
@@ -717,6 +722,161 @@ class _DashboardScreenState extends State<DashboardScreen> {
     // Onboarding đã được tích hợp vào Personal Mind Map screen
     // Không hiển thị banner ở dashboard nữa
     return const SizedBox.shrink();
+  }
+
+  Future<void> _handleContinueLessonTap(Map<String, dynamic> lesson) async {
+    final nodeId = lesson['id'] as String?;
+    final title = lesson['title'] as String? ?? 'Bài học';
+    if (nodeId == null || nodeId.isEmpty) return;
+
+    try {
+      final isLocked = lesson['isLocked'] as bool? ?? true;
+      if (isLocked) {
+        final api = Provider.of<ApiService>(context, listen: false);
+        await api.openLearningNode(nodeId);
+      }
+      if (!mounted) return;
+      await context.push('/lessons/$nodeId/types', extra: {'title': title});
+      if (mounted) _loadDashboard();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('$e'),
+          backgroundColor: AppColors.errorNeon,
+        ),
+      );
+    }
+  }
+
+  Widget _buildContinueLearningSection(Map<String, dynamic>? data) {
+    final recentSubject = data?['recentSubject'] as Map<String, dynamic>?;
+    final lessons = (data?['nextFreeLessons'] as List<dynamic>? ?? const [])
+        .whereType<Map>()
+        .map((e) => Map<String, dynamic>.from(e))
+        .toList();
+    final remaining = (data?['remainingFreeLessonsToday'] as num?)?.toInt();
+    final freeTotal = (data?['freeLessonsPerDay'] as num?)?.toInt() ?? 2;
+
+    if (recentSubject == null) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppColors.bgSecondary,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.borderPrimary),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.local_offer_rounded, color: AppColors.cyanNeon),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Hôm nay bạn ?/$freeTotal bài học miễn phí',
+                style:
+                    AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary),
+              ),
+            ),
+            Tooltip(
+              message:
+                  'Mỗi ngày bạn có 2 bài học miễn phí (gộp tất cả môn). Sau đó mở từng bài tốn 50 kim cương.',
+              triggerMode: TooltipTriggerMode.tap,
+              child: const Icon(Icons.info_outline_rounded,
+                  color: AppColors.textTertiary, size: 18),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final subjectName = recentSubject['name'] as String? ?? 'Môn học gần nhất';
+    final subjectIcon = recentSubject['icon'] as String? ?? '📚';
+    final subtitle = remaining == null
+        ? 'Hôm nay còn ?/$freeTotal bài miễn phí'
+        : 'Hôm nay còn $remaining/$freeTotal bài miễn phí';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text('Tiếp tục môn học', style: AppTextStyles.h3),
+            const SizedBox(width: 8),
+            Text(subjectIcon, style: const TextStyle(fontSize: 18)),
+          ],
+        ),
+        const SizedBox(height: 6),
+        Text(
+          '$subjectName · $subtitle',
+          style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+        ),
+        const SizedBox(height: 12),
+        if (lessons.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.bgSecondary,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.borderPrimary),
+            ),
+            child: Text(
+              'Bạn đã hoàn thành hết bài còn lại của môn này.',
+              style:
+                  AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+            ),
+          )
+        else
+          Row(
+            children: List.generate(lessons.length, (index) {
+              final lesson = lessons[index];
+              final title = lesson['title'] as String? ?? 'Bài học';
+              final icon = lesson['icon'] as String? ?? '📖';
+              return Expanded(
+                child: Container(
+                  margin: EdgeInsets.only(right: index == 0 ? 10 : 0),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () => _handleContinueLessonTap(lesson),
+                      borderRadius: BorderRadius.circular(12),
+                      child: Ink(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppColors.bgSecondary,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: AppColors.cyanNeon.withOpacity(0.35)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(icon, style: const TextStyle(fontSize: 18)),
+                            const SizedBox(height: 6),
+                            Text(
+                              title,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTextStyles.bodySmall
+                                  .copyWith(color: AppColors.textPrimary),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'Miễn phí hôm nay',
+                              style: AppTextStyles.caption
+                                  .copyWith(color: AppColors.cyanNeon, fontSize: 10),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }),
+          ),
+      ],
+    );
   }
 
   Widget _buildCurrentLearningSection(List<dynamic> nodes) {

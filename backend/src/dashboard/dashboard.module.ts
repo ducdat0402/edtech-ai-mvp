@@ -10,6 +10,7 @@ import { LearningNodesModule } from '../learning-nodes/learning-nodes.module';
 import { QuestsModule } from '../quests/quests.module';
 import { LearningNode } from '../learning-nodes/entities/learning-node.entity';
 import { UserProgress } from '../user-progress/entities/user-progress.entity';
+import { UnlockTransactionsModule } from '../unlock-transactions/unlock-transactions.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { UserProgress } from '../user-progress/entities/user-progress.entity';
     SubjectsModule,
     LearningNodesModule,
     QuestsModule,
+    UnlockTransactionsModule,
   ],
   controllers: [DashboardController],
   providers: [DashboardService],
