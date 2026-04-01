@@ -39,6 +39,20 @@ export class PendingContributionsController {
     return this.service.createSubjectContribution(req.user.id, body);
   }
 
+  /** User yêu cầu nâng hạng môn private lên community/expert (cần admin duyệt). */
+  @Post('subject-promotion')
+  async requestSubjectPromotion(
+    @Request() req,
+    @Body()
+    body: {
+      subjectId: string;
+      targetType: 'community' | 'expert';
+      reason?: string;
+    },
+  ) {
+    return this.service.createSubjectPromotionContribution(req.user.id, body);
+  }
+
   @Post('domain')
   @UseGuards(ContributorGuard)
   async createDomainContribution(

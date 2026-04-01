@@ -24,6 +24,10 @@ export class UserOpenedNode {
   @Column({ type: 'int', default: 0 })
   diamondsPaid: number;
 
+  /** 0 = không dùng xu; >0 = đã trừ xu (community có thể mở bằng xu). */
+  @Column({ type: 'int', default: 0 })
+  coinsPaid: number;
+
   @CreateDateColumn()
   openedAt: Date;
 }

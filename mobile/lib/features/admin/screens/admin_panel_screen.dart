@@ -458,9 +458,9 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
   String _getLessonTypeLabel(String type) {
     switch (type) {
       case 'image_quiz':
-        return 'Hình ảnh (Quiz)';
+        return 'Quiz';
       case 'image_gallery':
-        return 'Hình ảnh (Thư viện)';
+        return 'Hình ảnh ';
       case 'video':
         return 'Video';
       case 'text':
@@ -1895,6 +1895,10 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
           _buildLearningMetricsCards(learning),
           const SizedBox(height: 8),
           _buildSubjectCompletionChart(learning),
+          const SizedBox(height: 8),
+          _buildUnlockMethodChart(learning),
+          const SizedBox(height: 8),
+          _buildUnlockBySubjectTypeChart(learning),
           const SizedBox(height: 24),
           _buildAnalyticsSectionTitle(
               'Revenue', Icons.diamond_rounded, AppColors.xpGold),
@@ -2180,6 +2184,163 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
               }),
             ))),
       ]),
+    );
+  }
+
+  Widget _buildUnlockMethodChart(Map<String, dynamic> learning) {
+    final data = List<Map<String, dynamic>>.from(
+        learning['unlockMethodBreakdown'] ?? []);
+    if (data.isEmpty) return const SizedBox.shrink();
+
+    final labels = <String, String>{
+      'free': 'Miễn phí',
+      'coins': 'Xu',
+      'diamonds': 'Kim cương',
+    };
+    final colors = <String, Color>{
+      'free': AppColors.successNeon,
+      'coins': AppColors.orangeNeon,
+      'diamonds': AppColors.cyanNeon,
+    };
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.bgSecondary,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.borderPrimary),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Mở bài theo phương thức', style: AppTextStyles.labelLarge),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 160,
+            child: PieChart(
+              PieChartData(
+                sectionsSpace: 2,
+                centerSpaceRadius: 30,
+                sections: data.map((row) {
+                  final key = (row['method'] ?? '').toString();
+                  final count = int.tryParse('${row['count']}') ?? 0;
+                  return PieChartSectionData(
+                    value: count.toDouble(),
+                    color: colors[key] ?? AppColors.purpleNeon,
+                    title: '$count',
+                    titleStyle: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    radius: 40,
+                  );
+                }).toList(),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 12,
+            runSpacing: 6,
+            children: data.map((row) {
+              final key = (row['method'] ?? '').toString();
+              final count = int.tryParse('${row['count']}') ?? 0;
+              final label = labels[key] ?? key;
+              final color = colors[key] ?? AppColors.purpleNeon;
+              return Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 10,
+                    height: 10,
+                    decoration: BoxDecoration(
+                      color: color,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    '$label: $count',
+                    style: AppTextStyles.caption
+                        .copyWith(color: AppColors.textSecondary),
+                  ),
+                ],
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUnlockBySubjectTypeChart(Map<String, dynamic> learning) {
+    final data = List<Map<String, dynamic>>.from(
+      learning['unlockSubjectTypeBreakdown'] ?? [],
+    );
+    if (data.isEmpty) return const SizedBox.shrink();
+
+    final labels = <String, String>{
+      'private': 'Private',
+      'community': 'Cộng đồng',
+      'expert': 'Chuyên gia',
+    };
+    final colors = <String, Color>{
+      'private': AppColors.purpleNeon,
+      'community': AppColors.successNeon,
+      'expert': AppColors.cyanNeon,
+    };
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.bgSecondary,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.borderPrimary),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Mở bài theo loại môn', style: AppTextStyles.labelLarge),
+          const SizedBox(height: 12),
+          ...data.map((row) {
+            final key = (row['subjectType'] ?? '').toString();
+            final count = int.tryParse('${row['count']}') ?? 0;
+            final label = labels[key] ?? key;
+            final color = colors[key] ?? AppColors.textTertiary;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                children: [
+                  Container(
+                    width: 12,
+                    height: 12,
+                    decoration: BoxDecoration(
+                      color: color,
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      label,
+                      style: AppTextStyles.bodySmall
+                          .copyWith(color: AppColors.textSecondary),
+                    ),
+                  ),
+                  Text(
+                    '$count lượt mở',
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: color,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
     );
   }
 
@@ -2476,9 +2637,9 @@ class _AdminContentEditComparisonViewState
   String _getLessonTypeLabel(String type) {
     switch (type) {
       case 'image_quiz':
-        return 'Hình ảnh (Quiz)';
+        return 'Quiz';
       case 'image_gallery':
-        return 'Hình ảnh (Thư viện)';
+        return 'Hình ảnh';
       case 'video':
         return 'Video';
       case 'text':

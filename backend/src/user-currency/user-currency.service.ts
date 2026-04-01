@@ -353,6 +353,25 @@ export class UserCurrencyService {
     return this.getOrCreate(userId);
   }
 
+  async deductCoinsTransactional(
+    manager: EntityManager,
+    userId: string,
+    amount: number,
+  ): Promise<void> {
+    const result = await manager
+      .createQueryBuilder()
+      .update(UserCurrency)
+      .set({ coins: () => `coins - ${Math.floor(amount)}` })
+      .where('userId = :userId AND coins >= :amount', {
+        userId,
+        amount: Math.floor(amount),
+      })
+      .execute();
+    if (result.affected === 0) {
+      throw new Error('Insufficient coins');
+    }
+  }
+
   async hasEnoughCoins(userId: string, amount: number): Promise<boolean> {
     const currency = await this.getOrCreate(userId);
     return currency.coins >= amount;

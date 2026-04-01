@@ -15,6 +15,7 @@ import { SubjectsService } from '../subjects/subjects.service';
 import { DomainsService } from '../domains/domains.service';
 import { TopicsService } from '../topics/topics.service';
 import { LearningNode } from '../learning-nodes/entities/learning-node.entity';
+import { Subject } from '../subjects/entities/subject.entity';
 import {
   FREE_LESSONS_PER_DAY,
   DIAMOND_PER_LESSON_OPEN,
@@ -466,13 +467,41 @@ export class UnlockTransactionsService {
   /**
    * Mở một bài học: tối đa 2 bài/ngày (toàn hệ thống) miễn phí, sau đó 50 💎/bài.
    */
-  async openLearningNode(userId: string, nodeId: string) {
+  async openLearningNode(
+    userId: string,
+    nodeId: string,
+    preferredCurrency?: 'coins' | 'diamonds',
+  ) {
     const node = await this.nodeRepository.findOne({
       where: { id: nodeId },
       select: ['id', 'subjectId', 'domainId', 'topicId'],
     });
     if (!node?.subjectId) {
       throw new NotFoundException('Không tìm thấy bài học');
+    }
+    const subject = await this.dataSource.getRepository(Subject).findOne({
+      where: { id: node.subjectId },
+      select: ['id', 'subjectType', 'ownerUserId'],
+    });
+    if (!subject) {
+      throw new NotFoundException('Không tìm thấy môn học');
+    }
+    if (subject.subjectType === 'private') {
+      if (subject.ownerUserId !== userId) {
+        throw new BadRequestException('Bạn không có quyền truy cập môn private này');
+      }
+      await this.openedNodeRepository
+        .createQueryBuilder()
+        .insert()
+        .values({ userId, nodeId, diamondsPaid: 0, coinsPaid: 0 })
+        .orIgnore()
+        .execute();
+      return {
+        success: true,
+        usedFreeDailySlot: false,
+        freePrivateLesson: true,
+        message: 'Bài học private của bạn được mở miễn phí',
+      };
     }
 
     const existingOpen = await this.openedNodeRepository.findOne({
@@ -524,6 +553,7 @@ export class UnlockTransactionsService {
           userId,
           nodeId,
           diamondsPaid: 0,
+          coinsPaid: 0,
         });
         return {
           success: true,
@@ -534,31 +564,52 @@ export class UnlockTransactionsService {
         };
       }
 
-      try {
-        await this.currencyService.deductDiamondsTransactional(
-          manager,
-          userId,
-          DIAMOND_PER_LESSON_OPEN,
-        );
-      } catch {
-        const currency = await this.currencyService.getCurrency(userId);
-        throw new BadRequestException(
-          `Không đủ kim cương. Cần ${DIAMOND_PER_LESSON_OPEN} 💎 để mở bài, bạn có ${currency.diamonds ?? 0} 💎. Mỗi ngày có ${FREE_LESSONS_PER_DAY} bài miễn phí (đã dùng hết hôm nay).`,
-        );
+      const shouldUseCoins =
+        subject.subjectType === 'community' && preferredCurrency === 'coins';
+      if (shouldUseCoins) {
+        try {
+          await this.currencyService.deductCoinsTransactional(
+            manager,
+            userId,
+            DIAMOND_PER_LESSON_OPEN,
+          );
+        } catch {
+          const currency = await this.currencyService.getCurrency(userId);
+          throw new BadRequestException(
+            `Không đủ xu. Cần ${DIAMOND_PER_LESSON_OPEN} xu để mở bài, bạn có ${currency.coins ?? 0} xu.`,
+          );
+        }
+      } else {
+        try {
+          await this.currencyService.deductDiamondsTransactional(
+            manager,
+            userId,
+            DIAMOND_PER_LESSON_OPEN,
+          );
+        } catch {
+          const currency = await this.currencyService.getCurrency(userId);
+          throw new BadRequestException(
+            `Không đủ kim cương. Cần ${DIAMOND_PER_LESSON_OPEN} 💎 để mở bài, bạn có ${currency.diamonds ?? 0} 💎. Mỗi ngày có ${FREE_LESSONS_PER_DAY} bài miễn phí (đã dùng hết hôm nay).`,
+          );
+        }
       }
 
       await openedRepo.insert({
         userId,
         nodeId,
-        diamondsPaid: DIAMOND_PER_LESSON_OPEN,
+        diamondsPaid: shouldUseCoins ? 0 : DIAMOND_PER_LESSON_OPEN,
+        coinsPaid: shouldUseCoins ? DIAMOND_PER_LESSON_OPEN : 0,
       });
 
       return {
         success: true,
         usedFreeDailySlot: false,
-        diamondsPaid: DIAMOND_PER_LESSON_OPEN,
+        diamondsPaid: shouldUseCoins ? 0 : DIAMOND_PER_LESSON_OPEN,
+        coinsPaid: shouldUseCoins ? DIAMOND_PER_LESSON_OPEN : 0,
         remainingFreeLessonsToday: 0,
-        message: `Đã mở bài (${DIAMOND_PER_LESSON_OPEN} 💎)`,
+        message: shouldUseCoins
+          ? `Đã mở bài (${DIAMOND_PER_LESSON_OPEN} xu)`
+          : `Đã mở bài (${DIAMOND_PER_LESSON_OPEN} 💎)`,
       };
     });
   }
@@ -577,7 +628,10 @@ export class UnlockTransactionsService {
     canAccess: boolean;
     nodeInfo?: any;
     remainingFreeLessonsToday?: number;
+    subjectType?: 'private' | 'community' | 'expert';
+    coinCost?: number;
     diamondCost?: number;
+    userCoins?: number;
     userDiamonds?: number;
   }> {
     if (!userId) return { canAccess: false };
@@ -592,6 +646,17 @@ export class UnlockTransactionsService {
       select: ['id', 'subjectId', 'domainId', 'topicId'],
     });
     if (!node) return { canAccess: false };
+    const subject = await this.dataSource.getRepository(Subject).findOne({
+      where: { id: node.subjectId },
+      select: ['id', 'subjectType', 'ownerUserId'],
+    });
+    if (!subject) return { canAccess: false };
+    if (subject.subjectType === 'private') {
+      return {
+        canAccess: subject.ownerUserId === userId,
+        subjectType: 'private',
+      };
+    }
 
     if (await this.hasTierUnlockForNode(userId, node)) {
       return { canAccess: true };
@@ -603,8 +668,11 @@ export class UnlockTransactionsService {
 
     return {
       canAccess: false,
+      subjectType: subject.subjectType,
       remainingFreeLessonsToday: remaining,
+      coinCost: subject.subjectType === 'community' ? DIAMOND_PER_LESSON_OPEN : undefined,
       diamondCost: DIAMOND_PER_LESSON_OPEN,
+      userCoins: currency.coins ?? 0,
       userDiamonds: currency.diamonds ?? 0,
       nodeInfo: {
         subjectId: node.subjectId,

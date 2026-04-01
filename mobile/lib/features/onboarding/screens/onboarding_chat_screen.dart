@@ -14,13 +14,51 @@ class OnboardingChatScreen extends StatefulWidget {
 
 class _OnboardingChatScreenState extends State<OnboardingChatScreen>
     with TickerProviderStateMixin {
-  static const _totalSlides = 6;
+  static const _totalSlides = 11;
 
   final PageController _pageController = PageController();
   int _currentPage = 0;
   bool _isSaving = false;
 
   final TextEditingController _nicknameController = TextEditingController();
+
+  final List<Map<String, String>> _featureIntroSlides = const [
+    {
+      'title': 'Tạo lộ trình cá nhân',
+      'subtitle':
+          'Hệ thống giúp bạn xây lộ trình học theo mục tiêu và thời gian của riêng bạn.',
+      'icon': '🧭',
+      'hero': '🚀',
+    },
+    {
+      'title': 'Học từ cộng đồng',
+      'subtitle':
+          'Bạn có thể học từ các bài học do cộng đồng đóng góp và được kiểm duyệt.',
+      'icon': '🤝',
+      'hero': '🌍',
+    },
+    {
+      'title': 'Có bản đồ năng lực',
+      'subtitle':
+          'Theo dõi tiến bộ năng lực học tập và năng lực con người trực quan theo thời gian.',
+      'icon': '📊',
+      'hero': '🧠',
+    },
+    {
+      'title': 'Chia sẻ kiến thức và kiếm tiền',
+      'subtitle':
+          'Nhận 30% doanh thu khi tạo khóa học bổ ích được cộng đồng học và đánh giá tốt.',
+      'icon': '💸',
+      'hero': '🏆',
+    },
+    {
+      'title': 'Bạn không học một mình',
+      'subtitle':
+          'Luôn có cộng đồng đồng hành để trao đổi, học nhóm và giữ động lực học tập.',
+      'icon': '👥',
+      'hero': '🔥',
+    },
+  ];
 
   // Slide 2: Acquisition
   String? _selectedAcquisition;
@@ -152,18 +190,19 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
   }
 
   bool get _canProceed {
+    if (_currentPage >= 1 && _currentPage <= 5) return true;
     switch (_currentPage) {
       case 0:
         return _nicknameController.text.trim().isNotEmpty;
-      case 1:
+      case 6:
         return _selectedAcquisition != null;
-      case 2:
+      case 7:
         return _selectedSegment != null;
-      case 3:
+      case 8:
         return _selectedGoals.isNotEmpty;
-      case 4:
+      case 9:
         return _selectedEngagement != null;
-      case 5:
+      case 10:
         return _selectedNotification != null;
       default:
         return false;
@@ -534,6 +573,7 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
                         setState(() => _currentPage = page),
                     children: [
                       _buildNicknameSlide(),
+                      ..._featureIntroSlides.map(_buildFeatureIntroSlide),
                       _buildAcquisitionSlide(),
                       _buildSegmentSlide(),
                       _buildGoalsSlide(),
@@ -695,6 +735,82 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
   }
 
   // ─── Slide 2: Acquisition ───
+
+  Widget _buildFeatureIntroSlide(Map<String, String> slide) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        children: [
+          const SizedBox(height: 36),
+          Container(
+            width: 110,
+            height: 110,
+            decoration: BoxDecoration(
+              gradient: AppGradients.purplePink,
+              borderRadius: BorderRadius.circular(30),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.purpleNeon.withOpacity(0.35),
+                  blurRadius: 24,
+                  spreadRadius: 2,
+                ),
+              ],
+            ),
+            child: Center(
+              child: Text(
+                slide['hero'] ?? '✨',
+                style: const TextStyle(fontSize: 52),
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(slide['icon'] ?? '✨', style: const TextStyle(fontSize: 24)),
+              const SizedBox(width: 8),
+              Flexible(
+                child: AppTextStyles.gradientText(
+                  slide['title'] ?? '',
+                  AppTextStyles.h3,
+                  AppGradients.purplePink,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.bgSecondary,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.borderPrimary),
+            ),
+            child: Text(
+              slide['subtitle'] ?? '',
+              textAlign: TextAlign.center,
+              style: AppTextStyles.bodyMedium
+                  .copyWith(color: AppColors.textSecondary, height: 1.5),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: AppColors.cyanNeon.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.cyanNeon.withOpacity(0.25)),
+            ),
+            child: Text(
+              'Vuốt tiếp để khám phá thêm',
+              style: AppTextStyles.caption.copyWith(color: AppColors.cyanNeon),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _buildAcquisitionSlide() {
     return SingleChildScrollView(

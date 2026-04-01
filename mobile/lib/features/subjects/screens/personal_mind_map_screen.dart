@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
+import 'package:edtech_mobile/core/widgets/lesson_unlock_sheet.dart';
 import 'package:edtech_mobile/core/services/tutorial_service.dart';
 import 'package:edtech_mobile/core/tutorial/tutorial_helper.dart';
 import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
@@ -1411,101 +1412,18 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
 
   Future<void> _showUnlockDialog(String nodeId, String title) async {
     final api = Provider.of<ApiService>(context, listen: false);
-    int remainingFree = 0;
-    int diamondCost = 50;
-    if (nodeId.isNotEmpty) {
-      try {
-        final access = await api.checkNodeAccess(nodeId);
-        remainingFree =
-            (access['remainingFreeLessonsToday'] as num?)?.toInt() ?? 0;
-        diamondCost = (access['diamondCost'] as num?)?.toInt() ?? 50;
-      } catch (_) {}
-    }
-    if (!mounted) return;
-
-    await showDialog<void>(
+    final opened = await LessonUnlockSheet.show(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Bài học chưa mở khóa'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Bài "$title" chưa được mở.'),
-            const SizedBox(height: 12),
-            const Text(
-              'Mỗi ngày có 2 bài miễn phí (mọi môn). Hết suất: 50 💎/bài. '
-              'Hoặc mở cả chủ đề / chương / môn.',
-            ),
-            if (nodeId.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Text(
-                remainingFree > 0
-                    ? 'Suất miễn phí hôm nay: còn $remainingFree.'
-                    : 'Hôm nay đã dùng hết 2 suất miễn phí.',
-                style: TextStyle(fontSize: 12, color: Colors.blue.shade700),
-              ),
-            ],
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Đóng'),
-          ),
-          if (nodeId.isNotEmpty)
-            ElevatedButton.icon(
-              onPressed: () async {
-                try {
-                  await api.openLearningNode(nodeId);
-                  if (ctx.mounted) Navigator.pop(ctx);
-                  await _checkAndLoadMindMap();
-                  if (mounted) {
-                    context.push(
-                      '/lessons/$nodeId/types',
-                      extra: {'title': title},
-                    );
-                  }
-                } catch (e) {
-                  if (ctx.mounted) {
-                    ScaffoldMessenger.of(ctx).showSnackBar(
-                      SnackBar(content: Text('$e')),
-                    );
-                  }
-                }
-              },
-              icon: const Text('✨', style: TextStyle(fontSize: 16)),
-              label: Text(
-                remainingFree > 0
-                    ? 'Mở bài (miễn phí)'
-                    : 'Mở bài ($diamondCost 💎)',
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.deepPurple,
-                foregroundColor: Colors.white,
-              ),
-            ),
-          ElevatedButton.icon(
-            onPressed: () {
-              Navigator.pop(ctx);
-              context.push('/subjects/${widget.subjectId}/unlock');
-            },
-            icon: const Text('💎', style: TextStyle(fontSize: 16)),
-            label: const Text('Gói mở khóa'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.deepPurple.shade300,
-              foregroundColor: Colors.white,
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              context.push('/payment');
-            },
-            child: const Text('Mua kim cương'),
-          ),
-        ],
-      ),
+      api: api,
+      nodeId: nodeId,
+      title: title,
+      subjectId: widget.subjectId,
+      onOpened: _checkAndLoadMindMap,
+    );
+    if (!opened || !mounted) return;
+    context.push(
+      '/lessons/$nodeId/types',
+      extra: {'title': title},
     );
   }
 }

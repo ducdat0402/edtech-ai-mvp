@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
+import 'package:edtech_mobile/core/widgets/ai_generated_notice.dart';
 import 'package:edtech_mobile/core/widgets/contributor_credit_button.dart';
 import 'package:flutter/services.dart';
 import 'package:edtech_mobile/theme/colors.dart';
@@ -81,6 +82,11 @@ class _VideoLessonScreenState extends State<VideoLessonScreen> {
       ),
       body: Column(
         children: [
+          if (widget.contributor == null)
+            const Padding(
+              padding: EdgeInsets.fromLTRB(16, 10, 16, 0),
+              child: AiGeneratedNotice(visible: true, compact: true),
+            ),
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -189,6 +195,7 @@ class _VideoLessonScreenState extends State<VideoLessonScreen> {
                         title: widget.title,
                         lessonType: widget.lessonType ?? 'video',
                         questions: (widget.endQuiz?['questions'] as List?)?.cast<dynamic>(),
+                        contributor: widget.contributor,
                       ),
                     ),
                   );

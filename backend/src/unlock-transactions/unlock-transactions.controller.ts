@@ -77,12 +77,16 @@ export class UnlockTransactionsController {
   @UseGuards(JwtAuthGuard)
   async openLearningNode(
     @Request() req,
-    @Body() body: { nodeId: string },
+    @Body() body: { nodeId: string; currencyType?: 'coins' | 'diamonds' },
   ) {
     if (!body?.nodeId) {
       throw new BadRequestException('nodeId là bắt buộc');
     }
-    return this.unlockService.openLearningNode(req.user.id, body.nodeId);
+    return this.unlockService.openLearningNode(
+      req.user.id,
+      body.nodeId,
+      body.currencyType,
+    );
   }
 
   /**

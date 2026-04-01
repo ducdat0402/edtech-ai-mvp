@@ -93,7 +93,8 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
       final domains = results[1] as List<dynamic>;
 
       // Tải topics song song (trước đây await từng domain → rất chậm khi nhiều chương).
-      final topicFutures = domains.map<Future<MapEntry<String, List<dynamic>>>>((domain) async {
+      final topicFutures =
+          domains.map<Future<MapEntry<String, List<dynamic>>>>((domain) async {
         final d = domain as Map<String, dynamic>;
         final domainId = d['id'] as String;
         try {
@@ -525,14 +526,10 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
 
   // All 4 lesson format types
   static const _allLessonTypes = [
-    {
-      'key': 'image_quiz',
-      'label': 'Hình ảnh (Quiz)',
-      'icon': Icons.quiz_outlined
-    },
+    {'key': 'image_quiz', 'label': 'Quiz', 'icon': Icons.quiz_outlined},
     {
       'key': 'image_gallery',
-      'label': 'Hình ảnh (Thư viện)',
+      'label': 'Hình ảnh',
       'icon': Icons.photo_library_outlined
     },
     {'key': 'video', 'label': 'Video', 'icon': Icons.play_circle_outline},

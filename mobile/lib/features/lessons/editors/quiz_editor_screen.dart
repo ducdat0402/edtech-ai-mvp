@@ -91,7 +91,8 @@ class _QuizEditorScreenState extends State<QuizEditorScreen> {
   static const Map<String, String> _competencyTooltips = {
     'logical_thinking': 'Mức đo tư duy logic và lập luận có cấu trúc.',
     'practical_application': 'Mức đo khả năng áp dụng vào tình huống thực tế.',
-    'systems_thinking': 'Mức đo khả năng nhìn mối liên hệ và tác động hệ thống.',
+    'systems_thinking':
+        'Mức đo khả năng nhìn mối liên hệ và tác động hệ thống.',
     'creativity': 'Mức đo khả năng đề xuất hướng giải quyết mới.',
     'critical_thinking': 'Mức đo khả năng phản biện và kiểm tra giả định.',
   };
@@ -115,7 +116,9 @@ class _QuizEditorScreenState extends State<QuizEditorScreen> {
           final logicTypes = m['logicTypes'] as List?;
           if (logicTypes != null) {
             qd.logicTypes.addAll(
-              logicTypes.map((e) => e.toString()).where((e) => e.trim().isNotEmpty),
+              logicTypes
+                  .map((e) => e.toString())
+                  .where((e) => e.trim().isNotEmpty),
             );
           }
           final competencyMix = m['competencyMix'];
@@ -1117,7 +1120,8 @@ class _QuizEditorScreenState extends State<QuizEditorScreen> {
                 checkmarkColor: AppColors.cyanNeon,
                 side: const BorderSide(color: AppColors.borderPrimary),
                 labelStyle: TextStyle(
-                  color: selected ? AppColors.cyanNeon : AppColors.textSecondary,
+                  color:
+                      selected ? AppColors.cyanNeon : AppColors.textSecondary,
                   fontSize: 12,
                 ),
                 backgroundColor: AppColors.bgTertiary,
@@ -1196,8 +1200,8 @@ class _QuizEditorScreenState extends State<QuizEditorScreen> {
           ),
           Builder(
             builder: (_) {
-              final sum =
-                  question.competencyMix.values.fold<double>(0, (a, b) => a + b);
+              final sum = question.competencyMix.values
+                  .fold<double>(0, (a, b) => a + b);
               final ok = (sum - 1).abs() <= 0.01;
               return Text(
                 'Tổng competencyMix: ${sum.toStringAsFixed(2)} ${ok ? '(OK)' : '(cần = 1.00)'}',
@@ -1432,9 +1436,9 @@ class _LessonComparisonSheet extends StatelessWidget {
   String _getLessonTypeLabel(String type) {
     switch (type) {
       case 'image_quiz':
-        return 'Hình ảnh (Quiz)';
+        return 'Quiz';
       case 'image_gallery':
-        return 'Hình ảnh (Thư viện)';
+        return 'Hình ảnh ';
       case 'video':
         return 'Video';
       case 'text':

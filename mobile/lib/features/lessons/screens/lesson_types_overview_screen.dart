@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
+import 'package:edtech_mobile/core/services/competency_growth_notifier.dart';
+import 'package:edtech_mobile/core/widgets/ai_generated_notice.dart';
 import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 
@@ -49,10 +51,12 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
       final results = await Future.wait([
         apiService.getLessonTypeContents(widget.nodeId),
         apiService.getLessonTypeProgress(widget.nodeId),
+        apiService.getLessonData(widget.nodeId),
       ]);
 
       final contentsData = results[0];
       final progressData = results[1];
+      final lessonData = results[2];
 
       if (!mounted) return;
 
@@ -63,6 +67,8 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
                 .toList() ??
             [];
         _isLessonComplete = progressData['isLessonComplete'] == true;
+        _nodeContributor =
+            (lessonData['contributor'] as Map?)?.cast<String, dynamic>();
         _isLoading = false;
       });
     } catch (e) {
@@ -87,7 +93,10 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
       'contributor': _nodeContributor,
     }).then((_) async {
       if (!mounted) return;
+      final apiService = Provider.of<ApiService>(context, listen: false);
       await _loadData();
+      if (!mounted) return;
+      await CompetencyGrowthNotifier.checkAndShowIfGained(context, apiService);
       if (!mounted) return;
       // Remind that full lesson (all 4 types) counts as 1 streak
       if (!_isLessonComplete) {
@@ -204,6 +213,8 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          AiGeneratedNotice(visible: _nodeContributor == null, compact: true),
+          if (_nodeContributor == null) const SizedBox(height: 12),
           // Streak hint when lesson not fully complete
           if (!_isLessonComplete && totalCount > 0) ...[
             _buildStreakHintBanner(),
@@ -486,13 +497,13 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
     switch (type) {
       case 'image_quiz':
         return {
-          'label': 'Hình ảnh (Quiz)',
+          'label': 'Quiz',
           'icon': Icons.quiz_outlined,
           'color': const Color(0xFFE879F9),
         };
       case 'image_gallery':
         return {
-          'label': 'Hình ảnh (Thư viện)',
+          'label': 'Hình ảnh',
           'icon': Icons.photo_library_outlined,
           'color': const Color(0xFF38BDF8),
         };

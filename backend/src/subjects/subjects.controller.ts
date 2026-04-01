@@ -13,14 +13,17 @@ export class SubjectsController {
   ) {}
 
   @Get('explorer')
-  async getExplorerSubjects() {
-    return this.subjectsService.findByTrack('explorer');
+  @UseGuards(JwtAuthGuard)
+  async getExplorerSubjects(@Request() req) {
+    const subjects = await this.subjectsService.findAllForUser(req.user.id);
+    return subjects.filter((s) => s.track === 'explorer');
   }
 
   @Get('scholar')
   @UseGuards(JwtAuthGuard)
   async getScholarSubjects(@Request() req) {
-    const subjects = await this.subjectsService.findByTrack('scholar');
+    const subjects = (await this.subjectsService.findAllForUser(req.user.id))
+      .filter((s) => s.track === 'scholar');
     // Add unlock status for each subject
     const subjectsWithStatus = await Promise.all(
       subjects.map(async (subject) => {
@@ -38,6 +41,22 @@ export class SubjectsController {
       }),
     );
     return subjectsWithStatus;
+  }
+
+  /** User tự tạo môn private, không cần kiểm duyệt và chỉ user đó nhìn thấy. */
+  @Post('private')
+  @UseGuards(JwtAuthGuard)
+  async createPrivateSubject(
+    @Request() req,
+    @Body()
+    body: {
+      name: string;
+      description?: string;
+      track?: 'explorer' | 'scholar';
+      metadata?: Record<string, any>;
+    },
+  ) {
+    return this.subjectsService.createPrivateSubject(req.user.id, body);
   }
 
   @Get(':id')

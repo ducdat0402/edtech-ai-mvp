@@ -10,6 +10,7 @@ import { RewardTransaction } from '../user-currency/entities/reward-transaction.
 import { LearningNode } from '../learning-nodes/entities/learning-node.entity';
 import { Subject } from '../subjects/entities/subject.entity';
 import { PendingContribution } from '../pending-contributions/entities/pending-contribution.entity';
+import { UserOpenedNode } from '../unlock-transactions/entities/user-opened-node.entity';
 import { UsersModule } from '../users/users.module';
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { UsersModule } from '../users/users.module';
       LearningNode,
       Subject,
       PendingContribution,
+      UserOpenedNode,
     ]),
     UsersModule,
   ],

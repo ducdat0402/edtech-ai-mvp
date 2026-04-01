@@ -23,6 +23,22 @@ export class Subject {
   @Column({ default: 'explorer' })
   track: 'explorer' | 'scholar'; // Nhánh nào
 
+  /**
+   * private: chỉ owner thấy
+   * community: môn cộng đồng (unlock bằng coin)
+   * expert: môn chuyên gia (unlock bằng kim cương)
+   */
+  @Column({ type: 'varchar', default: 'community' })
+  subjectType: 'private' | 'community' | 'expert';
+
+  /** pending cần admin duyệt trước khi public. */
+  @Column({ type: 'varchar', default: 'approved' })
+  approvalStatus: 'pending' | 'approved' | 'rejected';
+
+  /** Chủ sở hữu môn private (hoặc người tạo ban đầu). */
+  @Column({ type: 'uuid', nullable: true })
+  ownerUserId: string | null;
+
   @Column({ type: 'int', nullable: true })
   price: number; // Giá khóa học Scholar (VND)
 

@@ -9,6 +9,78 @@ import 'colors.dart';
 class AppTheme {
   AppTheme._();
 
+  /// Light theme
+  static ThemeData get lightTheme {
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.light,
+      colorScheme: const ColorScheme.light(
+        primary: Color(0xFF6D28D9),
+        secondary: Color(0xFF0891B2),
+        surface: Color(0xFFF8FAFC),
+        error: Color(0xFFDC2626),
+      ),
+      scaffoldBackgroundColor: const Color(0xFFF3F4F6),
+      appBarTheme: AppBarTheme(
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF111827),
+        elevation: 0,
+        centerTitle: true,
+        titleTextStyle: GoogleFonts.outfit(
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+          color: const Color(0xFF111827),
+        ),
+      ),
+      textTheme: GoogleFonts.beVietnamProTextTheme().apply(
+        bodyColor: const Color(0xFF111827),
+        displayColor: const Color(0xFF111827),
+      ),
+      cardTheme: CardTheme(
+        color: Colors.white,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: Color(0xFFE5E7EB)),
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFF6D28D9), width: 2),
+        ),
+      ),
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+        backgroundColor: Colors.white,
+        selectedItemColor: Color(0xFF6D28D9),
+        unselectedItemColor: Color(0xFF6B7280),
+        type: BottomNavigationBarType.fixed,
+      ),
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.resolveWith((states) {
+          return states.contains(WidgetState.selected)
+              ? const Color(0xFF6D28D9)
+              : const Color(0xFF9CA3AF);
+        }),
+        trackColor: WidgetStateProperty.resolveWith((states) {
+          return states.contains(WidgetState.selected)
+              ? const Color(0xFF6D28D9).withOpacity(0.4)
+              : const Color(0xFFE5E7EB);
+        }),
+      ),
+    );
+  }
+
   /// Dark theme (primary theme)
   static ThemeData get darkTheme {
     return ThemeData(

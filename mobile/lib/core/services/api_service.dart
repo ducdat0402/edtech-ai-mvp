@@ -730,6 +730,38 @@ class ApiService {
     return response.data;
   }
 
+  Future<Map<String, dynamic>> createPrivateSubject({
+    required String name,
+    String? description,
+    String? track,
+  }) async {
+    final response = await _apiClient.post(
+      ApiConstants.createPrivateSubject,
+      data: {
+        'name': name,
+        if (description != null) 'description': description,
+        if (track != null) 'track': track,
+      },
+    );
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> requestSubjectPromotion({
+    required String subjectId,
+    required String targetType,
+    String? reason,
+  }) async {
+    final response = await _apiClient.post(
+      ApiConstants.createSubjectPromotion,
+      data: {
+        'subjectId': subjectId,
+        'targetType': targetType,
+        if (reason != null) 'reason': reason,
+      },
+    );
+    return response.data;
+  }
+
   Future<Map<String, dynamic>> createDomainContribution({
     required String name,
     required String subjectId,
@@ -969,11 +1001,17 @@ class ApiService {
     return response.data;
   }
 
-  /// Mở một bài học (2 suất miễn phí/ngày toàn hệ thống, sau đó 50 💎).
-  Future<Map<String, dynamic>> openLearningNode(String nodeId) async {
+  /// Mở một bài học (2 suất miễn phí/ngày, sau đó trả phí theo loại môn).
+  Future<Map<String, dynamic>> openLearningNode(
+    String nodeId, {
+    String? currencyType,
+  }) async {
     final response = await _apiClient.post(
       ApiConstants.unlockLearningNode,
-      data: {'nodeId': nodeId},
+      data: {
+        'nodeId': nodeId,
+        if (currencyType != null) 'currencyType': currencyType,
+      },
     );
     return response.data;
   }

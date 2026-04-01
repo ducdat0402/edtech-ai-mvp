@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
+import 'package:edtech_mobile/core/widgets/ai_generated_notice.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 
 /// End Quiz Screen - shared quiz shown after completing any of the 4 lesson types.
@@ -17,6 +18,7 @@ class EndQuizScreen extends StatefulWidget {
   final String?
       lessonType; // e.g. 'image_quiz', 'video', 'text', 'image_gallery'
   final List<dynamic>? questions;
+  final Map<String, dynamic>? contributor;
 
   const EndQuizScreen({
     super.key,
@@ -24,6 +26,7 @@ class EndQuizScreen extends StatefulWidget {
     required this.title,
     this.lessonType,
     this.questions,
+    this.contributor,
   });
 
   @override
@@ -49,6 +52,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
   Map<String, dynamic>? _communicationResult;
   bool _isSubmittingSelfLeadership = false;
   bool _selfLeadershipCheckedIn = false;
+  Map<String, dynamic>? _nodeContributor;
 
   // ═══════════════════════════════════════════════════════════════════
   // ANIMATIONS
@@ -110,6 +114,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
   // DATA LOADING
   // ═══════════════════════════════════════════════════════════════════
   Future<void> _loadQuiz() async {
+    _nodeContributor = widget.contributor;
     // Use questions from constructor if provided
     if (widget.questions != null && widget.questions!.isNotEmpty) {
       setState(() {
@@ -125,6 +130,8 @@ class _EndQuizScreenState extends State<EndQuizScreen>
       try {
         final apiService = Provider.of<ApiService>(context, listen: false);
         final data = await apiService.getLessonData(widget.nodeId);
+        _nodeContributor =
+            (data['contributor'] as Map?)?.cast<String, dynamic>();
         final endQuiz = data['endQuiz'] as Map<String, dynamic>?;
         if (endQuiz != null && endQuiz['questions'] != null) {
           setState(() {
@@ -852,6 +859,11 @@ class _EndQuizScreenState extends State<EndQuizScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    AiGeneratedNotice(
+                      visible: _nodeContributor == null,
+                      compact: true,
+                    ),
+                    if (_nodeContributor == null) const SizedBox(height: 12),
                     // Question counter
                     Text(
                       'Câu ${_currentQuestionIndex + 1}/${_questions.length}',

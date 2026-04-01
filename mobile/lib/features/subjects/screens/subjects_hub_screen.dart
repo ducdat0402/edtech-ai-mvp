@@ -46,6 +46,12 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
     }).toList();
   }
 
+  List<Map<String, dynamic>> _subjectsByType(String type) {
+    return _filteredSubjects
+        .where((s) => (s['subjectType'] ?? 'community').toString() == type)
+        .toList();
+  }
+
   Future<void> _loadData() async {
     setState(() {
       _loading = true;
@@ -193,17 +199,35 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                       else
                         SliverPadding(
                           padding: const EdgeInsets.fromLTRB(14, 0, 14, 20),
-                          sliver: SliverGrid(
-                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: _gridCrossAxisCount(MediaQuery.sizeOf(context).width),
-                              mainAxisSpacing: 10,
-                              crossAxisSpacing: 10,
-                              childAspectRatio: 0.92,
-                            ),
-                            delegate: SliverChildBuilderDelegate(
-                              (context, index) => _buildSubjectTile(_filteredSubjects[index]),
-                              childCount: _filteredSubjects.length,
-                            ),
+                          sliver: SliverList(
+                            delegate: SliverChildListDelegate([
+                              _buildTypeSection(
+                                title: 'Môn học cá nhân',
+                                type: 'private',
+                                tooltip:
+                                    'Chỉ bạn nhìn thấy môn học này. Bài học private miễn phí cho chính bạn. Muốn nâng lên cộng đồng/chuyên gia cần admin phê duyệt.',
+                                items: _subjectsByType('private'),
+                                onCreate: _showCreatePrivateDialog,
+                              ),
+                              const SizedBox(height: 12),
+                              _buildTypeSection(
+                                title: 'Môn học cộng đồng',
+                                type: 'community',
+                                tooltip:
+                                    'Mở khóa bằng 50 xu hoặc 50 kim cương mỗi bài. Môn có đóng góp của bạn sẽ được chia lợi nhuận theo tháng tùy số lượng và dạng bài đã đóng góp thành công.',
+                                items: _subjectsByType('community'),
+                                onCreate: _showCreateCommunityDialog,
+                              ),
+                              const SizedBox(height: 12),
+                              _buildTypeSection(
+                                title: 'Môn học chuyên gia',
+                                type: 'expert',
+                                tooltip:
+                                    'Mỗi bài học mở khóa bằng 50 kim cương. Nội dung ở mức chuyên sâu, cần phê duyệt admin.',
+                                items: _subjectsByType('expert'),
+                                onCreate: _showCreateExpertDialog,
+                              ),
+                            ]),
                           ),
                         ),
                     ],
@@ -332,7 +356,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
               const SizedBox(width: 10),
               const Expanded(
                 child: Text(
-                  'Khám phá & đóng góp môn học',
+                  'Khám phá 3 loại môn học',
                   style: TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 16,
@@ -343,11 +367,9 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
             ],
           ),
           const SizedBox(height: 8),
-          Text(
-            _isContributor
-                ? 'Bạn có thể vào từng môn để học hoặc đóng góp bài học mới cho cộng đồng.'
-                : 'Bạn có thể vào học ngay. Bật Contributor để mở thêm quyền đóng góp nội dung.',
-            style: const TextStyle(
+          const Text(
+            'Private: chỉ bạn thấy. Community: mở bằng 50 xu hoặc 50 kim cương mỗi bài. Expert: mở bằng 50 kim cương mỗi bài.',
+            style: TextStyle(
               color: AppColors.textSecondary,
               fontSize: 13,
               height: 1.4,
@@ -492,6 +514,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
   static const double _tileActionBarHeight = 52;
 
   Widget _buildSubjectTile(Map<String, dynamic> subject) {
+    final subjectType = (subject['subjectType'] ?? 'community').toString();
     final id = (subject['id'] ?? '').toString();
     final name = (subject['name'] ?? 'Môn học').toString();
     final description = (subject['description'] ?? '').toString();
@@ -633,11 +656,15 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                   const SizedBox(width: 6),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: _isContributor
-                          ? () => context.push(
-                                '/contributor/mind-map?subjectId=$id&subjectName=${Uri.encodeComponent(name)}',
-                              )
-                          : () => context.go('/profile'),
+                      onPressed: subjectType == 'community'
+                          ? (_isContributor
+                              ? () => context.push(
+                                    '/contributor/mind-map?subjectId=$id&subjectName=${Uri.encodeComponent(name)}',
+                                  )
+                              : () => context.go('/profile'))
+                          : (subjectType == 'private'
+                              ? () => _showPromotionDialog(subjectId: id, subjectName: name)
+                              : null),
                       style: ElevatedButton.styleFrom(
                         visualDensity: VisualDensity.compact,
                         padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 4),
@@ -652,7 +679,9 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                       child: FittedBox(
                         fit: BoxFit.scaleDown,
                         child: Text(
-                          _isContributor ? 'Đóng góp' : 'Contributor',
+                          subjectType == 'community'
+                              ? (_isContributor ? 'Đóng góp' : 'Contributor')
+                              : (subjectType == 'private' ? 'Nâng hạng' : '---'),
                           style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600),
                         ),
                       ),
@@ -665,5 +694,216 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _showPromotionDialog({
+    required String subjectId,
+    required String subjectName,
+  }) async {
+    final target = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.bgSecondary,
+        title: const Text(
+          'Yêu cầu nâng hạng môn',
+          style: TextStyle(color: AppColors.textPrimary),
+        ),
+        content: Text(
+          'Môn "$subjectName" đang là private. Bạn muốn gửi duyệt lên loại nào?',
+          style: const TextStyle(color: AppColors.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Để sau'),
+          ),
+          OutlinedButton(
+            onPressed: () => Navigator.pop(ctx, 'community'),
+            child: const Text('Lên cộng đồng'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, 'expert'),
+            child: const Text('Lên chuyên gia'),
+          ),
+        ],
+      ),
+    );
+    if (target == null) return;
+    if (!mounted) return;
+    try {
+      final api = Provider.of<ApiService>(context, listen: false);
+      await api.requestSubjectPromotion(subjectId: subjectId, targetType: target);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Đã gửi yêu cầu nâng hạng, chờ admin phê duyệt')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('$e'), backgroundColor: AppColors.errorNeon),
+      );
+    }
+  }
+
+  Widget _buildTypeSection({
+    required String title,
+    required String type,
+    required String tooltip,
+    required List<Map<String, dynamic>> items,
+    required Future<void> Function() onCreate,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: AppColors.bgSecondary,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.borderPrimary),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                  ),
+                ),
+              ),
+              Tooltip(
+                message: tooltip,
+                child: const Icon(Icons.info_outline, color: AppColors.textSecondary, size: 18),
+              ),
+              const SizedBox(width: 8),
+              TextButton.icon(
+                onPressed: onCreate,
+                icon: const Icon(Icons.add, size: 18),
+                label: const Text('Tạo'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            tooltip,
+            style: const TextStyle(color: AppColors.textSecondary, fontSize: 12.5),
+          ),
+          const SizedBox(height: 10),
+          if (items.isEmpty)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 12),
+              child: Text(
+                'Chưa có môn học',
+                style: TextStyle(color: AppColors.textSecondary),
+              ),
+            )
+          else
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: _gridCrossAxisCount(MediaQuery.sizeOf(context).width - 28),
+                mainAxisSpacing: 10,
+                crossAxisSpacing: 10,
+                childAspectRatio: 0.92,
+              ),
+              itemCount: items.length,
+              itemBuilder: (context, index) => _buildSubjectTile(items[index]),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showCreatePrivateDialog() async {
+    await _showCreateDialog(
+      title: 'Tạo môn học cá nhân',
+      onSubmit: (api, name, desc) => api.createPrivateSubject(name: name, description: desc),
+      successMessage: 'Đã tạo môn private thành công',
+    );
+  }
+
+  Future<void> _showCreateCommunityDialog() async {
+    await _showCreateDialog(
+      title: 'Đề xuất môn cộng đồng',
+      onSubmit: (api, name, desc) => api.createSubjectContribution(name: name, description: desc),
+      successMessage: 'Đã gửi đề xuất môn cộng đồng, chờ admin duyệt',
+    );
+  }
+
+  Future<void> _showCreateExpertDialog() async {
+    await _showCreateDialog(
+      title: 'Tạo môn rồi gửi duyệt chuyên gia',
+      onSubmit: (api, name, desc) async {
+        final created = await api.createPrivateSubject(name: name, description: desc);
+        final subjectId = (created['id'] ?? '').toString();
+        if (subjectId.isNotEmpty) {
+          await api.requestSubjectPromotion(
+            subjectId: subjectId,
+            targetType: 'expert',
+            reason: 'Yêu cầu nâng cấp lên môn chuyên gia',
+          );
+        }
+        return created;
+      },
+      successMessage: 'Đã tạo môn private và gửi yêu cầu nâng cấp chuyên gia',
+    );
+  }
+
+  Future<void> _showCreateDialog({
+    required String title,
+    required Future<Map<String, dynamic>> Function(ApiService api, String name, String description) onSubmit,
+    required String successMessage,
+  }) async {
+    final nameCtrl = TextEditingController();
+    final descCtrl = TextEditingController();
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.bgSecondary,
+        title: Text(title, style: const TextStyle(color: AppColors.textPrimary)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameCtrl,
+              decoration: const InputDecoration(labelText: 'Tên môn học'),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: descCtrl,
+              maxLines: 2,
+              decoration: const InputDecoration(labelText: 'Mô tả (tuỳ chọn)'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Hủy')),
+          ElevatedButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Tạo')),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    final name = nameCtrl.text.trim();
+    final desc = descCtrl.text.trim();
+    if (name.isEmpty) return;
+    if (!mounted) return;
+    try {
+      final api = Provider.of<ApiService>(context, listen: false);
+      await onSubmit(api, name, desc);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(successMessage)),
+      );
+      _loadData();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('$e'), backgroundColor: AppColors.errorNeon),
+      );
+    }
   }
 }

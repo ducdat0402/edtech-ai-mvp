@@ -411,6 +411,64 @@ export class PendingContributionsService {
     return this.pendingRepo.save(contribution);
   }
 
+  /**
+   * Yêu cầu nâng hạng môn học (private -> community/expert), cần admin phê duyệt.
+   */
+  async createSubjectPromotionContribution(
+    requesterId: string,
+    data: {
+      subjectId: string;
+      targetType: 'community' | 'expert';
+      reason?: string;
+    },
+  ): Promise<PendingContribution> {
+    const subject = await this.subjectsService.findById(data.subjectId);
+    if (!subject) throw new NotFoundException('Subject not found');
+    if (subject.subjectType !== 'private') {
+      throw new BadRequestException('Chỉ môn private mới có thể yêu cầu nâng hạng');
+    }
+    if (subject.ownerUserId !== requesterId) {
+      throw new ForbiddenException('Bạn chỉ được nâng hạng môn học của chính mình');
+    }
+
+    const existingPending = await this.pendingRepo.findOne({
+      where: {
+        contributorId: requesterId,
+        type: ContributionType.SUBJECT,
+        action: ContributionAction.EDIT,
+        status: ContributionStatus.PENDING,
+      },
+      order: { createdAt: 'DESC' },
+    });
+    if (
+      existingPending &&
+      existingPending.data?.entityId === subject.id &&
+      existingPending.data?.requestedSubjectType === data.targetType
+    ) {
+      throw new BadRequestException('Bạn đã có một yêu cầu nâng hạng đang chờ duyệt');
+    }
+
+    const title = `Yêu cầu nâng hạng môn "${subject.name}" -> ${data.targetType}`;
+    const contribution = this.pendingRepo.create({
+      type: ContributionType.SUBJECT,
+      action: ContributionAction.EDIT,
+      status: ContributionStatus.PENDING,
+      contributorId: requesterId,
+      title,
+      description: data.reason || '',
+      contextDescription: `Yêu cầu nâng hạng môn private "${subject.name}" thành môn ${data.targetType}.`,
+      parentSubjectId: subject.id,
+      data: {
+        entityId: subject.id,
+        oldName: subject.name,
+        newName: subject.name,
+        requestedSubjectType: data.targetType,
+        reason: data.reason || '',
+      },
+    });
+    return this.pendingRepo.save(contribution);
+  }
+
   // =====================
   // Lesson Content Edit contributions
   // =====================
@@ -758,6 +816,10 @@ export class PendingContributionsService {
         const subjectUpdate: any = {};
         if (newName) subjectUpdate.name = newName;
         if (newDescription !== undefined) subjectUpdate.description = newDescription;
+        if (contribution.data.requestedSubjectType) {
+          subjectUpdate.subjectType = contribution.data.requestedSubjectType;
+          subjectUpdate.approvalStatus = 'approved';
+        }
         await this.subjectsService.update(entityId, subjectUpdate);
         break;
 

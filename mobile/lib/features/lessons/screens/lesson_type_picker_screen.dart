@@ -338,9 +338,9 @@ class _LessonTypePickerScreenState extends State<LessonTypePickerScreen> {
   String _getTypeLabel(String type) {
     switch (type) {
       case 'image_quiz':
-        return 'Hình ảnh (Quiz)';
+        return 'Quiz';
       case 'image_gallery':
-        return 'Hình ảnh (Thư viện)';
+        return 'Hình ảnh';
       case 'video':
         return 'Video';
       case 'text':

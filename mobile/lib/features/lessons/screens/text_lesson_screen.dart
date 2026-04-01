@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
+import 'package:edtech_mobile/core/widgets/ai_generated_notice.dart';
 import 'package:edtech_mobile/core/widgets/contributor_credit_button.dart';
 import 'package:edtech_mobile/theme/colors.dart';
 import 'end_quiz_screen.dart';
@@ -168,6 +169,8 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  AiGeneratedNotice(visible: widget.contributor == null),
+                  if (widget.contributor == null) const SizedBox(height: 10),
                   // Estimated reading time
                   _buildReadingTimeChip(),
                   const SizedBox(height: 16),
@@ -209,6 +212,7 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
                         lessonType: widget.lessonType ?? 'text',
                         questions: (widget.endQuiz?['questions'] as List?)
                             ?.cast<dynamic>(),
+                        contributor: widget.contributor,
                       ),
                     ),
                   );

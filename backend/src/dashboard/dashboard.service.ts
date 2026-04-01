@@ -72,7 +72,7 @@ export class DashboardService {
     // Batch: fetch currency, all subjects, all user progress, daily quests in parallel
     const [currency, allSubjects, allUserProgress, dailyQuests] = await Promise.all([
       this.currencyService.getCurrency(userId),
-      this.subjectsService.findAll(),
+      this.subjectsService.findAllForUser(userId),
       this.progressRepository.find({
         where: { userId },
         select: ['nodeId', 'progressPercentage', 'isCompleted'],

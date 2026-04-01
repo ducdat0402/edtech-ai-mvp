@@ -4,10 +4,12 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
+import 'package:edtech_mobile/core/services/competency_growth_notifier.dart';
 import 'package:edtech_mobile/core/services/tutorial_service.dart';
 import 'package:edtech_mobile/core/tutorial/tutorial_helper.dart';
 import 'package:edtech_mobile/core/widgets/bottom_nav_bar.dart';
 import 'package:edtech_mobile/core/widgets/error_widget.dart';
+import 'package:edtech_mobile/core/widgets/lesson_unlock_sheet.dart';
 import 'package:edtech_mobile/core/widgets/skeleton_loader.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 import 'package:edtech_mobile/features/chat/widgets/chat_bubble.dart';
@@ -161,6 +163,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       }
       _showDashboardTutorial();
       _checkWeeklyRewards(apiService);
+      await CompetencyGrowthNotifier.checkAndShowIfGained(context, apiService);
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -733,7 +736,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
       final isLocked = lesson['isLocked'] as bool? ?? true;
       if (isLocked) {
         final api = Provider.of<ApiService>(context, listen: false);
-        await api.openLearningNode(nodeId);
+        final opened = await LessonUnlockSheet.show(
+          context: context,
+          api: api,
+          nodeId: nodeId,
+          title: title,
+        );
+        if (!opened) return;
       }
       if (!mounted) return;
       await context.push('/lessons/$nodeId/types', extra: {'title': title});

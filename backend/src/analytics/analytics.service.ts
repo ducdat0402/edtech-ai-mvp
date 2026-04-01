@@ -9,6 +9,7 @@ import { RewardTransaction } from '../user-currency/entities/reward-transaction.
 import { LearningNode } from '../learning-nodes/entities/learning-node.entity';
 import { Subject } from '../subjects/entities/subject.entity';
 import { PendingContribution } from '../pending-contributions/entities/pending-contribution.entity';
+import { UserOpenedNode } from '../unlock-transactions/entities/user-opened-node.entity';
 
 @Injectable()
 export class AnalyticsService {
@@ -29,6 +30,8 @@ export class AnalyticsService {
     private subjectRepo: Repository<Subject>,
     @InjectRepository(PendingContribution)
     private contributionRepo: Repository<PendingContribution>,
+    @InjectRepository(UserOpenedNode)
+    private openedNodeRepo: Repository<UserOpenedNode>,
   ) {}
 
   async getOverview(period: string = '30d') {
@@ -99,6 +102,8 @@ export class AnalyticsService {
       completedNodes,
       avgProgressResult,
       completionsBySubject,
+      unlockMethodBreakdown,
+      unlockSubjectTypeBreakdown,
     ] = await Promise.all([
       this.progressRepo.count(),
       this.progressRepo.count({ where: { isCompleted: true } }),
@@ -114,6 +119,35 @@ export class AnalyticsService {
         .addSelect('COUNT(*) FILTER (WHERE up."isCompleted" = true)', 'completed')
         .addSelect('COUNT(*)', 'total')
         .groupBy('s.name')
+        .getRawMany(),
+      this.openedNodeRepo
+        .createQueryBuilder('o')
+        .select(
+          `CASE
+            WHEN o."diamondsPaid" = 0 AND o."coinsPaid" = 0 THEN 'free'
+            WHEN o."coinsPaid" > 0 THEN 'coins'
+            ELSE 'diamonds'
+          END`,
+          'method',
+        )
+        .addSelect('COUNT(*)', 'count')
+        .where('o."openedAt" >= :since', { since })
+        .groupBy(
+          `CASE
+            WHEN o."diamondsPaid" = 0 AND o."coinsPaid" = 0 THEN 'free'
+            WHEN o."coinsPaid" > 0 THEN 'coins'
+            ELSE 'diamonds'
+          END`,
+        )
+        .getRawMany(),
+      this.openedNodeRepo
+        .createQueryBuilder('o')
+        .innerJoin(LearningNode, 'ln', 'ln.id = o."nodeId"')
+        .innerJoin(Subject, 's', 's.id = ln."subjectId"')
+        .select('s."subjectType"', 'subjectType')
+        .addSelect('COUNT(*)', 'count')
+        .where('o."openedAt" >= :since', { since })
+        .groupBy('s."subjectType"')
         .getRawMany(),
     ]);
 
@@ -137,6 +171,8 @@ export class AnalyticsService {
       completionRate,
       recentCompletions,
       completionsBySubject,
+      unlockMethodBreakdown,
+      unlockSubjectTypeBreakdown,
     };
   }
 

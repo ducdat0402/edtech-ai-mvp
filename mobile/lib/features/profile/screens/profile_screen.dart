@@ -9,6 +9,7 @@ import 'package:edtech_mobile/core/config/api_config.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/services/auth_service.dart';
 import 'package:edtech_mobile/core/services/tutorial_service.dart';
+import 'package:edtech_mobile/core/services/theme_mode_service.dart';
 import 'package:edtech_mobile/core/tutorial/tutorial_helper.dart';
 import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/core/widgets/bottom_nav_bar.dart';
@@ -685,6 +686,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Column(
             key: _menuCardsKey,
             children: [
+              _buildThemeModeCard(),
               _buildMenuCard(
                 icon: Icons.history_edu,
                 title: 'Nhật ký hành trình',
@@ -713,6 +715,60 @@ class _ProfileScreenState extends State<ProfileScreen> {
           // Logout Button
           _buildLogoutButton(),
           const SizedBox(height: 32),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildThemeModeCard() {
+    final themeService = Provider.of<ThemeModeService>(context, listen: true);
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: _bgSecondary,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: _borderColor),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: _accentColor.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              themeService.isDarkMode ? Icons.dark_mode : Icons.light_mode,
+              color: _accentColor,
+              size: 22,
+            ),
+          ),
+          const SizedBox(width: 12),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Giao diện',
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(height: 2),
+                Text(
+                  'Bật/tắt Light mode',
+                  style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+          Switch(
+            value: themeService.isDarkMode,
+            onChanged: (v) => themeService.setDarkMode(v),
+          ),
         ],
       ),
     );
@@ -1027,7 +1083,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     color: AppColors.streakOrange,
                   ),
                 ),
-                Icon(
+                const Icon(
                   Icons.chevron_right_rounded,
                   size: 20,
                   color: AppColors.textTertiary,

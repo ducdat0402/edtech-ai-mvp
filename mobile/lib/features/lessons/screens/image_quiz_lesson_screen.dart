@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
+import 'package:edtech_mobile/core/widgets/ai_generated_notice.dart';
 import 'package:edtech_mobile/core/widgets/contributor_credit_button.dart';
 import 'package:edtech_mobile/theme/colors.dart';
 import 'end_quiz_screen.dart';
@@ -50,6 +52,15 @@ class _ImageQuizLessonScreenState extends State<ImageQuizLessonScreen> {
     super.dispose();
   }
 
+  void _goToPage(int index) {
+    if (index < 0 || index >= _slides.length) return;
+    _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeInOut,
+    );
+  }
+
   void _selectAnswer(int slideIndex, int optionIndex) {
     if (_revealedAnswers[slideIndex] == true) return;
     setState(() {
@@ -91,6 +102,11 @@ class _ImageQuizLessonScreenState extends State<ImageQuizLessonScreen> {
       ),
       body: Column(
         children: [
+          if (widget.contributor == null)
+            const Padding(
+              padding: EdgeInsets.fromLTRB(16, 10, 16, 0),
+              child: AiGeneratedNotice(visible: true, compact: true),
+            ),
           // Progress indicator
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -128,16 +144,52 @@ class _ImageQuizLessonScreenState extends State<ImageQuizLessonScreen> {
                 ),
                 if (totalSlides > 1) ...[
                   const SizedBox(height: 8),
-                  const Row(
+                  Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.swipe, color: AppColors.textTertiary, size: 14),
-                      SizedBox(width: 6),
+                      Icon(
+                        kIsWeb ? Icons.touch_app : Icons.swipe,
+                        color: AppColors.textTertiary,
+                        size: 14,
+                      ),
+                      const SizedBox(width: 6),
                       Text(
-                        'Vuốt trái/phải để sang câu tiếp theo',
+                        kIsWeb
+                            ? 'Dùng nút Trước/Sau để chuyển câu'
+                            : 'Vuốt trái/phải để sang câu tiếp theo',
                         style: TextStyle(
                           color: AppColors.textTertiary,
                           fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+                if (kIsWeb && totalSlides > 1) ...[
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      OutlinedButton.icon(
+                        onPressed:
+                            _currentPage > 0 ? () => _goToPage(_currentPage - 1) : null,
+                        icon: const Icon(Icons.chevron_left, size: 16),
+                        label: const Text('Trước'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.textSecondary,
+                          side: const BorderSide(color: AppColors.borderPrimary),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      ElevatedButton.icon(
+                        onPressed: _currentPage < totalSlides - 1
+                            ? () => _goToPage(_currentPage + 1)
+                            : null,
+                        icon: const Icon(Icons.chevron_right, size: 16),
+                        label: const Text('Sau'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.purpleNeon,
+                          foregroundColor: Colors.white,
                         ),
                       ),
                     ],
@@ -179,6 +231,7 @@ class _ImageQuizLessonScreenState extends State<ImageQuizLessonScreen> {
                               lessonType: widget.lessonType ?? 'image_quiz',
                               questions:
                                   (widget.endQuiz?['questions'] as List?)?.cast<dynamic>(),
+                              contributor: widget.contributor,
                             ),
                           ),
                         );

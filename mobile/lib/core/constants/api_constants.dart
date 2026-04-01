@@ -25,6 +25,7 @@ class ApiConstants {
   static String subjectDetail(String id) => '/subjects/$id';
   static String subjectNodes(String id) => '/subjects/$id/nodes';
   static String subjectIntro(String id) => '/subjects/$id/intro';
+  static const String createPrivateSubject = '/subjects/private';
   static String startLearningGoals(String subjectId) => '/subjects/$subjectId/learning-goals/start';
   static String chatLearningGoals(String subjectId) => '/subjects/$subjectId/learning-goals/chat';
   static String getLearningGoalsSession(String subjectId) => '/subjects/$subjectId/learning-goals/session';
@@ -167,6 +168,7 @@ class ApiConstants {
   static const String myPendingContributions = '/pending-contributions/my';
   static const String adminPendingContributions = '/pending-contributions/admin/pending';
   static const String createSubjectContribution = '/pending-contributions/subject';
+  static const String createSubjectPromotion = '/pending-contributions/subject-promotion';
   static const String createDomainContribution = '/pending-contributions/domain';
   static const String createTopicContribution = '/pending-contributions/topic';
   static const String createLessonContribution = '/pending-contributions/lesson';

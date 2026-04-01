@@ -51,6 +51,17 @@ export class SubjectsService {
     return subjects;
   }
 
+  /** Danh sách môn theo quyền user: private của chính họ + community/expert đã duyệt. */
+  async findAllForUser(userId?: string): Promise<Subject[]> {
+    const all = await this.findAll();
+    return all.filter((s) => {
+      if (s.subjectType === 'private') {
+        return !!userId && s.ownerUserId === userId;
+      }
+      return s.approvalStatus === 'approved';
+    });
+  }
+
   async findById(id: string): Promise<Subject | null> {
     return this.subjectRepository.findOne({
       where: { id },
@@ -91,6 +102,8 @@ export class SubjectsService {
         icon: this.getSubjectIcon(name),
         color: this.getSubjectColor(name),
       },
+      subjectType: 'community',
+      approvalStatus: 'approved',
     });
 
     const saved = await this.subjectRepository.save(newSubject);
@@ -145,6 +158,37 @@ export class SubjectsService {
       throw new BadRequestException('Subject not found');
     }
     Object.assign(subject, data);
+    const saved = await this.subjectRepository.save(subject);
+    this.invalidateCache();
+    return saved;
+  }
+
+  async createPrivateSubject(
+    ownerUserId: string,
+    data: {
+      name: string;
+      description?: string;
+      track?: 'explorer' | 'scholar';
+      metadata?: any;
+    },
+  ): Promise<Subject> {
+    const name = data.name?.trim();
+    if (!name) {
+      throw new BadRequestException('Tên môn học là bắt buộc');
+    }
+    const subject = this.subjectRepository.create({
+      name,
+      description: data.description || '',
+      track: data.track || 'explorer',
+      metadata: data.metadata || {
+        icon: this.getSubjectIcon(name),
+        color: this.getSubjectColor(name),
+      },
+      subjectType: 'private',
+      approvalStatus: 'approved',
+      ownerUserId,
+      unlockConditions: {},
+    });
     const saved = await this.subjectRepository.save(subject);
     this.invalidateCache();
     return saved;
@@ -326,8 +370,15 @@ export class SubjectsService {
       throw new BadRequestException('Subject not found');
     }
 
+    if (subject.subjectType === 'private' && subject.ownerUserId !== userId) {
+      throw new BadRequestException('Bạn không có quyền truy cập môn private này');
+    }
+    if (subject.subjectType !== 'private' && subject.approvalStatus !== 'approved') {
+      throw new BadRequestException('Môn học đang chờ phê duyệt');
+    }
+
     const currency = await this.currencyService.getCurrency(userId);
-    const requiredCoins = subject.unlockConditions?.minCoin || 0;
+    const requiredPrice = subject.unlockConditions?.minCoin || 0;
 
     // Check if already unlocked (có thể lưu vào bảng user_subjects hoặc check progress)
     // Tạm thời check xem có progress nào không
@@ -336,10 +387,19 @@ export class SubjectsService {
 
     return {
       subject,
-      isUnlocked: hasProgress || subject.track === 'explorer',
-      canUnlock: (currency.diamonds ?? 0) >= requiredCoins,
-      requiredDiamonds: requiredCoins,
-      userDiamonds: currency.diamonds ?? 0,
+      isUnlocked:
+        subject.subjectType === 'private' ||
+        hasProgress ||
+        subject.track === 'explorer',
+      canUnlock:
+        subject.subjectType === 'community'
+          ? (currency.coins ?? 0) >= requiredPrice
+          : (currency.diamonds ?? 0) >= requiredPrice,
+      requiredDiamonds: requiredPrice,
+      userDiamonds:
+        subject.subjectType === 'community'
+          ? (currency.coins ?? 0)
+          : (currency.diamonds ?? 0),
     };
   }
 
@@ -388,6 +448,12 @@ export class SubjectsService {
     const subject = await this.findById(subjectId);
     if (!subject) {
       throw new BadRequestException('Subject not found');
+    }
+    if (subject.subjectType === 'private' && subject.ownerUserId !== userId) {
+      throw new BadRequestException('Bạn không có quyền truy cập môn private này');
+    }
+    if (subject.subjectType !== 'private' && subject.approvalStatus !== 'approved') {
+      throw new BadRequestException('Môn học đang chờ phê duyệt');
     }
 
     // Get all nodes and domains for this subject
