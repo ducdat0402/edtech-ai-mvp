@@ -98,6 +98,7 @@ class ApiConstants {
   static const String unlockSubject = '/unlock/subject';
   static const String unlockDomain = '/unlock/domain';
   static const String unlockTopic = '/unlock/topic';
+  static const String unlockLearningNode = '/unlock/node';
   static String checkNodeAccess(String nodeId) => '/unlock/check-access/$nodeId';
   static const String myUnlocks = '/unlock/my-unlocks';
   static const String unlockTransactions = '/unlock/transactions';

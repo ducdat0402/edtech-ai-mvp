@@ -340,7 +340,7 @@ class _DomainDetailScreenState extends State<DomainDetailScreen> {
                             Icon(Icons.lock, size: 12, color: Colors.orange.shade400),
                             const SizedBox(width: 4),
                             Text(
-                              '25 💎 để mở khóa',
+                              '50 💎 để mở khóa',
                               style: TextStyle(fontSize: 11, color: Colors.orange.shade600, fontWeight: FontWeight.w500),
                             ),
                           ],

@@ -9,10 +9,16 @@ import { SubjectsModule } from '../subjects/subjects.module';
 import { DomainsModule } from '../domains/domains.module';
 import { TopicsModule } from '../topics/topics.module';
 import { LearningNode } from '../learning-nodes/entities/learning-node.entity';
+import { UserOpenedNode } from './entities/user-opened-node.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UnlockTransaction, UserUnlock, LearningNode]),
+    TypeOrmModule.forFeature([
+      UnlockTransaction,
+      UserUnlock,
+      LearningNode,
+      UserOpenedNode,
+    ]),
     UserCurrencyModule,
     forwardRef(() => SubjectsModule),
     forwardRef(() => DomainsModule),

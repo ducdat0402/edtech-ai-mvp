@@ -8,6 +8,7 @@ import { UserProgress } from '../user-progress/entities/user-progress.entity';
 import { UserCurrency } from '../user-currency/entities/user-currency.entity';
 import { UnlockTransaction } from '../unlock-transactions/entities/unlock-transaction.entity';
 import { UserUnlock } from '../unlock-transactions/entities/user-unlock.entity';
+import { UserOpenedNode } from '../unlock-transactions/entities/user-opened-node.entity';
 import { PlacementTest } from '../placement-test/entities/placement-test.entity';
 import { Question } from '../placement-test/entities/question.entity';
 import { Quest } from '../quests/entities/quest.entity';
@@ -77,6 +78,7 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
         UserCurrency,
         UnlockTransaction,
         UserUnlock,
+        UserOpenedNode,
         PlacementTest,
         Question,
         Quest,

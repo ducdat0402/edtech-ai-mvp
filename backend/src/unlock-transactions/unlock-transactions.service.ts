@@ -6,17 +6,22 @@ import {
   forwardRef,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { UnlockTransaction } from './entities/unlock-transaction.entity';
 import { UserUnlock } from './entities/user-unlock.entity';
+import { UserOpenedNode } from './entities/user-opened-node.entity';
 import { UserCurrencyService } from '../user-currency/user-currency.service';
 import { SubjectsService } from '../subjects/subjects.service';
 import { DomainsService } from '../domains/domains.service';
 import { TopicsService } from '../topics/topics.service';
 import { LearningNode } from '../learning-nodes/entities/learning-node.entity';
+import {
+  FREE_LESSONS_PER_DAY,
+  DIAMOND_PER_LESSON_OPEN,
+} from './lesson-access.constants';
 
-// Pricing constants
-const DIAMOND_PER_LESSON = 25;
+// Giá theo bài (mở topic/domain/subject = tổng từ số bài × đơn giá này)
+const DIAMOND_PER_LESSON = DIAMOND_PER_LESSON_OPEN;
 const SUBJECT_DISCOUNT = 0.70; // 30% off
 const DOMAIN_DISCOUNT = 0.85;  // 15% off
 const TOPIC_DISCOUNT = 1.0;    // no discount
@@ -30,6 +35,9 @@ export class UnlockTransactionsService {
     private unlockRepository: Repository<UserUnlock>,
     @InjectRepository(LearningNode)
     private nodeRepository: Repository<LearningNode>,
+    @InjectRepository(UserOpenedNode)
+    private openedNodeRepository: Repository<UserOpenedNode>,
+    private dataSource: DataSource,
     private currencyService: UserCurrencyService,
     @Inject(forwardRef(() => SubjectsService))
     private subjectsService: SubjectsService,
@@ -51,11 +59,6 @@ export class UnlockTransactionsService {
     const subject = await this.subjectsService.findById(subjectId);
     if (!subject) {
       throw new NotFoundException('Không tìm thấy môn học');
-    }
-
-    // Auto-unlock first topic if user hasn't unlocked anything yet
-    if (userId) {
-      await this.ensureFirstTopicUnlocked(userId, subjectId);
     }
 
     const domains = await this.domainsService.findBySubject(subjectId);
@@ -189,77 +192,6 @@ export class UnlockTransactionsService {
       totalIfBuyDomains,
       totalIfBuyTopics,
     };
-  }
-
-  // ═══════════════════════════════════════════════════════
-  //  AUTO-UNLOCK FIRST TOPIC (FREE)
-  // ═══════════════════════════════════════════════════════
-
-  /**
-   * Auto-unlock the first topic of a subject for free.
-   * Called when user first accesses a subject's learning path.
-   * Returns the topicId that was unlocked (or already unlocked).
-   */
-  async ensureFirstTopicUnlocked(
-    userId: string,
-    subjectId: string,
-  ): Promise<{ topicId: string | null; alreadyUnlocked: boolean }> {
-    if (!userId || !subjectId) {
-      return { topicId: null, alreadyUnlocked: false };
-    }
-
-    // Check if user already has ANY unlock for this subject
-    const existingUnlocks = await this.unlockRepository.find({
-      where: { userId, subjectId },
-    });
-
-    if (existingUnlocks.length > 0) {
-      // Already has some unlock - don't auto-unlock again
-      const firstTopicUnlock = existingUnlocks.find(
-        (u) => u.unlockLevel === 'topic' && u.diamondsCost === 0,
-      );
-      return {
-        topicId: firstTopicUnlock?.topicId || null,
-        alreadyUnlocked: true,
-      };
-    }
-
-    // Find first domain (by order)
-    const domains = await this.domainsService.findBySubject(subjectId);
-    if (domains.length === 0) {
-      return { topicId: null, alreadyUnlocked: false };
-    }
-
-    const firstDomain = domains[0];
-
-    // Find first topic of first domain
-    const topics = await this.topicsService.findByDomain(firstDomain.id);
-    if (topics.length === 0) {
-      return { topicId: null, alreadyUnlocked: false };
-    }
-
-    const firstTopic = topics[0];
-
-    // Count lessons in this topic
-    const topicNodes = await this.nodeRepository.find({
-      where: { topicId: firstTopic.id },
-    });
-
-    // Create free unlock record
-    const unlock = this.unlockRepository.create({
-      userId,
-      unlockLevel: 'topic' as const,
-      subjectId,
-      domainId: firstDomain.id,
-      topicId: firstTopic.id,
-      diamondsCost: 0,
-      lessonsCount: topicNodes.length,
-      discountPercent: 100, // 100% free
-    });
-
-    await this.unlockRepository.save(unlock);
-
-    return { topicId: firstTopic.id, alreadyUnlocked: false };
   }
 
   // ═══════════════════════════════════════════════════════
@@ -484,32 +416,39 @@ export class UnlockTransactionsService {
   }
 
   // ═══════════════════════════════════════════════════════
-  //  ACCESS CHECK
+  //  DAILY FREE LESSONS + PER-NODE OPEN
   // ═══════════════════════════════════════════════════════
 
-  /**
-   * Check if user can access a specific learning node
-   */
-  async canAccessNode(
+  /** Ngày theo lịch Việt Nam (YYYY-MM-DD) — dùng cho quota 2 bài/ngày. */
+  calendarDateVN(d: Date = new Date()): string {
+    return d.toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' });
+  }
+
+  /** Số bài đã mở bằng suất miễn phí trong ngày (VN). */
+  async countFreeLessonOpensToday(userId: string): Promise<number> {
+    const today = this.calendarDateVN();
+    return this.openedNodeRepository
+      .createQueryBuilder('o')
+      .where('o.userId = :userId', { userId })
+      .andWhere('o.diamondsPaid = 0')
+      .andWhere(
+        `to_char(timezone('Asia/Ho_Chi_Minh', o.openedAt), 'YYYY-MM-DD') = :d`,
+        { d: today },
+      )
+      .getCount();
+  }
+
+  private async hasTierUnlockForNode(
     userId: string,
-    nodeId: string,
-  ): Promise<{ canAccess: boolean; nodeInfo?: any }> {
-    if (!userId) return { canAccess: false };
-
-    const node = await this.nodeRepository.findOne({
-      where: { id: nodeId },
-      select: ['id', 'subjectId', 'domainId', 'topicId'],
-    });
-    if (!node) return { canAccess: false };
-
-    // Single query: check all unlock levels at once
+    node: Pick<LearningNode, 'subjectId' | 'domainId' | 'topicId'>,
+  ): Promise<boolean> {
     const unlock = await this.unlockRepository
       .createQueryBuilder('u')
       .where('u.userId = :userId', { userId })
       .andWhere(
         '(u.unlockLevel = :subject AND u.subjectId = :subjectId) OR ' +
-        '(u.unlockLevel = :domain AND u.domainId = :domainId) OR ' +
-        '(u.unlockLevel = :topic AND u.topicId = :topicId)',
+          '(u.unlockLevel = :domain AND u.domainId = :domainId) OR ' +
+          '(u.unlockLevel = :topic AND u.topicId = :topicId)',
         {
           subject: 'subject',
           domain: 'domain',
@@ -521,16 +460,158 @@ export class UnlockTransactionsService {
       )
       .limit(1)
       .getOne();
+    return !!unlock;
+  }
 
-    if (unlock) return { canAccess: true };
+  /**
+   * Mở một bài học: tối đa 2 bài/ngày (toàn hệ thống) miễn phí, sau đó 50 💎/bài.
+   */
+  async openLearningNode(userId: string, nodeId: string) {
+    const node = await this.nodeRepository.findOne({
+      where: { id: nodeId },
+      select: ['id', 'subjectId', 'domainId', 'topicId'],
+    });
+    if (!node?.subjectId) {
+      throw new NotFoundException('Không tìm thấy bài học');
+    }
+
+    const existingOpen = await this.openedNodeRepository.findOne({
+      where: { userId, nodeId },
+    });
+    if (existingOpen) {
+      return {
+        success: true,
+        alreadyUnlocked: true,
+        diamondsPaid: existingOpen.diamondsPaid,
+        message: 'Bài học đã được mở trước đó',
+      };
+    }
+
+    if (await this.hasTierUnlockForNode(userId, node)) {
+      return {
+        success: true,
+        viaBulkUnlock: true,
+        message: 'Bài nằm trong phạm vi đã mở khóa (môn/chương/chủ đề)',
+      };
+    }
+
+    await this.currencyService.getOrCreate(userId);
+
+    return this.dataSource.transaction(async (manager) => {
+      const openedRepo = manager.getRepository(UserOpenedNode);
+      const dup = await openedRepo.findOne({ where: { userId, nodeId } });
+      if (dup) {
+        return {
+          success: true,
+          alreadyUnlocked: true,
+          diamondsPaid: dup.diamondsPaid,
+        };
+      }
+
+      const today = this.calendarDateVN();
+      const freeUsed = await openedRepo
+        .createQueryBuilder('o')
+        .where('o.userId = :userId', { userId })
+        .andWhere('o.diamondsPaid = 0')
+        .andWhere(
+          `to_char(timezone('Asia/Ho_Chi_Minh', o.openedAt), 'YYYY-MM-DD') = :d`,
+          { d: today },
+        )
+        .getCount();
+
+      if (freeUsed < FREE_LESSONS_PER_DAY) {
+        await openedRepo.insert({
+          userId,
+          nodeId,
+          diamondsPaid: 0,
+        });
+        return {
+          success: true,
+          usedFreeDailySlot: true,
+          diamondsPaid: 0,
+          remainingFreeLessonsToday: FREE_LESSONS_PER_DAY - freeUsed - 1,
+          message: 'Đã mở bài bằng suất miễn phí trong ngày',
+        };
+      }
+
+      try {
+        await this.currencyService.deductDiamondsTransactional(
+          manager,
+          userId,
+          DIAMOND_PER_LESSON_OPEN,
+        );
+      } catch {
+        const currency = await this.currencyService.getCurrency(userId);
+        throw new BadRequestException(
+          `Không đủ kim cương. Cần ${DIAMOND_PER_LESSON_OPEN} 💎 để mở bài, bạn có ${currency.diamonds ?? 0} 💎. Mỗi ngày có ${FREE_LESSONS_PER_DAY} bài miễn phí (đã dùng hết hôm nay).`,
+        );
+      }
+
+      await openedRepo.insert({
+        userId,
+        nodeId,
+        diamondsPaid: DIAMOND_PER_LESSON_OPEN,
+      });
+
+      return {
+        success: true,
+        usedFreeDailySlot: false,
+        diamondsPaid: DIAMOND_PER_LESSON_OPEN,
+        remainingFreeLessonsToday: 0,
+        message: `Đã mở bài (${DIAMOND_PER_LESSON_OPEN} 💎)`,
+      };
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════
+  //  ACCESS CHECK
+  // ═══════════════════════════════════════════════════════
+
+  /**
+   * Check if user can access a specific learning node
+   */
+  async canAccessNode(
+    userId: string,
+    nodeId: string,
+  ): Promise<{
+    canAccess: boolean;
+    nodeInfo?: any;
+    remainingFreeLessonsToday?: number;
+    diamondCost?: number;
+    userDiamonds?: number;
+  }> {
+    if (!userId) return { canAccess: false };
+
+    const opened = await this.openedNodeRepository.findOne({
+      where: { userId, nodeId },
+    });
+    if (opened) return { canAccess: true };
+
+    const node = await this.nodeRepository.findOne({
+      where: { id: nodeId },
+      select: ['id', 'subjectId', 'domainId', 'topicId'],
+    });
+    if (!node) return { canAccess: false };
+
+    if (await this.hasTierUnlockForNode(userId, node)) {
+      return { canAccess: true };
+    }
+
+    const currency = await this.currencyService.getCurrency(userId);
+    const usedFree = await this.countFreeLessonOpensToday(userId);
+    const remaining = Math.max(0, FREE_LESSONS_PER_DAY - usedFree);
 
     return {
       canAccess: false,
+      remainingFreeLessonsToday: remaining,
+      diamondCost: DIAMOND_PER_LESSON_OPEN,
+      userDiamonds: currency.diamonds ?? 0,
       nodeInfo: {
         subjectId: node.subjectId,
         domainId: node.domainId,
         topicId: node.topicId,
-        price: DIAMOND_PER_LESSON,
+        price: DIAMOND_PER_LESSON_OPEN,
+        freeLessonsPerDay: FREE_LESSONS_PER_DAY,
       },
     };
   }
@@ -590,6 +671,17 @@ export class UnlockTransactionsService {
         (node.domainId && unlockedDomainIds.has(node.domainId)) ||
         (node.topicId && unlockedTopicIds.has(node.topicId))
       ) {
+        unlockedNodeIds.add(node.id);
+      }
+    }
+
+    const openedRows = await this.openedNodeRepository.find({
+      where: { userId },
+      select: ['nodeId'],
+    });
+    const openedSet = new Set(openedRows.map((r) => r.nodeId));
+    for (const node of allNodes) {
+      if (openedSet.has(node.id)) {
         unlockedNodeIds.add(node.id);
       }
     }

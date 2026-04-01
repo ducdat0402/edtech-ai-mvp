@@ -969,6 +969,15 @@ class ApiService {
     return response.data;
   }
 
+  /// Mở một bài học (2 suất miễn phí/ngày toàn hệ thống, sau đó 50 💎).
+  Future<Map<String, dynamic>> openLearningNode(String nodeId) async {
+    final response = await _apiClient.post(
+      ApiConstants.unlockLearningNode,
+      data: {'nodeId': nodeId},
+    );
+    return response.data;
+  }
+
   // =====================
   // Shop APIs
   // =====================

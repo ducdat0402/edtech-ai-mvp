@@ -1303,7 +1303,7 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
                         final lessonIcon = lessonMeta?['icon'] as String? ?? '📖';
                         final linkedNodeId = lessonMeta?['linkedLearningNodeId'] as String?;
                         final isLocked = lesson['isLocked'] as bool? ?? false;
-                        final diamondCost = lesson['diamondCost'] as int? ?? 25;
+                        final diamondCost = lesson['diamondCost'] as int? ?? 50;
                         final isCompleted = lessonStatus == 'completed';
                         final accessible = !isLocked || isCompleted;
 
@@ -1409,8 +1409,21 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
     );
   }
 
-  void _showUnlockDialog(String nodeId, String title) {
-    showDialog(
+  Future<void> _showUnlockDialog(String nodeId, String title) async {
+    final api = Provider.of<ApiService>(context, listen: false);
+    int remainingFree = 0;
+    int diamondCost = 50;
+    if (nodeId.isNotEmpty) {
+      try {
+        final access = await api.checkNodeAccess(nodeId);
+        remainingFree =
+            (access['remainingFreeLessonsToday'] as num?)?.toInt() ?? 0;
+        diamondCost = (access['diamondCost'] as num?)?.toInt() ?? 50;
+      } catch (_) {}
+    }
+    if (!mounted) return;
+
+    await showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Bài học chưa mở khóa'),
@@ -1418,9 +1431,21 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Bài "$title" cần được mở khóa bằng kim cương.'),
+            Text('Bài "$title" chưa được mở.'),
             const SizedBox(height: 12),
-            const Text('Bạn có thể mở khóa từng topic, chương, hoặc cả môn để tiết kiệm hơn.'),
+            const Text(
+              'Mỗi ngày có 2 bài miễn phí (mọi môn). Hết suất: 50 💎/bài. '
+              'Hoặc mở cả chủ đề / chương / môn.',
+            ),
+            if (nodeId.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(
+                remainingFree > 0
+                    ? 'Suất miễn phí hôm nay: còn $remainingFree.'
+                    : 'Hôm nay đã dùng hết 2 suất miễn phí.',
+                style: TextStyle(fontSize: 12, color: Colors.blue.shade700),
+              ),
+            ],
           ],
         ),
         actions: [
@@ -1428,15 +1453,47 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
             onPressed: () => Navigator.pop(ctx),
             child: const Text('Đóng'),
           ),
+          if (nodeId.isNotEmpty)
+            ElevatedButton.icon(
+              onPressed: () async {
+                try {
+                  await api.openLearningNode(nodeId);
+                  if (ctx.mounted) Navigator.pop(ctx);
+                  await _checkAndLoadMindMap();
+                  if (mounted) {
+                    context.push(
+                      '/lessons/$nodeId/types',
+                      extra: {'title': title},
+                    );
+                  }
+                } catch (e) {
+                  if (ctx.mounted) {
+                    ScaffoldMessenger.of(ctx).showSnackBar(
+                      SnackBar(content: Text('$e')),
+                    );
+                  }
+                }
+              },
+              icon: const Text('✨', style: TextStyle(fontSize: 16)),
+              label: Text(
+                remainingFree > 0
+                    ? 'Mở bài (miễn phí)'
+                    : 'Mở bài ($diamondCost 💎)',
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.deepPurple,
+                foregroundColor: Colors.white,
+              ),
+            ),
           ElevatedButton.icon(
             onPressed: () {
               Navigator.pop(ctx);
               context.push('/subjects/${widget.subjectId}/unlock');
             },
             icon: const Text('💎', style: TextStyle(fontSize: 16)),
-            label: const Text('Mở khóa'),
+            label: const Text('Gói mở khóa'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.deepPurple,
+              backgroundColor: Colors.deepPurple.shade300,
               foregroundColor: Colors.white,
             ),
           ),

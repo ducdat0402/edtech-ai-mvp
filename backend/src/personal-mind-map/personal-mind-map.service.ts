@@ -1561,13 +1561,9 @@ CHỈ TRẢ VỀ JSON.`;
       };
     }
 
-    // Auto-unlock first topic if needed
-    await this.unlockService.ensureFirstTopicUnlocked(userId, subjectId);
-
-    // Get user's unlocked node IDs via diamond system
     const unlockedIds = await this.unlockService.getUserUnlockedNodeIds(userId, subjectId);
 
-    const DIAMOND_PER_LESSON = 25;
+    const DIAMOND_PER_LESSON = 50;
 
     const nodesWithLockStatus = mindMap.nodes.map((node) => {
       // Check if this is a lesson node (has linkedLearningNodeId)

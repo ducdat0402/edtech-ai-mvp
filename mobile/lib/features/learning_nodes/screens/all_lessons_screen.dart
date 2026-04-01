@@ -726,7 +726,7 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
         if (isCompleted) {
           _showCompletedDialog(title, nodeId);
         } else if (isLocked) {
-          _showLockedLessonDialog(title);
+          _showLockedLessonDialog(title, nodeId);
         } else {
           context.push('/lessons/$nodeId/types',
               extra: {'title': title}).then((_) => _loadData());
@@ -817,7 +817,7 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
                           Icon(Icons.lock,
                               size: 11, color: Colors.orange.shade400),
                           const SizedBox(width: 3),
-                          Text('25 💎 để mở khóa',
+                          Text('50 💎 hoặc suất miễn phí',
                               style: TextStyle(
                                   fontSize: 10,
                                   color: Colors.orange.shade600,
@@ -872,82 +872,155 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
     );
   }
 
-  void _showLockedLessonDialog(String title) {
-    showModalBottomSheet(
+  Future<void> _showLockedLessonDialog(String title, String nodeId) async {
+    final api = Provider.of<ApiService>(context, listen: false);
+    int remainingFree = 0;
+    int diamondCost = 50;
+    int userDiamonds = 0;
+    try {
+      final access = await api.checkNodeAccess(nodeId);
+      remainingFree = (access['remainingFreeLessonsToday'] as num?)?.toInt() ?? 0;
+      diamondCost = (access['diamondCost'] as num?)?.toInt() ?? 50;
+      userDiamonds = (access['userDiamonds'] as num?)?.toInt() ?? 0;
+    } catch (_) {}
+
+    if (!mounted) return;
+
+    await showModalBottomSheet<void>(
       context: context,
       backgroundColor: AppColors.bgSecondary,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('🔒', style: TextStyle(fontSize: 48)),
-            const SizedBox(height: 12),
-            Text(title,
-                style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
-                textAlign: TextAlign.center),
-            const SizedBox(height: 8),
-            Text(
-              'Bài học này cần mở khóa bằng kim cương.\nBạn có thể mở khóa từng topic, chương hoặc cả môn để tiết kiệm.',
-              style: AppTextStyles.bodyMedium
-                  .copyWith(color: AppColors.textSecondary),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 20),
-            Row(
+      builder: (ctx) {
+        var busy = false;
+        return StatefulBuilder(
+          builder: (context, setModalState) => Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(ctx),
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: AppColors.borderPrimary),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                    child: const Text('Đóng',
-                        style: TextStyle(color: AppColors.textSecondary)),
-                  ),
+                const Text('🔒', style: TextStyle(fontSize: 48)),
+                const SizedBox(height: 12),
+                Text(title,
+                    style:
+                        AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+                    textAlign: TextAlign.center),
+                const SizedBox(height: 8),
+                Text(
+                  'Mỗi ngày bạn có 2 bài miễn phí trên toàn bộ môn (theo giờ Việt Nam). '
+                  'Hết suất: mở thêm một bài tốn $diamondCost 💎.\n'
+                  'Bạn cũng có thể mở cả chủ đề / chương / môn để tiết kiệm.',
+                  style: AppTextStyles.bodyMedium
+                      .copyWith(color: AppColors.textSecondary),
+                  textAlign: TextAlign.center,
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  flex: 2,
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.pop(ctx);
-                      context
-                          .push('/subjects/${widget.subjectId}/unlock')
-                          .then((_) => _loadData());
-                    },
-                    icon: const Text('💎', style: TextStyle(fontSize: 16)),
-                    label: const Text('Mở khóa bài học',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.purpleNeon,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
+                const SizedBox(height: 10),
+                Text(
+                  remainingFree > 0
+                      ? 'Suất miễn phí hôm nay: còn $remainingFree.'
+                      : 'Hôm nay đã dùng hết 2 suất miễn phí.',
+                  style: AppTextStyles.caption
+                      .copyWith(color: AppColors.cyanNeon, fontSize: 12),
+                  textAlign: TextAlign.center,
+                ),
+                Text(
+                  'Kim cương hiện có: $userDiamonds 💎',
+                  style: AppTextStyles.caption
+                      .copyWith(color: AppColors.textTertiary, fontSize: 11),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed:
+                            busy ? null : () => Navigator.pop(ctx),
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: AppColors.borderPrimary),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                        child: const Text('Đóng',
+                            style: TextStyle(color: AppColors.textSecondary)),
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      flex: 2,
+                      child: ElevatedButton.icon(
+                        onPressed: busy
+                            ? null
+                            : () async {
+                                setModalState(() => busy = true);
+                                try {
+                                  await api.openLearningNode(nodeId);
+                                  if (ctx.mounted) Navigator.pop(ctx);
+                                  await _loadData();
+                                  if (mounted) {
+                                    context.push('/lessons/$nodeId/types',
+                                        extra: {'title': title});
+                                  }
+                                } catch (e) {
+                                  setModalState(() => busy = false);
+                                  if (ctx.mounted) {
+                                    ScaffoldMessenger.of(ctx).showSnackBar(
+                                      SnackBar(
+                                        content: Text('$e'),
+                                        backgroundColor: AppColors.errorNeon,
+                                      ),
+                                    );
+                                  }
+                                }
+                              },
+                        icon: const Text('✨', style: TextStyle(fontSize: 16)),
+                        label: Text(
+                          remainingFree > 0
+                              ? 'Mở bài (miễn phí)'
+                              : 'Mở bài ($diamondCost 💎)',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.purpleNeon,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                TextButton(
+                  onPressed: busy
+                      ? null
+                      : () {
+                          Navigator.pop(ctx);
+                          context
+                              .push('/subjects/${widget.subjectId}/unlock')
+                              .then((_) => _loadData());
+                        },
+                  child: const Text('Xem gói mở chủ đề / chương / môn',
+                      style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+                ),
+                TextButton(
+                  onPressed: busy
+                      ? null
+                      : () {
+                          Navigator.pop(ctx);
+                          context.push('/payment');
+                        },
+                  child: const Text('Mua thêm kim cương',
+                      style: TextStyle(color: AppColors.cyanNeon, fontSize: 13)),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(ctx);
-                context.push('/payment');
-              },
-              child: const Text('Mua thêm kim cương',
-                  style: TextStyle(color: AppColors.cyanNeon, fontSize: 13)),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 

@@ -59,8 +59,12 @@ export class LearningNodesController {
     
     if (!accessCheck.canAccess) {
       throw new ForbiddenException({
-        message: 'Bạn cần mở khóa bài học này bằng kim cương 💎',
+        message:
+          'Mỗi ngày có 2 bài miễn phí (mọi môn). Hết suất miễn phí: 50 💎/bài — hoặc mở khóa cả chủ đề/chương/môn.',
         requiresUnlock: true,
+        remainingFreeLessonsToday: accessCheck.remainingFreeLessonsToday,
+        diamondCost: accessCheck.diamondCost,
+        userDiamonds: accessCheck.userDiamonds,
       });
     }
 

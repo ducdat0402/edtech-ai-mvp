@@ -207,6 +207,22 @@ export class UserCurrencyService {
     return this.getOrCreate(userId);
   }
 
+  async deductDiamondsTransactional(
+    manager: EntityManager,
+    userId: string,
+    amount: number,
+  ): Promise<void> {
+    const result = await manager
+      .createQueryBuilder()
+      .update(UserCurrency)
+      .set({ diamonds: () => `diamonds - ${Math.floor(amount)}` })
+      .where('userId = :userId AND diamonds >= :amount', { userId, amount: Math.floor(amount) })
+      .execute();
+    if (result.affected === 0) {
+      throw new Error('Insufficient diamonds');
+    }
+  }
+
   async hasEnoughDiamonds(userId: string, amount: number): Promise<boolean> {
     const currency = await this.getOrCreate(userId);
     return currency.diamonds >= amount;

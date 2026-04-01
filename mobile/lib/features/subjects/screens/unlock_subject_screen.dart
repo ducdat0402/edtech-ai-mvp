@@ -372,7 +372,7 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('$totalLessons bài × 25 💎 × 0.7',
+                      Text('$totalLessons bài × 50 💎 × 0.7',
                           style: const TextStyle(
                               color: AppColors.textTertiary, fontSize: 12)),
                       Text('$price 💎',
@@ -504,7 +504,7 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
                               .copyWith(color: AppColors.textTertiary)),
                       if (!isUnlocked) ...[
                         const SizedBox(height: 2),
-                        Text('$lessonsCount x 25 x 0.85 = $price 💎',
+                        Text('$lessonsCount x 50 x 0.85 = $price 💎',
                             style: TextStyle(
                                 color: AppColors.cyanNeon.withOpacity(0.8),
                                 fontSize: 11)),

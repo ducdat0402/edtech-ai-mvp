@@ -6,6 +6,7 @@ import {
   Param,
   UseGuards,
   Request,
+  BadRequestException,
 } from '@nestjs/common';
 import { UnlockTransactionsService } from './unlock-transactions.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -67,6 +68,21 @@ export class UnlockTransactionsController {
     @Body() body: { topicId: string },
   ) {
     return this.unlockService.unlockTopic(req.user.id, body.topicId);
+  }
+
+  /**
+   * POST /unlock/node — mở một bài học (2 suất miễn phí/ngày toàn hệ thống, sau đó 50 💎).
+   */
+  @Post('node')
+  @UseGuards(JwtAuthGuard)
+  async openLearningNode(
+    @Request() req,
+    @Body() body: { nodeId: string },
+  ) {
+    if (!body?.nodeId) {
+      throw new BadRequestException('nodeId là bắt buộc');
+    }
+    return this.unlockService.openLearningNode(req.user.id, body.nodeId);
   }
 
   /**

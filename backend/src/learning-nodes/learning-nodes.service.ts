@@ -28,8 +28,7 @@ export class LearningNodesService {
   }
 
   /**
-   * Get learning nodes with diamond unlock status
-   * Auto-unlocks first topic for free if user has no unlocks yet
+   * Get learning nodes with diamond unlock status (bulk unlock + mở từng bài / 2 suất/ngày).
    */
   async findBySubjectWithPremiumStatus(
     subjectId: string,
@@ -39,11 +38,6 @@ export class LearningNodesService {
       where: { subjectId },
       order: { order: 'ASC' },
     });
-
-    // Auto-unlock first topic if needed
-    if (userId) {
-      await this.unlockService.ensureFirstTopicUnlocked(userId, subjectId);
-    }
 
     // Get unlocked node IDs
     const unlockedIds = userId
@@ -58,8 +52,7 @@ export class LearningNodesService {
   }
 
   /**
-   * Get learning nodes by domain with diamond unlock status
-   * Auto-unlocks first topic for free if user has no unlocks yet
+   * Get learning nodes by domain with diamond unlock status.
    */
   async findByDomainWithPremiumStatus(
     domainId: string,
@@ -78,13 +71,11 @@ export class LearningNodesService {
       }));
     }
 
-    // Auto-unlock first topic if needed
     const subjectId = nodes[0].subjectId;
-    if (subjectId) {
-      await this.unlockService.ensureFirstTopicUnlocked(userId, subjectId);
-    }
-
-    const unlockedIds = await this.unlockService.getUserUnlockedNodeIds(userId, subjectId);
+    const unlockedIds = await this.unlockService.getUserUnlockedNodeIds(
+      userId,
+      subjectId,
+    );
 
     return nodes.map((node) => ({
       ...node,
@@ -96,7 +87,17 @@ export class LearningNodesService {
   /**
    * Check if user can access a specific node (via diamond unlock)
    */
-  async canAccessNode(nodeId: string, userId?: string): Promise<{ canAccess: boolean; requiresPremium: boolean }> {
+  async canAccessNode(
+    nodeId: string,
+    userId?: string,
+  ): Promise<{
+    canAccess: boolean;
+    requiresPremium: boolean;
+    remainingFreeLessonsToday?: number;
+    diamondCost?: number;
+    userDiamonds?: number;
+    nodeInfo?: any;
+  }> {
     if (!userId) {
       return { canAccess: false, requiresPremium: true };
     }
@@ -105,6 +106,10 @@ export class LearningNodesService {
     return {
       canAccess: result.canAccess,
       requiresPremium: !result.canAccess,
+      remainingFreeLessonsToday: result.remainingFreeLessonsToday,
+      diamondCost: result.diamondCost,
+      userDiamonds: result.userDiamonds,
+      nodeInfo: result.nodeInfo,
     };
   }
 

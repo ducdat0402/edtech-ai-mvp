@@ -394,8 +394,6 @@ export class SubjectsService {
     const allNodes = await this.nodesService.findBySubject(subjectId);
     const completedNodeIds = await this.progressService.getCompletedNodes(userId);
 
-    // Auto-unlock first topic and get unlocked node IDs
-    await this.unlockService.ensureFirstTopicUnlocked(userId, subjectId);
     const unlockedNodeIds = await this.unlockService.getUserUnlockedNodeIds(userId, subjectId);
 
     // Get domains for this subject (already sorted by order in findBySubject)
