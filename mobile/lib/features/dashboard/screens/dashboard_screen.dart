@@ -76,9 +76,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       TutorialHelper.buildTarget(
         key: _quickActionsKey,
-        title: 'Nhiệm vụ & cửa hàng',
+        title: 'Thêm: nhiệm vụ, xếp hạng, cửa hàng',
         description:
-            'Nhấn nút mở rộng (icon lưới) phía trên nút chat để mở Nhiệm vụ và Cửa hàng.',
+            'Nhấn nút mở rộng (icon lưới) phía trên chat để mở Nhiệm vụ, Xếp hạng và Cửa hàng.',
         icon: Icons.apps_rounded,
         stepLabel: 'Bước 4/5',
         align: ContentAlign.top,
@@ -87,7 +87,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         key: _bottomNavKey,
         title: 'Thanh điều hướng',
         description:
-            'Di chuyển nhanh giữa Tổng quan, Nhiệm vụ, Bảng xếp hạng và Hồ sơ cá nhân.',
+            'Chuyển nhanh giữa Tổng quan, Môn học và Bạn bè. Hồ sơ: chạm avatar trên thanh trên cùng.',
         icon: Icons.navigation,
         stepLabel: 'Bước 5/5',
         align: ContentAlign.top,

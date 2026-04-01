@@ -66,7 +66,7 @@ class _CommunityHubScreenState extends State<CommunityHubScreen>
           ),
         ],
       ),
-      bottomNavigationBar: const BottomNavBar(currentIndex: 3),
+      bottomNavigationBar: const BottomNavBar(currentIndex: 2),
     );
   }
 }

@@ -78,7 +78,7 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
           const FloatingChatBubble(),
         ],
       ),
-      bottomNavigationBar: const BottomNavBar(currentIndex: 2),
+      bottomNavigationBar: const BottomNavBar(currentIndex: 0),
     );
   }
 

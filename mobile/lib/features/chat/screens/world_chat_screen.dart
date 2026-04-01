@@ -326,7 +326,7 @@ class _WorldChatScreenState extends State<WorldChatScreen>
             Tab(
                 text: 'Chat thế giới',
                 icon: Icon(Icons.public_rounded, size: 20)),
-            Tab(text: 'Cộng đồng', icon: Icon(Icons.groups_rounded, size: 20)),
+            Tab(text: 'Bạn bè', icon: Icon(Icons.groups_rounded, size: 20)),
           ],
         ),
       ),
@@ -392,7 +392,8 @@ class _WorldChatScreenState extends State<WorldChatScreen>
       return const EmptyStateWidget(
         icon: Icons.people_outline_rounded,
         title: 'Chưa có cuộc trò chuyện',
-        message: 'Chỉ nhắn tin được với bạn bè. Vào tab Cộng đồng để kết bạn!',
+        message:
+            'Chỉ nhắn tin được với bạn bè. Kết bạn qua mục Cộng đồng trên thanh điều hướng.',
       );
     }
     return RefreshIndicator(

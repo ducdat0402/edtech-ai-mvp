@@ -43,13 +43,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
         context.go('/subjects');
         break;
       case 2:
-        context.go('/leaderboard');
-        break;
-      case 3:
         context.go('/friends');
-        break;
-      case 4:
-        context.go('/profile');
         break;
     }
   }
@@ -69,17 +63,9 @@ class _BottomNavBarState extends State<BottomNavBar> {
           icon: Icon(Icons.menu_book),
           label: 'Môn học',
         ),
-        const BottomNavigationBarItem(
-          icon: Icon(Icons.leaderboard),
-          label: 'Xếp hạng',
-        ),
         BottomNavigationBarItem(
           icon: _buildFriendsIcon(),
-          label: 'Cộng đồng',
-        ),
-        const BottomNavigationBarItem(
-          icon: Icon(Icons.person),
-          label: 'Hồ sơ',
+          label: 'Bạn bè',
         ),
       ],
     );

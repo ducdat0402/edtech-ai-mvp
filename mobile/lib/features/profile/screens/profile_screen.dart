@@ -524,7 +524,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const FloatingChatBubble(),
         ],
       ),
-      bottomNavigationBar: const BottomNavBar(currentIndex: 4),
+      bottomNavigationBar: const BottomNavBar(currentIndex: 0),
     );
   }
 

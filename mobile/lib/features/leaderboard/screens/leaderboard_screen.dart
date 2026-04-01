@@ -184,7 +184,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
           const FloatingChatBubble(),
         ],
       ),
-      bottomNavigationBar: const BottomNavBar(currentIndex: 2),
+      bottomNavigationBar: const BottomNavBar(currentIndex: 0),
     );
   }
 

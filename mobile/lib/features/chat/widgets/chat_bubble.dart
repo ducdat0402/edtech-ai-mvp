@@ -44,7 +44,7 @@ class FloatingChatBubble extends StatefulWidget {
     this.hasClaimableQuest = false,
   });
 
-  /// Khi true (vd. Tổng quan): nút mở rộng phía trên chat → Nhiệm vụ & Cửa hàng.
+  /// Khi true (vd. Tổng quan): nút mở rộng phía trên chat → Nhiệm vụ, Xếp hạng, Cửa hàng.
   final bool showQuestShopShortcuts;
 
   /// Gắn tutorial “Thao tác nhanh” lên cụm nút + chat.
@@ -182,6 +182,12 @@ class _FloatingChatBubbleState extends State<FloatingChatBubble>
     context.push('/shop');
   }
 
+  void _goLeaderboard() {
+    HapticFeedback.lightImpact();
+    setState(() => _shortcutsOpen = false);
+    context.push('/leaderboard');
+  }
+
   Widget _circleButton({
     required Widget child,
     required VoidCallback onTap,
@@ -272,6 +278,13 @@ class _FloatingChatBubbleState extends State<FloatingChatBubble>
               color: AppColors.cyanNeon,
               onTap: _goQuests,
               showBadge: widget.hasClaimableQuest,
+            ),
+            const SizedBox(height: 8),
+            _ShortcutPill(
+              icon: Icons.leaderboard_rounded,
+              label: 'Xếp hạng',
+              color: AppColors.purpleNeon,
+              onTap: _goLeaderboard,
             ),
             const SizedBox(height: 8),
             _ShortcutPill(

@@ -148,7 +148,7 @@ class _DailyQuestsScreenState extends State<DailyQuestsScreen>
           const FloatingChatBubble(),
         ],
       ),
-      bottomNavigationBar: const BottomNavBar(currentIndex: 1),
+      bottomNavigationBar: const BottomNavBar(currentIndex: 0),
     );
   }
 
