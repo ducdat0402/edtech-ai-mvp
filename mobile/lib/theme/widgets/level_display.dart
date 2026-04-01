@@ -75,6 +75,9 @@ class LevelCard extends StatelessWidget {
   final VoidCallback? onAvatarTap;
   final VoidCallback? onShowTitles;
 
+  /// Khi true: không vẽ nền/bóng (dùng trong thanh top cố định — gradient do cha bọc).
+  final bool topBarStrip;
+
   const LevelCard({
     super.key,
     required this.level,
@@ -86,6 +89,7 @@ class LevelCard extends StatelessWidget {
     this.avatarUrl,
     this.onAvatarTap,
     this.onShowTitles,
+    this.topBarStrip = false,
   });
 
   double get progress =>
@@ -94,29 +98,36 @@ class LevelCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strip = topBarStrip;
     final resolvedAvatar = ApiConfig.absoluteMediaUrl(avatarUrl);
     final hasPhoto = resolvedAvatar.isNotEmpty;
+    final outer = strip ? 44.0 : 52.0;
+    final inner = strip ? 40.0 : 48.0;
+    final borderW = strip ? 1.5 : 2.0;
 
     Widget avatar = SizedBox(
-      width: 52,
-      height: 52,
+      width: outer,
+      height: outer,
       child: Stack(
         clipBehavior: Clip.none,
         alignment: Alignment.center,
         children: [
           Container(
-            width: 48,
-            height: 48,
+            width: inner,
+            height: inner,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(color: Colors.white.withOpacity(0.95), width: 2),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.25),
-                  blurRadius: 6,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+              border: Border.all(
+                  color: Colors.white.withOpacity(0.95), width: borderW),
+              boxShadow: strip
+                  ? []
+                  : [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.25),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
             ),
             child: ClipOval(
               child: hasPhoto
@@ -125,34 +136,39 @@ class LevelCard extends StatelessWidget {
                       fit: BoxFit.cover,
                       placeholder: (_, __) => Container(
                         color: Colors.white.withOpacity(0.15),
-                        child: const Center(
+                        child: Center(
                           child: SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
+                            width: strip ? 14 : 18,
+                            height: strip ? 14 : 18,
+                            child: const CircularProgressIndicator(
+                                strokeWidth: 2),
                           ),
                         ),
                       ),
-                      errorWidget: (_, __, ___) => _levelNumberFallback(),
+                      errorWidget: (_, __, ___) =>
+                          _levelNumberFallback(strip ? 14 : 18),
                     )
-                  : _levelNumberFallback(),
+                  : _levelNumberFallback(strip ? 14 : 18),
             ),
           ),
           Positioned(
-            left: -2,
-            bottom: -2,
+            left: strip ? -1.5 : -2,
+            bottom: strip ? -1.5 : -2,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+              padding: EdgeInsets.symmetric(
+                horizontal: strip ? 4 : 5,
+                vertical: strip ? 1 : 2,
+              ),
               decoration: BoxDecoration(
                 color: const Color(0xFFB91C1C),
-                borderRadius: BorderRadius.circular(6),
+                borderRadius: BorderRadius.circular(strip ? 5 : 6),
                 border: Border.all(color: Colors.white.withOpacity(0.85)),
               ),
               child: Text(
                 'Lv.$level',
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.white,
-                  fontSize: 9,
+                  fontSize: strip ? 8.0 : 9.0,
                   fontWeight: FontWeight.w800,
                 ),
               ),
@@ -173,6 +189,112 @@ class LevelCard extends StatelessWidget {
       );
     }
 
+    final content = Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        avatar,
+        SizedBox(width: strip ? 8 : 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                displayName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyles.bodyBold.copyWith(
+                  color: Colors.white,
+                  fontSize: strip ? 13.5 : 15,
+                ),
+              ),
+              SizedBox(height: strip ? 0 : 2),
+              Text(
+                title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyles.labelSmall.copyWith(
+                  color: Colors.white.withOpacity(0.85),
+                  fontSize: strip ? 10.5 : null,
+                ),
+              ),
+              SizedBox(height: strip ? 4 : 8),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: progress,
+                        minHeight: strip ? 4 : 6,
+                        backgroundColor: Colors.white.withOpacity(0.22),
+                        valueColor:
+                            const AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: strip ? 4 : 6),
+                  Text(
+                    '$totalXP XP',
+                    style: AppTextStyles.labelSmall.copyWith(
+                      color: Colors.white.withOpacity(0.9),
+                      fontWeight: FontWeight.w600,
+                      fontSize: strip ? 10 : 11,
+                    ),
+                  ),
+                  if (onShowTitles != null)
+                    IconButton(
+                      onPressed: onShowTitles,
+                      tooltip: 'Danh hiệu',
+                      icon: Icon(
+                        Icons.info_outline_rounded,
+                        size: strip ? 17 : 20,
+                        color: Colors.white.withOpacity(0.92),
+                      ),
+                      padding: EdgeInsets.zero,
+                      constraints: BoxConstraints(
+                        minWidth: strip ? 28 : 32,
+                        minHeight: strip ? 28 : 32,
+                      ),
+                      visualDensity: VisualDensity.compact,
+                    ),
+                ],
+              ),
+              SizedBox(height: strip ? 0 : 2),
+              Row(
+                children: [
+                  Text(
+                    'Cấp tiếp: ${level + 1}',
+                    style: AppTextStyles.labelSmall.copyWith(
+                      color: Colors.white.withOpacity(0.65),
+                      fontSize: strip ? 9 : 10,
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    '$currentXP / $xpForNextLevel · ${(progress * 100).toStringAsFixed(1)}%',
+                    style: AppTextStyles.labelSmall.copyWith(
+                      color: Colors.white.withOpacity(0.85),
+                      fontSize: strip ? 9 : 10,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+
+    if (strip) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(2, 0, 0, 0),
+        child: content,
+      );
+    }
+
     return Container(
       padding: const EdgeInsets.fromLTRB(12, 10, 10, 10),
       decoration: BoxDecoration(
@@ -186,107 +308,11 @@ class LevelCard extends StatelessWidget {
           ),
         ],
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          avatar,
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  displayName,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.bodyBold.copyWith(
-                    color: Colors.white,
-                    fontSize: 15,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.labelSmall.copyWith(
-                    color: Colors.white.withOpacity(0.85),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
-                        child: LinearProgressIndicator(
-                          value: progress,
-                          minHeight: 6,
-                          backgroundColor: Colors.white.withOpacity(0.22),
-                          valueColor:
-                              const AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      '$totalXP XP',
-                      style: AppTextStyles.labelSmall.copyWith(
-                        color: Colors.white.withOpacity(0.9),
-                        fontWeight: FontWeight.w600,
-                        fontSize: 11,
-                      ),
-                    ),
-                    if (onShowTitles != null)
-                      IconButton(
-                        onPressed: onShowTitles,
-                        tooltip: 'Danh hiệu',
-                        icon: Icon(
-                          Icons.info_outline_rounded,
-                          size: 20,
-                          color: Colors.white.withOpacity(0.92),
-                        ),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(
-                          minWidth: 32,
-                          minHeight: 32,
-                        ),
-                        visualDensity: VisualDensity.compact,
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 2),
-                Row(
-                  children: [
-                    Text(
-                      'Cấp tiếp: ${level + 1}',
-                      style: AppTextStyles.labelSmall.copyWith(
-                        color: Colors.white.withOpacity(0.65),
-                        fontSize: 10,
-                      ),
-                    ),
-                    const Spacer(),
-                    Text(
-                      '$currentXP / $xpForNextLevel · ${(progress * 100).toStringAsFixed(1)}%',
-                      style: AppTextStyles.labelSmall.copyWith(
-                        color: Colors.white.withOpacity(0.85),
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+      child: content,
     );
   }
 
-  Widget _levelNumberFallback() {
+  Widget _levelNumberFallback(double fontSize) {
     return Container(
       color: Colors.white.withOpacity(0.2),
       alignment: Alignment.center,
@@ -294,7 +320,7 @@ class LevelCard extends StatelessWidget {
         '$level',
         style: TextStyle(
           fontFamily: AppTextStyles.fontUI,
-          fontSize: 18,
+          fontSize: fontSize,
           fontWeight: FontWeight.w800,
           color: Colors.white,
         ),

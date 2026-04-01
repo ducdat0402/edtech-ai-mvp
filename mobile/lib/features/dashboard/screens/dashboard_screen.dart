@@ -283,92 +283,73 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final hasData = !_isLoading && _error == null && _dashboardData != null;
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Tổng quan'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.person),
-            onPressed: () => context.push('/profile'),
-            tooltip: 'Hồ sơ',
-          ),
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _loadDashboard,
-            tooltip: 'Refresh',
-          ),
-          PopupMenuButton(
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'logout',
-                child: Row(
-                  children: [
-                    Icon(Icons.logout, color: Colors.red),
-                    SizedBox(width: 8),
-                    Text('Đăng xuất'),
-                  ],
-                ),
-              ),
-            ],
-            onSelected: (value) {
-              if (value == 'logout') {
-                _handleLogout();
-              }
-            },
-          ),
-        ],
-      ),
-      body: Stack(
+      appBar: null,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _isLoading
-              ? _buildSkeletonLoader()
-              : _error != null
-                  ? AppErrorWidget(
-                      message: _error!,
-                      onRetry: _loadDashboard,
-                    )
-                  : _dashboardData == null
-                      ? const Center(child: Text('Chưa có dữ liệu'))
-                      : RefreshIndicator(
-                          onRefresh: _loadDashboard,
-                          child: SingleChildScrollView(
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _buildStatsSection(
-                                    _dashboardData!['stats'] ?? {}),
-                                const SizedBox(height: 24),
-                                if (_motivation != null &&
-                                    _motivation!['quote'] != null) ...[
-                                  _buildMotivationCard(_motivation!),
-                                  const SizedBox(height: 24),
-                                ],
-                                _buildOnboardingBanner(),
-                                const SizedBox(height: 24),
-                                _buildQuickActions(
-                                    _dashboardData!['subjects'] ?? []),
-                                const SizedBox(height: 24),
-                                KeyedSubtree(
-                                  key: _subjectsKey,
-                                  child: _buildSubjectsSection(
-                                    'Môn học',
-                                    _dashboardData!['subjects'] ?? [],
-                                  ),
-                                ),
-                                const SizedBox(height: 24),
-                                _buildCurrentLearningSection(
-                                    _dashboardData!['currentLearningNodes'] ??
-                                        []),
-                                const SizedBox(height: 24),
-                                _buildQuestsSection(
-                                    _dashboardData!['dailyQuests'] ?? []),
-                              ],
+          if (hasData)
+            _buildPinnedLevelHeader(
+              (_dashboardData!['stats'] as Map<String, dynamic>?) ?? {},
+            ),
+          Expanded(
+            child: Stack(
+              children: [
+                if (_isLoading)
+                  _buildSkeletonLoader()
+                else if (_error != null)
+                  AppErrorWidget(
+                    message: _error!,
+                    onRetry: _loadDashboard,
+                  )
+                else if (_dashboardData == null)
+                  const Center(child: Text('Chưa có dữ liệu'))
+                else
+                  RefreshIndicator(
+                    onRefresh: _loadDashboard,
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildResourceStatRow(
+                              _dashboardData!['stats'] ?? {}),
+                          const SizedBox(height: 24),
+                          if (_motivation != null &&
+                              _motivation!['quote'] != null) ...[
+                            _buildMotivationCard(_motivation!),
+                            const SizedBox(height: 24),
+                          ],
+                          _buildOnboardingBanner(),
+                          const SizedBox(height: 24),
+                          _buildQuickActions(
+                              _dashboardData!['subjects'] ?? []),
+                          const SizedBox(height: 24),
+                          KeyedSubtree(
+                            key: _subjectsKey,
+                            child: _buildSubjectsSection(
+                              'Môn học',
+                              _dashboardData!['subjects'] ?? [],
                             ),
                           ),
-                        ),
-          const FloatingChatBubble(),
+                          const SizedBox(height: 24),
+                          _buildCurrentLearningSection(
+                              _dashboardData!['currentLearningNodes'] ??
+                                  []),
+                          const SizedBox(height: 24),
+                          _buildQuestsSection(
+                              _dashboardData!['dailyQuests'] ?? []),
+                        ],
+                      ),
+                    ),
+                  ),
+                const FloatingChatBubble(),
+              ],
+            ),
+          ),
         ],
       ),
       bottomNavigationBar: KeyedSubtree(
@@ -378,14 +359,103 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  /// Thanh cố định trên cùng: level + avatar + refresh/menu (thay cho AppBar).
+  Widget _buildPinnedLevelHeader(Map<String, dynamic> stats) {
+    final level = stats['level'] as int? ?? 1;
+    final levelInfo = stats['levelInfo'] as Map<String, dynamic>?;
+    final currentXP = levelInfo?['currentXP'] as int? ?? 0;
+    final xpForNextLevel = levelInfo?['xpForNextLevel'] as int? ?? 100;
+    final totalXP = stats['totalXP'] as int? ?? 0;
+    final rawName = _userProfile?['fullName'] as String?;
+    final displayName = (rawName != null && rawName.trim().isNotEmpty)
+        ? rawName.trim()
+        : 'Bạn học';
+    final levelColor = AppColors.getLevelColor(level);
+
+    return KeyedSubtree(
+      key: _levelCardKey,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: AppGradients.forLevel(level),
+          borderRadius: const BorderRadius.vertical(bottom: Radius.circular(18)),
+          boxShadow: [
+            BoxShadow(
+              color: levelColor.withOpacity(0.28),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          bottom: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(6, 2, 0, 6),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: LevelCard(
+                    topBarStrip: true,
+                    level: level,
+                    title: _getLevelTitle(level),
+                    currentXP: currentXP,
+                    xpForNextLevel: xpForNextLevel,
+                    totalXP: totalXP,
+                    displayName: displayName,
+                    avatarUrl: _userProfile?['avatarUrl'] as String?,
+                    onAvatarTap: () => context.push('/profile'),
+                    onShowTitles: () => _showLevelTitlesDialog(),
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.person_outline, color: Colors.white),
+                  iconSize: 22,
+                  onPressed: () => context.push('/profile'),
+                  tooltip: 'Hồ sơ',
+                ),
+                IconButton(
+                  icon: const Icon(Icons.refresh_rounded, color: Colors.white),
+                  iconSize: 22,
+                  onPressed: _loadDashboard,
+                  tooltip: 'Refresh',
+                ),
+                PopupMenuButton<String>(
+                  icon: const Icon(Icons.more_vert, color: Colors.white),
+                  iconSize: 22,
+                  tooltip: 'Menu',
+                  color: AppColors.bgSecondary,
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(
+                      value: 'logout',
+                      child: Row(
+                        children: [
+                          Icon(Icons.logout, color: Colors.red),
+                          SizedBox(width: 8),
+                          Text('Đăng xuất'),
+                        ],
+                      ),
+                    ),
+                  ],
+                  onSelected: (value) {
+                    if (value == 'logout') {
+                      _handleLogout();
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildSkeletonLoader() {
     return const SingleChildScrollView(
-      padding: EdgeInsets.all(16),
+      padding: EdgeInsets.fromLTRB(16, 12, 16, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SkeletonCard(height: 92),
-          SizedBox(height: 24),
           SkeletonCard(height: 100),
           SizedBox(height: 24),
           SkeletonCard(height: 150),
@@ -396,72 +466,43 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildStatsSection(Map<String, dynamic> stats) {
-    final level = stats['level'] as int? ?? 1;
-    final levelInfo = stats['levelInfo'] as Map<String, dynamic>?;
-    final currentXP = levelInfo?['currentXP'] as int? ?? 0;
-    final xpForNextLevel = levelInfo?['xpForNextLevel'] as int? ?? 100;
-    final totalXP = stats['totalXP'] as int? ?? 0;
+  Widget _buildResourceStatRow(Map<String, dynamic> stats) {
     final coins = stats['totalCoins'] ?? stats['coins'] ?? 0;
     final diamonds = stats['totalDiamonds'] ?? stats['diamonds'] ?? 0;
     final streak = stats['currentStreak'] ?? stats['streak'] ?? 0;
 
-    final rawName = _userProfile?['fullName'] as String?;
-    final displayName =
-        (rawName != null && rawName.trim().isNotEmpty) ? rawName.trim() : 'Bạn học';
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
+      key: _statsRowKey,
       children: [
-        KeyedSubtree(
-          key: _levelCardKey,
-          child: LevelCard(
-            level: level,
-            title: _getLevelTitle(level),
-            currentXP: currentXP,
-            xpForNextLevel: xpForNextLevel,
-            totalXP: totalXP,
-            displayName: displayName,
-            avatarUrl: _userProfile?['avatarUrl'] as String?,
-            onAvatarTap: () => context.push('/profile'),
-            onShowTitles: () => _showLevelTitlesDialog(),
+        Expanded(
+          child: _buildStatCard(
+            icon: Icons.monetization_on_rounded,
+            label: 'Xu',
+            value: coins is int ? coins : 0,
+            color: AppColors.coinGold,
+            onTap: () => context.push('/shop'),
           ),
         ),
-        const SizedBox(height: 20),
-        Row(
-          key: _statsRowKey,
-          children: [
-            Expanded(
-              child: _buildStatCard(
-                icon: Icons.monetization_on_rounded,
-                label: 'Xu',
-                value: coins is int ? coins : 0,
-                color: AppColors.coinGold,
-                onTap: () => context.push('/shop'),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildStatCard(
-                icon: Icons.diamond_rounded,
-                label: 'Kim cương',
-                value: diamonds is int ? diamonds : 0,
-                color: AppColors.cyanNeon,
-                onTap: () => context.push('/payment'),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildStatCard(
-                icon: Icons.local_fire_department_rounded,
-                label: 'Chuỗi ngày',
-                value: streak is int ? streak : 0,
-                color: AppColors.streakOrange,
-                onTap: () => context.push('/currency'),
-                suffix: '🔥',
-              ),
-            ),
-          ],
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildStatCard(
+            icon: Icons.diamond_rounded,
+            label: 'Kim cương',
+            value: diamonds is int ? diamonds : 0,
+            color: AppColors.cyanNeon,
+            onTap: () => context.push('/payment'),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildStatCard(
+            icon: Icons.local_fire_department_rounded,
+            label: 'Chuỗi ngày',
+            value: streak is int ? streak : 0,
+            color: AppColors.streakOrange,
+            onTap: () => context.push('/currency'),
+            suffix: '🔥',
+          ),
         ),
       ],
     );
