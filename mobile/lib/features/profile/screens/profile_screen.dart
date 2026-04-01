@@ -14,6 +14,7 @@ import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/core/widgets/bottom_nav_bar.dart';
 import 'package:edtech_mobile/core/widgets/error_widget.dart';
 import 'package:edtech_mobile/features/chat/widgets/chat_bubble.dart';
+import 'package:edtech_mobile/features/profile/widgets/profile_competency_preview_row.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -25,8 +26,9 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   Map<String, dynamic>? _profileData;
-  Map<String, dynamic>? _currencyData;
-  Map<String, dynamic>? _dashboardStats;
+  Map<String, dynamic>? _competenciesData;
+  Map<String, dynamic> _currencyData = {};
+  Map<String, dynamic> _dashboardStats = {};
   List<dynamic> _badgeCollection = [];
   bool _isLoading = true;
   bool _isSwitchingRole = false;
@@ -35,7 +37,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final ImagePicker _imagePicker = ImagePicker();
 
   // Tutorial keys
-  final _statsRowKey = GlobalKey();
+  final _competencyPreviewKey = GlobalKey();
   final _roleSwitcherKey = GlobalKey();
   final _menuCardsKey = GlobalKey();
 
@@ -50,10 +52,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     final targets = [
       TutorialHelper.buildTarget(
-        key: _statsRowKey,
-        title: 'Thống kê của bạn',
-        description: 'Xem XP tích lũy, xu kiếm được và chuỗi ngày học.',
-        icon: Icons.bar_chart,
+        key: _competencyPreviewKey,
+        title: 'Chỉ số năng lực',
+        description:
+            'Hai biểu đồ tóm tắt năng lực học tập và con người — chạm vào từng ô để xem chi tiết.',
+        icon: Icons.radar_rounded,
         stepLabel: 'Bước 1/3',
       ),
       TutorialHelper.buildTarget(
@@ -91,20 +94,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       final results = await Future.wait<dynamic>([
         apiService.getUserProfile(),
-        apiService.getCurrency(),
-        apiService.getDashboardSummary(),
         apiService.getWeeklyBadges().catchError((_) => <String, dynamic>{}),
+        apiService
+            .getUserCompetencies()
+            .catchError((_) => <String, dynamic>{}),
       ]);
 
       setState(() {
         _profileData = results[0] as Map<String, dynamic>;
-        _currencyData = results[1] as Map<String, dynamic>;
-        final summary = results[2] as Map<String, dynamic>;
-        final statsRaw = summary['stats'];
-        _dashboardStats =
-            statsRaw is Map ? Map<String, dynamic>.from(statsRaw) : null;
-        final badgesData = results[3] as Map<String, dynamic>? ?? {};
+        final badgesData = results[1] as Map<String, dynamic>? ?? {};
         _badgeCollection = badgesData['collection'] as List? ?? [];
+        final comp = results[2];
+        _competenciesData =
+            comp is Map<String, dynamic> ? comp : <String, dynamic>{};
         _isLoading = false;
       });
       _showProfileTutorial();
@@ -544,9 +546,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildContent() {
-    final stats = _dashboardStats ?? {};
-    final currency = _currencyData ?? {};
-
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -631,9 +630,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const SizedBox(height: 24),
 
           KeyedSubtree(
-            key: _statsRowKey,
-            child: _buildStatsRow(stats, currency),
+            key: _competencyPreviewKey,
+            child: ProfileCompetencyPreviewRow(
+              competenciesData: _competenciesData,
+              bgSecondary: _bgSecondary,
+              borderColor: _borderColor,
+              onTapLearning: () => context.push('/profile/competencies?focus=learning'),
+              onTapHuman: () => context.push('/profile/competencies?focus=human'),
+            ),
           ),
+          const SizedBox(height: 12),
+          _buildSyncedStatsStrip(),
           const SizedBox(height: 24),
 
           if (_badgeCollection.isNotEmpty) ...[
@@ -674,25 +681,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 onTap: () => context.go('/profile/journey'),
               ),
               _buildMenuCard(
-                icon: Icons.radar_rounded,
-                title: 'Năng lực',
-                subtitle: 'Xem biểu đồ năng lực & các chỉ số',
-                color: AppColors.cyanNeon,
-                onTap: () => context.go('/profile/competencies'),
-              ),
-              _buildMenuCard(
                 icon: Icons.workspace_premium,
                 title: 'Nhận kim cương',
                 subtitle: 'Mở khóa chức năng nâng cao',
                 color: AppColors.coinGold,
                 onTap: () => context.push('/payment'),
-              ),
-              _buildMenuCard(
-                icon: Icons.flag_circle_rounded,
-                title: 'Cam kết tuần',
-                subtitle: 'Thiết lập kế hoạch để tăng Lãnh đạo bản thân',
-                color: AppColors.orangeNeon,
-                onTap: () => context.push('/self-leadership/weekly-plan'),
               ),
             ],
           ),
@@ -701,15 +694,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           // Profile Info Card
           _buildProfileInfoCard(),
-          const SizedBox(height: 16),
-
-          // Onboarding Data
-          if (_profileData!['onboardingData'] != null) _buildOnboardingCard(),
-
-          // Placement Test Info
-          if (_profileData!['placementTestLevel'] != null)
-            _buildPlacementTestCard(),
-
           const SizedBox(height: 24),
 
           // Logout Button
@@ -964,34 +948,115 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildStatsRow(
-      Map<String, dynamic> stats, Map<String, dynamic> currency) {
+  /// XP / Xu / chuỗi — đồng bộ với [getDashboardSummary] + [getCurrency]; chạm mở màn chi tiết.
+  Widget _buildSyncedStatsStrip() {
+    final stats = _dashboardStats;
+    final currency = _currencyData;
+    final xp = '${stats['totalXP'] ?? currency['xp'] ?? 0}';
+    final coins = '${stats['coins'] ?? currency['coins'] ?? 0}';
+    final streak = '${stats['streak'] ?? currency['currentStreak'] ?? 0}';
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          context.push('/currency');
+        },
+        borderRadius: BorderRadius.circular(14),
+        child: Ink(
+          decoration: BoxDecoration(
+            color: _bgSecondary,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: _borderColor.withValues(alpha: 0.85)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _statStripCell(
+                    icon: Icons.star_rounded,
+                    label: 'XP',
+                    value: xp,
+                    color: AppColors.xpGold,
+                  ),
+                ),
+                Container(
+                  width: 1,
+                  height: 28,
+                  margin: const EdgeInsets.symmetric(horizontal: 6),
+                  color: AppColors.borderPrimary.withValues(alpha: 0.45),
+                ),
+                Expanded(
+                  child: _statStripCell(
+                    icon: Icons.monetization_on_rounded,
+                    label: 'Xu',
+                    value: coins,
+                    color: AppColors.coinGold,
+                  ),
+                ),
+                Container(
+                  width: 1,
+                  height: 28,
+                  margin: const EdgeInsets.symmetric(horizontal: 6),
+                  color: AppColors.borderPrimary.withValues(alpha: 0.45),
+                ),
+                Expanded(
+                  child: _statStripCell(
+                    icon: Icons.local_fire_department_rounded,
+                    label: 'Chuỗi',
+                    value: streak,
+                    color: AppColors.streakOrange,
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  size: 20,
+                  color: AppColors.textTertiary,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _statStripCell({
+    required IconData icon,
+    required String label,
+    required String value,
+    required Color color,
+  }) {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Expanded(
-          child: _buildStatCard(
-            icon: Icons.star_rounded,
-            label: 'XP',
-            value: '${stats['totalXP'] ?? currency['xp'] ?? 0}',
-            color: AppColors.xpGold,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _buildStatCard(
-            icon: Icons.monetization_on_rounded,
-            label: 'Xu',
-            value: '${stats['coins'] ?? currency['coins'] ?? 0}',
-            color: AppColors.coinGold,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _buildStatCard(
-            icon: Icons.local_fire_department_rounded,
-            label: 'Chuỗi ngày',
-            value: '${stats['streak'] ?? currency['currentStreak'] ?? 0}',
-            color: AppColors.streakOrange,
+        Icon(icon, color: color, size: 20),
+        const SizedBox(width: 6),
+        Flexible(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                value,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyles.labelLarge.copyWith(
+                  color: color,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 15,
+                ),
+              ),
+              Text(
+                label,
+                style: AppTextStyles.caption.copyWith(
+                  color: AppColors.textTertiary,
+                  fontSize: 10,
+                ),
+              ),
+            ],
           ),
         ),
       ],
@@ -1059,37 +1124,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildStatCard({
-    required IconData icon,
-    required String label,
-    required String value,
-    required Color color,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: _bgSecondary,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: color, size: 28),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: AppTextStyles.numberMedium.copyWith(color: color),
-          ),
-          Text(
-            label,
-            style:
-                AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
-          ),
-        ],
-      ),
     );
   }
 
@@ -1189,93 +1223,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildOnboardingCard() {
-    final onboardingData =
-        _profileData!['onboardingData'] as Map<String, dynamic>? ?? {};
-
-    return Container(
-      margin: const EdgeInsets.only(top: 12),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: _bgSecondary,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _borderColor),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.school_outlined,
-                  color: AppColors.successNeon, size: 20),
-              const SizedBox(width: 8),
-              Text('Thông tin học tập',
-                  style:
-                      AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
-            ],
-          ),
-          const SizedBox(height: 16),
-          if (onboardingData['nickname'] != null)
-            _buildInfoRow(Icons.badge_outlined, 'Biệt danh',
-                onboardingData['nickname'] ?? ''),
-          if (onboardingData['currentLevel'] != null) ...[
-            const Divider(color: AppColors.borderPrimary, height: 24),
-            _buildInfoRow(Icons.trending_up_outlined, 'Trình độ',
-                onboardingData['currentLevel'] ?? ''),
-          ],
-          if (onboardingData['targetGoal'] != null) ...[
-            const Divider(color: AppColors.borderPrimary, height: 24),
-            _buildInfoRow(Icons.flag_outlined, 'Mục tiêu',
-                onboardingData['targetGoal'] ?? ''),
-          ],
-          if (onboardingData['dailyTime'] != null) ...[
-            const Divider(color: AppColors.borderPrimary, height: 24),
-            _buildInfoRow(Icons.access_time_outlined, 'Thời gian/ngày',
-                '${onboardingData['dailyTime']} phút'),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPlacementTestCard() {
-    final level = _profileData!['placementTestLevel'] as String?;
-    final score = _profileData!['placementTestScore'] as int?;
-
-    return Container(
-      margin: const EdgeInsets.only(top: 12),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: _bgSecondary,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _borderColor),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.quiz_outlined,
-                  color: AppColors.warningNeon, size: 20),
-              const SizedBox(width: 8),
-              Text('Placement Test',
-                  style:
-                      AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
-            ],
-          ),
-          const SizedBox(height: 16),
-          if (score != null)
-            _buildInfoRow(Icons.score_outlined, 'Điểm số', '$score%'),
-          if (level != null) ...[
-            const Divider(color: AppColors.borderPrimary, height: 24),
-            _buildInfoRow(
-                Icons.leaderboard_outlined, 'Level', level.toUpperCase()),
-          ],
-        ],
-      ),
     );
   }
 

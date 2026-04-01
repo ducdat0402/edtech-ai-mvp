@@ -76,9 +76,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       TutorialHelper.buildTarget(
         key: _quickActionsKey,
-        title: 'Thêm: nhiệm vụ, xếp hạng, cửa hàng',
+        title: 'Thêm: nhiệm vụ, cam kết tuần, xếp hạng…',
         description:
-            'Nhấn nút mở rộng (icon lưới) phía trên chat để mở Nhiệm vụ, Xếp hạng và Cửa hàng.',
+            'Nhấn nút mở rộng (icon lưới) phía trên chat để mở Nhiệm vụ, Cam kết tuần, Xếp hạng và Cửa hàng.',
         icon: Icons.apps_rounded,
         stepLabel: 'Bước 4/5',
         align: ContentAlign.top,

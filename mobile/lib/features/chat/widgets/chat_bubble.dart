@@ -44,7 +44,7 @@ class FloatingChatBubble extends StatefulWidget {
     this.hasClaimableQuest = false,
   });
 
-  /// Khi true (vd. Tổng quan): nút mở rộng phía trên chat → Nhiệm vụ, Xếp hạng, Cửa hàng.
+  /// Khi true (vd. Tổng quan): nút mở rộng phía trên chat → Nhiệm vụ, Cam kết tuần, Xếp hạng, Cửa hàng.
   final bool showQuestShopShortcuts;
 
   /// Gắn tutorial “Thao tác nhanh” lên cụm nút + chat.
@@ -188,6 +188,12 @@ class _FloatingChatBubbleState extends State<FloatingChatBubble>
     context.push('/leaderboard');
   }
 
+  void _goWeeklyCommitment() {
+    HapticFeedback.lightImpact();
+    setState(() => _shortcutsOpen = false);
+    context.push('/self-leadership/weekly-plan');
+  }
+
   Widget _circleButton({
     required Widget child,
     required VoidCallback onTap,
@@ -278,6 +284,13 @@ class _FloatingChatBubbleState extends State<FloatingChatBubble>
               color: AppColors.cyanNeon,
               onTap: _goQuests,
               showBadge: widget.hasClaimableQuest,
+            ),
+            const SizedBox(height: 8),
+            _ShortcutPill(
+              icon: Icons.flag_circle_rounded,
+              label: 'Cam kết tuần',
+              color: AppColors.orangeNeon,
+              onTap: _goWeeklyCommitment,
             ),
             const SizedBox(height: 8),
             _ShortcutPill(

@@ -282,7 +282,10 @@ GoRouter createAppRouter(AuthSessionController authSession) {
         ),
         GoRoute(
           path: 'competencies',
-          builder: (context, state) => const CompetenciesScreen(),
+          builder: (context, state) {
+            final focus = state.uri.queryParameters['focus'];
+            return CompetenciesScreen(initialFocus: focus);
+          },
         ),
         GoRoute(
           path: 'contributions',

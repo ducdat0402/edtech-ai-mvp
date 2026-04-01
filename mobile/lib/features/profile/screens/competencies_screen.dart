@@ -7,7 +7,10 @@ import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 
 class CompetenciesScreen extends StatefulWidget {
-  const CompetenciesScreen({super.key});
+  const CompetenciesScreen({super.key, this.initialFocus});
+
+  /// `learning` | `human` — cuộn tới khối tương ứng sau khi tải xong.
+  final String? initialFocus;
 
   @override
   State<CompetenciesScreen> createState() => _CompetenciesScreenState();
@@ -18,6 +21,9 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
   String? _error;
   late _CompetencySectionData _learning;
   late _CompetencySectionData _human;
+  final GlobalKey _learningSectionKey = GlobalKey();
+  final GlobalKey _humanSectionKey = GlobalKey();
+  bool _didScrollToInitialFocus = false;
   String? _memoryTooltip;
   String? _logicalTooltip;
   String? _processingTooltip;
@@ -279,6 +285,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
         );
         _loading = false;
       });
+      _scheduleScrollToInitialFocus();
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -286,6 +293,27 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
         _loading = false;
       });
     }
+  }
+
+  void _scheduleScrollToInitialFocus() {
+    final focus = widget.initialFocus?.toLowerCase();
+    if (focus != 'learning' && focus != 'human') return;
+    if (_didScrollToInitialFocus) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _didScrollToInitialFocus) return;
+      final ctx = focus == 'human'
+          ? _humanSectionKey.currentContext
+          : _learningSectionKey.currentContext;
+      if (ctx != null) {
+        _didScrollToInitialFocus = true;
+        Scrollable.ensureVisible(
+          ctx,
+          duration: const Duration(milliseconds: 350),
+          curve: Curves.easeOutCubic,
+          alignment: 0.08,
+        );
+      }
+    });
   }
 
   Map<String, double> _extractMetricValues(dynamic raw) {
@@ -737,8 +765,14 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
                   builder: (context, c) {
                     final wide = c.maxWidth >= 900;
                     final children = [
-                      _CompetencySection(section: _learning),
-                      _CompetencySection(section: _human),
+                      _CompetencySection(
+                        key: _learningSectionKey,
+                        section: _learning,
+                      ),
+                      _CompetencySection(
+                        key: _humanSectionKey,
+                        section: _human,
+                      ),
                     ];
 
                     return RefreshIndicator(
@@ -833,7 +867,7 @@ class _CompetencyItem {
 
 class _CompetencySection extends StatelessWidget {
   final _CompetencySectionData section;
-  const _CompetencySection({required this.section});
+  const _CompetencySection({super.key, required this.section});
 
   @override
   Widget build(BuildContext context) {
