@@ -793,89 +793,131 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final subjectName = recentSubject['name'] as String? ?? 'Môn học gần nhất';
     final subjectIcon = recentSubject['icon'] as String? ?? '📚';
     final subtitle = remaining == null
-        ? 'Hôm nay còn ?/$freeTotal bài miễn phí'
-        : 'Hôm nay còn $remaining/$freeTotal bài miễn phí';
+        ? '?/$freeTotal bài miễn phí hôm nay'
+        : '$remaining/$freeTotal bài miễn phí hôm nay';
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Text('Tiếp tục môn học', style: AppTextStyles.h3),
-            const SizedBox(width: 8),
-            Text(subjectIcon, style: const TextStyle(fontSize: 18)),
-          ],
-        ),
-        const SizedBox(height: 6),
-        Text(
-          '$subjectName · $subtitle',
-          style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
-        ),
-        const SizedBox(height: 12),
-        if (lessons.isEmpty)
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: AppColors.bgSecondary,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.borderPrimary),
+      ),
+      child: Column(
+        children: [
           Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
             decoration: BoxDecoration(
-              color: AppColors.bgSecondary,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.borderPrimary),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
+              border: Border(
+                bottom: BorderSide(color: AppColors.borderPrimary.withOpacity(0.6)),
+              ),
             ),
-            child: Text(
-              'Bạn đã hoàn thành hết bài còn lại của môn này.',
-              style:
-                  AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+            child: Row(
+              children: [
+                Text(subjectIcon, style: const TextStyle(fontSize: 16)),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        subjectName,
+                        style: AppTextStyles.labelLarge
+                            .copyWith(color: AppColors.textPrimary),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle,
+                        style: AppTextStyles.caption
+                            .copyWith(color: AppColors.textSecondary),
+                      ),
+                    ],
+                  ),
+                ),
+                Tooltip(
+                  message:
+                      'Mỗi ngày có 2 bài miễn phí cho tất cả môn. Hết lượt sẽ tốn 50 kim cương/bài.',
+                  triggerMode: TooltipTriggerMode.tap,
+                  child: const Icon(Icons.info_outline_rounded,
+                      color: AppColors.textTertiary, size: 16),
+                ),
+              ],
             ),
-          )
-        else
-          Row(
-            children: List.generate(lessons.length, (index) {
-              final lesson = lessons[index];
+          ),
+          if (lessons.isEmpty)
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Bạn chưa có bài phù hợp để tiếp tục ngay.',
+                  style: AppTextStyles.bodySmall
+                      .copyWith(color: AppColors.textSecondary),
+                ),
+              ),
+            )
+          else
+            ...lessons.asMap().entries.map((entry) {
+              final index = entry.key;
+              final lesson = entry.value;
               final title = lesson['title'] as String? ?? 'Bài học';
               final icon = lesson['icon'] as String? ?? '📖';
-              return Expanded(
+              final isLast = index == lessons.length - 1;
+              return InkWell(
+                onTap: () => _handleContinueLessonTap(lesson),
                 child: Container(
-                  margin: EdgeInsets.only(right: index == 0 ? 10 : 0),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () => _handleContinueLessonTap(lesson),
-                      borderRadius: BorderRadius.circular(12),
-                      child: Ink(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: AppColors.bgSecondary,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.cyanNeon.withOpacity(0.35)),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(icon, style: const TextStyle(fontSize: 18)),
-                            const SizedBox(height: 6),
-                            Text(
-                              title,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: AppTextStyles.bodySmall
-                                  .copyWith(color: AppColors.textPrimary),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              'Miễn phí hôm nay',
-                              style: AppTextStyles.caption
-                                  .copyWith(color: AppColors.cyanNeon, fontSize: 10),
-                            ),
-                          ],
-                        ),
+                  padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: isLast
+                            ? Colors.transparent
+                            : AppColors.borderPrimary.withOpacity(0.4),
                       ),
                     ),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 22,
+                        height: 22,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: AppColors.cyanNeon.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text('${index + 1}',
+                            style: AppTextStyles.caption.copyWith(
+                              color: AppColors.cyanNeon,
+                              fontWeight: FontWeight.bold,
+                            )),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(icon, style: const TextStyle(fontSize: 14)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.bodySmall
+                              .copyWith(color: AppColors.textPrimary),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Miễn phí',
+                        style: AppTextStyles.caption
+                            .copyWith(color: AppColors.xpGold, fontSize: 10),
+                      ),
+                    ],
                   ),
                 ),
               );
             }),
-          ),
-      ],
+        ],
+      ),
     );
   }
 
