@@ -1,14 +1,47 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 import 'package:edtech_mobile/features/chat/screens/world_chat_screen.dart';
+
+/// Đồng bộ với [WorldChatScreen] (đánh dấu đã xem chat thế giới).
+const kWorldChatLastSeenPrefKey = 'edtech_world_chat_last_seen_iso';
+
+/// Chấm đỏ góc trên-phải (badge thông báo).
+class _CornerRedDot extends StatelessWidget {
+  const _CornerRedDot();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 10,
+      height: 10,
+      decoration: BoxDecoration(
+        color: const Color(0xFFFF3B30),
+        shape: BoxShape.circle,
+        border: Border.all(color: AppColors.bgPrimary, width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.red.withOpacity(0.45),
+            blurRadius: 4,
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 class FloatingChatBubble extends StatefulWidget {
   const FloatingChatBubble({
     super.key,
     this.showQuestShopShortcuts = false,
     this.shortcutsTutorialKey,
+    this.hasClaimableQuest = false,
   });
 
   /// Khi true (vd. Tổng quan): nút mở rộng phía trên chat → Nhiệm vụ & Cửa hàng.
@@ -17,15 +50,24 @@ class FloatingChatBubble extends StatefulWidget {
   /// Gắn tutorial “Thao tác nhanh” lên cụm nút + chat.
   final Key? shortcutsTutorialKey;
 
+  /// Nhiệm vụ đã xong, chờ nhận thưởng (từ dashboard `dailyQuests`).
+  final bool hasClaimableQuest;
+
   @override
   State<FloatingChatBubble> createState() => _FloatingChatBubbleState();
 }
 
 class _FloatingChatBubbleState extends State<FloatingChatBubble>
     with SingleTickerProviderStateMixin {
+  static const double _fabSize = 48;
+
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
   bool _shortcutsOpen = false;
+
+  bool _chatUnreadDot = false;
+  Timer? _badgePollTimer;
+  String? _cachedUserId;
 
   @override
   void initState() {
@@ -35,18 +77,74 @@ class _FloatingChatBubbleState extends State<FloatingChatBubble>
       duration: const Duration(seconds: 2),
     )..repeat(reverse: true);
 
-    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.08).animate(
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.06).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _refreshChatUnreadBadge();
+      _badgePollTimer =
+          Timer.periodic(const Duration(seconds: 25), (_) => _refreshChatUnreadBadge());
+    });
   }
 
   @override
   void dispose() {
+    _badgePollTimer?.cancel();
     _pulseController.dispose();
     super.dispose();
   }
 
+  Future<void> _refreshChatUnreadBadge() async {
+    if (!mounted) return;
+    try {
+      final api = Provider.of<ApiService>(context, listen: false);
+      int dmUnread = 0;
+      try {
+        final conv = await api.getDmConversations();
+        for (final c in conv) {
+          if (c is Map) {
+            dmUnread += (c['unreadCount'] as int?) ?? 0;
+          }
+        }
+      } catch (_) {}
+
+      bool worldUnread = false;
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final lastSeenStr = prefs.getString(kWorldChatLastSeenPrefKey);
+        final lastSeen = DateTime.tryParse(lastSeenStr ?? '') ??
+            DateTime.fromMillisecondsSinceEpoch(0);
+
+        _cachedUserId ??=
+            (await api.getUserProfile())['id'] as String?;
+
+        final data = await api.getChatMessages(limit: 1);
+        final msgs = data['messages'] as List<dynamic>? ?? [];
+        if (msgs.isNotEmpty && _cachedUserId != null) {
+          final newest = Map<String, dynamic>.from(msgs.last as Map);
+          final uid = newest['userId'] as String?;
+          final createdAt = DateTime.tryParse(
+            newest['createdAt'] as String? ?? '',
+          );
+          if (uid != null &&
+              uid != _cachedUserId &&
+              createdAt != null &&
+              createdAt.isAfter(lastSeen)) {
+            worldUnread = true;
+          }
+        }
+      } catch (_) {}
+
+      final show = dmUnread > 0 || worldUnread;
+      if (mounted && show != _chatUnreadDot) {
+        setState(() => _chatUnreadDot = show);
+      }
+    } catch (_) {}
+  }
+
   void _openChat() {
+    _refreshChatUnreadBadge();
     Navigator.push(
       context,
       PageRouteBuilder(
@@ -62,7 +160,9 @@ class _FloatingChatBubbleState extends State<FloatingChatBubble>
         },
         transitionDuration: const Duration(milliseconds: 300),
       ),
-    );
+    ).then((_) {
+      if (mounted) _refreshChatUnreadBadge();
+    });
   }
 
   void _toggleShortcuts() {
@@ -82,6 +182,53 @@ class _FloatingChatBubbleState extends State<FloatingChatBubble>
     context.push('/shop');
   }
 
+  Widget _circleButton({
+    required Widget child,
+    required VoidCallback onTap,
+    required List<BoxShadow> shadows,
+    Gradient? gradient,
+    Color? color,
+    bool showDot = false,
+    BoxBorder? border,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        customBorder: const CircleBorder(),
+        child: SizedBox(
+          width: _fabSize,
+          height: _fabSize,
+          child: Stack(
+            clipBehavior: Clip.none,
+            alignment: Alignment.center,
+            children: [
+              Container(
+                width: _fabSize,
+                height: _fabSize,
+                decoration: BoxDecoration(
+                  gradient: gradient,
+                  color: gradient == null ? color : null,
+                  shape: BoxShape.circle,
+                  boxShadow: shadows,
+                  border: border,
+                ),
+                alignment: Alignment.center,
+                child: child,
+              ),
+              if (showDot)
+                const Positioned(
+                  right: 2,
+                  top: 2,
+                  child: _CornerRedDot(),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final bottom = MediaQuery.of(context).padding.bottom + 80;
@@ -94,28 +241,22 @@ class _FloatingChatBubbleState extends State<FloatingChatBubble>
           child: child,
         );
       },
-      child: GestureDetector(
+      child: _circleButton(
         onTap: _openChat,
-        child: Container(
-          width: 56,
-          height: 56,
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [AppColors.cyanNeon, AppColors.purpleNeon],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.cyanNeon.withOpacity(0.4),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: const Icon(Icons.chat_rounded, color: Colors.white, size: 26),
+        showDot: _chatUnreadDot,
+        gradient: const LinearGradient(
+          colors: [AppColors.cyanNeon, AppColors.purpleNeon],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
+        shadows: [
+          BoxShadow(
+            color: AppColors.cyanNeon.withOpacity(0.35),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+        child: const Icon(Icons.chat_rounded, color: Colors.white, size: 22),
       ),
     );
 
@@ -130,6 +271,7 @@ class _FloatingChatBubbleState extends State<FloatingChatBubble>
               label: 'Nhiệm vụ',
               color: AppColors.cyanNeon,
               onTap: _goQuests,
+              showBadge: widget.hasClaimableQuest,
             ),
             const SizedBox(height: 8),
             _ShortcutPill(
@@ -140,33 +282,34 @@ class _FloatingChatBubbleState extends State<FloatingChatBubble>
             ),
             const SizedBox(height: 8),
           ],
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: _toggleShortcuts,
-              customBorder: const CircleBorder(),
-              child: Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: AppColors.bgSecondary,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.borderPrimary),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.25),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
+          Stack(
+            clipBehavior: Clip.none,
+            alignment: Alignment.center,
+            children: [
+              _circleButton(
+                onTap: _toggleShortcuts,
+                color: AppColors.bgSecondary,
+                border: Border.all(color: AppColors.borderPrimary),
+                shadows: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.25),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
                 child: Icon(
                   _shortcutsOpen ? Icons.expand_more : Icons.apps_rounded,
                   color: AppColors.textSecondary,
                   size: 22,
                 ),
               ),
-            ),
+              if (widget.hasClaimableQuest && !_shortcutsOpen)
+                const Positioned(
+                  right: 2,
+                  top: 2,
+                  child: _CornerRedDot(),
+                ),
+            ],
           ),
           const SizedBox(height: 8),
         ],
@@ -196,12 +339,14 @@ class _ShortcutPill extends StatelessWidget {
     required this.label,
     required this.color,
     required this.onTap,
+    this.showBadge = false,
   });
 
   final IconData icon;
   final String label;
   final Color color;
   final VoidCallback onTap;
+  final bool showBadge;
 
   @override
   Widget build(BuildContext context) {
@@ -218,7 +363,18 @@ class _ShortcutPill extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 20, color: color),
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Icon(icon, size: 20, color: color),
+                  if (showBadge)
+                    const Positioned(
+                      right: -4,
+                      top: -4,
+                      child: _CornerRedDot(),
+                    ),
+                ],
+              ),
               const SizedBox(width: 8),
               Text(
                 label,

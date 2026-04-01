@@ -3,8 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/widgets/empty_state.dart';
+import 'package:edtech_mobile/features/chat/widgets/chat_bubble.dart'
+    show kWorldChatLastSeenPrefKey;
 import 'package:edtech_mobile/features/chat/widgets/emoji_bar.dart';
 import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/theme/theme.dart';
@@ -43,6 +46,17 @@ class _WorldChatScreenState extends State<WorldChatScreen>
     _pollTimer =
         Timer.periodic(const Duration(seconds: 4), (_) => _pollNewMessages());
     _loadCurrentUser();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _markWorldChatScreenOpened());
+  }
+
+  Future<void> _markWorldChatScreenOpened() async {
+    try {
+      final p = await SharedPreferences.getInstance();
+      await p.setString(
+        kWorldChatLastSeenPrefKey,
+        DateTime.now().toUtc().toIso8601String(),
+      );
+    } catch (_) {}
   }
 
   void _onTabChanged() {

@@ -311,6 +311,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 FloatingChatBubble(
                   showQuestShopShortcuts: true,
                   shortcutsTutorialKey: _quickActionsKey,
+                  hasClaimableQuest: _hasClaimableDailyQuest(
+                    _dashboardData!['dailyQuests'] as List<dynamic>?,
+                  ),
                 ),
               ],
             ),
@@ -397,6 +400,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ],
       ),
     );
+  }
+
+  /// Nhiệm vụ hoàn thành, chờ nhận thưởng (status `completed` từ API).
+  bool _hasClaimableDailyQuest(List<dynamic>? list) {
+    if (list == null) return false;
+    for (final e in list) {
+      if (e is Map && (e['status'] as String?) == 'completed') {
+        return true;
+      }
+    }
+    return false;
   }
 
   String _getLevelTitle(int level) {
