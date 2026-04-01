@@ -45,12 +45,13 @@ class ContributorCreditButton extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 20),
-                Icon(Icons.volunteer_activism_rounded,
+                const Icon(Icons.volunteer_activism_rounded,
                     size: 36, color: AppColors.contributorBlue),
                 const SizedBox(height: 12),
                 Text(
                   'Cảm ơn người đóng góp!',
-                  style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+                  style:
+                      AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
@@ -71,7 +72,7 @@ class ContributorCreditButton extends StatelessWidget {
                           ? CachedNetworkImageProvider(avatarUrl)
                           : null,
                       child: avatarUrl.isEmpty
-                          ? Icon(Icons.person_rounded,
+                          ? const Icon(Icons.person_rounded,
                               size: 32, color: AppColors.contributorBlue)
                           : null,
                     ),
@@ -111,7 +112,7 @@ class ContributorCreditButton extends StatelessWidget {
                 ? CachedNetworkImageProvider(avatarUrl)
                 : null,
             child: avatarUrl.isEmpty
-                ? Icon(Icons.volunteer_activism_rounded,
+                ? const Icon(Icons.volunteer_activism_rounded,
                     size: 16, color: AppColors.contributorBlue)
                 : null,
           ),

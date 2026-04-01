@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
-import 'package:edtech_mobile/core/services/auth_service.dart';
 import 'package:edtech_mobile/core/services/tutorial_service.dart';
 import 'package:edtech_mobile/core/tutorial/tutorial_helper.dart';
 import 'package:edtech_mobile/core/widgets/bottom_nav_bar.dart';
@@ -253,34 +252,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     } catch (_) {}
   }
 
-  Future<void> _handleLogout() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Đăng xuất'),
-        content: const Text('Bạn có chắc chắn muốn đăng xuất?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Hủy'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Đăng xuất', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true) {
-      final authService = Provider.of<AuthService>(context, listen: false);
-      await authService.logout();
-      if (mounted) {
-        context.go('/login');
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final hasData = !_isLoading && _error == null && _dashboardData != null;
@@ -389,60 +360,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
         child: SafeArea(
           bottom: false,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(6, 2, 0, 6),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: LevelCard(
-                    topBarStrip: true,
-                    level: level,
-                    title: _getLevelTitle(level),
-                    currentXP: currentXP,
-                    xpForNextLevel: xpForNextLevel,
-                    totalXP: totalXP,
-                    displayName: displayName,
-                    avatarUrl: _userProfile?['avatarUrl'] as String?,
-                    onAvatarTap: () => context.push('/profile'),
-                    onShowTitles: () => _showLevelTitlesDialog(),
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.person_outline, color: Colors.white),
-                  iconSize: 22,
-                  onPressed: () => context.push('/profile'),
-                  tooltip: 'Hồ sơ',
-                ),
-                IconButton(
-                  icon: const Icon(Icons.refresh_rounded, color: Colors.white),
-                  iconSize: 22,
-                  onPressed: _loadDashboard,
-                  tooltip: 'Refresh',
-                ),
-                PopupMenuButton<String>(
-                  icon: const Icon(Icons.more_vert, color: Colors.white),
-                  iconSize: 22,
-                  tooltip: 'Menu',
-                  color: AppColors.bgSecondary,
-                  itemBuilder: (context) => [
-                    const PopupMenuItem(
-                      value: 'logout',
-                      child: Row(
-                        children: [
-                          Icon(Icons.logout, color: Colors.red),
-                          SizedBox(width: 8),
-                          Text('Đăng xuất'),
-                        ],
-                      ),
-                    ),
-                  ],
-                  onSelected: (value) {
-                    if (value == 'logout') {
-                      _handleLogout();
-                    }
-                  },
-                ),
-              ],
+            padding: const EdgeInsets.fromLTRB(6, 2, 8, 6),
+            child: LevelCard(
+              topBarStrip: true,
+              level: level,
+              title: _getLevelTitle(level),
+              currentXP: currentXP,
+              xpForNextLevel: xpForNextLevel,
+              totalXP: totalXP,
+              displayName: displayName,
+              avatarUrl: _userProfile?['avatarUrl'] as String?,
+              onAvatarTap: () => context.push('/profile'),
+              onShowTitles: () => _showLevelTitlesDialog(),
             ),
           ),
         ),
@@ -571,7 +500,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   void _showLevelTitlesDialog() {
-    final currentLevel = (_dashboardData?['stats']?['level'] as int?) ?? 1;
+    final stats = _dashboardData?['stats'] as Map<String, dynamic>?;
+    final currentLevel = stats?['level'] as int? ?? 1;
+    final levelInfo = stats?['levelInfo'] as Map<String, dynamic>?;
+    final currentXP = levelInfo?['currentXP'] as int? ?? 0;
+    final xpForNextLevel = levelInfo?['xpForNextLevel'] as int? ?? 100;
+    final totalXP = stats?['totalXP'] as int? ?? 0;
+    final progress = xpForNextLevel > 0
+        ? (currentXP / xpForNextLevel).clamp(0.0, 1.0)
+        : 0.0;
+    final titleName = _getLevelTitle(currentLevel);
 
     showDialog(
       context: context,
@@ -586,7 +524,76 @@ class _DashboardScreenState extends State<DashboardScreen> {
             padding: const EdgeInsets.all(20),
             child: Column(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                Row(
+                  children: [
+                    Icon(Icons.bolt_rounded,
+                        color: AppColors.cyanNeon, size: 26),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Kinh nghiệm',
+                      style: AppTextStyles.h3.copyWith(
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.bgTertiary,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.borderPrimary),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Tổng XP: $totalXP',
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Tiến độ lên cấp ${currentLevel + 1}: $currentXP / $xpForNextLevel · ${(progress * 100).toStringAsFixed(1)}%',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: LinearProgressIndicator(
+                          value: progress,
+                          minHeight: 6,
+                          backgroundColor: AppColors.borderPrimary,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            AppColors.purpleNeon,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Level hiện tại: $currentLevel',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      Text(
+                        'Danh hiệu: $titleName',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -594,19 +601,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         color: Colors.amber.shade700, size: 28),
                     const SizedBox(width: 8),
                     Text(
-                      'Danh hiệu',
+                      'Danh hiệu theo cấp',
                       style: AppTextStyles.h3.copyWith(
                         color: AppColors.textPrimary,
                       ),
                     ),
                   ],
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Level hiện tại: $currentLevel',
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
                 ),
                 const SizedBox(height: 16),
                 _buildLevelTitleRow('Người mới', '1 - 5', Icons.emoji_people,

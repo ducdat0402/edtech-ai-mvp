@@ -208,17 +208,18 @@ class LevelCard extends StatelessWidget {
                   fontSize: strip ? 13.5 : 15,
                 ),
               ),
-              SizedBox(height: strip ? 0 : 2),
-              Text(
-                title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.labelSmall.copyWith(
-                  color: Colors.white.withOpacity(0.85),
-                  fontSize: strip ? 10.5 : null,
+              if (!strip) ...[
+                const SizedBox(height: 2),
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.labelSmall.copyWith(
+                    color: Colors.white.withOpacity(0.85),
+                  ),
                 ),
-              ),
-              SizedBox(height: strip ? 4 : 8),
+              ],
+              SizedBox(height: strip ? 6 : 8),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -234,19 +235,21 @@ class LevelCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  SizedBox(width: strip ? 4 : 6),
-                  Text(
-                    '$totalXP XP',
-                    style: AppTextStyles.labelSmall.copyWith(
-                      color: Colors.white.withOpacity(0.9),
-                      fontWeight: FontWeight.w600,
-                      fontSize: strip ? 10 : 11,
+                  if (!strip) ...[
+                    SizedBox(width: strip ? 4 : 6),
+                    Text(
+                      '$totalXP XP',
+                      style: AppTextStyles.labelSmall.copyWith(
+                        color: Colors.white.withOpacity(0.9),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 11,
+                      ),
                     ),
-                  ),
+                  ],
                   if (onShowTitles != null)
                     IconButton(
                       onPressed: onShowTitles,
-                      tooltip: 'Danh hiệu',
+                      tooltip: strip ? 'Chi tiết XP' : 'Danh hiệu',
                       icon: Icon(
                         Icons.info_outline_rounded,
                         size: strip ? 17 : 20,
@@ -261,27 +264,29 @@ class LevelCard extends StatelessWidget {
                     ),
                 ],
               ),
-              SizedBox(height: strip ? 0 : 2),
-              Row(
-                children: [
-                  Text(
-                    'Cấp tiếp: ${level + 1}',
-                    style: AppTextStyles.labelSmall.copyWith(
-                      color: Colors.white.withOpacity(0.65),
-                      fontSize: strip ? 9 : 10,
+              if (!strip) ...[
+                const SizedBox(height: 2),
+                Row(
+                  children: [
+                    Text(
+                      'Cấp tiếp: ${level + 1}',
+                      style: AppTextStyles.labelSmall.copyWith(
+                        color: Colors.white.withOpacity(0.65),
+                        fontSize: 10,
+                      ),
                     ),
-                  ),
-                  const Spacer(),
-                  Text(
-                    '$currentXP / $xpForNextLevel · ${(progress * 100).toStringAsFixed(1)}%',
-                    style: AppTextStyles.labelSmall.copyWith(
-                      color: Colors.white.withOpacity(0.85),
-                      fontSize: strip ? 9 : 10,
-                      fontWeight: FontWeight.w600,
+                    const Spacer(),
+                    Text(
+                      '$currentXP / $xpForNextLevel · ${(progress * 100).toStringAsFixed(1)}%',
+                      style: AppTextStyles.labelSmall.copyWith(
+                        color: Colors.white.withOpacity(0.85),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
+              ],
             ],
           ),
         ),

@@ -29,7 +29,7 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
   Map<String, dynamic>? _nodeContributor;
   List<String> _completedTypes = [];
   bool _isLessonComplete = false;
-  bool _aiLessonTypesViewTracked = false;
+  final bool _aiLessonTypesViewTracked = false;
   int? _aiMasteryPct;
   String? _aiSuggestedDifficulty;
   String? _aiItsReason;
@@ -65,7 +65,6 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
         _isLessonComplete = progressData['isLessonComplete'] == true;
         _isLoading = false;
       });
-
     } catch (e) {
       if (!mounted) return;
       setState(() {

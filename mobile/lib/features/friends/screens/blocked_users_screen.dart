@@ -62,18 +62,18 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
             style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
         content: Text(
           'Bạn sẽ có thể gửi lời mời kết bạn và nhắn tin với $name.',
-          style: AppTextStyles.bodyMedium
-              .copyWith(color: AppColors.textSecondary),
+          style:
+              AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text('Hủy',
+            child: const Text('Hủy',
                 style: TextStyle(color: AppColors.textTertiary)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text('Gỡ chặn',
+            child: const Text('Gỡ chặn',
                 style: TextStyle(
                     color: AppColors.successNeon, fontWeight: FontWeight.bold)),
           ),
@@ -192,7 +192,8 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                           final id = user['id'] as String? ?? '';
                           final name =
                               user['fullName'] as String? ?? 'Người dùng';
-                          final blockedLabel = _formatBlockedAt(user['blockedAt']);
+                          final blockedLabel =
+                              _formatBlockedAt(user['blockedAt']);
                           final busy = _unblocking.contains(id);
 
                           return Container(
@@ -240,7 +241,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                                     )
                                   : TextButton(
                                       onPressed: () => _confirmUnblock(user),
-                                      child: Text(
+                                      child: const Text(
                                         'Gỡ chặn',
                                         style: TextStyle(
                                           color: AppColors.successNeon,

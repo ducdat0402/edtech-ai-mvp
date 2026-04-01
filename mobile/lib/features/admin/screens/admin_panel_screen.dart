@@ -1819,13 +1819,13 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
       return RefreshIndicator(
         onRefresh: _loadAnalytics,
         color: AppColors.purpleNeon,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(16),
+        child: const SingleChildScrollView(
+          physics: AlwaysScrollableScrollPhysics(),
+          padding: EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Center(
+              Center(
                 child: CircularProgressIndicator(color: AppColors.purpleNeon),
               ),
             ],
