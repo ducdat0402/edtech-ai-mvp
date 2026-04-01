@@ -76,10 +76,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       TutorialHelper.buildTarget(
         key: _quickActionsKey,
-        title: 'Truy cập nhanh',
+        title: 'Nhiệm vụ & cửa hàng',
         description:
-            'Nhiệm vụ hằng ngày, bảng xếp hạng, ví tiền, cửa hàng… tất cả ở đây!',
-        icon: Icons.flash_on,
+            'Nhấn nút mở rộng (icon lưới) phía trên nút chat để mở Nhiệm vụ và Cửa hàng.',
+        icon: Icons.apps_rounded,
         stepLabel: 'Bước 4/5',
         align: ContentAlign.top,
       ),
@@ -293,9 +293,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           ],
                           _buildOnboardingBanner(),
                           const SizedBox(height: 24),
-                          _buildQuickActions(
-                              _dashboardData!['subjects'] ?? []),
-                          const SizedBox(height: 24),
                           KeyedSubtree(
                             key: _subjectsKey,
                             child: _buildSubjectsSection(
@@ -307,14 +304,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           _buildCurrentLearningSection(
                               _dashboardData!['currentLearningNodes'] ??
                                   []),
-                          const SizedBox(height: 24),
-                          _buildQuestsSection(
-                              _dashboardData!['dailyQuests'] ?? []),
                         ],
                       ),
                     ),
                   ),
-                const FloatingChatBubble(),
+                FloatingChatBubble(
+                  showQuestShopShortcuts: true,
+                  shortcutsTutorialKey: _quickActionsKey,
+                ),
               ],
             ),
           ),
@@ -706,80 +703,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     // Onboarding đã được tích hợp vào Personal Mind Map screen
     // Không hiển thị banner ở dashboard nữa
     return const SizedBox.shrink();
-  }
-
-  Widget _buildQuickActions(List<dynamic> subjects) {
-    return Column(
-      key: _quickActionsKey,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Thao tác nhanh',
-          style: AppTextStyles.h3,
-        ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: _ActionCard(
-                icon: Icons.task_alt_rounded,
-                label: 'Nhiệm vụ',
-                color: AppColors.cyanNeon,
-                onTap: () => context.push('/quests'),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _ActionCard(
-                icon: Icons.account_balance_wallet_rounded,
-                label: 'Ví & tiền tệ',
-                color: AppColors.coinGold,
-                onTap: () => context.push('/currency'),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildQuestsSection(List<dynamic> quests) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Nhiệm vụ hằng ngày',
-              style: AppTextStyles.h3,
-            ),
-            TextButton(
-              onPressed: () => context.push('/quests'),
-              child: const Text('Xem tất cả'),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        if (quests.isEmpty)
-          Text('Chưa có nhiệm vụ', style: AppTextStyles.bodyMedium)
-        else
-          ...quests.take(3).map((quest) => Card(
-                margin: const EdgeInsets.only(bottom: 8),
-                child: ListTile(
-                  leading: const Icon(Icons.task_alt),
-                  title: Text(quest['quest']?['title'] ?? 'Nhiệm vụ'),
-                  subtitle: Text(
-                    'Tiến độ: ${quest['progress'] ?? 0}/${quest['target'] ?? 0}',
-                  ),
-                  trailing: quest['status'] == 'completed'
-                      ? const Icon(Icons.check_circle, color: Colors.green)
-                      : null,
-                  onTap: () => context.push('/quests'),
-                ),
-              )),
-      ],
-    );
   }
 
   Widget _buildCurrentLearningSection(List<dynamic> nodes) {
@@ -1237,73 +1160,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   style: AppTextStyles.caption.copyWith(
                     color: AppColors.contributorBlue.withOpacity(0.7),
                   ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ActionCard extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Color color;
-  final VoidCallback onTap;
-
-  const _ActionCard({
-    required this.icon,
-    required this.label,
-    required this.color,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.borderPrimary),
-        boxShadow: [
-          BoxShadow(
-            color: color.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            HapticFeedback.lightImpact();
-            onTap();
-          },
-          borderRadius: BorderRadius.circular(16),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: color.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(icon, color: color, size: 28),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  label,
-                  style: AppTextStyles.labelMedium.copyWith(
-                    color: color,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  textAlign: TextAlign.center,
                 ),
               ],
             ),
