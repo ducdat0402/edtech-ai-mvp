@@ -65,7 +65,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
         ),
         BottomNavigationBarItem(
           icon: _buildFriendsIcon(),
-          label: 'Bạn bè',
+          label: 'Cộng đồng',
         ),
       ],
     );

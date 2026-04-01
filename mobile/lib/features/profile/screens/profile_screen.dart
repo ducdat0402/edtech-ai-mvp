@@ -98,6 +98,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         apiService
             .getUserCompetencies()
             .catchError((_) => <String, dynamic>{}),
+        apiService.getCurrency().catchError((_) => <String, dynamic>{}),
+        apiService.getDashboardSummary().catchError((_) => <String, dynamic>{}),
       ]);
 
       setState(() {
@@ -107,6 +109,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
         final comp = results[2];
         _competenciesData =
             comp is Map<String, dynamic> ? comp : <String, dynamic>{};
+        _currencyData = results[3] is Map<String, dynamic>
+            ? Map<String, dynamic>.from(results[3] as Map)
+            : {};
+        final summary = results[4] is Map<String, dynamic>
+            ? results[4] as Map<String, dynamic>
+            : <String, dynamic>{};
+        final statsRaw = summary['stats'];
+        if (statsRaw is Map) {
+          _dashboardStats = Map<String, dynamic>.from(statsRaw);
+        } else {
+          _dashboardStats = {};
+        }
         _isLoading = false;
       });
       _showProfileTutorial();
@@ -952,9 +966,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildSyncedStatsStrip() {
     final stats = _dashboardStats;
     final currency = _currencyData;
+    // Backend dashboard summary dùng totalCoins & currentStreak (xem DashboardService).
     final xp = '${stats['totalXP'] ?? currency['xp'] ?? 0}';
-    final coins = '${stats['coins'] ?? currency['coins'] ?? 0}';
-    final streak = '${stats['streak'] ?? currency['currentStreak'] ?? 0}';
+    final coins =
+        '${stats['totalCoins'] ?? stats['coins'] ?? currency['coins'] ?? 0}';
+    final streak =
+        '${stats['currentStreak'] ?? stats['streak'] ?? currency['currentStreak'] ?? 0}';
 
     return Material(
       color: Colors.transparent,
