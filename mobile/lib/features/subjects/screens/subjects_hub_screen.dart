@@ -86,6 +86,13 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
   String get _currentRole => _profileData?['role']?.toString() ?? 'user';
   bool get _isContributor => _currentRole == 'contributor' || _currentRole == 'admin';
 
+  Color get _bgPrimary =>
+      _isContributor ? AppColors.contributorBgPrimary : AppColors.bgPrimary;
+  Color get _bgSecondary =>
+      _isContributor ? AppColors.contributorBgSecondary : AppColors.bgSecondary;
+  Color get _borderColor =>
+      _isContributor ? AppColors.contributorBorder : AppColors.borderPrimary;
+
   Future<void> _handleSwitchRole() async {
     if (_isSwitchingRole) return;
     final targetRole = _isContributor ? 'user' : 'contributor';
@@ -161,7 +168,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: _bgPrimary,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -197,16 +204,6 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
               icon: Icon(
                 _showSearchField ? Icons.close : Icons.search,
                 color: AppColors.textPrimary,
-              ),
-            ),
-          if (!_loading && _error == null)
-            IconButton(
-              tooltip:
-                  _isContributor ? 'Chuyển sang Learner' : 'Chuyển sang Contributor',
-              onPressed: _isSwitchingRole ? null : _handleSwitchRole,
-              icon: Icon(
-                Icons.swap_horiz_rounded,
-                color: _isContributor ? AppColors.contributorBlue : AppColors.purpleNeon,
               ),
             ),
         ],
@@ -250,6 +247,8 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                               _buildSearchField(),
                               const SizedBox(height: 12),
                             ],
+                            _buildRoleSwitcher(),
+                            const SizedBox(height: 12),
                             _buildHeroCard(),
                             const SizedBox(height: 14),
                             if (_isContributor) ...[
@@ -433,28 +432,148 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
             selected: _subjectFilter == 'all',
             onSelected: (_) => setState(() => _subjectFilter = 'all'),
             selectedColor: AppColors.purpleNeon.withOpacity(0.18),
-            backgroundColor: AppColors.bgSecondary,
+            backgroundColor: _bgSecondary,
           ),
           ChoiceChip(
             label: const Text('Cá nhân'),
             selected: _subjectFilter == 'private',
             onSelected: (_) => setState(() => _subjectFilter = 'private'),
             selectedColor: AppColors.cyanNeon.withOpacity(0.18),
-            backgroundColor: AppColors.bgSecondary,
+            backgroundColor: _bgSecondary,
           ),
           ChoiceChip(
             label: const Text('Cộng đồng'),
             selected: _subjectFilter == 'community',
             onSelected: (_) => setState(() => _subjectFilter = 'community'),
             selectedColor: AppColors.orangeNeon.withOpacity(0.18),
-            backgroundColor: AppColors.bgSecondary,
+            backgroundColor: _bgSecondary,
           ),
           ChoiceChip(
             label: const Text('Chuyên gia'),
             selected: _subjectFilter == 'expert',
             onSelected: (_) => setState(() => _subjectFilter = 'expert'),
             selectedColor: AppColors.pinkNeon.withOpacity(0.18),
-            backgroundColor: AppColors.bgSecondary,
+            backgroundColor: _bgSecondary,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRoleSwitcher() {
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: _bgSecondary,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: _borderColor),
+      ),
+      child: Row(
+        children: [
+          // Learner tab
+          Expanded(
+            child: GestureDetector(
+              onTap: _isSwitchingRole || !_isContributor
+                  ? null
+                  : () => _handleSwitchRole(),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: !_isContributor
+                      ? AppColors.purpleNeon.withOpacity(0.2)
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(12),
+                  border: !_isContributor
+                      ? Border.all(
+                          color: AppColors.purpleNeon.withOpacity(0.5),
+                        )
+                      : null,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.school_rounded,
+                      size: 18,
+                      color: !_isContributor
+                          ? AppColors.purpleNeon
+                          : AppColors.textTertiary,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Learner',
+                      style: AppTextStyles.labelMedium.copyWith(
+                        color: !_isContributor
+                            ? AppColors.purpleNeon
+                            : AppColors.textTertiary,
+                        fontWeight: !_isContributor
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 4),
+          // Contributor tab
+          Expanded(
+            child: GestureDetector(
+              onTap: _isSwitchingRole || _isContributor
+                  ? null
+                  : () => _handleSwitchRole(),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: _isContributor
+                      ? AppColors.contributorBlue.withOpacity(0.2)
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(12),
+                  border: _isContributor
+                      ? Border.all(
+                          color: AppColors.contributorBlue.withOpacity(0.5),
+                        )
+                      : null,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (_isSwitchingRole && !_isContributor)
+                      const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.contributorBlue,
+                        ),
+                      )
+                    else
+                      Icon(
+                        Icons.edit_note_rounded,
+                        size: 18,
+                        color: _isContributor
+                            ? AppColors.contributorBlue
+                            : AppColors.textTertiary,
+                      ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Contributor',
+                      style: AppTextStyles.labelMedium.copyWith(
+                        color: _isContributor
+                            ? AppColors.contributorBlue
+                            : AppColors.textTertiary,
+                        fontWeight: _isContributor
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -655,8 +774,8 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
   }
 
   Widget _iconBackdrop(Map<String, dynamic> subject, String name, Color accent) {
-    final base = Color.lerp(accent, const Color(0xFF0A0A0F), 0.72) ?? AppColors.bgSecondary;
-    final deep = Color.lerp(accent, Colors.black, 0.55) ?? AppColors.bgSecondary;
+    final base = Color.lerp(accent, const Color(0xFF0A0A0F), 0.72) ?? _bgSecondary;
+    final deep = Color.lerp(accent, Colors.black, 0.55) ?? _bgSecondary;
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -664,7 +783,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
           end: Alignment.bottomRight,
           colors: [
             base,
-            AppColors.bgSecondary,
+            _bgSecondary,
             deep,
           ],
           stops: const [0.0, 0.45, 1.0],
@@ -696,14 +815,17 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
     );
   }
 
-  static const double _tileActionBarHeight = 52;
-
   Widget _buildSubjectTile(Map<String, dynamic> subject) {
     final id = (subject['id'] ?? '').toString();
     final name = (subject['name'] ?? 'Môn học').toString();
-    final description = (subject['description'] ?? '').toString();
     final coverUrl = _customCoverUrl(subject);
     final accent = _accentFromSubject(subject, name);
+
+    final meta = _metadata(subject);
+    final iconRaw = meta?['icon']?.toString().trim();
+    final iconText = iconRaw != null && iconRaw.isNotEmpty
+        ? iconRaw
+        : (name.isNotEmpty ? name.substring(0, 1).toUpperCase() : '?');
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),
@@ -724,6 +846,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
             )
           else
             _iconBackdrop(subject, name, accent),
+
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -738,11 +861,8 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
               ),
             ),
           ),
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: _tileActionBarHeight,
+
+          Positioned.fill(
             child: Material(
               color: Colors.transparent,
               child: InkWell(
@@ -759,24 +879,44 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
               ),
             ),
           ),
-          Positioned(
-            left: 8,
-            right: 8,
-            bottom: _tileActionBarHeight,
-            child: IgnorePointer(
+
+          // Icon-only layout (ẩn mô tả / nút bên dưới).
+          Positioned.fill(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  Container(
+                    width: 66,
+                    height: 66,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: _bgSecondary.withOpacity(_isContributor ? 0.35 : 0.25),
+                      border: Border.all(color: accent.withOpacity(0.55)),
+                    ),
+                    child: Center(
+                      child: Text(
+                        iconText,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
                   Text(
                     name,
-                    maxLines: 2,
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: Colors.white,
+                      color: Colors.white.withValues(alpha: 0.92),
                       fontWeight: FontWeight.w800,
                       fontSize: 12.5,
-                      height: 1.15,
+                      height: 1.1,
                       shadows: [
                         Shadow(
                           color: Colors.black.withValues(alpha: 0.9),
@@ -785,103 +925,6 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                       ],
                     ),
                   ),
-                  if (description.isNotEmpty) ...[
-                    const SizedBox(height: 2),
-                    Text(
-                      description,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.7),
-                        fontSize: 10,
-                        shadows: [
-                          Shadow(
-                            color: Colors.black.withValues(alpha: 0.95),
-                            blurRadius: 6,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ),
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: Container(
-              padding: const EdgeInsets.fromLTRB(6, 2, 6, 7),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    Colors.black.withValues(alpha: 0.9),
-                  ],
-                ),
-              ),
-              child: Row(
-                children: [
-                  if (!_isContributor) ...[
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => context.push('/subjects/$id/intro'),
-                        style: OutlinedButton.styleFrom(
-                          visualDensity: VisualDensity.compact,
-                          padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 4),
-                          minimumSize: const Size(0, 34),
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          side:
-                              BorderSide(color: Colors.white.withValues(alpha: 0.45)),
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(9),
-                          ),
-                        ),
-                        child: const FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(
-                            'Học',
-                            style: TextStyle(
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ] else ...[
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          context.push(
-                            '/contributor/mind-map?subjectId=$id&subjectName=${Uri.encodeComponent(name)}',
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          visualDensity: VisualDensity.compact,
-                          padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 4),
-                          minimumSize: const Size(0, 34),
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          backgroundColor: AppColors.contributorBlue,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(9),
-                          ),
-                        ),
-                        child: const FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(
-                            'Editor',
-                            style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
                 ],
               ),
             ),
