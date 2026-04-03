@@ -5,6 +5,7 @@ import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/core/widgets/bottom_nav_bar.dart';
 import 'package:edtech_mobile/theme/colors.dart';
+import 'package:edtech_mobile/theme/text_styles.dart';
 
 class SubjectsHubScreen extends StatefulWidget {
   const SubjectsHubScreen({super.key});
@@ -16,7 +17,9 @@ class SubjectsHubScreen extends StatefulWidget {
 class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
   bool _loading = true;
   String? _error;
-  bool _isContributor = false;
+  Map<String, dynamic>? _profileData;
+  bool _isSwitchingRole = false;
+  String _subjectFilter = 'all'; // all | private | community | expert
   List<Map<String, dynamic>> _subjects = [];
   bool _showSearchField = false;
   final TextEditingController _searchController = TextEditingController();
@@ -66,10 +69,9 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
       final dashboard = results[0];
       final profile = results[1];
       final rawSubjects = dashboard['subjects'] as List? ?? const [];
-      final role = (profile['role'] ?? 'user').toString();
       setState(() {
         _subjects = rawSubjects.map((e) => Map<String, dynamic>.from(e as Map)).toList();
-        _isContributor = role == 'contributor' || role == 'admin';
+        _profileData = Map<String, dynamic>.from(profile as Map);
         _loading = false;
       });
     } catch (e) {
@@ -77,6 +79,82 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
         _error = e.toString();
         _loading = false;
       });
+    }
+  }
+
+  // === Role helpers ===
+  String get _currentRole => _profileData?['role']?.toString() ?? 'user';
+  bool get _isContributor => _currentRole == 'contributor' || _currentRole == 'admin';
+
+  Future<void> _handleSwitchRole() async {
+    if (_isSwitchingRole) return;
+    final targetRole = _isContributor ? 'user' : 'contributor';
+    final targetLabel = targetRole == 'contributor' ? 'Contributor' : 'Learner';
+
+    final shouldSwitch = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.bgSecondary,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(
+          'Chuyển sang $targetLabel',
+          style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary),
+        ),
+        content: Text(
+          targetRole == 'contributor'
+              ? 'Chế độ Contributor cho phép bạn đóng góp nội dung theo từng môn. Các đóng góp cần admin duyệt.'
+              : 'Chế độ Learner tập trung vào việc học. Bạn sẽ không thể chỉnh sửa/đóng góp nội dung.',
+          style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Hủy', style: TextStyle(color: AppColors.textSecondary)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(
+              'Chuyển',
+              style: TextStyle(
+                color: targetRole == 'contributor'
+                    ? AppColors.contributorBlue
+                    : AppColors.purpleNeon,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldSwitch != true) return;
+    setState(() => _isSwitchingRole = true);
+    try {
+      final apiService = Provider.of<ApiService>(context, listen: false);
+      final raw = await apiService.switchRole(targetRole);
+      final updated = Map<String, dynamic>.from(raw as Map);
+      if (!mounted) return;
+      setState(() => _profileData = {...?_profileData, ...updated});
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Đã chuyển sang chế độ $targetLabel'),
+            backgroundColor: targetRole == 'contributor'
+                ? AppColors.contributorBlue
+                : AppColors.successNeon,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi: $e'),
+            backgroundColor: AppColors.errorNeon,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSwitchingRole = false);
     }
   }
 
@@ -91,7 +169,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
         leadingWidth: 112,
         automaticallyImplyLeading: false,
         title: const Text(
-          'Môn học',
+          'Thư viện',
           style: TextStyle(
             color: AppColors.textPrimary,
             fontSize: 20,
@@ -119,6 +197,16 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
               icon: Icon(
                 _showSearchField ? Icons.close : Icons.search,
                 color: AppColors.textPrimary,
+              ),
+            ),
+          if (!_loading && _error == null)
+            IconButton(
+              tooltip:
+                  _isContributor ? 'Chuyển sang Learner' : 'Chuyển sang Contributor',
+              onPressed: _isSwitchingRole ? null : _handleSwitchRole,
+              icon: Icon(
+                Icons.swap_horiz_rounded,
+                color: _isContributor ? AppColors.contributorBlue : AppColors.purpleNeon,
               ),
             ),
         ],
@@ -164,8 +252,13 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                             ],
                             _buildHeroCard(),
                             const SizedBox(height: 14),
-                            _buildContributorBanner(),
-                            const SizedBox(height: 14),
+                            if (_isContributor) ...[
+                              _buildContributorBanner(),
+                              const SizedBox(height: 14),
+                            ] else ...[
+                              _buildLearnerFilterChips(),
+                              const SizedBox(height: 14),
+                            ],
                           ]),
                         ),
                       ),
@@ -201,32 +294,36 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                           padding: const EdgeInsets.fromLTRB(14, 0, 14, 20),
                           sliver: SliverList(
                             delegate: SliverChildListDelegate([
-                              _buildTypeSection(
-                                title: 'Môn học cá nhân',
-                                type: 'private',
-                                tooltip:
-                                    'Chỉ bạn nhìn thấy môn học này. Bài học private miễn phí cho chính bạn. Muốn nâng lên cộng đồng/chuyên gia cần admin phê duyệt.',
-                                items: _subjectsByType('private'),
-                                onCreate: _showCreatePrivateDialog,
-                              ),
-                              const SizedBox(height: 12),
-                              _buildTypeSection(
-                                title: 'Môn học cộng đồng',
-                                type: 'community',
-                                tooltip:
-                                    'Mở khóa bằng 50 xu hoặc 50 kim cương mỗi bài. Môn có đóng góp của bạn sẽ được chia lợi nhuận theo tháng tùy số lượng và dạng bài đã đóng góp thành công.',
-                                items: _subjectsByType('community'),
-                                onCreate: _showCreateCommunityDialog,
-                              ),
-                              const SizedBox(height: 12),
-                              _buildTypeSection(
-                                title: 'Môn học chuyên gia',
-                                type: 'expert',
-                                tooltip:
-                                    'Mỗi bài học mở khóa bằng 50 kim cương. Nội dung ở mức chuyên sâu, cần phê duyệt admin.',
-                                items: _subjectsByType('expert'),
-                                onCreate: _showCreateExpertDialog,
-                              ),
+                              if (_isContributor) ...[
+                                _buildTypeSection(
+                                  title: 'Môn học cá nhân',
+                                  type: 'private',
+                                  tooltip:
+                                      'Chỉ bạn nhìn thấy môn học này. Bài học private miễn phí cho chính bạn. Muốn nâng lên cộng đồng/chuyên gia cần admin phê duyệt.',
+                                  items: _subjectsByType('private'),
+                                  onCreate: _showCreatePrivateDialog,
+                                ),
+                                const SizedBox(height: 12),
+                                _buildTypeSection(
+                                  title: 'Môn học cộng đồng',
+                                  type: 'community',
+                                  tooltip:
+                                      'Mở khóa bằng 50 xu hoặc 50 kim cương mỗi bài. Môn có đóng góp của bạn sẽ được chia lợi nhuận theo tháng tùy số lượng và dạng bài đã đóng góp thành công.',
+                                  items: _subjectsByType('community'),
+                                  onCreate: _showCreateCommunityDialog,
+                                ),
+                                const SizedBox(height: 12),
+                                _buildTypeSection(
+                                  title: 'Môn học chuyên gia',
+                                  type: 'expert',
+                                  tooltip:
+                                      'Mỗi bài học mở khóa bằng 50 kim cương. Nội dung ở mức chuyên sâu, cần phê duyệt admin.',
+                                  items: _subjectsByType('expert'),
+                                  onCreate: _showCreateExpertDialog,
+                                ),
+                              ] else ...[
+                                _buildLearnerSection(),
+                              ],
                             ]),
                           ),
                         ),
@@ -320,6 +417,94 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildLearnerFilterChips() {
+    const pad = EdgeInsets.only(top: 0);
+    return Padding(
+      padding: pad,
+      child: Wrap(
+        spacing: 10,
+        runSpacing: 8,
+        children: [
+          ChoiceChip(
+            label: const Text('Tất cả'),
+            selected: _subjectFilter == 'all',
+            onSelected: (_) => setState(() => _subjectFilter = 'all'),
+            selectedColor: AppColors.purpleNeon.withOpacity(0.18),
+            backgroundColor: AppColors.bgSecondary,
+          ),
+          ChoiceChip(
+            label: const Text('Cá nhân'),
+            selected: _subjectFilter == 'private',
+            onSelected: (_) => setState(() => _subjectFilter = 'private'),
+            selectedColor: AppColors.cyanNeon.withOpacity(0.18),
+            backgroundColor: AppColors.bgSecondary,
+          ),
+          ChoiceChip(
+            label: const Text('Cộng đồng'),
+            selected: _subjectFilter == 'community',
+            onSelected: (_) => setState(() => _subjectFilter = 'community'),
+            selectedColor: AppColors.orangeNeon.withOpacity(0.18),
+            backgroundColor: AppColors.bgSecondary,
+          ),
+          ChoiceChip(
+            label: const Text('Chuyên gia'),
+            selected: _subjectFilter == 'expert',
+            onSelected: (_) => setState(() => _subjectFilter = 'expert'),
+            selectedColor: AppColors.pinkNeon.withOpacity(0.18),
+            backgroundColor: AppColors.bgSecondary,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLearnerSection() {
+    final selectedType = _subjectFilter;
+    final items = selectedType == 'all'
+        ? _filteredSubjects
+        : _filteredSubjects
+            .where((s) =>
+                (s['subjectType'] ?? 'community').toString() == selectedType)
+            .toList();
+
+    final title = selectedType == 'all'
+        ? 'Tất cả các môn'
+        : selectedType == 'private'
+            ? 'Môn học cá nhân'
+            : selectedType == 'community'
+                ? 'Môn học cộng đồng'
+                : 'Môn học chuyên gia';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: AppTextStyles.h3.copyWith(fontSize: 18)),
+        const SizedBox(height: 10),
+        if (items.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            child: Text(
+              'Không có môn phù hợp với bộ lọc hiện tại.',
+              style: TextStyle(color: AppColors.textSecondary),
+            ),
+          )
+        else
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: _gridCrossAxisCount(MediaQuery.sizeOf(context).width - 28),
+              mainAxisSpacing: 10,
+              crossAxisSpacing: 10,
+              childAspectRatio: 0.92,
+            ),
+            itemCount: items.length,
+            itemBuilder: (context, index) => _buildSubjectTile(items[index]),
+          ),
+      ],
     );
   }
 
@@ -514,7 +699,6 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
   static const double _tileActionBarHeight = 52;
 
   Widget _buildSubjectTile(Map<String, dynamic> subject) {
-    final subjectType = (subject['subjectType'] ?? 'community').toString();
     final id = (subject['id'] ?? '').toString();
     final name = (subject['name'] ?? 'Môn học').toString();
     final description = (subject['description'] ?? '').toString();
@@ -562,7 +746,15 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
             child: Material(
               color: Colors.transparent,
               child: InkWell(
-                onTap: () => context.push('/subjects/$id/intro'),
+                onTap: () {
+                  if (_isContributor) {
+                    context.push(
+                      '/contributor/mind-map?subjectId=$id&subjectName=${Uri.encodeComponent(name)}',
+                    );
+                  } else {
+                    context.push('/subjects/$id/intro');
+                  }
+                },
                 child: const SizedBox.expand(),
               ),
             ),
@@ -633,60 +825,63 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
               ),
               child: Row(
                 children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => context.push('/subjects/$id/intro'),
-                      style: OutlinedButton.styleFrom(
-                        visualDensity: VisualDensity.compact,
-                        padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 4),
-                        minimumSize: const Size(0, 34),
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        side: BorderSide(color: Colors.white.withValues(alpha: 0.45)),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(9),
+                  if (!_isContributor) ...[
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => context.push('/subjects/$id/intro'),
+                        style: OutlinedButton.styleFrom(
+                          visualDensity: VisualDensity.compact,
+                          padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 4),
+                          minimumSize: const Size(0, 34),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          side:
+                              BorderSide(color: Colors.white.withValues(alpha: 0.45)),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(9),
+                          ),
                         ),
-                      ),
-                      child: const FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text('Học', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600)),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: subjectType == 'community'
-                          ? (_isContributor
-                              ? () => context.push(
-                                    '/contributor/mind-map?subjectId=$id&subjectName=${Uri.encodeComponent(name)}',
-                                  )
-                              : () => context.go('/profile'))
-                          : (subjectType == 'private'
-                              ? () => _showPromotionDialog(subjectId: id, subjectName: name)
-                              : null),
-                      style: ElevatedButton.styleFrom(
-                        visualDensity: VisualDensity.compact,
-                        padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 4),
-                        minimumSize: const Size(0, 34),
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        backgroundColor: AppColors.purpleNeon,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(9),
-                        ),
-                      ),
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          subjectType == 'community'
-                              ? (_isContributor ? 'Đóng góp' : 'Contributor')
-                              : (subjectType == 'private' ? 'Nâng hạng' : '---'),
-                          style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600),
+                        child: const FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            'Học',
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                  ),
+                  ] else ...[
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          context.push(
+                            '/contributor/mind-map?subjectId=$id&subjectName=${Uri.encodeComponent(name)}',
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          visualDensity: VisualDensity.compact,
+                          padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 4),
+                          minimumSize: const Size(0, 34),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          backgroundColor: AppColors.contributorBlue,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(9),
+                          ),
+                        ),
+                        child: const FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            'Editor',
+                            style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -696,6 +891,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
     );
   }
 
+  // ignore: unused_element
   Future<void> _showPromotionDialog({
     required String subjectId,
     required String subjectName,

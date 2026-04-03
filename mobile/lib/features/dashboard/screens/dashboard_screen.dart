@@ -1000,6 +1000,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   final questWrapper = entry.value;
                   final quest = questWrapper['quest'] as Map<String, dynamic>? ?? const {};
                   final requirements = quest['requirements'] as Map<String, dynamic>? ?? const {};
+                  final rewards = quest['rewards'] as Map<String, dynamic>? ?? const {};
 
                   final title = quest['title'] as String? ?? 'Nhiệm vụ';
                   final status = questWrapper['status'] as String? ?? 'active';
@@ -1012,6 +1013,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   final percent = (progress / target).clamp(0.0, 1.0);
                   final isCompleted = status == 'completed';
                   final isClaimed = status == 'claimed';
+
+                  final xpReward = (rewards['xp'] as num?)?.toInt();
+                  final coinReward = (rewards['coin'] as num?)?.toInt();
+
+                  final canClaim = isCompleted && !isClaimed;
 
                   return Container(
                     margin: EdgeInsets.only(bottom: index == quests.length - 1 ? 0 : 10),
@@ -1051,27 +1057,118 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             ),
                             const SizedBox(width: 10),
                             Expanded(
-                              child: Text(
-                                title,
-                                style: AppTextStyles.bodyMedium.copyWith(
-                                  color: isCompleted || isClaimed
-                                      ? AppColors.textPrimary
-                                      : AppColors.textSecondary,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    title,
+                                    style: AppTextStyles.bodyMedium.copyWith(
+                                      color: isCompleted || isClaimed
+                                          ? AppColors.textPrimary
+                                          : AppColors.textSecondary,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  if (xpReward != null || coinReward != null) ...[
+                                    const SizedBox(height: 2),
+                                    Row(
+                                      children: [
+                                        if (coinReward != null) ...[
+                                          Text(
+                                            '+${coinReward.toInt()} xu',
+                                            style: AppTextStyles.caption.copyWith(
+                                              color: AppColors.coinGold,
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                          if (xpReward != null) const SizedBox(width: 8),
+                                        ],
+                                        if (xpReward != null)
+                                          Text(
+                                            '+${xpReward.toInt()} XP',
+                                            style: AppTextStyles.caption.copyWith(
+                                              color: AppColors.xpGold,
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  ],
+                                ],
                               ),
                             ),
                             const SizedBox(width: 10),
-                            if (isCompleted)
-                              Text(
-                                'Xong',
-                                style: AppTextStyles.caption.copyWith(
-                                  color: AppColors.successNeon,
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 12,
+                            SizedBox(
+                              height: 30,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                                  backgroundColor: canClaim
+                                      ? AppColors.successNeon
+                                      : AppColors.bgTertiary,
+                                  foregroundColor:
+                                      canClaim ? Colors.black : AppColors.textSecondary,
+                                  elevation: canClaim ? 4 : 0,
+                                  textStyle: AppTextStyles.labelSmall.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(999),
+                                  ),
+                                ),
+                                onPressed: () async {
+                                  if (canClaim) {
+                                    // Nhận thưởng: dùng cùng API với màn Nhiệm vụ để đồng bộ trạng thái.
+                                    try {
+                                      final api = Provider.of<ApiService>(
+                                        context,
+                                        listen: false,
+                                      );
+                                      await api.claimQuest(
+                                        questWrapper['id'] as String,
+                                      );
+                                      if (!mounted) return;
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Row(
+                                            children: [
+                                              Icon(Icons.celebration,
+                                                  color: Colors.white),
+                                              SizedBox(width: 8),
+                                              Text('Đã nhận phần thưởng!'),
+                                            ],
+                                          ),
+                                          backgroundColor: AppColors.successNeon,
+                                        ),
+                                      );
+                                      await _loadDashboard();
+                                    } catch (e) {
+                                      if (!mounted) return;
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text('Lỗi: $e'),
+                                          backgroundColor: AppColors.errorNeon,
+                                        ),
+                                      );
+                                    }
+                                  } else {
+                                    // Chưa hoàn thành: dẫn tới màn Nhiệm vụ để user xem chi tiết.
+                                    if (!mounted) return;
+                                    HapticFeedback.lightImpact();
+                                    context.push('/quests');
+                                  }
+                                },
+                                child: Text(
+                                  canClaim
+                                      ? 'Nhận'
+                                      : (isClaimed ? 'Đã nhận' : 'Đến'),
                                 ),
                               ),
+                            ),
                           ],
                         ),
                         if (!isCompleted && !isClaimed) ...[

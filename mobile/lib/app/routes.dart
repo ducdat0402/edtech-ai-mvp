@@ -120,7 +120,7 @@ GoRouter createAppRouter(AuthSessionController authSession) {
       },
     ),
     GoRoute(
-      path: '/subjects',
+      path: '/library',
       builder: (context, state) => const SubjectsHubScreen(),
     ),
     GoRoute(
