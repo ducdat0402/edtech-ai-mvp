@@ -32,6 +32,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
   String? _error;
   String _userRole = 'user';
 
+  // Keep a short in-memory cache so returning to Home doesn't show skeleton.
+  static Map<String, dynamic>? _cachedDashboardData;
+  static Map<String, dynamic>? _cachedMotivation;
+  static Map<String, dynamic>? _cachedUserProfile;
+  static String _cachedUserRole = 'user';
+
   // Tutorial keys
   final _levelCardKey = GlobalKey();
   final _statsRowKey = GlobalKey();
@@ -43,6 +49,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void initState() {
     super.initState();
+    if (_cachedDashboardData != null) {
+      _dashboardData = _cachedDashboardData;
+      _motivation = _cachedMotivation;
+      _userProfile = _cachedUserProfile;
+      _userRole = _cachedUserRole;
+      _isLoading = false;
+      _error = null;
+    }
     _loadDashboard();
   }
 
@@ -99,8 +113,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Future<void> _loadDashboard() async {
     if (!mounted) return;
+    final hadCachedData = _dashboardData != null;
     setState(() {
-      _isLoading = true;
+      _isLoading = !hadCachedData;
       _error = null;
     });
     if (kDebugMode) {
@@ -148,6 +163,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
         _motivation = motivation;
         _isLoading = false;
       });
+      // Update cache for quick return.
+      _cachedDashboardData = dashboard;
+      _cachedMotivation = motivation;
+      _cachedUserProfile = profile;
+      _cachedUserRole = profile?['role'] as String? ?? 'user';
       if (kDebugMode) {
         debugPrint('[DASHBOARD] render ready, role=$_userRole');
       }
@@ -157,8 +177,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _error = e.toString();
         _isLoading = false;
+        // If we already have cached data, don't switch UI to error.
+        _error = hadCachedData ? null : e.toString();
       });
       if (kDebugMode) {
         debugPrint('[DASHBOARD] load failed: $e');

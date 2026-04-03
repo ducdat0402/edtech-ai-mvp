@@ -96,44 +96,6 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
   Future<void> _handleSwitchRole() async {
     if (_isSwitchingRole) return;
     final targetRole = _isContributor ? 'user' : 'contributor';
-    final targetLabel = targetRole == 'contributor' ? 'Contributor' : 'Learner';
-
-    final shouldSwitch = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.bgSecondary,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(
-          'Chuyển sang $targetLabel',
-          style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary),
-        ),
-        content: Text(
-          targetRole == 'contributor'
-              ? 'Chế độ Contributor cho phép bạn đóng góp nội dung theo từng môn. Các đóng góp cần admin duyệt.'
-              : 'Chế độ Learner tập trung vào việc học. Bạn sẽ không thể chỉnh sửa/đóng góp nội dung.',
-          style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Hủy', style: TextStyle(color: AppColors.textSecondary)),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(
-              'Chuyển',
-              style: TextStyle(
-                color: targetRole == 'contributor'
-                    ? AppColors.contributorBlue
-                    : AppColors.purpleNeon,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-
-    if (shouldSwitch != true) return;
     setState(() => _isSwitchingRole = true);
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
@@ -144,7 +106,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Đã chuyển sang chế độ $targetLabel'),
+            content: Text(targetRole == 'contributor' ? 'Đã chuyển sang chế độ Contributor' : 'Đã chuyển sang chế độ Learner'),
             backgroundColor: targetRole == 'contributor'
                 ? AppColors.contributorBlue
                 : AppColors.successNeon,

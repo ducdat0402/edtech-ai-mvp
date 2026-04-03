@@ -39,7 +39,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // Tutorial keys
   final _competencyPreviewKey = GlobalKey();
-  final _roleSwitcherKey = GlobalKey();
   final _menuCardsKey = GlobalKey();
 
   @override
@@ -61,20 +60,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
         stepLabel: 'Bước 1/3',
       ),
       TutorialHelper.buildTarget(
-        key: _roleSwitcherKey,
-        title: 'Chuyển vai trò',
-        description:
-            'Learner để học bài, Contributor để đóng góp nội dung cho cộng đồng.',
-        icon: Icons.swap_horiz,
-        stepLabel: 'Bước 2/3',
-      ),
-      TutorialHelper.buildTarget(
         key: _menuCardsKey,
         title: 'Menu chức năng',
         description:
             'Nhật ký hành trình, đóng góp của bạn, mua kim cương và hơn thế nữa!',
         icon: Icons.menu,
-        stepLabel: 'Bước 3/3',
+        stepLabel: 'Bước 2/2',
         align: ContentAlign.top,
       ),
     ];
@@ -637,11 +628,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           const SizedBox(height: 16),
 
-          if (!_isAdmin)
-            KeyedSubtree(
-              key: _roleSwitcherKey,
-              child: _buildRoleSwitcher(),
-            ),
+          // Role switcher removed (no longer needed).
+          // _buildRoleSwitcher() intentionally not shown to keep UI simpler.
           const SizedBox(height: 24),
 
           KeyedSubtree(
@@ -774,6 +762,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  // ignore: unused_element
   Widget _buildRoleSwitcher() {
     return Container(
       padding: const EdgeInsets.all(4),
