@@ -133,3 +133,6 @@ docker-compose.override.yml
 *.pid.lock
 .vercel
 .env*.local
+
+# Cursor IDE workspace/config
+.cursor/

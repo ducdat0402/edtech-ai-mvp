@@ -36,7 +36,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   final _levelCardKey = GlobalKey();
   final _statsRowKey = GlobalKey();
   final _quickActionsKey = GlobalKey();
-  final _subjectsKey = GlobalKey();
   final _bottomNavKey = GlobalKey();
 
   bool get _isContributor => _userRole == 'contributor';
@@ -57,7 +56,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         description:
             'Đây là cấp độ hiện tại của bạn. Hoàn thành bài học để nhận XP và lên cấp!',
         icon: Icons.military_tech,
-        stepLabel: 'Bước 1/5',
+        stepLabel: 'Bước 1/4',
       ),
       TutorialHelper.buildTarget(
         key: _statsRowKey,
@@ -65,16 +64,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         description:
             'Kim cương, xu và chuỗi ngày nằm bên phải thanh trên. Chạm để nạp tiền, cửa hàng hoặc ví.',
         icon: Icons.account_balance_wallet,
-        stepLabel: 'Bước 2/5',
-      ),
-      TutorialHelper.buildTarget(
-        key: _subjectsKey,
-        title: 'Danh sách môn học',
-        description:
-            'Chọn một môn học để bắt đầu. Vuốt ngang để xem thêm các môn khác.',
-        icon: Icons.school,
-        stepLabel: 'Bước 3/5',
-        align: ContentAlign.top,
+        stepLabel: 'Bước 2/4',
       ),
       TutorialHelper.buildTarget(
         key: _quickActionsKey,
@@ -82,7 +72,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         description:
             'Nhấn nút mở rộng (icon lưới) phía trên chat để mở Nhiệm vụ, Cam kết tuần, Xếp hạng và Cửa hàng.',
         icon: Icons.apps_rounded,
-        stepLabel: 'Bước 4/5',
+        stepLabel: 'Bước 3/4',
         align: ContentAlign.top,
       ),
       TutorialHelper.buildTarget(
@@ -91,7 +81,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         description:
             'Chuyển nhanh giữa Tổng quan, Môn học và Bạn bè. Hồ sơ: chạm avatar trên thanh trên cùng.',
         icon: Icons.navigation,
-        stepLabel: 'Bước 5/5',
+        stepLabel: 'Bước 4/4',
         align: ContentAlign.top,
       ),
     ];
@@ -301,17 +291,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 as Map<String, dynamic>?,
                           ),
                           const SizedBox(height: 24),
-                          KeyedSubtree(
-                            key: _subjectsKey,
-                            child: _buildSubjectsSection(
-                              'Môn học',
-                              _dashboardData!['subjects'] ?? [],
-                            ),
+                          _buildDailyQuestsSection(
+                            _dashboardData!['dailyQuests'] as List<dynamic>?,
                           ),
-                          const SizedBox(height: 24),
-                          _buildCurrentLearningSection(
-                              _dashboardData!['currentLearningNodes'] ??
-                                  []),
                         ],
                       ),
                     ),
@@ -759,177 +741,407 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildContinueLearningSection(Map<String, dynamic>? data) {
-    final recentSubject = data?['recentSubject'] as Map<String, dynamic>?;
     final lessons = (data?['nextFreeLessons'] as List<dynamic>? ?? const [])
         .whereType<Map>()
         .map((e) => Map<String, dynamic>.from(e))
         .toList();
+
     final remaining = (data?['remainingFreeLessonsToday'] as num?)?.toInt();
     final freeTotal = (data?['freeLessonsPerDay'] as num?)?.toInt() ?? 2;
 
-    if (recentSubject == null) {
-      return Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: AppColors.bgSecondary,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.borderPrimary),
-        ),
-        child: Row(
-          children: [
-            const Icon(Icons.local_offer_rounded, color: AppColors.cyanNeon),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                'Hôm nay bạn ?/$freeTotal bài học miễn phí',
-                style:
-                    AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary),
-              ),
-            ),
-            Tooltip(
-              message:
-                  'Mỗi ngày bạn có 2 bài học miễn phí (gộp tất cả môn). Sau đó mở từng bài tốn 50 kim cương.',
-              triggerMode: TooltipTriggerMode.tap,
-              child: const Icon(Icons.info_outline_rounded,
-                  color: AppColors.textTertiary, size: 18),
-            ),
-          ],
-        ),
-      );
-    }
-
-    final subjectName = recentSubject['name'] as String? ?? 'Môn học gần nhất';
-    final subjectIcon = recentSubject['icon'] as String? ?? '📚';
-    final subtitle = remaining == null
-        ? '?/$freeTotal bài miễn phí hôm nay'
-        : '$remaining/$freeTotal bài miễn phí hôm nay';
+    final remainingText = remaining == null
+        ? 'Chưa rõ miễn phí còn lại'
+        : '${remaining}/${freeTotal} miễn phí còn lại';
 
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
         color: AppColors.bgSecondary,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.borderPrimary),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
-              border: Border(
-                bottom: BorderSide(color: AppColors.borderPrimary.withOpacity(0.6)),
-              ),
-            ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 14, 14, 10),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text(subjectIcon, style: const TextStyle(fontSize: 16)),
-                const SizedBox(width: 8),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        subjectName,
-                        style: AppTextStyles.labelLarge
-                            .copyWith(color: AppColors.textPrimary),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        subtitle,
-                        style: AppTextStyles.caption
-                            .copyWith(color: AppColors.textSecondary),
-                      ),
-                    ],
+                  child: Text(
+                    'Bài học hôm nay',
+                    style: AppTextStyles.h3,
                   ),
                 ),
-                Tooltip(
-                  message:
-                      'Mỗi ngày có 2 bài miễn phí cho tất cả môn. Hết lượt sẽ tốn 50 kim cương/bài.',
-                  triggerMode: TooltipTriggerMode.tap,
-                  child: const Icon(Icons.info_outline_rounded,
-                      color: AppColors.textTertiary, size: 16),
+                Text(
+                  remainingText,
+                  style: AppTextStyles.caption.copyWith(
+                    color: AppColors.xpGold,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),
           ),
+          const SizedBox(height: 4),
           if (lessons.isEmpty)
             Padding(
               padding: const EdgeInsets.all(12),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Bạn chưa có bài phù hợp để tiếp tục ngay.',
-                  style: AppTextStyles.bodySmall
-                      .copyWith(color: AppColors.textSecondary),
-                ),
+              child: Text(
+                'Bạn chưa có bài phù hợp để tiếp tục ngay.',
+                style: AppTextStyles.bodySmall
+                    .copyWith(color: AppColors.textSecondary),
               ),
             )
           else
-            ...lessons.asMap().entries.map((entry) {
-              final index = entry.key;
-              final lesson = entry.value;
-              final title = lesson['title'] as String? ?? 'Bài học';
-              final icon = lesson['icon'] as String? ?? '📖';
-              final isLast = index == lessons.length - 1;
-              return InkWell(
-                onTap: () => _handleContinueLessonTap(lesson),
-                child: Container(
-                  padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                        color: isLast
-                            ? Colors.transparent
-                            : AppColors.borderPrimary.withOpacity(0.4),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(10, 6, 10, 8),
+              child: Column(
+                children: lessons.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final lesson = entry.value;
+
+                  final title = (lesson['title'] as String?) ?? 'Bài học';
+                  final isLocked = (lesson['isLocked'] as bool?) ?? false;
+                  final diamondCost = (lesson['diamondCost'] as num?)?.toInt();
+
+                  // Dashboard hiện chỉ trả `title/icon/isLocked/diamondCost`.
+                  // Nếu backend sau này thêm expReward thì UI sẽ tự dùng giá trị đó.
+                  final expReward =
+                      (lesson['expReward'] as num?)?.toInt() ?? 50;
+
+                  final subtitle = lesson['subtitle'] as String?;
+
+                  final isFirst = index == 0;
+
+                  return InkWell(
+                    onTap: () => _handleContinueLessonTap(lesson),
+                    borderRadius: BorderRadius.circular(14),
+                    child: Container(
+                      margin: EdgeInsets.only(
+                        bottom: index == lessons.length - 1 ? 0 : 10,
+                      ),
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: isLocked
+                            ? AppColors.bgTertiary
+                            : (isFirst ? const Color(0xFF1F9D55).withOpacity(0.22) : AppColors.bgTertiary),
+                        border: Border.all(
+                          color: isLocked
+                              ? AppColors.borderPrimary.withOpacity(0.9)
+                              : AppColors.successNeon.withOpacity(0.35),
+                        ),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: isLocked ? Colors.transparent : AppColors.successNeon.withOpacity(0.18),
+                              border: Border.all(
+                                color: isLocked
+                                    ? AppColors.borderPrimary.withOpacity(0.9)
+                                    : AppColors.successNeon.withOpacity(0.5),
+                              ),
+                            ),
+                            child: Center(
+                              child: Icon(
+                                isLocked ? Icons.lock_rounded : Icons.play_arrow_rounded,
+                                size: 22,
+                                color: isLocked ? AppColors.textTertiary : AppColors.successNeon,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  title,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: AppTextStyles.bodyBold.copyWith(
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
+                                if (subtitle != null && subtitle.isNotEmpty) ...[
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    subtitle,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: AppTextStyles.bodySmall.copyWith(
+                                      color: isLocked ? AppColors.textTertiary : AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                '+$expReward XP',
+                                style: AppTextStyles.caption.copyWith(
+                                  color: isLocked ? AppColors.textTertiary : AppColors.xpGold,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              if (isLocked && diamondCost != null) ...[
+                                const SizedBox(height: 6),
+                                Text(
+                                  '$diamondCost 💎',
+                                  style: AppTextStyles.caption.copyWith(
+                                    color: AppColors.textTertiary,
+                                    fontSize: 10,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 22,
-                        height: 22,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: AppColors.cyanNeon.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text('${index + 1}',
-                            style: AppTextStyles.caption.copyWith(
-                              color: AppColors.cyanNeon,
-                              fontWeight: FontWeight.bold,
-                            )),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(icon, style: const TextStyle(fontSize: 14)),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.bodySmall
-                              .copyWith(color: AppColors.textPrimary),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Miễn phí',
-                        style: AppTextStyles.caption
-                            .copyWith(color: AppColors.xpGold, fontSize: 10),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }),
+                  );
+                }).toList(),
+              ),
+            ),
         ],
       ),
     );
   }
 
+  Widget _buildDailyQuestsSection(List<dynamic>? dailyQuests) {
+    final quests = (dailyQuests ?? const [])
+        .whereType<Map>()
+        .map((e) => Map<String, dynamic>.from(e))
+        .toList();
+
+    final completedUnclaimed = quests.where((q) {
+      final status = q['status'] as String? ?? 'active';
+      return status == 'completed';
+    }).toList();
+
+    num sumCoins = 0;
+    num sumXP = 0;
+    for (final q in completedUnclaimed) {
+      final quest = q['quest'] as Map<String, dynamic>? ?? const {};
+      final rewards = quest['rewards'] as Map<String, dynamic>? ?? const {};
+      sumXP += (rewards['xp'] as num?) ?? 0;
+      sumCoins += (rewards['coin'] as num?) ?? 0;
+    }
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: AppColors.bgSecondary,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.borderPrimary),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: Text(
+                    'Nhiệm vụ hôm nay',
+                    style: AppTextStyles.h3,
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppColors.purpleNeon.withOpacity(0.16),
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(
+                      color: AppColors.purpleNeon.withOpacity(0.35),
+                    ),
+                  ),
+                  child: Text(
+                    'Đặc biệt',
+                    style: AppTextStyles.caption.copyWith(
+                      color: AppColors.purpleNeon,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            if (quests.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Text(
+                  'Không có nhiệm vụ hôm nay.',
+                  style: AppTextStyles.bodySmall
+                      .copyWith(color: AppColors.textSecondary),
+                ),
+              )
+            else
+              Column(
+                children: quests.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final questWrapper = entry.value;
+                  final quest = questWrapper['quest'] as Map<String, dynamic>? ?? const {};
+                  final requirements = quest['requirements'] as Map<String, dynamic>? ?? const {};
+
+                  final title = quest['title'] as String? ?? 'Nhiệm vụ';
+                  final status = questWrapper['status'] as String? ?? 'active';
+                  final progressNum = (questWrapper['progress'] as num?) ?? 0;
+                  final targetNum =
+                      (questWrapper['target'] as num?) ?? (requirements['target'] as num?) ?? 1;
+
+                  final progress = progressNum.toDouble();
+                  final target = targetNum.toDouble().clamp(1.0, double.infinity);
+                  final percent = (progress / target).clamp(0.0, 1.0);
+                  final isCompleted = status == 'completed';
+                  final isClaimed = status == 'claimed';
+
+                  return Container(
+                    margin: EdgeInsets.only(bottom: index == quests.length - 1 ? 0 : 10),
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              width: 22,
+                              height: 22,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: isCompleted || isClaimed
+                                    ? AppColors.successNeon.withOpacity(0.16)
+                                    : Colors.transparent,
+                                border: Border.all(
+                                  color: isCompleted || isClaimed
+                                      ? AppColors.successNeon.withOpacity(0.6)
+                                      : AppColors.borderPrimary.withOpacity(0.9),
+                                ),
+                              ),
+                              child: Center(
+                                child: Icon(
+                                  isCompleted
+                                      ? Icons.check_rounded
+                                      : isClaimed
+                                          ? Icons.check_rounded
+                                          : Icons.circle_outlined,
+                                  size: 14,
+                                  color: isCompleted || isClaimed
+                                      ? AppColors.successNeon
+                                      : AppColors.textTertiary,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                title,
+                                style: AppTextStyles.bodyMedium.copyWith(
+                                  color: isCompleted || isClaimed
+                                      ? AppColors.textPrimary
+                                      : AppColors.textSecondary,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            if (isCompleted)
+                              Text(
+                                'Xong',
+                                style: AppTextStyles.caption.copyWith(
+                                  color: AppColors.successNeon,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 12,
+                                ),
+                              ),
+                          ],
+                        ),
+                        if (!isCompleted && !isClaimed) ...[
+                          const SizedBox(height: 10),
+                          LinearProgressIndicator(
+                            value: percent,
+                            minHeight: 8,
+                            backgroundColor: AppColors.bgTertiary,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              AppColors.cyanNeon.withOpacity(0.9),
+                            ),
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            '${progressNum.toInt()} / ${targetNum.toInt()} hoàn thành',
+                            style: AppTextStyles.caption.copyWith(
+                              color: AppColors.textTertiary,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  );
+                }).toList(),
+              ),
+            if (completedUnclaimed.isNotEmpty) ...[
+              const SizedBox(height: 14),
+              Divider(color: AppColors.borderPrimary.withOpacity(0.6)),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Text(
+                    'Phần thưởng khi xong',
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  const Spacer(),
+                  RichText(
+                    text: TextSpan(
+                      children: [
+                        TextSpan(
+                          text: '+${sumCoins.toInt()} xu ',
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: AppColors.coinGold,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        TextSpan(
+                          text: '+${sumXP.toInt()} XP',
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: AppColors.xpGold,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ignore: unused_element
   Widget _buildCurrentLearningSection(List<dynamic> nodes) {
     if (nodes.isEmpty) {
       return const SizedBox.shrink();
@@ -1071,6 +1283,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  // ignore: unused_element
   Widget _buildSubjectsSection(String title, List<dynamic> subjects) {
     final totalCount = subjects.length + (_isContributor ? 1 : 0);
     return Column(
