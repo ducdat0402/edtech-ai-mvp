@@ -32,6 +32,7 @@ backend/*.log
 backend/logs/
 backend/coverage/
 backend/.nyc_output/
+backend/schema-export.sql
 
 # compiled output
 /dist
