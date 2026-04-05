@@ -1,3 +1,5 @@
+import 'dart:async' show unawaited;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -20,15 +22,28 @@ class DashboardScreen extends StatefulWidget {
 
   const DashboardScreen({super.key, this.showTutorial = false});
 
+  /// Xóa cache tĩnh khi đăng xuất (tránh flash dữ liệu user cũ khi đăng nhập lại).
+  static void clearMemoryCache() => _DashboardScreenState.clearMemoryCache();
+
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
+  static void clearMemoryCache() {
+    _cachedDashboardData = null;
+    _cachedMotivation = null;
+    _cachedUserProfile = null;
+    _cachedUserRole = 'user';
+  }
+
   Map<String, dynamic>? _dashboardData;
   Map<String, dynamic>? _motivation;
   Map<String, dynamic>? _userProfile;
   bool _isLoading = true;
+
+  /// Đang tải lại khi đã có dữ liệu hiển thị (cache) — hiện thanh progress, không xóa nội dung.
+  bool _isRefreshing = false;
   String? _error;
   String _userRole = 'user';
 
@@ -116,15 +131,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final hadCachedData = _dashboardData != null;
     setState(() {
       _isLoading = !hadCachedData;
+      _isRefreshing = hadCachedData;
       _error = null;
     });
     if (kDebugMode) {
-      debugPrint('[DASHBOARD] load start');
+      debugPrint('[DASHBOARD] load start (cached=$hadCachedData)');
     }
 
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
-      // Load critical data first so dashboard can render quickly.
       final dashboard =
           await apiService.getDashboard().timeout(const Duration(seconds: 30));
       if (kDebugMode) {
@@ -132,52 +147,72 @@ class _DashboardScreenState extends State<DashboardScreen> {
         debugPrint('[DASHBOARD] primary loaded: subjects=$subjects');
       }
 
-      // Non-critical requests should not block dashboard rendering.
-      Map<String, dynamic>? profile;
-      Map<String, dynamic>? motivation;
-      try {
-        profile = await apiService
-            .getUserProfile()
-            .timeout(const Duration(seconds: 20));
-      } catch (e) {
-        if (kDebugMode) {
-          debugPrint('[DASHBOARD] profile load skipped/error: $e');
-        }
-      }
-      try {
-        motivation = await apiService
-            .getDailyMotivation()
-            .timeout(const Duration(seconds: 20));
-      } catch (e) {
-        if (kDebugMode) {
-          debugPrint('[DASHBOARD] motivation load skipped/error: $e');
+      if (!mounted) return;
+      // Hiển thị nội dung chính ngay sau dashboard; profile & motivation song song.
+      setState(() {
+        _dashboardData = dashboard;
+        _isLoading = false;
+        _isRefreshing = true;
+        _cachedDashboardData = dashboard;
+      });
+
+      Future<Map<String, dynamic>?> loadProfile() async {
+        try {
+          return await apiService
+              .getUserProfile()
+              .timeout(const Duration(seconds: 20));
+        } catch (e) {
+          if (kDebugMode) {
+            debugPrint('[DASHBOARD] profile load skipped/error: $e');
+          }
+          return null;
         }
       }
 
+      Future<Map<String, dynamic>?> loadMotivation() async {
+        try {
+          return await apiService
+              .getDailyMotivation()
+              .timeout(const Duration(seconds: 20));
+        } catch (e) {
+          if (kDebugMode) {
+            debugPrint('[DASHBOARD] motivation load skipped/error: $e');
+          }
+          return null;
+        }
+      }
+
+      final secondary = await Future.wait([loadProfile(), loadMotivation()]);
+      final profile = secondary[0] ?? _userProfile ?? _cachedUserProfile;
+      final motivation = secondary[1] ?? _motivation ?? _cachedMotivation;
+
       if (!mounted) return;
       setState(() {
-        _dashboardData = dashboard;
         _userProfile = profile;
-        _userRole = profile?['role'] as String? ?? 'user';
+        _userRole = profile?['role'] as String? ?? _userRole;
         _motivation = motivation;
-        _isLoading = false;
+        _isRefreshing = false;
+        _cachedMotivation = motivation;
+        _cachedUserProfile = profile;
+        _cachedUserRole = profile?['role'] as String? ?? _userRole;
       });
-      // Update cache for quick return.
-      _cachedDashboardData = dashboard;
-      _cachedMotivation = motivation;
-      _cachedUserProfile = profile;
-      _cachedUserRole = profile?['role'] as String? ?? 'user';
       if (kDebugMode) {
         debugPrint('[DASHBOARD] render ready, role=$_userRole');
       }
       _showDashboardTutorial();
       _checkWeeklyRewards(apiService);
-      await CompetencyGrowthNotifier.checkAndShowIfGained(context, apiService);
+      // Không chặn luồng load — tránh thêm 1 round-trip API trước khi UI “nhẹ”.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        unawaited(
+          CompetencyGrowthNotifier.checkAndShowIfGained(context, apiService),
+        );
+      });
     } catch (e) {
       if (!mounted) return;
       setState(() {
         _isLoading = false;
-        // If we already have cached data, don't switch UI to error.
+        _isRefreshing = false;
         _error = hadCachedData ? null : e.toString();
       });
       if (kDebugMode) {
@@ -270,6 +305,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final hasData = !_isLoading && _error == null && _dashboardData != null;
 
     return Scaffold(
+      backgroundColor: AppColors.bgPrimary,
       appBar: null,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -277,6 +313,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
           if (hasData)
             _buildPinnedLevelHeader(
               (_dashboardData!['stats'] as Map<String, dynamic>?) ?? {},
+            ),
+          if (_isRefreshing && hasData)
+            const SizedBox(
+              height: 3,
+              child: LinearProgressIndicator(
+                minHeight: 3,
+                backgroundColor: AppColors.bgTertiary,
+                color: AppColors.primaryLight,
+              ),
             ),
           Expanded(
             child: Stack(
@@ -322,7 +367,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   showQuestShopShortcuts: true,
                   shortcutsTutorialKey: _quickActionsKey,
                   hasClaimableQuest: _hasClaimableDailyQuest(
-                    _dashboardData!['dailyQuests'] as List<dynamic>?,
+                    _dashboardData?['dailyQuests'] as List<dynamic>?,
                   ),
                 ),
               ],

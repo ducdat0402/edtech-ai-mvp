@@ -15,6 +15,7 @@ import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/core/widgets/bottom_nav_bar.dart';
 import 'package:edtech_mobile/core/widgets/error_widget.dart';
 import 'package:edtech_mobile/features/chat/widgets/chat_bubble.dart';
+import 'package:edtech_mobile/features/dashboard/screens/dashboard_screen.dart';
 import 'package:edtech_mobile/features/profile/widgets/profile_competency_preview_row.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 
@@ -465,6 +466,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       try {
         final authService = Provider.of<AuthService>(context, listen: false);
         await authService.logout();
+        DashboardScreen.clearMemoryCache();
 
         if (context.mounted) {
           context.go('/login');
