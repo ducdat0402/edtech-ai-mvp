@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
+import 'package:edtech_mobile/features/onboarding/widgets/onboarding_noto_lottie.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 
 class OnboardingChatScreen extends StatefulWidget {
@@ -16,6 +17,7 @@ class OnboardingChatScreen extends StatefulWidget {
 class _OnboardingChatScreenState extends State<OnboardingChatScreen>
     with TickerProviderStateMixin {
   static const _totalSlides = 11;
+  static const _ghostBorder = Color(0x332D363D);
 
   final PageController _pageController = PageController();
   int _currentPage = 0;
@@ -30,6 +32,7 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
           'Hệ thống giúp bạn xây lộ trình học theo mục tiêu và thời gian của riêng bạn.',
       'icon': '🧭',
       'hero': '🚀',
+      'noto': '1f680',
     },
     {
       'title': 'Học từ cộng đồng',
@@ -37,6 +40,7 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
           'Bạn có thể học từ các bài học do cộng đồng đóng góp và được kiểm duyệt.',
       'icon': '🤝',
       'hero': '🌍',
+      'noto': '1f30d',
     },
     {
       'title': 'Có bản đồ năng lực',
@@ -44,6 +48,7 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
           'Theo dõi tiến bộ năng lực học tập và năng lực con người trực quan theo thời gian.',
       'icon': '📊',
       'hero': '🧠',
+      'noto': '1f9e0',
     },
     {
       'title': 'Chia sẻ kiến thức và kiếm tiền',
@@ -51,6 +56,7 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
           'Nhận 30% doanh thu khi tạo khóa học bổ ích được cộng đồng học và đánh giá tốt.',
       'icon': '💸',
       'hero': '🏆',
+      'noto': '1f3c6',
     },
     {
       'title': 'Bạn không học một mình',
@@ -58,18 +64,39 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
           'Luôn có cộng đồng đồng hành để trao đổi, học nhóm và giữ động lực học tập.',
       'icon': '👥',
       'hero': '🔥',
+      'noto': '1f525',
     },
   ];
 
   // Slide 2: Acquisition
   String? _selectedAcquisition;
   final List<Map<String, String>> _acquisitionOptions = [
-    {'id': 'friend', 'label': 'Bạn bè giới thiệu', 'icon': '👥'},
-    {'id': 'social', 'label': 'Mạng xã hội (TikTok, FB...)', 'icon': '📱'},
-    {'id': 'search', 'label': 'Tìm kiếm trên Google', 'icon': '🔍'},
-    {'id': 'school', 'label': 'Trường học / Giáo viên', 'icon': '🏫'},
-    {'id': 'ad', 'label': 'Quảng cáo', 'icon': '📢'},
-    {'id': 'other', 'label': 'Khác', 'icon': '💡'},
+    {
+      'id': 'friend',
+      'label': 'Bạn bè giới thiệu',
+      'icon': '👥',
+      'noto': '1f91d'
+    },
+    {
+      'id': 'social',
+      'label': 'Mạng xã hội (TikTok, FB...)',
+      'icon': '📱',
+      'noto': '1f4ac'
+    },
+    {
+      'id': 'search',
+      'label': 'Tìm kiếm trên Google',
+      'icon': '🔍',
+      'noto': '1f50e'
+    },
+    {
+      'id': 'school',
+      'label': 'Trường học / Giáo viên',
+      'icon': '🏫',
+      'noto': '1f3e0'
+    },
+    {'id': 'ad', 'label': 'Quảng cáo', 'icon': '📢', 'noto': '1f4e3'},
+    {'id': 'other', 'label': 'Khác', 'icon': '💡', 'noto': '1f4a1'},
   ];
 
   // Slide 3: User segment
@@ -79,68 +106,103 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
       'id': 'student_hs',
       'label': 'Học sinh (cấp 2, cấp 3)',
       'icon': '🎒',
+      'noto': '1f4da',
       'desc': 'Đang đi học phổ thông'
     },
     {
       'id': 'student_uni',
       'label': 'Sinh viên đại học',
       'icon': '🎓',
+      'noto': '1f393',
       'desc': 'Đang học đại học / cao đẳng'
     },
     {
       'id': 'worker',
       'label': 'Người đi làm',
       'icon': '💼',
+      'noto': '1f4bb',
       'desc': 'Đã đi làm, muốn nâng cao'
     },
     {
       'id': 'self_learner',
       'label': 'Tự học',
       'icon': '📚',
+      'noto': '1f4da',
       'desc': 'Học vì đam mê cá nhân'
     },
     {
       'id': 'parent',
       'label': 'Phụ huynh',
       'icon': '👨‍👩‍👧',
+      'noto': '1f3e0',
       'desc': 'Tìm hiểu cho con em'
     },
-    {'id': 'other', 'label': 'Khác', 'icon': '🌟', 'desc': ''},
+    {'id': 'other', 'label': 'Khác', 'icon': '🌟', 'noto': '1f31f', 'desc': ''},
   ];
 
   // Slide 4: Learning goal
   final List<String> _selectedGoals = [];
   final List<Map<String, String>> _goalOptions = [
-    {'id': 'exam', 'label': 'Thi cử', 'icon': '📝'},
-    {'id': 'work', 'label': 'Phục vụ công việc', 'icon': '💻'},
-    {'id': 'hobby', 'label': 'Sở thích cá nhân', 'icon': '🎯'},
-    {'id': 'skill_up', 'label': 'Nâng cao kỹ năng', 'icon': '📈'},
-    {'id': 'career', 'label': 'Chuẩn bị phỏng vấn / chuyển nghề', 'icon': '🚀'},
-    {'id': 'explore', 'label': 'Khám phá kiến thức mới', 'icon': '🔬'},
+    {'id': 'exam', 'label': 'Thi cử', 'icon': '📝', 'noto': '270f'},
+    {'id': 'work', 'label': 'Phục vụ công việc', 'icon': '💻', 'noto': '1f4bb'},
+    {'id': 'hobby', 'label': 'Sở thích cá nhân', 'icon': '🎯', 'noto': '1f3af'},
+    {
+      'id': 'skill_up',
+      'label': 'Nâng cao kỹ năng',
+      'icon': '📈',
+      'noto': '1f4c8'
+    },
+    {
+      'id': 'career',
+      'label': 'Chuẩn bị phỏng vấn / chuyển nghề',
+      'icon': '🚀',
+      'noto': '1f680'
+    },
+    {
+      'id': 'explore',
+      'label': 'Khám phá kiến thức mới',
+      'icon': '🔬',
+      'noto': '1f30d'
+    },
   ];
 
   // Slide 5: Engagement expectation
   String? _selectedEngagement;
   final List<Map<String, String>> _engagementOptions = [
-    {'id': '5min', 'label': '5 phút / ngày', 'tag': 'Đơn giản', 'icon': '⚡'},
+    {
+      'id': '5min',
+      'label': '5 phút / ngày',
+      'tag': 'Đơn giản',
+      'icon': '⚡',
+      'noto': '26a1'
+    },
     {
       'id': '10min',
       'label': '10 phút / ngày',
       'tag': 'Bình thường',
-      'icon': '🕐'
+      'icon': '🕐',
+      'noto': '23f3'
     },
     {
       'id': '15min',
       'label': '15 phút / ngày',
       'tag': 'Có cố gắng',
-      'icon': '💪'
+      'icon': '💪',
+      'noto': '1f4aa'
     },
-    {'id': '20min', 'label': '20 phút / ngày', 'tag': 'Kỷ luật', 'icon': '🔥'},
+    {
+      'id': '20min',
+      'label': '20 phút / ngày',
+      'tag': 'Kỷ luật',
+      'icon': '🔥',
+      'noto': '1f525'
+    },
     {
       'id': '30min_plus',
       'label': '> 30 phút / ngày',
       'tag': 'Nghiêm túc',
-      'icon': '🏆'
+      'icon': '🏆',
+      'noto': '1f3c6'
     },
   ];
 
@@ -151,18 +213,21 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
       'id': 'yes_daily',
       'label': 'Có, nhắc tôi mỗi ngày',
       'icon': '🔔',
+      'noto': '1f514',
       'desc': 'Nhận thông báo nhắc học kèm câu nói truyền cảm hứng'
     },
     {
       'id': 'yes_sometimes',
       'label': 'Thỉnh thoảng thôi',
       'icon': '🔕',
+      'noto': '1f634',
       'desc': 'Chỉ nhắc khi tôi lâu không vào học'
     },
     {
       'id': 'no',
       'label': 'Không, cảm ơn',
       'icon': '❌',
+      'noto': '274c',
       'desc': 'Tôi sẽ tự nhớ'
     },
   ];
@@ -447,8 +512,7 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
                                 decoration: BoxDecoration(
                                   color: AppColors.bgSecondary,
                                   borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                      color: const Color(0x332D363D)),
+                                  border: Border.all(color: _ghostBorder),
                                 ),
                                 child: Row(
                                   children: [
@@ -564,32 +628,47 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
       },
       child: Scaffold(
         backgroundColor: AppColors.bgPrimary,
-        body: SafeArea(
-          child: FadeTransition(
-            opacity: _fadeAnimation,
-            child: Column(
-              children: [
-                _buildHeader(),
-                _buildProgressBar(),
-                Expanded(
-                  child: PageView(
-                    controller: _pageController,
-                    physics: const NeverScrollableScrollPhysics(),
-                    onPageChanged: (page) =>
-                        setState(() => _currentPage = page),
-                    children: [
-                      _buildNicknameSlide(),
-                      ..._featureIntroSlides.map(_buildFeatureIntroSlide),
-                      _buildAcquisitionSlide(),
-                      _buildSegmentSlide(),
-                      _buildGoalsSlide(),
-                      _buildEngagementSlide(),
-                      _buildNotificationSlide(),
-                    ],
-                  ),
-                ),
-                _buildBottomButtons(),
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              stops: const [0.0, 0.28, 0.65, 1.0],
+              colors: [
+                AppColors.purpleNeon.withValues(alpha: 0.09),
+                AppColors.bgPrimary,
+                AppColors.bgPrimary,
+                AppColors.primaryLight.withValues(alpha: 0.04),
               ],
+            ),
+          ),
+          child: SafeArea(
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: Column(
+                children: [
+                  _buildHeader(),
+                  _buildProgressBar(),
+                  Expanded(
+                    child: PageView(
+                      controller: _pageController,
+                      physics: const NeverScrollableScrollPhysics(),
+                      onPageChanged: (page) =>
+                          setState(() => _currentPage = page),
+                      children: [
+                        _buildNicknameSlide(),
+                        ..._featureIntroSlides.map(_buildFeatureIntroSlide),
+                        _buildAcquisitionSlide(),
+                        _buildSegmentSlide(),
+                        _buildGoalsSlide(),
+                        _buildEngagementSlide(),
+                        _buildNotificationSlide(),
+                      ],
+                    ),
+                  ),
+                  _buildBottomButtons(),
+                ],
+              ),
             ),
           ),
         ),
@@ -599,65 +678,170 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
 
   Widget _buildHeader() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
       child: Row(
         children: [
-          if (_currentPage > 0)
-            GestureDetector(
-              onTap: _previousPage,
+          SizedBox(
+            width: 48,
+            child: _currentPage > 0
+                ? Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: _previousPage,
+                      borderRadius: BorderRadius.circular(12),
+                      child: Ink(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: AppColors.bgSecondary,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: _ghostBorder),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.2),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: const Icon(Icons.arrow_back_rounded,
+                            color: AppColors.textSecondary, size: 20),
+                      ),
+                    ),
+                  )
+                : const SizedBox.shrink(),
+          ),
+          Expanded(
+            child: Center(
               child: Container(
-                padding: const EdgeInsets.all(8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 decoration: BoxDecoration(
                   color: AppColors.bgSecondary,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: const Color(0x332D363D)),
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(color: _ghostBorder),
                 ),
-                child: const Icon(Icons.arrow_back_rounded,
-                    color: AppColors.textSecondary, size: 20),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Bước ',
+                      style: AppTextStyles.caption
+                          .copyWith(color: AppColors.textTertiary),
+                    ),
+                    Text(
+                      '${_currentPage + 1}',
+                      style: AppTextStyles.labelMedium.copyWith(
+                        color: AppColors.primaryLight,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Text(
+                      ' / $_totalSlides',
+                      style: AppTextStyles.caption
+                          .copyWith(color: AppColors.textTertiary),
+                    ),
+                  ],
+                ),
               ),
-            )
-          else
-            const SizedBox(width: 36),
-          const Spacer(),
-          Text(
-            '${_currentPage + 1} / $_totalSlides',
-            style: AppTextStyles.labelMedium
-                .copyWith(color: AppColors.textTertiary),
+            ),
           ),
-          const Spacer(),
-          const SizedBox(width: 36),
+          const SizedBox(width: 48),
         ],
       ),
     );
   }
 
   Widget _buildProgressBar() {
+    final t = (_currentPage + 1) / _totalSlides;
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Row(
-        children: List.generate(_totalSlides, (index) {
-          final isActive = index <= _currentPage;
-          return Expanded(
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              height: 4,
-              margin: const EdgeInsets.symmetric(horizontal: 2),
-              decoration: BoxDecoration(
-                gradient: isActive ? AppGradients.primary : null,
-                color: isActive ? null : AppColors.bgTertiary,
-                borderRadius: BorderRadius.circular(2),
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final w = constraints.maxWidth;
+          return Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                height: 6,
+                width: w,
+                decoration: BoxDecoration(
+                  color: AppColors.bgTertiary,
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(
+                    color: AppColors.borderPrimary.withValues(alpha: 0.35),
+                  ),
+                ),
               ),
-            ),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 380),
+                curve: Curves.easeOutCubic,
+                height: 6,
+                width: w * t,
+                decoration: BoxDecoration(
+                  gradient: AppGradients.primary,
+                  borderRadius: BorderRadius.circular(999),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.purpleNeon.withValues(alpha: 0.45),
+                      blurRadius: 10,
+                      spreadRadius: 0,
+                    ),
+                  ],
+                ),
+              ),
+            ],
           );
-        }),
+        },
       ),
+    );
+  }
+
+  Widget _buildEyebrow(String label) {
+    return Text(
+      label,
+      textAlign: TextAlign.center,
+      style: AppTextStyles.labelSmall.copyWith(
+        letterSpacing: 2,
+        color: AppColors.textTertiary,
+        fontWeight: FontWeight.w700,
+        fontSize: 10,
+      ),
+    );
+  }
+
+  /// Hero Lottie ở đầu các màn hỏi (thay icon Material).
+  Widget _buildSlideHeaderNoto(
+    String notoHex,
+    String fallbackEmoji,
+    double size,
+  ) {
+    return OnboardingNotoLottie(
+      notoHex: notoHex,
+      size: size,
+      fallbackEmoji: fallbackEmoji,
+      repeat: true,
     );
   }
 
   Widget _buildBottomButtons() {
     final isLastPage = _currentPage == _totalSlides - 1;
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+      decoration: BoxDecoration(
+        color: AppColors.bgPrimary.withValues(alpha: 0.92),
+        border: Border(
+          top: BorderSide(
+            color: AppColors.borderPrimary.withValues(alpha: 0.35),
+          ),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.35),
+            blurRadius: 24,
+            offset: const Offset(0, -6),
+          ),
+        ],
+      ),
       child: SizedBox(
         width: double.infinity,
         child: GamingButton(
@@ -678,43 +862,64 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
 
   Widget _buildNicknameSlide() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
       child: Column(
         children: [
-          const SizedBox(height: 28),
+          _buildEyebrow('BẮT ĐẦU'),
+          const SizedBox(height: 20),
           SizedBox(
-            height: 120,
+            height: 132,
             child: Stack(
               alignment: Alignment.center,
               clipBehavior: Clip.none,
               children: [
                 Container(
-                  width: 100,
-                  height: 100,
+                  width: 108,
+                  height: 108,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        AppColors.purpleNeon.withValues(alpha: 0.35),
+                        AppColors.primaryLight.withValues(alpha: 0.12),
+                      ],
+                    ),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.purpleNeon.withValues(alpha: 0.22),
-                        blurRadius: 28,
-                        offset: const Offset(0, 12),
+                        color: AppColors.purpleNeon.withValues(alpha: 0.28),
+                        blurRadius: 32,
+                        spreadRadius: 2,
+                        offset: const Offset(0, 14),
                       ),
                     ],
                   ),
                 ),
+                Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: AppColors.primaryLight.withValues(alpha: 0.35),
+                      width: 2,
+                    ),
+                  ),
+                ),
                 Positioned(
-                  bottom: -8,
+                  bottom: -10,
                   child: SvgPicture.asset(
                     'assets/mascot/idle.svg',
-                    width: 118,
-                    height: 118,
+                    width: 124,
+                    height: 124,
                     fit: BoxFit.contain,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 28),
           Wrap(
             alignment: WrapAlignment.center,
             crossAxisAlignment: WrapCrossAlignment.center,
@@ -734,34 +939,51 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           Text(
             'Mình sẽ giúp bạn cá nhân hóa trải nghiệm học tập.\nHãy cho mình biết tên bạn nhé!',
             textAlign: TextAlign.center,
             style: AppTextStyles.bodyMedium
-                .copyWith(color: AppColors.textSecondary),
+                .copyWith(color: AppColors.textSecondary, height: 1.45),
           ),
-          const SizedBox(height: 40),
-          Container(
-            decoration: BoxDecoration(
-              color: AppColors.bgSecondary,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0x332D363D)),
-            ),
-            child: TextField(
-              controller: _nicknameController,
-              style: AppTextStyles.bodyLarge
-                  .copyWith(color: AppColors.textPrimary),
-              textAlign: TextAlign.center,
-              onChanged: (_) => setState(() {}),
-              decoration: InputDecoration(
-                hintText: 'Nhập tên của bạn',
-                hintStyle: AppTextStyles.bodyLarge
-                    .copyWith(color: AppColors.textTertiary),
-                border: InputBorder.none,
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+          const SizedBox(height: 36),
+          TextField(
+            controller: _nicknameController,
+            style:
+                AppTextStyles.bodyLarge.copyWith(color: AppColors.textPrimary),
+            textAlign: TextAlign.center,
+            textCapitalization: TextCapitalization.words,
+            onChanged: (_) => setState(() {}),
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: AppColors.bgSecondary,
+              hintText: 'Nhập tên của bạn',
+              hintStyle: AppTextStyles.bodyLarge
+                  .copyWith(color: AppColors.textTertiary),
+              prefixIcon: const Padding(
+                padding: EdgeInsets.only(left: 16, right: 8),
+                child: Icon(Icons.person_outline_rounded,
+                    color: AppColors.textTertiary, size: 22),
               ),
+              prefixIconConstraints:
+                  const BoxConstraints(minWidth: 48, minHeight: 0),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(18),
+                borderSide: const BorderSide(color: _ghostBorder),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(18),
+                borderSide: const BorderSide(color: _ghostBorder),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(18),
+                borderSide: BorderSide(
+                  color: AppColors.primaryLight.withValues(alpha: 0.65),
+                  width: 1.5,
+                ),
+              ),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 18),
             ),
           ),
         ],
@@ -773,37 +995,63 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
 
   Widget _buildFeatureIntroSlide(Map<String, String> slide) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
       child: Column(
         children: [
-          const SizedBox(height: 36),
+          _buildEyebrow('KHÁM PHÁ'),
+          const SizedBox(height: 28),
           Container(
-            width: 110,
-            height: 110,
+            width: 118,
+            height: 118,
             decoration: BoxDecoration(
-              gradient: AppGradients.primary,
-              borderRadius: BorderRadius.circular(30),
+              borderRadius: BorderRadius.circular(32),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.purpleNeon.withValues(alpha: 0.35),
-                  blurRadius: 24,
-                  spreadRadius: 2,
+                  color: AppColors.purpleNeon.withValues(alpha: 0.4),
+                  blurRadius: 28,
+                  spreadRadius: 0,
+                  offset: const Offset(0, 10),
+                ),
+                BoxShadow(
+                  color: AppColors.primaryLight.withValues(alpha: 0.15),
+                  blurRadius: 40,
+                  spreadRadius: 4,
                 ),
               ],
             ),
-            child: Center(
-              child: Text(
-                slide['hero'] ?? '✨',
-                style: const TextStyle(fontSize: 52),
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: AppGradients.primary,
+                borderRadius: BorderRadius.circular(32),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.12),
+                  width: 1,
+                ),
+              ),
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: OnboardingNotoLottie(
+                    notoHex: slide['noto'] ?? '1f31f',
+                    size: 92,
+                    fallbackEmoji: slide['hero'] ?? '✨',
+                    repeat: true,
+                  ),
+                ),
               ),
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 28),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(slide['icon'] ?? '✨', style: const TextStyle(fontSize: 24)),
-              const SizedBox(width: 8),
+              OnboardingNotoLottie(
+                notoHex: slide['noto'] ?? '1f31f',
+                size: 34,
+                fallbackEmoji: slide['icon'] ?? '✨',
+                repeat: true,
+              ),
+              const SizedBox(width: 10),
               Flexible(
                 child: AppTextStyles.gradientText(
                   slide['title'] ?? '',
@@ -813,36 +1061,53 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 18),
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
             decoration: BoxDecoration(
               color: AppColors.bgSecondary,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0x332D363D)),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: _ghostBorder),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.12),
+                  blurRadius: 16,
+                  offset: const Offset(0, 6),
+                ),
+              ],
             ),
             child: Text(
               slide['subtitle'] ?? '',
               textAlign: TextAlign.center,
               style: AppTextStyles.bodyMedium
-                  .copyWith(color: AppColors.textSecondary, height: 1.5),
+                  .copyWith(color: AppColors.textSecondary, height: 1.55),
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 22),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: AppColors.purpleNeon.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(12),
+              color: AppColors.purpleNeon.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(14),
               border: Border.all(
-                color: AppColors.primaryLight.withValues(alpha: 0.28),
+                color: AppColors.primaryLight.withValues(alpha: 0.32),
               ),
             ),
-            child: Text(
-              'Vuốt tiếp để khám phá thêm',
-              style:
-                  AppTextStyles.caption.copyWith(color: AppColors.primaryLight),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.touch_app_rounded,
+                    size: 18, color: AppColors.primaryLight),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    'Nhấn Tiếp tục để xem thêm',
+                    style: AppTextStyles.caption
+                        .copyWith(color: AppColors.primaryLight),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -852,12 +1117,12 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
 
   Widget _buildAcquisitionSlide() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
       child: Column(
         children: [
-          const SizedBox(height: 20),
-          const Icon(Icons.campaign_rounded,
-              size: 48, color: AppColors.cyanNeon),
+          _buildEyebrow('NGUỒN TĂNG TRƯỞNG'),
+          const SizedBox(height: 16),
+          _buildSlideHeaderNoto('1f4e3', '📢', 56),
           const SizedBox(height: 16),
           AppTextStyles.gradientText(
               'Bạn biết đến app từ đâu?', AppTextStyles.h3, AppGradients.cyan),
@@ -869,6 +1134,7 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
           ..._acquisitionOptions.map((opt) {
             final isSelected = _selectedAcquisition == opt['id'];
             return _buildSingleSelectOption(
+              notoHex: opt['noto']!,
               icon: opt['icon']!,
               label: opt['label']!,
               isSelected: isSelected,
@@ -886,12 +1152,12 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
 
   Widget _buildSegmentSlide() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
       child: Column(
         children: [
-          const SizedBox(height: 20),
-          const Icon(Icons.people_rounded,
-              size: 48, color: AppColors.purpleNeon),
+          _buildEyebrow('NHÓM NGƯỜI DÙNG'),
+          const SizedBox(height: 16),
+          _buildSlideHeaderNoto('1f91d', '🤝', 56),
           const SizedBox(height: 16),
           AppTextStyles.gradientText(
               'Bạn là ai?', AppTextStyles.h3, AppGradients.purplePink),
@@ -903,6 +1169,7 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
           ..._segmentOptions.map((opt) {
             final isSelected = _selectedSegment == opt['id'];
             return _buildDetailedOption(
+              notoHex: opt['noto']!,
               icon: opt['icon']!,
               label: opt['label']!,
               desc: opt['desc']!,
@@ -921,12 +1188,12 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
 
   Widget _buildGoalsSlide() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
       child: Column(
         children: [
-          const SizedBox(height: 20),
-          const Icon(Icons.flag_rounded,
-              size: 48, color: AppColors.successNeon),
+          _buildEyebrow('MỤC TIÊU HỌC TẬP'),
+          const SizedBox(height: 16),
+          _buildSlideHeaderNoto('1f3af', '🎯', 56),
           const SizedBox(height: 16),
           AppTextStyles.gradientText(
               'Bạn học để làm gì?', AppTextStyles.h3, AppGradients.success),
@@ -952,7 +1219,8 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
                   });
                 },
                 child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
+                  duration: const Duration(milliseconds: 220),
+                  curve: Curves.easeOutCubic,
                   padding:
                       const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
                   decoration: BoxDecoration(
@@ -960,24 +1228,35 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
                     color: isSelected ? null : AppColors.bgSecondary,
                     borderRadius: BorderRadius.circular(30),
                     border: Border.all(
-                      color: isSelected
-                          ? AppColors.successNeon
-                          : const Color(0x332D363D),
+                      color: isSelected ? AppColors.successNeon : _ghostBorder,
                       width: isSelected ? 2 : 1,
                     ),
                     boxShadow: isSelected
                         ? [
                             BoxShadow(
-                                color: AppColors.successNeon
-                                    .withValues(alpha: 0.3),
-                                blurRadius: 12)
+                              color:
+                                  AppColors.successNeon.withValues(alpha: 0.35),
+                              blurRadius: 14,
+                              offset: const Offset(0, 5),
+                            ),
                           ]
-                        : null,
+                        : [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.08),
+                              blurRadius: 8,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(opt['icon']!, style: const TextStyle(fontSize: 18)),
+                      OnboardingNotoLottie(
+                        notoHex: opt['noto']!,
+                        size: 22,
+                        fallbackEmoji: opt['icon']!,
+                        repeat: true,
+                      ),
                       const SizedBox(width: 8),
                       Text(
                         opt['label']!,
@@ -1006,12 +1285,12 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
 
   Widget _buildEngagementSlide() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
       child: Column(
         children: [
-          const SizedBox(height: 20),
-          const Icon(Icons.schedule_rounded,
-              size: 48, color: AppColors.orangeNeon),
+          _buildEyebrow('CAM KẾT THỜI GIAN'),
+          const SizedBox(height: 16),
+          _buildSlideHeaderNoto('23f3', '⏳', 56),
           const SizedBox(height: 16),
           AppTextStyles.gradientText('Bạn muốn học mỗi ngày bao lâu?',
               AppTextStyles.h3, AppGradients.pinkOrange),
@@ -1030,31 +1309,43 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
                   setState(() => _selectedEngagement = opt['id']);
                 },
                 child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
+                  duration: const Duration(milliseconds: 220),
+                  curve: Curves.easeOutCubic,
                   padding:
                       const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                   decoration: BoxDecoration(
                     gradient: isSelected ? AppGradients.pinkOrange : null,
                     color: isSelected ? null : AppColors.bgSecondary,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(18),
                     border: Border.all(
-                      color: isSelected
-                          ? AppColors.orangeNeon
-                          : const Color(0x332D363D),
+                      color: isSelected ? AppColors.orangeNeon : _ghostBorder,
                       width: isSelected ? 2 : 1,
                     ),
                     boxShadow: isSelected
                         ? [
                             BoxShadow(
-                                color:
-                                    AppColors.orangeNeon.withValues(alpha: 0.3),
-                                blurRadius: 16)
+                              color:
+                                  AppColors.orangeNeon.withValues(alpha: 0.35),
+                              blurRadius: 18,
+                              offset: const Offset(0, 6),
+                            )
                           ]
-                        : null,
+                        : [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.08),
+                              blurRadius: 8,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
                   ),
                   child: Row(
                     children: [
-                      Text(opt['icon']!, style: const TextStyle(fontSize: 28)),
+                      OnboardingNotoLottie(
+                        notoHex: opt['noto']!,
+                        size: 34,
+                        fallbackEmoji: opt['icon']!,
+                        repeat: true,
+                      ),
                       const SizedBox(width: 14),
                       Expanded(
                         child: Column(
@@ -1093,12 +1384,12 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
 
   Widget _buildNotificationSlide() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
       child: Column(
         children: [
-          const SizedBox(height: 20),
-          const Icon(Icons.notifications_active_rounded,
-              size: 48, color: AppColors.coinGold),
+          _buildEyebrow('NHẮC NHỞ'),
+          const SizedBox(height: 16),
+          _buildSlideHeaderNoto('1f514', '🔔', 56),
           const SizedBox(height: 16),
           AppTextStyles.gradientText(
               'Nhắc học mỗi ngày?', AppTextStyles.h3, AppGradients.streak),
@@ -1113,6 +1404,7 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
           ..._notificationOptions.map((opt) {
             final isSelected = _selectedNotification == opt['id'];
             return _buildDetailedOption(
+              notoHex: opt['noto']!,
               icon: opt['icon']!,
               label: opt['label']!,
               desc: opt['desc']!,
@@ -1133,7 +1425,12 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
             ),
             child: Row(
               children: [
-                const Text('💬', style: TextStyle(fontSize: 20)),
+                const OnboardingNotoLottie(
+                  notoHex: '1f4ac',
+                  size: 26,
+                  fallbackEmoji: '💬',
+                  repeat: true,
+                ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
@@ -1154,6 +1451,7 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
   // ─── Shared Widgets ───
 
   Widget _buildSingleSelectOption({
+    required String notoHex,
     required String icon,
     required String label,
     required bool isSelected,
@@ -1169,26 +1467,40 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
           onTap();
         },
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOutCubic,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 17),
           decoration: BoxDecoration(
             gradient: isSelected ? gradient : null,
             color: isSelected ? null : AppColors.bgSecondary,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(18),
             border: Border.all(
-                color: isSelected ? activeColor : const Color(0x332D363D),
+                color: isSelected ? activeColor : _ghostBorder,
                 width: isSelected ? 2 : 1),
             boxShadow: isSelected
                 ? [
                     BoxShadow(
-                        color: activeColor.withValues(alpha: 0.3),
-                        blurRadius: 12)
+                      color: activeColor.withValues(alpha: 0.35),
+                      blurRadius: 16,
+                      offset: const Offset(0, 6),
+                    ),
                   ]
-                : null,
+                : [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
           ),
           child: Row(
             children: [
-              Text(icon, style: const TextStyle(fontSize: 24)),
+              OnboardingNotoLottie(
+                notoHex: notoHex,
+                size: 30,
+                fallbackEmoji: icon,
+                repeat: true,
+              ),
               const SizedBox(width: 14),
               Expanded(
                 child: Text(label,
@@ -1207,6 +1519,7 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
   }
 
   Widget _buildDetailedOption({
+    required String notoHex,
     required String icon,
     required String label,
     required String desc,
@@ -1223,26 +1536,40 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
           onTap();
         },
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOutCubic,
           padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
             gradient: isSelected ? gradient : null,
             color: isSelected ? null : AppColors.bgSecondary,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(18),
             border: Border.all(
-                color: isSelected ? activeColor : const Color(0x332D363D),
+                color: isSelected ? activeColor : _ghostBorder,
                 width: isSelected ? 2 : 1),
             boxShadow: isSelected
                 ? [
                     BoxShadow(
-                        color: activeColor.withValues(alpha: 0.3),
-                        blurRadius: 16)
+                      color: activeColor.withValues(alpha: 0.35),
+                      blurRadius: 18,
+                      offset: const Offset(0, 6),
+                    ),
                   ]
-                : null,
+                : [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
           ),
           child: Row(
             children: [
-              Text(icon, style: const TextStyle(fontSize: 30)),
+              OnboardingNotoLottie(
+                notoHex: notoHex,
+                size: 36,
+                fallbackEmoji: icon,
+                repeat: true,
+              ),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
@@ -1281,50 +1608,92 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
     required List<Color> gradient,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: AppColors.bgSecondary,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: gradient[0].withValues(alpha: 0.3)),
-          boxShadow: [
-            BoxShadow(
-                color: gradient[0].withValues(alpha: 0.1),
-                blurRadius: 16,
-                offset: const Offset(0, 4))
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: gradient),
-                  borderRadius: BorderRadius.circular(16)),
-              child: Icon(icon, color: Colors.white, size: 28),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(22),
+        child: Ink(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(22),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                gradient[0].withValues(alpha: 0.45),
+                gradient.length > 1
+                    ? gradient[1].withValues(alpha: 0.2)
+                    : gradient[0].withValues(alpha: 0.15),
+              ],
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title,
-                      style: AppTextStyles.bodyBold.copyWith(
-                          color: AppColors.textPrimary, fontSize: 16)),
-                  const SizedBox(height: 4),
-                  Text(subtitle,
-                      style: AppTextStyles.bodySmall
-                          .copyWith(color: AppColors.textSecondary)),
-                ],
+            boxShadow: [
+              BoxShadow(
+                color: gradient[0].withValues(alpha: 0.18),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
               ),
+            ],
+          ),
+          child: Container(
+            margin: const EdgeInsets.all(1.5),
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: AppColors.bgSecondary,
+              borderRadius: BorderRadius.circular(20.5),
+              border: Border.all(color: _ghostBorder),
             ),
-            const SizedBox(width: 8),
-            Icon(Icons.arrow_forward_ios_rounded, color: gradient[0], size: 18),
-          ],
+            child: Row(
+              children: [
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: gradient,
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: gradient[0].withValues(alpha: 0.4),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Icon(icon, color: Colors.white, size: 28),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: AppTextStyles.bodyBold.copyWith(
+                          color: AppColors.textPrimary,
+                          fontSize: 16,
+                          height: 1.2,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        subtitle,
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.textSecondary,
+                          height: 1.35,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Icon(Icons.arrow_forward_ios_rounded,
+                    color: gradient[0].withValues(alpha: 0.9), size: 18),
+              ],
+            ),
+          ),
         ),
       ),
     );
