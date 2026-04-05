@@ -7,6 +7,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:edtech_mobile/core/constants/api_constants.dart';
 import 'package:edtech_mobile/core/services/auth_service.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 import 'package:edtech_mobile/features/auth/utils/google_js_stub.dart'
     if (dart.library.html) 'package:edtech_mobile/features/auth/utils/google_js_web.dart';
@@ -134,7 +135,7 @@ class _LoginScreenState extends State<LoginScreen>
                       const SizedBox(height: 48),
                       _buildLoginCard(),
                       const SizedBox(height: 16),
-                        if (_showGoogleOnThisPlatform && !_isWindowsDesktop) ...[
+                      if (_showGoogleOnThisPlatform && !_isWindowsDesktop) ...[
                         _buildGoogleSignIn(),
                         const SizedBox(height: 16),
                       ],
@@ -155,53 +156,64 @@ class _LoginScreenState extends State<LoginScreen>
   Widget _buildLogo() {
     return Column(
       children: [
-        // Animated logo with gradient glow
-        Container(
-          width: 100,
-          height: 100,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: AppGradients.primary,
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.purpleNeon.withOpacity(0.5),
-                blurRadius: 30,
-                spreadRadius: 5,
+        SizedBox(
+          height: 132,
+          child: Stack(
+            alignment: Alignment.center,
+            clipBehavior: Clip.none,
+            children: [
+              Positioned(
+                bottom: 0,
+                child: Container(
+                  width: 112,
+                  height: 112,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.purpleNeon.withValues(alpha: 0.22),
+                        blurRadius: 32,
+                        spreadRadius: 0,
+                        offset: const Offset(0, 12),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-              BoxShadow(
-                color: AppColors.pinkNeon.withOpacity(0.3),
-                blurRadius: 50,
-                spreadRadius: 10,
+              Positioned(
+                bottom: -8,
+                child: SvgPicture.asset(
+                  'assets/mascot/happy.svg',
+                  width: 128,
+                  height: 128,
+                  fit: BoxFit.contain,
+                ),
               ),
             ],
           ),
-          child: const Icon(
-            Icons.rocket_launch_rounded,
-            size: 50,
-            color: Colors.white,
-          ),
         ),
-        const SizedBox(height: 24),
-        // Title with gradient text
+        const SizedBox(height: 20),
         ShaderMask(
           shaderCallback: (bounds) => AppGradients.primary.createShader(
             Rect.fromLTWH(0, 0, bounds.width, bounds.height),
           ),
+          blendMode: BlendMode.srcIn,
           child: Text(
-            'EDTECH AI',
+            'GAMISTU',
             style: AppTextStyles.h1.copyWith(
               color: Colors.white,
-              fontSize: 36,
-              letterSpacing: 4,
+              fontSize: 34,
+              letterSpacing: 6,
             ),
           ),
         ),
         const SizedBox(height: 8),
         Text(
-          'Nâng tầm học tập của bạn',
+          'Học cá nhân hóa, tinh tế',
           style: AppTextStyles.bodyMedium.copyWith(
             color: AppColors.textSecondary,
           ),
+          textAlign: TextAlign.center,
         ),
       ],
     );
@@ -213,12 +225,12 @@ class _LoginScreenState extends State<LoginScreen>
       decoration: BoxDecoration(
         color: AppColors.bgSecondary,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.borderPrimary),
+        border: Border.all(color: const Color(0x332D363D)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
+            color: Colors.black.withValues(alpha: 0.35),
+            blurRadius: 28,
+            offset: const Offset(0, 14),
           ),
         ],
       ),
@@ -231,21 +243,21 @@ class _LoginScreenState extends State<LoginScreen>
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppColors.cyanNeon.withOpacity(0.15),
+                  color: AppColors.purpleNeon.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(
                   Icons.login_rounded,
-                  color: AppColors.cyanNeon,
+                  color: AppColors.primaryLight,
                   size: 20,
                 ),
               ),
               const SizedBox(width: 12),
               Text(
-                'ĐĂNG NHẬP',
+                'Đăng nhập',
                 style: AppTextStyles.h4.copyWith(
                   color: AppColors.textPrimary,
-                  letterSpacing: 2,
+                  letterSpacing: 0.5,
                 ),
               ),
             ],
@@ -306,9 +318,10 @@ class _LoginScreenState extends State<LoginScreen>
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.errorNeon.withOpacity(0.1),
+                color: AppColors.errorNeon.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.errorNeon.withOpacity(0.3)),
+                border: Border.all(
+                    color: AppColors.errorNeon.withValues(alpha: 0.3)),
               ),
               child: Row(
                 children: [
@@ -335,6 +348,7 @@ class _LoginScreenState extends State<LoginScreen>
             onPressed: _isLoading ? null : _handleLogin,
             isLoading: _isLoading,
             icon: Icons.arrow_forward_rounded,
+            glowColor: AppColors.primaryLight,
           ),
         ],
       ),
@@ -376,18 +390,21 @@ class _LoginScreenState extends State<LoginScreen>
             prefixIcon: Icon(icon, color: AppColors.textTertiary, size: 20),
             suffixIcon: suffixIcon,
             filled: true,
-            fillColor: AppColors.bgTertiary,
+            fillColor: AppColors.bgOverlay,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.borderPrimary),
+              borderSide: const BorderSide(color: Color(0x332D363D)),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.cyanNeon, width: 2),
+              borderSide: BorderSide(
+                color: AppColors.purpleNeon.withValues(alpha: 0.45),
+                width: 1,
+              ),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
@@ -460,9 +477,9 @@ class _LoginScreenState extends State<LoginScreen>
       );
 
       final account = await googleSignIn.signIn().timeout(
-        const Duration(minutes: 2),
-        onTimeout: () => null,
-      );
+            const Duration(minutes: 2),
+            onTimeout: () => null,
+          );
       if (account == null) {
         if (kDebugMode) {
           debugPrint('[LOGIN][GOOGLE] account is null (cancelled or timeout)');
@@ -532,7 +549,7 @@ class _LoginScreenState extends State<LoginScreen>
         decoration: BoxDecoration(
           color: AppColors.bgSecondary,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.borderPrimary),
+          border: Border.all(color: const Color(0x33474554)),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -541,7 +558,8 @@ class _LoginScreenState extends State<LoginScreen>
               const SizedBox(
                 width: 20,
                 height: 20,
-                child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.textPrimary),
+                child: CircularProgressIndicator(
+                    strokeWidth: 2, color: AppColors.textPrimary),
               )
             else ...[
               const Text(
@@ -597,7 +615,7 @@ class _LoginScreenState extends State<LoginScreen>
           child: Text(
             'Đăng ký ngay',
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.cyanNeon,
+              color: AppColors.primaryLight,
               fontWeight: FontWeight.w600,
             ),
           ),

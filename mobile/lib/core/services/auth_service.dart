@@ -60,7 +60,10 @@ class AuthService {
           try {
             dataMap = jsonDecode(responseData) as Map<String, dynamic>;
           } catch (_) {
-            return {'success': false, 'message': 'Định dạng phản hồi không hợp lệ'};
+            return {
+              'success': false,
+              'message': 'Định dạng phản hồi không hợp lệ'
+            };
           }
         } else {
           return {'success': false, 'message': 'Phản hồi không đúng định dạng'};
@@ -95,8 +98,7 @@ class AuthService {
           return {
             'success': false,
             'retryable': true,
-            'message':
-                'Mạng hoặc máy chủ phản hồi chậm. Đang thử lại tự động…',
+            'message': 'Mạng hoặc máy chủ phản hồi chậm. Đang thử lại tự động…',
           };
         }
       }
@@ -124,7 +126,8 @@ class AuthService {
       );
 
       if (response.statusCode == 201 || response.statusCode == 200) {
-        final token = response.data['accessToken'] ?? response.data['access_token'];
+        final token =
+            response.data['accessToken'] ?? response.data['access_token'];
         if (token != null) {
           await _apiClient.saveToken(token);
           _onAuthSuccess();
@@ -144,14 +147,14 @@ class AuthService {
       // Handle DioException
       if (e is DioException) {
         String errorMessage = 'Đăng ký thất bại';
-        
+
         // Try to extract error message from response
         if (e.response != null) {
           final data = e.response!.data;
           if (data is Map<String, dynamic>) {
-            errorMessage = data['message'] ?? 
-                          (data['error'] is String ? data['error'] : null) ??
-                          'Đăng ký thất bại';
+            errorMessage = data['message'] ??
+                (data['error'] is String ? data['error'] : null) ??
+                'Đăng ký thất bại';
           }
         } else if (e.type == DioExceptionType.connectionTimeout) {
           errorMessage = 'Hết thời gian kết nối. Vui lòng kiểm tra mạng.';
@@ -160,14 +163,14 @@ class AuthService {
         } else if (e.message != null) {
           errorMessage = e.message!;
         }
-        
+
         return {
           'success': false,
           'message': errorMessage,
           'statusCode': e.response?.statusCode,
         };
       }
-      
+
       return {
         'success': false,
         'message': e.toString(),
@@ -190,16 +193,18 @@ class AuthService {
 
       // Debug: Log response
       if (kDebugMode) {
-        debugPrint('[AuthService] Login response status: ${response.statusCode}');
-        debugPrint('[AuthService] Login response data type: ${response.data.runtimeType}');
+        debugPrint(
+            '[AuthService] Login response status: ${response.statusCode}');
+        debugPrint(
+            '[AuthService] Login response data type: ${response.data.runtimeType}');
         debugPrint('[AuthService] Login response data: ${response.data}');
       }
-      
+
       // Check if response is successful (200 or 201)
       if (response.statusCode == 200 || response.statusCode == 201) {
         // Parse response data
         final responseData = response.data;
-        
+
         // Handle both Map and String (JSON string) responses
         Map<String, dynamic> dataMap;
         if (responseData is Map<String, dynamic>) {
@@ -223,10 +228,10 @@ class AuthService {
             'message': 'Phản hồi không hợp lệ (${responseData.runtimeType})',
           };
         }
-        
+
         // Extract token (try both accessToken and access_token)
         final token = dataMap['accessToken'] ?? dataMap['access_token'];
-        
+
         if (token != null && token.toString().isNotEmpty) {
           await _apiClient.saveToken(token.toString());
           _onAuthSuccess();
@@ -264,21 +269,21 @@ class AuthService {
         if (e.response != null) {
           final statusCode = e.response!.statusCode;
           final data = e.response!.data;
-          
+
           String errorMessage = 'Đăng nhập thất bại';
           if (data is Map<String, dynamic>) {
-            errorMessage = data['message'] ?? 
-                          (data['error'] is String ? data['error'] : null) ??
-                          'Đăng nhập thất bại';
+            errorMessage = data['message'] ??
+                (data['error'] is String ? data['error'] : null) ??
+                'Đăng nhập thất bại';
           }
-          
+
           return {
             'success': false,
             'message': errorMessage,
             'statusCode': statusCode,
           };
         }
-        
+
         // Network errors
         String errorMessage = 'Đăng nhập thất bại';
         if (e.type == DioExceptionType.connectionTimeout) {
@@ -288,14 +293,14 @@ class AuthService {
         } else if (e.message != null) {
           errorMessage = e.message!;
         }
-        
+
         return {
           'success': false,
           'message': errorMessage,
           'statusCode': e.response?.statusCode,
         };
       }
-      
+
       return {
         'success': false,
         'message': e.toString(),
@@ -331,11 +336,16 @@ class AuthService {
         '/auth/forgot-password',
         data: {'email': email},
       );
-      return {'success': true, 'message': response.data['message'] ?? 'Email đã được gửi'};
+      return {
+        'success': true,
+        'message': response.data['message'] ?? 'Email đã được gửi'
+      };
     } catch (e) {
       if (e is DioException && e.response != null) {
         final data = e.response!.data;
-        final msg = data is Map ? (data['message'] ?? 'Có lỗi xảy ra') : 'Có lỗi xảy ra';
+        final msg = data is Map
+            ? (data['message'] ?? 'Có lỗi xảy ra')
+            : 'Có lỗi xảy ra';
         return {'success': false, 'message': msg.toString()};
       }
       return {'success': false, 'message': 'Không kết nối được server'};
@@ -377,4 +387,3 @@ class AuthService {
     }
   }
 }
-

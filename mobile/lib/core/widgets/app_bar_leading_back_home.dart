@@ -19,6 +19,7 @@ class AppBarLeadingBackAndHome extends StatelessWidget {
   final VoidCallback? onBack;
   final VoidCallback? onHome;
   final bool showHome;
+
   /// Mặc định [AppColors.textPrimary]; dùng khi AppBar nền sáng.
   final Color? iconColor;
 

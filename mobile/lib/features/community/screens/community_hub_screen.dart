@@ -37,18 +37,19 @@ class _CommunityHubScreenState extends State<CommunityHubScreen>
     return Scaffold(
       backgroundColor: AppColors.bgPrimary,
       appBar: AppBar(
-        backgroundColor: AppColors.bgSecondary,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         leading: const AppBarLeadingBackAndHome(),
         leadingWidth: 112,
         automaticallyImplyLeading: false,
         title: Text(
           _outer.index == 0 ? 'Cộng đồng' : 'Bạn bè',
-          style: const TextStyle(color: AppColors.textPrimary),
+          style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
         ),
         bottom: TabBar(
           controller: _outer,
-          indicatorColor: AppColors.purpleNeon,
-          labelColor: AppColors.purpleNeon,
+          indicatorColor: AppColors.primaryLight,
+          labelColor: AppColors.primaryLight,
           unselectedLabelColor: AppColors.textSecondary,
           tabs: const [
             Tab(text: 'Cộng đồng', icon: Icon(Icons.groups_rounded, size: 20)),

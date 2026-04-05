@@ -81,15 +81,15 @@ class StreakWeekCard extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColors.streakOrange.withOpacity(0.15),
-            AppColors.streakYellow.withOpacity(0.08),
+            AppColors.streakOrange.withValues(alpha: 0.15),
+            AppColors.streakYellow.withValues(alpha: 0.08),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: AppColors.streakOrange.withOpacity(0.35),
+          color: AppColors.streakOrange.withValues(alpha: 0.35),
           width: 1.5,
         ),
       ),
@@ -114,10 +114,10 @@ class StreakWeekCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
             decoration: BoxDecoration(
-              color: AppColors.bgSecondary.withOpacity(0.6),
+              color: AppColors.bgSecondary.withValues(alpha: 0.6),
               borderRadius: BorderRadius.circular(12),
-              border:
-                  Border.all(color: AppColors.borderPrimary.withOpacity(0.5)),
+              border: Border.all(
+                  color: const Color(0x332D363D).withValues(alpha: 0.55)),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -176,10 +176,10 @@ class StreakWeekCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
             decoration: BoxDecoration(
-              color: AppColors.streakOrange.withOpacity(0.12),
+              color: AppColors.streakOrange.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(10),
-              border:
-                  Border.all(color: AppColors.streakOrange.withOpacity(0.25)),
+              border: Border.all(
+                  color: AppColors.streakOrange.withValues(alpha: 0.25)),
             ),
             child: Row(
               children: [

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'colors.dart';
 
-/// Typography: Outfit (tiêu đề) + Be Vietnam Pro (nội dung tiếng Việt).
+/// Typography: Outfit (display) + Be Vietnam Pro (body tiếng Việt) + Manrope (label/chip).
 /// Dùng GoogleFonts thay vì `fontFamily` chuỗi để font thực sự được tải và hiển thị đúng dấu.
 class AppTextStyles {
   AppTextStyles._();
@@ -74,21 +74,21 @@ class AppTextStyles {
       );
 
   // ─── Labels ────────────────────────────────────────────────────────
-  static TextStyle get labelLarge => GoogleFonts.beVietnamPro(
+  static TextStyle get labelLarge => GoogleFonts.manrope(
         fontSize: 14,
         fontWeight: FontWeight.w600,
         color: AppColors.textPrimary,
         letterSpacing: 0.2,
       );
 
-  static TextStyle get labelMedium => GoogleFonts.beVietnamPro(
+  static TextStyle get labelMedium => GoogleFonts.manrope(
         fontSize: 12,
         fontWeight: FontWeight.w500,
         color: AppColors.textSecondary,
         letterSpacing: 0.15,
       );
 
-  static TextStyle get labelSmall => GoogleFonts.beVietnamPro(
+  static TextStyle get labelSmall => GoogleFonts.manrope(
         fontSize: 10,
         fontWeight: FontWeight.w500,
         color: AppColors.textTertiary,

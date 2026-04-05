@@ -181,7 +181,7 @@ class _GlowAnimationState extends State<GlowAnimation>
           decoration: BoxDecoration(
             boxShadow: [
               BoxShadow(
-                color: widget.glowColor.withOpacity(0.6),
+                color: widget.glowColor.withValues(alpha: 0.6),
                 blurRadius: _animation.value,
                 spreadRadius: _animation.value / 4,
               ),
@@ -447,7 +447,7 @@ class _XPGainAnimationState extends State<XPGainAnimation>
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.xpGold.withOpacity(0.5),
+                      color: AppColors.xpGold.withValues(alpha: 0.5),
                       blurRadius: 10,
                     ),
                   ],
@@ -552,7 +552,7 @@ class _CoinGainAnimationState extends State<CoinGainAnimation>
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.coinGold.withOpacity(0.5),
+                      color: AppColors.coinGold.withValues(alpha: 0.5),
                       blurRadius: 10,
                     ),
                   ],

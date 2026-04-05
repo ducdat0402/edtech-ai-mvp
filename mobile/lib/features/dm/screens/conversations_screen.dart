@@ -117,13 +117,13 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
       decoration: BoxDecoration(
         color: AppColors.bgSecondary,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.borderPrimary),
+        border: Border.all(color: const Color(0x332D363D)),
       ),
       child: ListTile(
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         leading: CircleAvatar(
-          backgroundColor: AppColors.purpleNeon.withOpacity(0.2),
+          backgroundColor: AppColors.purpleNeon.withValues(alpha: 0.2),
           child: Text(
             peerName.isNotEmpty ? peerName[0].toUpperCase() : '?',
             style: const TextStyle(

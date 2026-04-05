@@ -83,7 +83,7 @@ class ProfileCompetencyPreviewRow extends StatelessWidget {
           child: _PreviewCard(
             title: 'Năng lực học tập',
             subtitle: 'Chạm để xem chi tiết',
-            color: AppColors.cyanNeon,
+            color: AppColors.primaryLight,
             bgSecondary: bgSecondary,
             borderColor: borderColor,
             normalizedValues: learningV,

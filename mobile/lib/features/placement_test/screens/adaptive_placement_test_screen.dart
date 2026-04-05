@@ -210,8 +210,8 @@ class _AdaptivePlacementTestScreenState
               gravity: 0.1,
               colors: const [
                 AppColors.purpleNeon,
+                AppColors.primaryLight,
                 AppColors.pinkNeon,
-                AppColors.cyanNeon,
                 AppColors.xpGold,
                 AppColors.successNeon,
               ],
@@ -255,9 +255,10 @@ class _AdaptivePlacementTestScreenState
           margin: const EdgeInsets.only(right: 16),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: _getDifficultyColor().withOpacity(0.15),
+            color: _getDifficultyColor().withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: _getDifficultyColor().withOpacity(0.3)),
+            border:
+                Border.all(color: _getDifficultyColor().withValues(alpha: 0.3)),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -308,7 +309,7 @@ class _AdaptivePlacementTestScreenState
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const CircularProgressIndicator(color: AppColors.purpleNeon),
+          const CircularProgressIndicator(color: AppColors.primaryLight),
           const SizedBox(height: 24),
           Text(
             'Đang chuẩn bị bài kiểm tra...',
@@ -337,7 +338,7 @@ class _AdaptivePlacementTestScreenState
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: AppColors.errorNeon.withOpacity(0.15),
+                color: AppColors.errorNeon.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.error_outline_rounded,
@@ -389,12 +390,12 @@ class _AdaptivePlacementTestScreenState
               decoration: BoxDecoration(
                 color: AppColors.bgSecondary,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.borderPrimary),
+                border: Border.all(color: const Color(0x332D363D)),
               ),
               child: Row(
                 children: [
                   const Icon(Icons.topic_rounded,
-                      color: AppColors.cyanNeon, size: 18),
+                      color: AppColors.primaryLight, size: 18),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -417,7 +418,7 @@ class _AdaptivePlacementTestScreenState
             decoration: BoxDecoration(
               color: AppColors.bgSecondary,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.borderPrimary),
+              border: Border.all(color: const Color(0x332D363D)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -493,23 +494,23 @@ class _AdaptivePlacementTestScreenState
         index == _currentQuestion!['correctAnswer'];
     final isWrongSelected = _lastAnswerCorrect == false && isSelected;
 
-    Color borderColor = AppColors.borderPrimary;
+    Color borderColor = const Color(0x332D363D);
     Color bgColor = AppColors.bgSecondary;
     Color textColor = AppColors.textPrimary;
 
     if (_lastAnswerCorrect != null) {
       if (isCorrectAnswer) {
         borderColor = AppColors.successNeon;
-        bgColor = AppColors.successNeon.withOpacity(0.15);
+        bgColor = AppColors.successNeon.withValues(alpha: 0.15);
         textColor = AppColors.successNeon;
       } else if (isWrongSelected) {
         borderColor = AppColors.errorNeon;
-        bgColor = AppColors.errorNeon.withOpacity(0.15);
+        bgColor = AppColors.errorNeon.withValues(alpha: 0.15);
         textColor = AppColors.errorNeon;
       }
     } else if (isSelected) {
       borderColor = AppColors.purpleNeon;
-      bgColor = AppColors.purpleNeon.withOpacity(0.15);
+      bgColor = AppColors.purpleNeon.withValues(alpha: 0.15);
     }
 
     return GestureDetector(
@@ -530,7 +531,7 @@ class _AdaptivePlacementTestScreenState
               height: 36,
               decoration: BoxDecoration(
                 color: isSelected
-                    ? borderColor.withOpacity(0.2)
+                    ? borderColor.withValues(alpha: 0.2)
                     : AppColors.bgTertiary,
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -586,11 +587,11 @@ class _AdaptivePlacementTestScreenState
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.warningNeon.withOpacity(0.15)
-              : AppColors.bgTertiary.withOpacity(0.5),
+              ? AppColors.warningNeon.withValues(alpha: 0.15)
+              : AppColors.bgTertiary.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? AppColors.warningNeon : AppColors.borderPrimary,
+            color: isSelected ? AppColors.warningNeon : const Color(0x332D363D),
             width: isSelected ? 2 : 1,
             style: BorderStyle.solid,
           ),
@@ -602,7 +603,7 @@ class _AdaptivePlacementTestScreenState
               height: 36,
               decoration: BoxDecoration(
                 color: isSelected
-                    ? AppColors.warningNeon.withOpacity(0.2)
+                    ? AppColors.warningNeon.withValues(alpha: 0.2)
                     : AppColors.bgTertiary,
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -650,13 +651,13 @@ class _AdaptivePlacementTestScreenState
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: (_lastAnswerCorrect ?? false)
-            ? AppColors.successNeon.withOpacity(0.1)
-            : AppColors.errorNeon.withOpacity(0.1),
+            ? AppColors.successNeon.withValues(alpha: 0.1)
+            : AppColors.errorNeon.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: (_lastAnswerCorrect ?? false)
-              ? AppColors.successNeon.withOpacity(0.3)
-              : AppColors.errorNeon.withOpacity(0.3),
+              ? AppColors.successNeon.withValues(alpha: 0.3)
+              : AppColors.errorNeon.withValues(alpha: 0.3),
         ),
       ),
       child: Column(
@@ -721,7 +722,7 @@ class _AdaptivePlacementTestScreenState
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.purpleNeon.withOpacity(0.4),
+                  color: AppColors.purpleNeon.withValues(alpha: 0.4),
                   blurRadius: 30,
                   spreadRadius: 5,
                 ),
@@ -736,7 +737,7 @@ class _AdaptivePlacementTestScreenState
           // Title
           ShaderMask(
             shaderCallback: (bounds) => const LinearGradient(
-              colors: [AppColors.purpleNeon, AppColors.pinkNeon],
+              colors: [AppColors.purpleNeon, AppColors.primaryLight],
             ).createShader(bounds),
             child: Text(
               'Hoàn thành!',
@@ -761,7 +762,7 @@ class _AdaptivePlacementTestScreenState
             decoration: BoxDecoration(
               color: AppColors.bgSecondary,
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: AppColors.borderPrimary),
+              border: Border.all(color: const Color(0x332D363D)),
             ),
             child: Column(
               children: [
@@ -781,7 +782,7 @@ class _AdaptivePlacementTestScreenState
                 ),
 
                 const SizedBox(height: 24),
-                const Divider(color: AppColors.borderPrimary),
+                const Divider(color: Color(0x332D363D)),
                 const SizedBox(height: 24),
 
                 // Level badge
@@ -793,7 +794,7 @@ class _AdaptivePlacementTestScreenState
                     borderRadius: BorderRadius.circular(30),
                     boxShadow: [
                       BoxShadow(
-                        color: _getLevelColor(level).withOpacity(0.4),
+                        color: _getLevelColor(level).withValues(alpha: 0.4),
                         blurRadius: 12,
                       ),
                     ],
@@ -870,9 +871,9 @@ class _AdaptivePlacementTestScreenState
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -896,7 +897,7 @@ class _AdaptivePlacementTestScreenState
                       padding: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: color.withOpacity(0.15),
+                        color: color.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
@@ -996,7 +997,7 @@ class _AdaptivePlacementTestScreenState
       case 'advanced':
         return AppColors.purpleNeon;
       case 'intermediate':
-        return AppColors.cyanNeon;
+        return AppColors.primaryLight;
       default:
         return AppColors.successNeon;
     }
@@ -1006,13 +1007,13 @@ class _AdaptivePlacementTestScreenState
     switch (level) {
       case 'advanced':
         return const LinearGradient(
-            colors: [AppColors.purpleNeon, AppColors.pinkNeon]);
+            colors: [AppColors.purpleNeon, AppColors.primaryLight]);
       case 'intermediate':
         return const LinearGradient(
-            colors: [AppColors.cyanNeon, AppColors.successNeon]);
+            colors: [AppColors.primaryLight, AppColors.successNeon]);
       default:
         return const LinearGradient(
-            colors: [AppColors.successNeon, AppColors.cyanNeon]);
+            colors: [AppColors.successNeon, AppColors.primaryLight]);
     }
   }
 

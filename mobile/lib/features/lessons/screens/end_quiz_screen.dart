@@ -583,7 +583,8 @@ class _EndQuizScreenState extends State<EndQuizScreen>
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Phiên học này bạn có bám theo kế hoạch tuần không?'),
+                    const Text(
+                        'Phiên học này bạn có bám theo kế hoạch tuần không?'),
                     const SizedBox(height: 8),
                     SegmentedButton<bool>(
                       segments: const [
@@ -693,7 +694,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
           AppColors.purpleNeon,
           AppColors.pinkNeon,
           AppColors.orangeNeon,
-          AppColors.cyanNeon,
+          AppColors.primaryLight,
           AppColors.successNeon,
           AppColors.xpGold,
         ][_random.nextInt(6)],
@@ -744,7 +745,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
               shape: BoxShape.circle,
               gradient: RadialGradient(
                 colors: [
-                  AppColors.purpleNeon.withOpacity(0.3),
+                  AppColors.purpleNeon.withValues(alpha: 0.3),
                   Colors.transparent,
                 ],
               ),
@@ -788,7 +789,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.errorNeon.withOpacity(0.1),
+                color: AppColors.errorNeon.withValues(alpha: 0.1),
               ),
               child: const Icon(Icons.error_outline,
                   size: 48, color: AppColors.errorNeon),
@@ -925,7 +926,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
                   decoration: BoxDecoration(
                     color: AppColors.bgSecondary,
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AppColors.borderPrimary),
+                    border: Border.all(color: const Color(0x332D363D)),
                   ),
                   child: const Icon(Icons.close,
                       color: AppColors.textPrimary, size: 20),
@@ -950,7 +951,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
                 decoration: BoxDecoration(
                   color: AppColors.bgSecondary,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppColors.borderPrimary),
+                  border: Border.all(color: const Color(0x332D363D)),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -996,7 +997,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
                     borderRadius: BorderRadius.circular(3),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.purpleNeon.withOpacity(0.5),
+                        color: AppColors.purpleNeon.withValues(alpha: 0.5),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
@@ -1026,17 +1027,17 @@ class _EndQuizScreenState extends State<EndQuizScreen>
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.purpleNeon.withOpacity(0.1)
+              ? AppColors.purpleNeon.withValues(alpha: 0.1)
               : AppColors.bgSecondary,
           border: Border.all(
-            color: isSelected ? AppColors.purpleNeon : AppColors.borderPrimary,
+            color: isSelected ? AppColors.purpleNeon : const Color(0x332D363D),
             width: isSelected ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(16),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: AppColors.purpleNeon.withOpacity(0.2),
+                    color: AppColors.purpleNeon.withValues(alpha: 0.2),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -1061,7 +1062,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
                 boxShadow: isSelected
                     ? [
                         BoxShadow(
-                          color: AppColors.purpleNeon.withOpacity(0.4),
+                          color: AppColors.purpleNeon.withValues(alpha: 0.4),
                           blurRadius: 8,
                         ),
                       ]
@@ -1116,11 +1117,11 @@ class _EndQuizScreenState extends State<EndQuizScreen>
       decoration: BoxDecoration(
         color: AppColors.bgSecondary,
         border: const Border(
-          top: BorderSide(color: AppColors.borderPrimary),
+          top: BorderSide(color: Color(0x332D363D)),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 10,
             offset: const Offset(0, -5),
           ),
@@ -1221,7 +1222,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
           end: Alignment.bottomCenter,
           colors: [
             (passed ? AppColors.successNeon : AppColors.errorNeon)
-                .withOpacity(0.15),
+                .withValues(alpha: 0.15),
             AppColors.bgPrimary,
           ],
         ),
@@ -1260,7 +1261,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
                             color: (passed
                                     ? AppColors.successNeon
                                     : AppColors.errorNeon)
-                                .withOpacity(0.7),
+                                .withValues(alpha: 0.7),
                           ),
                         ),
                       ],
@@ -1290,7 +1291,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
               borderRadius: BorderRadius.circular(25),
               border: Border.all(
                 color: (passed ? AppColors.successNeon : AppColors.errorNeon)
-                    .withOpacity(0.3),
+                    .withValues(alpha: 0.3),
               ),
             ),
             child: Row(
@@ -1326,8 +1327,8 @@ class _EndQuizScreenState extends State<EndQuizScreen>
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isCorrect
-              ? AppColors.successNeon.withOpacity(0.3)
-              : AppColors.errorNeon.withOpacity(0.3),
+              ? AppColors.successNeon.withValues(alpha: 0.3)
+              : AppColors.errorNeon.withValues(alpha: 0.3),
         ),
       ),
       child: Theme(
@@ -1339,7 +1340,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: (isCorrect ? AppColors.successNeon : AppColors.errorNeon)
-                  .withOpacity(0.15),
+                  .withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(
@@ -1397,10 +1398,11 @@ class _EndQuizScreenState extends State<EndQuizScreen>
                       width: double.infinity,
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: AppColors.cyanNeon.withOpacity(0.08),
+                        color: AppColors.primaryLight.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                            color: AppColors.cyanNeon.withOpacity(0.2)),
+                            color:
+                                AppColors.primaryLight.withValues(alpha: 0.2)),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1408,12 +1410,12 @@ class _EndQuizScreenState extends State<EndQuizScreen>
                           Row(
                             children: [
                               const Icon(Icons.lightbulb_outline,
-                                  size: 16, color: AppColors.cyanNeon),
+                                  size: 16, color: AppColors.primaryLight),
                               const SizedBox(width: 6),
                               Text(
                                 'Giải thích',
                                 style: AppTextStyles.labelMedium
-                                    .copyWith(color: AppColors.cyanNeon),
+                                    .copyWith(color: AppColors.primaryLight),
                               ),
                             ],
                           ),
@@ -1443,7 +1445,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.15),
+            color: color.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(6),
           ),
           child: Text(
@@ -1469,7 +1471,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
       decoration: const BoxDecoration(
         color: AppColors.bgSecondary,
         border: Border(
-          top: BorderSide(color: AppColors.borderPrimary),
+          top: BorderSide(color: Color(0x332D363D)),
         ),
       ),
       child: Column(
@@ -1484,10 +1486,10 @@ class _EndQuizScreenState extends State<EndQuizScreen>
                 text: _communicationResult == null
                     ? 'Giảng lại kiến thức (tự nguyện)'
                     : 'Đã gửi bài giảng lại',
-                onPressed: (_isSubmittingCommunication ||
-                        _communicationResult != null)
-                    ? null
-                    : _submitCommunicationReflection,
+                onPressed:
+                    (_isSubmittingCommunication || _communicationResult != null)
+                        ? null
+                        : _submitCommunicationReflection,
                 icon: Icons.record_voice_over_rounded,
               ),
             ),
@@ -1499,7 +1501,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
                 decoration: BoxDecoration(
                   color: AppColors.bgTertiary.withValues(alpha: 0.35),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.borderPrimary),
+                  border: Border.all(color: const Color(0x332D363D)),
                 ),
                 child: Text(
                   'Điểm giao tiếp: ${(_communicationResult?['totalScore'] ?? 0)}'
@@ -1520,9 +1522,10 @@ class _EndQuizScreenState extends State<EndQuizScreen>
                 text: _selfLeadershipCheckedIn
                     ? 'Đã check-in kế hoạch tuần'
                     : 'Check-in kế hoạch tuần',
-                onPressed: (_isSubmittingSelfLeadership || _selfLeadershipCheckedIn)
-                    ? null
-                    : _submitSelfLeadershipCheckin,
+                onPressed:
+                    (_isSubmittingSelfLeadership || _selfLeadershipCheckedIn)
+                        ? null
+                        : _submitSelfLeadershipCheckin,
                 icon: Icons.task_alt_rounded,
               ),
             ),
@@ -1593,12 +1596,12 @@ class _EndQuizScreenState extends State<EndQuizScreen>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColors.xpGold.withOpacity(0.1),
-            AppColors.successNeon.withOpacity(0.1),
+            AppColors.xpGold.withValues(alpha: 0.1),
+            AppColors.successNeon.withValues(alpha: 0.1),
           ],
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.xpGold.withOpacity(0.3)),
+        border: Border.all(color: AppColors.xpGold.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1627,7 +1630,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: AppColors.xpGold.withOpacity(0.15),
+                    color: AppColors.xpGold.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
@@ -1653,7 +1656,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: AppColors.orangeNeon.withOpacity(0.15),
+                    color: AppColors.orangeNeon.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
@@ -1687,7 +1690,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
                       'Bài học', Icons.check_circle, AppColors.successNeon),
                 if (topicCompleted)
                   _buildCompletionBadge(
-                      'Topic', Icons.topic_rounded, AppColors.cyanNeon),
+                      'Topic', Icons.topic_rounded, AppColors.primaryLight),
                 if (domainCompleted)
                   _buildCompletionBadge(
                       'Domain', Icons.domain_rounded, AppColors.purpleNeon),
@@ -1725,9 +1728,9 @@ class _EndQuizScreenState extends State<EndQuizScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1867,7 +1870,7 @@ class _ScoreCirclePainter extends CustomPainter {
       final glowY = center.dy + radius * sin(endAngle);
 
       final glowPaint = Paint()
-        ..color = glowColor.withOpacity(0.6)
+        ..color = glowColor.withValues(alpha: 0.6)
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
       canvas.drawCircle(Offset(glowX, glowY), 6, glowPaint);
     }

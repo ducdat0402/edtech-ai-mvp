@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
@@ -251,9 +252,12 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content:
-                Text('Lưu thông tin bị lỗi, nhưng bạn vẫn có thể tiếp tục.'),
-            backgroundColor: AppColors.orangeNeon,
+            content: Text(
+              'Lưu thông tin bị lỗi, nhưng bạn vẫn có thể tiếp tục.',
+              style: TextStyle(color: AppColors.textPrimary),
+            ),
+            backgroundColor: AppColors.bgSecondary,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -309,7 +313,7 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
                   icon: Icons.play_circle_filled_rounded,
                   title: 'Học thử 1 bài',
                   subtitle: 'Trải nghiệm nhanh một bài học để làm quen',
-                  gradient: [AppColors.cyanNeon, AppColors.purpleNeon],
+                  gradient: [AppColors.purpleNeon, AppColors.primaryLight],
                   onTap: () {
                     Navigator.pop(ctx);
                     _showSubjectPicker('try_lesson');
@@ -321,7 +325,7 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
                   title: 'Tạo lộ trình cá nhân',
                   subtitle:
                       'Thiết kế lộ trình thông qua câu hỏi hoặc chat với AI',
-                  gradient: [AppColors.pinkNeon, AppColors.orangeNeon],
+                  gradient: [AppColors.primaryLight, AppColors.coinGold],
                   onTap: () {
                     Navigator.pop(ctx);
                     _showSubjectPicker('personalized_path');
@@ -413,8 +417,10 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
                       const Padding(
                         padding: EdgeInsets.all(40),
                         child: Center(
-                            child: CircularProgressIndicator(
-                                color: AppColors.cyanNeon)),
+                          child: CircularProgressIndicator(
+                            color: AppColors.primaryLight,
+                          ),
+                        ),
                       )
                     else
                       Flexible(
@@ -442,7 +448,7 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
                                   color: AppColors.bgSecondary,
                                   borderRadius: BorderRadius.circular(16),
                                   border: Border.all(
-                                      color: AppColors.borderPrimary),
+                                      color: const Color(0x332D363D)),
                                 ),
                                 child: Row(
                                   children: [
@@ -604,7 +610,7 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
                 decoration: BoxDecoration(
                   color: AppColors.bgSecondary,
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AppColors.borderPrimary),
+                  border: Border.all(color: const Color(0x332D363D)),
                 ),
                 child: const Icon(Icons.arrow_back_rounded,
                     color: AppColors.textSecondary, size: 20),
@@ -657,12 +663,8 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
         child: GamingButton(
           text: isLastPage ? 'Hoàn thành' : 'Tiếp tục',
           onPressed: _canProceed ? _nextPage : null,
-          gradient: _canProceed
-              ? (isLastPage ? AppGradients.success : AppGradients.primary)
-              : null,
-          glowColor: _canProceed
-              ? (isLastPage ? AppColors.successNeon : AppColors.pinkNeon)
-              : null,
+          gradient: _canProceed ? AppGradients.primary : null,
+          glowColor: _canProceed ? AppColors.primaryLight : null,
           icon: isLastPage
               ? Icons.check_circle_rounded
               : Icons.arrow_forward_rounded,
@@ -679,26 +681,59 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
       padding: const EdgeInsets.all(24),
       child: Column(
         children: [
-          const SizedBox(height: 40),
-          Container(
-            width: 100,
-            height: 100,
-            decoration: BoxDecoration(
-              gradient: AppGradients.primary,
-              borderRadius: BorderRadius.circular(30),
-              boxShadow: [
-                BoxShadow(
-                    color: AppColors.purpleNeon.withOpacity(0.4),
-                    blurRadius: 30,
-                    spreadRadius: 5)
+          const SizedBox(height: 28),
+          SizedBox(
+            height: 120,
+            child: Stack(
+              alignment: Alignment.center,
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.purpleNeon.withValues(alpha: 0.22),
+                        blurRadius: 28,
+                        offset: const Offset(0, 12),
+                      ),
+                    ],
+                  ),
+                ),
+                Positioned(
+                  bottom: -8,
+                  child: SvgPicture.asset(
+                    'assets/mascot/idle.svg',
+                    width: 118,
+                    height: 118,
+                    fit: BoxFit.contain,
+                  ),
+                ),
               ],
             ),
-            child: const Icon(Icons.waving_hand_rounded,
-                size: 50, color: Colors.white),
           ),
-          const SizedBox(height: 32),
-          AppTextStyles.gradientText(
-              'Chào mừng bạn!', AppTextStyles.h2, AppGradients.primary),
+          const SizedBox(height: 24),
+          Wrap(
+            alignment: WrapAlignment.center,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              Text(
+                'Chào mừng đến ',
+                style: AppTextStyles.h2.copyWith(color: AppColors.textPrimary),
+              ),
+              AppTextStyles.gradientText(
+                'Gamistu',
+                AppTextStyles.h2,
+                AppGradients.primary,
+              ),
+              Text(
+                '!',
+                style: AppTextStyles.h2.copyWith(color: AppColors.textPrimary),
+              ),
+            ],
+          ),
           const SizedBox(height: 12),
           Text(
             'Mình sẽ giúp bạn cá nhân hóa trải nghiệm học tập.\nHãy cho mình biết tên bạn nhé!',
@@ -711,7 +746,7 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
             decoration: BoxDecoration(
               color: AppColors.bgSecondary,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.borderPrimary),
+              border: Border.all(color: const Color(0x332D363D)),
             ),
             child: TextField(
               controller: _nicknameController,
@@ -746,11 +781,11 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
             width: 110,
             height: 110,
             decoration: BoxDecoration(
-              gradient: AppGradients.purplePink,
+              gradient: AppGradients.primary,
               borderRadius: BorderRadius.circular(30),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.purpleNeon.withOpacity(0.35),
+                  color: AppColors.purpleNeon.withValues(alpha: 0.35),
                   blurRadius: 24,
                   spreadRadius: 2,
                 ),
@@ -773,7 +808,7 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
                 child: AppTextStyles.gradientText(
                   slide['title'] ?? '',
                   AppTextStyles.h3,
-                  AppGradients.purplePink,
+                  AppGradients.primary,
                 ),
               ),
             ],
@@ -785,7 +820,7 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
             decoration: BoxDecoration(
               color: AppColors.bgSecondary,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.borderPrimary),
+              border: Border.all(color: const Color(0x332D363D)),
             ),
             child: Text(
               slide['subtitle'] ?? '',
@@ -798,13 +833,16 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
-              color: AppColors.cyanNeon.withOpacity(0.08),
+              color: AppColors.purpleNeon.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.cyanNeon.withOpacity(0.25)),
+              border: Border.all(
+                color: AppColors.primaryLight.withValues(alpha: 0.28),
+              ),
             ),
             child: Text(
               'Vuốt tiếp để khám phá thêm',
-              style: AppTextStyles.caption.copyWith(color: AppColors.cyanNeon),
+              style:
+                  AppTextStyles.caption.copyWith(color: AppColors.primaryLight),
             ),
           ),
         ],
@@ -835,8 +873,8 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
               label: opt['label']!,
               isSelected: isSelected,
               onTap: () => setState(() => _selectedAcquisition = opt['id']),
-              gradient: AppGradients.cyan,
-              activeColor: AppColors.cyanNeon,
+              gradient: AppGradients.primary,
+              activeColor: AppColors.primaryLight,
             );
           }),
         ],
@@ -924,13 +962,14 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
                     border: Border.all(
                       color: isSelected
                           ? AppColors.successNeon
-                          : AppColors.borderPrimary,
+                          : const Color(0x332D363D),
                       width: isSelected ? 2 : 1,
                     ),
                     boxShadow: isSelected
                         ? [
                             BoxShadow(
-                                color: AppColors.successNeon.withOpacity(0.3),
+                                color: AppColors.successNeon
+                                    .withValues(alpha: 0.3),
                                 blurRadius: 12)
                           ]
                         : null,
@@ -1001,13 +1040,14 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
                     border: Border.all(
                       color: isSelected
                           ? AppColors.orangeNeon
-                          : AppColors.borderPrimary,
+                          : const Color(0x332D363D),
                       width: isSelected ? 2 : 1,
                     ),
                     boxShadow: isSelected
                         ? [
                             BoxShadow(
-                                color: AppColors.orangeNeon.withOpacity(0.3),
+                                color:
+                                    AppColors.orangeNeon.withValues(alpha: 0.3),
                                 blurRadius: 16)
                           ]
                         : null,
@@ -1086,9 +1126,10 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: AppColors.coinGold.withOpacity(0.08),
+              color: AppColors.coinGold.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: AppColors.coinGold.withOpacity(0.2)),
+              border:
+                  Border.all(color: AppColors.coinGold.withValues(alpha: 0.2)),
             ),
             child: Row(
               children: [
@@ -1135,12 +1176,13 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
             color: isSelected ? null : AppColors.bgSecondary,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-                color: isSelected ? activeColor : AppColors.borderPrimary,
+                color: isSelected ? activeColor : const Color(0x332D363D),
                 width: isSelected ? 2 : 1),
             boxShadow: isSelected
                 ? [
                     BoxShadow(
-                        color: activeColor.withOpacity(0.3), blurRadius: 12)
+                        color: activeColor.withValues(alpha: 0.3),
+                        blurRadius: 12)
                   ]
                 : null,
           ),
@@ -1188,12 +1230,13 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
             color: isSelected ? null : AppColors.bgSecondary,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-                color: isSelected ? activeColor : AppColors.borderPrimary,
+                color: isSelected ? activeColor : const Color(0x332D363D),
                 width: isSelected ? 2 : 1),
             boxShadow: isSelected
                 ? [
                     BoxShadow(
-                        color: activeColor.withOpacity(0.3), blurRadius: 16)
+                        color: activeColor.withValues(alpha: 0.3),
+                        blurRadius: 16)
                   ]
                 : null,
           ),
@@ -1246,10 +1289,10 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
         decoration: BoxDecoration(
           color: AppColors.bgSecondary,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: gradient[0].withOpacity(0.3)),
+          border: Border.all(color: gradient[0].withValues(alpha: 0.3)),
           boxShadow: [
             BoxShadow(
-                color: gradient[0].withOpacity(0.1),
+                color: gradient[0].withValues(alpha: 0.1),
                 blurRadius: 16,
                 offset: const Offset(0, 4))
           ],

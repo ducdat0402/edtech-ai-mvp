@@ -62,9 +62,8 @@ GoRouter createAppRouter(AuthSessionController authSession) {
     refreshListenable: authSession,
     redirect: (BuildContext context, GoRouterState state) {
       final loc = state.matchedLocation;
-      final atAuthGate = loc == '/login' ||
-          loc == '/register' ||
-          loc == '/forgot-password';
+      final atAuthGate =
+          loc == '/login' || loc == '/register' || loc == '/forgot-password';
       if (kDebugMode) {
         debugPrint(
           '[ROUTER] redirect check: loc=$loc, atAuthGate=$atAuthGate, isLoggedIn=${authSession.isLoggedIn}',
@@ -85,398 +84,406 @@ GoRouter createAppRouter(AuthSessionController authSession) {
       return null;
     },
     routes: [
-    GoRoute(
-      path: '/login',
-      builder: (context, state) => const LoginScreen(),
-    ),
-    GoRoute(
-      path: '/register',
-      builder: (context, state) => const RegisterScreen(),
-    ),
-    GoRoute(
-      path: '/forgot-password',
-      builder: (context, state) => const ForgotPasswordScreen(),
-    ),
-    GoRoute(
-      path: '/dashboard',
-      builder: (context, state) {
-        final showTutorial = state.uri.queryParameters['showTutorial'] == '1';
-        return DashboardScreen(showTutorial: showTutorial);
-      },
-    ),
-    GoRoute(
-      path: '/onboarding',
-      builder: (context, state) => const OnboardingChatScreen(),
-    ),
-    GoRoute(
-      path: '/placement-test',
-      builder: (context, state) => const PlacementTestScreen(),
-    ),
-    GoRoute(
-      path: '/placement-test/analysis/:testId',
-      builder: (context, state) {
-        final testId = state.pathParameters['testId']!;
-        return AnalysisCompleteScreen(testId: testId);
-      },
-    ),
-    GoRoute(
-      path: '/library',
-      builder: (context, state) => const SubjectsHubScreen(),
-    ),
-    GoRoute(
-      path: '/subjects/:id/intro',
-      builder: (context, state) {
-        final subjectId = state.pathParameters['id']!;
-        return SubjectIntroScreen(subjectId: subjectId);
-      },
-    ),
-    GoRoute(
-      path: '/subjects/:id/unlock',
-      builder: (context, state) {
-        final subjectId = state.pathParameters['id']!;
-        return UnlockSubjectScreen(subjectId: subjectId);
-      },
-    ),
-    GoRoute(
-      path: '/subjects/:id/learning-goals',
-      builder: (context, state) {
-        final subjectId = state.pathParameters['id']!;
-        return SubjectLearningGoalsScreen(subjectId: subjectId);
-      },
-    ),
-    GoRoute(
-      path: '/subjects/:id/personal-mind-map',
-      builder: (context, state) {
-        final subjectId = state.pathParameters['id']!;
-        return PersonalMindMapScreen(subjectId: subjectId);
-      },
-    ),
-    GoRoute(
-      path: '/subjects/:id/learning-path-choice',
-      builder: (context, state) {
-        final subjectId = state.pathParameters['id']!;
-        final subjectName = state.uri.queryParameters['name'];
-        final forceChoice = state.uri.queryParameters['force'] == 'true';
-        return LearningPathChoiceScreen(
-          subjectId: subjectId,
-          subjectName: subjectName,
-          forceShowChoice: forceChoice,
-        );
-      },
-    ),
-    GoRoute(
-      path: '/subjects/:id/adaptive-test',
-      builder: (context, state) {
-        final subjectId = state.pathParameters['id']!;
-        final subjectName = state.uri.queryParameters['name'];
-        return AdaptivePlacementTestScreen(
-          subjectId: subjectId,
-          subjectName: subjectName,
-        );
-      },
-    ),
-    GoRoute(
-      path: '/subjects/:id/domains',
-      builder: (context, state) {
-        final subjectId = state.pathParameters['id']!;
-        final subjectName = state.uri.queryParameters['name'];
-        return DomainsListScreen(
-          subjectId: subjectId,
-          subjectName: subjectName,
-        );
-      },
-    ),
-    GoRoute(
-      path: '/subjects/:id/all-lessons',
-      builder: (context, state) {
-        final subjectId = state.pathParameters['id']!;
-        final openFirstLesson = state.uri.queryParameters['openFirst'] == '1';
-        return AllLessonsScreen(
-          subjectId: subjectId,
-          openFirstLesson: openFirstLesson,
-        );
-      },
-    ),
-    GoRoute(
-      path: '/domains/:id',
-      builder: (context, state) {
-        final domainId = state.pathParameters['id']!;
-        return DomainDetailScreen(domainId: domainId);
-      },
-    ),
-    GoRoute(
-      path: '/nodes/:id',
-      builder: (context, state) {
-        final nodeId = state.pathParameters['id']!;
-        final difficulty = state.uri.queryParameters['difficulty'];
-        return NodeDetailScreen(nodeId: nodeId, difficulty: difficulty);
-      },
-    ),
-    GoRoute(
-      path: '/contribute/:contentId',
-      builder: (context, state) {
-        final contentId = state.pathParameters['contentId']!;
-        final format = state.uri.queryParameters['format'] ?? 'image';
-        final extra = state.extra as Map<String, dynamic>?;
-        return ContributionUploadScreen(
-          contentId: contentId,
-          format: format,
-          title: extra?['title'] as String?,
-          contributionGuide: extra?['contributionGuide'] as Map<String, dynamic>?,
-          nodeId: extra?['nodeId'] as String?,
-          isNewContribution: extra?['isNewContribution'] as bool? ?? false,
-        );
-      },
-    ),
-    GoRoute(
-      path: '/quests',
-      builder: (context, state) => const DailyQuestsScreen(),
-    ),
-    GoRoute(
-      path: '/leaderboard',
-      builder: (context, state) {
-        final subjectId = state.uri.queryParameters['subjectId'];
-        return LeaderboardScreen(subjectId: subjectId);
-      },
-    ),
-    GoRoute(
-      path: '/weekly-rewards-history',
-      builder: (context, state) => const WeeklyRewardsHistoryScreen(),
-    ),
-    GoRoute(
-      path: '/self-leadership/weekly-plan',
-      builder: (context, state) => const WeeklyPlanScreen(),
-    ),
-    GoRoute(
-      path: '/friends',
-      builder: (context, state) => const FriendsScreen(),
-    ),
-    GoRoute(
-      path: '/friends/blocked',
-      builder: (context, state) => const BlockedUsersScreen(),
-    ),
-    GoRoute(
-      path: '/dm/conversations',
-      builder: (context, state) => const ConversationsScreen(),
-    ),
-    GoRoute(
-      path: '/dm/chat/:peerId',
-      builder: (context, state) {
-        final peerId = state.pathParameters['peerId']!;
-        final extra = state.extra as Map<String, dynamic>?;
-        final peerName = extra?['peerName'] as String? ?? 'User';
-        return ChatRoomScreen(peerId: peerId, peerName: peerName);
-      },
-    ),
-    GoRoute(
-      path: '/currency',
-      builder: (context, state) => const CurrencyScreen(),
-    ),
-    GoRoute(
-      path: '/profile',
-      builder: (context, state) => const ProfileScreen(),
-      routes: [
-        GoRoute(
-          path: 'journey',
-          builder: (context, state) => const JourneyLogScreen(),
-        ),
-        GoRoute(
-          path: 'competencies',
-          builder: (context, state) {
-            final focus = state.uri.queryParameters['focus'];
-            return CompetenciesScreen(initialFocus: focus);
-          },
-        ),
-        GoRoute(
-          path: 'contributions',
-          builder: (context, state) => const MyContributionsScreen(),
-        ),
-      ],
-    ),
-    // Also add as standalone route for easier access
-    GoRoute(
-      path: '/my-contributions',
-      builder: (context, state) => const MyContributionsScreen(),
-    ),
-    GoRoute(
-      path: '/admin/panel',
-      builder: (context, state) => const AdminPanelScreen(),
-    ),
-    GoRoute(
-      path: '/payment',
-      builder: (context, state) => const PaymentScreen(),
-    ),
-    GoRoute(
-      path: '/shop',
-      builder: (context, state) => const ShopScreen(),
-    ),
-    // Contributor routes
-    GoRoute(
-      path: '/contributor/mind-map',
-      builder: (context, state) {
-        final subjectId = state.uri.queryParameters['subjectId'] ?? '';
-        final subjectName = state.uri.queryParameters['subjectName'];
-        return ContributorMindMapScreen(
-          subjectId: subjectId,
-          subjectName: subjectName,
-        );
-      },
-    ),
-    GoRoute(
-      path: '/contributor/create-subject',
-      builder: (context, state) => const CreateSubjectScreen(),
-    ),
-    GoRoute(
-      path: '/contributor/create-domain',
-      builder: (context, state) {
-        final subjectId = state.uri.queryParameters['subjectId'] ?? '';
-        final subjectName = state.uri.queryParameters['subjectName'];
-        return CreateDomainScreen(
-          subjectId: subjectId,
-          subjectName: subjectName,
-        );
-      },
-    ),
-    GoRoute(
-      path: '/contributor/create-topic',
-      builder: (context, state) {
-        final subjectId = state.uri.queryParameters['subjectId'] ?? '';
-        final domainId = state.uri.queryParameters['domainId'] ?? '';
-        final domainName = state.uri.queryParameters['domainName'];
-        return CreateTopicScreen(
-          subjectId: subjectId,
-          domainId: domainId,
-          domainName: domainName,
-        );
-      },
-    ),
-    GoRoute(
-      path: '/contributor/create-lesson',
-      builder: (context, state) {
-        final subjectId = state.uri.queryParameters['subjectId'] ?? '';
-        final domainId = state.uri.queryParameters['domainId'] ?? '';
-        final topicId = state.uri.queryParameters['topicId'] ?? '';
-        final topicName = state.uri.queryParameters['topicName'];
-        return CreateLessonScreen(
-          subjectId: subjectId,
-          domainId: domainId,
-          topicId: topicId,
-          topicName: topicName,
-        );
-      },
-    ),
-    GoRoute(
-      path: '/contributor/my-contributions',
-      builder: (context, state) => const MyPendingContributionsScreen(),
-    ),
-    // Lesson Type Picker / Direct editor (for contributors adding lesson type content)
-    GoRoute(
-      path: '/lessons/create',
-      builder: (context, state) {
-        final subjectId = state.uri.queryParameters['subjectId'] ?? '';
-        final domainId = state.uri.queryParameters['domainId'] ?? '';
-        final topicName = state.uri.queryParameters['topicName'];
-        final topicId = state.uri.queryParameters['topicId'];
-        final lessonType = state.uri.queryParameters['lessonType'];
-        final nodeId = state.uri.queryParameters['nodeId'];
-        final existingLessonNodeId = state.uri.queryParameters['existingLessonNodeId'];
-        final existingLessonType = state.uri.queryParameters['existingLessonType'];
-        return LessonTypePickerScreen(
-          subjectId: subjectId,
-          domainId: domainId,
-          topicName: topicName,
-          topicId: topicId,
-          preselectedType: lessonType,
-          nodeId: nodeId,
-          existingLessonNodeId: existingLessonNodeId,
-          existingLessonType: existingLessonType,
-        );
-      },
-    ),
-    // Lesson Edit (for contributors) - loads node data and opens viewer/editor
-    GoRoute(
-      path: '/lessons/edit/:nodeId',
-      builder: (context, state) {
-        final nodeId = state.pathParameters['nodeId']!;
-        return _LessonEditLoader(nodeId: nodeId);
-      },
-    ),
-    // Lesson Types Overview (shows all available types for a lesson)
-    GoRoute(
-      path: '/lessons/:nodeId/types',
-      builder: (context, state) {
-        final nodeId = state.pathParameters['nodeId']!;
-        final extra = state.extra as Map<String, dynamic>?;
-        final title = extra?['title'] as String? ?? 'Bài học';
-        return LessonTypesOverviewScreen(nodeId: nodeId, title: title);
-      },
-    ),
-    // Lesson Viewers (for learners)
-    GoRoute(
-      path: '/lessons/:nodeId/view',
-      builder: (context, state) {
-        final nodeId = state.pathParameters['nodeId']!;
-        final extra = state.extra as Map<String, dynamic>?;
-        final lessonType = extra?['lessonType'] as String? ?? 'text';
-        final lessonData = extra?['lessonData'] as Map<String, dynamic>? ?? {};
-        final title = extra?['title'] as String? ?? 'Bài học';
-        final endQuiz = extra?['endQuiz'] as Map<String, dynamic>?;
-        final contributor = _contributorFromRouteExtra(extra?['contributor']);
+      GoRoute(
+        path: '/login',
+        builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: '/register',
+        builder: (context, state) => const RegisterScreen(),
+      ),
+      GoRoute(
+        path: '/forgot-password',
+        builder: (context, state) => const ForgotPasswordScreen(),
+      ),
+      GoRoute(
+        path: '/dashboard',
+        builder: (context, state) {
+          final showTutorial = state.uri.queryParameters['showTutorial'] == '1';
+          return DashboardScreen(showTutorial: showTutorial);
+        },
+      ),
+      GoRoute(
+        path: '/onboarding',
+        builder: (context, state) => const OnboardingChatScreen(),
+      ),
+      GoRoute(
+        path: '/placement-test',
+        builder: (context, state) => const PlacementTestScreen(),
+      ),
+      GoRoute(
+        path: '/placement-test/analysis/:testId',
+        builder: (context, state) {
+          final testId = state.pathParameters['testId']!;
+          return AnalysisCompleteScreen(testId: testId);
+        },
+      ),
+      GoRoute(
+        path: '/library',
+        builder: (context, state) => const SubjectsHubScreen(),
+      ),
+      GoRoute(
+        path: '/subjects/:id/intro',
+        builder: (context, state) {
+          final subjectId = state.pathParameters['id']!;
+          return SubjectIntroScreen(subjectId: subjectId);
+        },
+      ),
+      GoRoute(
+        path: '/subjects/:id/unlock',
+        builder: (context, state) {
+          final subjectId = state.pathParameters['id']!;
+          return UnlockSubjectScreen(subjectId: subjectId);
+        },
+      ),
+      GoRoute(
+        path: '/subjects/:id/learning-goals',
+        builder: (context, state) {
+          final subjectId = state.pathParameters['id']!;
+          return SubjectLearningGoalsScreen(subjectId: subjectId);
+        },
+      ),
+      GoRoute(
+        path: '/subjects/:id/personal-mind-map',
+        builder: (context, state) {
+          final subjectId = state.pathParameters['id']!;
+          return PersonalMindMapScreen(subjectId: subjectId);
+        },
+      ),
+      GoRoute(
+        path: '/subjects/:id/learning-path-choice',
+        builder: (context, state) {
+          final subjectId = state.pathParameters['id']!;
+          final subjectName = state.uri.queryParameters['name'];
+          final forceChoice = state.uri.queryParameters['force'] == 'true';
+          return LearningPathChoiceScreen(
+            subjectId: subjectId,
+            subjectName: subjectName,
+            forceShowChoice: forceChoice,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/subjects/:id/adaptive-test',
+        builder: (context, state) {
+          final subjectId = state.pathParameters['id']!;
+          final subjectName = state.uri.queryParameters['name'];
+          return AdaptivePlacementTestScreen(
+            subjectId: subjectId,
+            subjectName: subjectName,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/subjects/:id/domains',
+        builder: (context, state) {
+          final subjectId = state.pathParameters['id']!;
+          final subjectName = state.uri.queryParameters['name'];
+          return DomainsListScreen(
+            subjectId: subjectId,
+            subjectName: subjectName,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/subjects/:id/all-lessons',
+        builder: (context, state) {
+          final subjectId = state.pathParameters['id']!;
+          final openFirstLesson = state.uri.queryParameters['openFirst'] == '1';
+          return AllLessonsScreen(
+            subjectId: subjectId,
+            openFirstLesson: openFirstLesson,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/domains/:id',
+        builder: (context, state) {
+          final domainId = state.pathParameters['id']!;
+          return DomainDetailScreen(domainId: domainId);
+        },
+      ),
+      GoRoute(
+        path: '/nodes/:id',
+        builder: (context, state) {
+          final nodeId = state.pathParameters['id']!;
+          final difficulty = state.uri.queryParameters['difficulty'];
+          return NodeDetailScreen(nodeId: nodeId, difficulty: difficulty);
+        },
+      ),
+      GoRoute(
+        path: '/contribute/:contentId',
+        builder: (context, state) {
+          final contentId = state.pathParameters['contentId']!;
+          final format = state.uri.queryParameters['format'] ?? 'image';
+          final extra = state.extra as Map<String, dynamic>?;
+          return ContributionUploadScreen(
+            contentId: contentId,
+            format: format,
+            title: extra?['title'] as String?,
+            contributionGuide:
+                extra?['contributionGuide'] as Map<String, dynamic>?,
+            nodeId: extra?['nodeId'] as String?,
+            isNewContribution: extra?['isNewContribution'] as bool? ?? false,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/quests',
+        builder: (context, state) => const DailyQuestsScreen(),
+      ),
+      GoRoute(
+        path: '/leaderboard',
+        builder: (context, state) {
+          final subjectId = state.uri.queryParameters['subjectId'];
+          return LeaderboardScreen(subjectId: subjectId);
+        },
+      ),
+      GoRoute(
+        path: '/weekly-rewards-history',
+        builder: (context, state) => const WeeklyRewardsHistoryScreen(),
+      ),
+      GoRoute(
+        path: '/self-leadership/weekly-plan',
+        builder: (context, state) => const WeeklyPlanScreen(),
+      ),
+      GoRoute(
+        path: '/friends',
+        builder: (context, state) => const FriendsScreen(),
+      ),
+      GoRoute(
+        path: '/friends/blocked',
+        builder: (context, state) => const BlockedUsersScreen(),
+      ),
+      GoRoute(
+        path: '/dm/conversations',
+        builder: (context, state) => const ConversationsScreen(),
+      ),
+      GoRoute(
+        path: '/dm/chat/:peerId',
+        builder: (context, state) {
+          final peerId = state.pathParameters['peerId']!;
+          final extra = state.extra as Map<String, dynamic>?;
+          final peerName = extra?['peerName'] as String? ?? 'User';
+          return ChatRoomScreen(peerId: peerId, peerName: peerName);
+        },
+      ),
+      GoRoute(
+        path: '/currency',
+        builder: (context, state) => const CurrencyScreen(),
+      ),
+      GoRoute(
+        path: '/profile',
+        builder: (context, state) => const ProfileScreen(),
+        routes: [
+          GoRoute(
+            path: 'journey',
+            builder: (context, state) => const JourneyLogScreen(),
+          ),
+          GoRoute(
+            path: 'competencies',
+            builder: (context, state) {
+              final focus = state.uri.queryParameters['focus'];
+              return CompetenciesScreen(initialFocus: focus);
+            },
+          ),
+          GoRoute(
+            path: 'contributions',
+            builder: (context, state) => const MyContributionsScreen(),
+          ),
+        ],
+      ),
+      // Also add as standalone route for easier access
+      GoRoute(
+        path: '/my-contributions',
+        builder: (context, state) => const MyContributionsScreen(),
+      ),
+      GoRoute(
+        path: '/admin/panel',
+        builder: (context, state) => const AdminPanelScreen(),
+      ),
+      GoRoute(
+        path: '/payment',
+        builder: (context, state) => const PaymentScreen(),
+      ),
+      GoRoute(
+        path: '/shop',
+        builder: (context, state) => const ShopScreen(),
+      ),
+      // Contributor routes
+      GoRoute(
+        path: '/contributor/mind-map',
+        builder: (context, state) {
+          final subjectId = state.uri.queryParameters['subjectId'] ?? '';
+          final subjectName = state.uri.queryParameters['subjectName'];
+          return ContributorMindMapScreen(
+            subjectId: subjectId,
+            subjectName: subjectName,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/contributor/create-subject',
+        builder: (context, state) => const CreateSubjectScreen(),
+      ),
+      GoRoute(
+        path: '/contributor/create-domain',
+        builder: (context, state) {
+          final subjectId = state.uri.queryParameters['subjectId'] ?? '';
+          final subjectName = state.uri.queryParameters['subjectName'];
+          return CreateDomainScreen(
+            subjectId: subjectId,
+            subjectName: subjectName,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/contributor/create-topic',
+        builder: (context, state) {
+          final subjectId = state.uri.queryParameters['subjectId'] ?? '';
+          final domainId = state.uri.queryParameters['domainId'] ?? '';
+          final domainName = state.uri.queryParameters['domainName'];
+          return CreateTopicScreen(
+            subjectId: subjectId,
+            domainId: domainId,
+            domainName: domainName,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/contributor/create-lesson',
+        builder: (context, state) {
+          final subjectId = state.uri.queryParameters['subjectId'] ?? '';
+          final domainId = state.uri.queryParameters['domainId'] ?? '';
+          final topicId = state.uri.queryParameters['topicId'] ?? '';
+          final topicName = state.uri.queryParameters['topicName'];
+          return CreateLessonScreen(
+            subjectId: subjectId,
+            domainId: domainId,
+            topicId: topicId,
+            topicName: topicName,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/contributor/my-contributions',
+        builder: (context, state) => const MyPendingContributionsScreen(),
+      ),
+      // Lesson Type Picker / Direct editor (for contributors adding lesson type content)
+      GoRoute(
+        path: '/lessons/create',
+        builder: (context, state) {
+          final subjectId = state.uri.queryParameters['subjectId'] ?? '';
+          final domainId = state.uri.queryParameters['domainId'] ?? '';
+          final topicName = state.uri.queryParameters['topicName'];
+          final topicId = state.uri.queryParameters['topicId'];
+          final lessonType = state.uri.queryParameters['lessonType'];
+          final nodeId = state.uri.queryParameters['nodeId'];
+          final existingLessonNodeId =
+              state.uri.queryParameters['existingLessonNodeId'];
+          final existingLessonType =
+              state.uri.queryParameters['existingLessonType'];
+          return LessonTypePickerScreen(
+            subjectId: subjectId,
+            domainId: domainId,
+            topicName: topicName,
+            topicId: topicId,
+            preselectedType: lessonType,
+            nodeId: nodeId,
+            existingLessonNodeId: existingLessonNodeId,
+            existingLessonType: existingLessonType,
+          );
+        },
+      ),
+      // Lesson Edit (for contributors) - loads node data and opens viewer/editor
+      GoRoute(
+        path: '/lessons/edit/:nodeId',
+        builder: (context, state) {
+          final nodeId = state.pathParameters['nodeId']!;
+          return _LessonEditLoader(nodeId: nodeId);
+        },
+      ),
+      // Lesson Types Overview (shows all available types for a lesson)
+      GoRoute(
+        path: '/lessons/:nodeId/types',
+        builder: (context, state) {
+          final nodeId = state.pathParameters['nodeId']!;
+          final extra = state.extra as Map<String, dynamic>?;
+          final title = extra?['title'] as String? ?? 'Bài học';
+          return LessonTypesOverviewScreen(nodeId: nodeId, title: title);
+        },
+      ),
+      // Lesson Viewers (for learners)
+      GoRoute(
+        path: '/lessons/:nodeId/view',
+        builder: (context, state) {
+          final nodeId = state.pathParameters['nodeId']!;
+          final extra = state.extra as Map<String, dynamic>?;
+          final lessonType = extra?['lessonType'] as String? ?? 'text';
+          final lessonData =
+              extra?['lessonData'] as Map<String, dynamic>? ?? {};
+          final title = extra?['title'] as String? ?? 'Bài học';
+          final endQuiz = extra?['endQuiz'] as Map<String, dynamic>?;
+          final contributor = _contributorFromRouteExtra(extra?['contributor']);
 
-        switch (lessonType) {
-          case 'image_quiz':
-            return ImageQuizLessonScreen(
+          switch (lessonType) {
+            case 'image_quiz':
+              return ImageQuizLessonScreen(
+                nodeId: nodeId,
+                lessonData: lessonData,
+                title: title,
+                endQuiz: endQuiz,
+                lessonType: lessonType,
+                contributor: contributor,
+              );
+            case 'image_gallery':
+              return ImageGalleryLessonScreen(
+                nodeId: nodeId,
+                lessonData: lessonData,
+                title: title,
+                endQuiz: endQuiz,
+                lessonType: lessonType,
+                contributor: contributor,
+              );
+            case 'video':
+              return VideoLessonScreen(
+                nodeId: nodeId,
+                lessonData: lessonData,
+                title: title,
+                endQuiz: endQuiz,
+                lessonType: lessonType,
+                contributor: contributor,
+              );
+            case 'text':
+            default:
+              return TextLessonScreen(
+                nodeId: nodeId,
+                lessonData: lessonData,
+                title: title,
+                endQuiz: endQuiz,
+                lessonType: lessonType,
+                contributor: contributor,
+              );
+          }
+        },
+      ),
+      // End Quiz
+      GoRoute(
+        path: '/lessons/:nodeId/end-quiz',
+        builder: (context, state) {
+          final nodeId = state.pathParameters['nodeId']!;
+          final extra = state.extra as Map<String, dynamic>?;
+          final title = extra?['title'] as String? ?? 'Bài test';
+          final questions = extra?['questions'] as List<dynamic>?;
+          final lessonType = extra?['lessonType'] as String?;
+          return EndQuizScreen(
               nodeId: nodeId,
-              lessonData: lessonData,
               title: title,
-              endQuiz: endQuiz,
               lessonType: lessonType,
-              contributor: contributor,
-            );
-          case 'image_gallery':
-            return ImageGalleryLessonScreen(
-              nodeId: nodeId,
-              lessonData: lessonData,
-              title: title,
-              endQuiz: endQuiz,
-              lessonType: lessonType,
-              contributor: contributor,
-            );
-          case 'video':
-            return VideoLessonScreen(
-              nodeId: nodeId,
-              lessonData: lessonData,
-              title: title,
-              endQuiz: endQuiz,
-              lessonType: lessonType,
-              contributor: contributor,
-            );
-          case 'text':
-          default:
-            return TextLessonScreen(
-              nodeId: nodeId,
-              lessonData: lessonData,
-              title: title,
-              endQuiz: endQuiz,
-              lessonType: lessonType,
-              contributor: contributor,
-            );
-        }
-      },
-    ),
-    // End Quiz
-    GoRoute(
-      path: '/lessons/:nodeId/end-quiz',
-      builder: (context, state) {
-        final nodeId = state.pathParameters['nodeId']!;
-        final extra = state.extra as Map<String, dynamic>?;
-        final title = extra?['title'] as String? ?? 'Bài test';
-        final questions = extra?['questions'] as List<dynamic>?;
-        final lessonType = extra?['lessonType'] as String?;
-        return EndQuizScreen(nodeId: nodeId, title: title, lessonType: lessonType, questions: questions);
-      },
-    ),
-  ],
+              questions: questions);
+        },
+      ),
+    ],
   );
 }
 
@@ -547,9 +554,13 @@ class _LessonEditLoaderState extends State<_LessonEditLoader> {
                 children: [
                   const Icon(Icons.error_outline, size: 48, color: Colors.red),
                   const SizedBox(height: 16),
-                  Text('Lỗi: $_error', textAlign: TextAlign.center, style: const TextStyle(color: Colors.red)),
+                  Text('Lỗi: $_error',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: Colors.red)),
                   const SizedBox(height: 16),
-                  ElevatedButton(onPressed: () => context.pop(), child: const Text('Quay lại')),
+                  ElevatedButton(
+                      onPressed: () => context.pop(),
+                      child: const Text('Quay lại')),
                 ],
               )
             : const CircularProgressIndicator(),

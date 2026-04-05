@@ -12,7 +12,8 @@ class FriendsConnectionsPanel extends StatefulWidget {
   const FriendsConnectionsPanel({super.key});
 
   @override
-  State<FriendsConnectionsPanel> createState() => _FriendsConnectionsPanelState();
+  State<FriendsConnectionsPanel> createState() =>
+      _FriendsConnectionsPanelState();
 }
 
 class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
@@ -98,9 +99,11 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline, color: AppColors.errorNeon, size: 48),
+            const Icon(Icons.error_outline,
+                color: AppColors.errorNeon, size: 48),
             const SizedBox(height: 16),
-            Text(_error!, style: const TextStyle(color: AppColors.textSecondary)),
+            Text(_error!,
+                style: const TextStyle(color: AppColors.textSecondary)),
             const SizedBox(height: 16),
             ElevatedButton(onPressed: _loadData, child: const Text('Thử lại')),
           ],
@@ -116,23 +119,28 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               IconButton(
-                icon: const Icon(Icons.block_rounded, color: AppColors.textPrimary),
+                icon: const Icon(Icons.block_rounded,
+                    color: AppColors.textPrimary),
                 tooltip: 'Đã chặn',
                 onPressed: () => context.push('/friends/blocked'),
               ),
               IconButton(
-                icon: const Icon(Icons.chat_rounded, color: AppColors.textPrimary),
+                icon: const Icon(Icons.chat_rounded,
+                    color: AppColors.textPrimary),
                 onPressed: () => context.push('/dm/conversations'),
               ),
               IconButton(
-                icon: const Icon(Icons.search_rounded, color: AppColors.textPrimary),
+                icon: const Icon(Icons.search_rounded,
+                    color: AppColors.textPrimary),
                 onPressed: _showSearchDialog,
               ),
               IconButton(
-                icon: const Icon(Icons.timeline_rounded, color: AppColors.textPrimary),
+                icon: const Icon(Icons.timeline_rounded,
+                    color: AppColors.textPrimary),
                 onPressed: () => Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const _FriendActivityPage()),
+                  MaterialPageRoute(
+                      builder: (_) => const _FriendActivityPage()),
                 ),
               ),
             ],
@@ -144,12 +152,14 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
           labelColor: AppColors.purpleNeon,
           unselectedLabelColor: AppColors.textSecondary,
           tabs: [
-            const Tab(text: 'Danh sách', icon: Icon(Icons.people_rounded, size: 20)),
+            const Tab(
+                text: 'Danh sách', icon: Icon(Icons.people_rounded, size: 20)),
             Tab(
               icon: const Icon(Icons.mail_rounded, size: 20),
               child: _buildRequestsTabLabel(),
             ),
-            const Tab(text: 'Gợi ý', icon: Icon(Icons.person_add_rounded, size: 20)),
+            const Tab(
+                text: 'Gợi ý', icon: Icon(Icons.person_add_rounded, size: 20)),
           ],
         ),
         Expanded(
@@ -228,12 +238,12 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
       decoration: BoxDecoration(
         color: AppColors.bgSecondary,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.borderPrimary),
+        border: Border.all(color: const Color(0x332D363D)),
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: CircleAvatar(
-          backgroundColor: AppColors.purpleNeon.withOpacity(0.2),
+          backgroundColor: AppColors.purpleNeon.withValues(alpha: 0.2),
           child: Text(
             (name as String).isNotEmpty ? name[0].toUpperCase() : '?',
             style: const TextStyle(
@@ -266,7 +276,7 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
           children: [
             IconButton(
               icon: const Icon(Icons.chat_bubble_outline_rounded,
-                  color: AppColors.cyanNeon),
+                  color: AppColors.primaryLight),
               onPressed: () {
                 final id = friend['id'] as String?;
                 if (id != null) {
@@ -370,7 +380,7 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
           decoration: BoxDecoration(
-            color: AppColors.purpleNeon.withOpacity(0.2),
+            color: AppColors.purpleNeon.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Text('$count',
@@ -392,18 +402,18 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
       decoration: BoxDecoration(
         color: AppColors.bgSecondary,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.purpleNeon.withOpacity(0.3)),
+        border: Border.all(color: AppColors.purpleNeon.withValues(alpha: 0.3)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Row(
           children: [
             CircleAvatar(
-              backgroundColor: AppColors.cyanNeon.withOpacity(0.2),
+              backgroundColor: AppColors.primaryLight.withValues(alpha: 0.2),
               child: Text(
                 (name as String).isNotEmpty ? name[0].toUpperCase() : '?',
                 style: const TextStyle(
-                    color: AppColors.cyanNeon, fontWeight: FontWeight.bold),
+                    color: AppColors.primaryLight, fontWeight: FontWeight.bold),
               ),
             ),
             const SizedBox(width: 12),
@@ -441,14 +451,14 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
       decoration: BoxDecoration(
         color: AppColors.bgSecondary,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.borderPrimary),
+        border: Border.all(color: const Color(0x332D363D)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Row(
           children: [
             CircleAvatar(
-              backgroundColor: AppColors.orangeNeon.withOpacity(0.2),
+              backgroundColor: AppColors.orangeNeon.withValues(alpha: 0.2),
               child: Text(
                 (name as String).isNotEmpty ? name[0].toUpperCase() : '?',
                 style: const TextStyle(
@@ -485,9 +495,9 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.15),
+          color: color.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: color.withOpacity(0.4)),
+          border: Border.all(color: color.withValues(alpha: 0.4)),
         ),
         child: Text(label,
             style: TextStyle(
@@ -568,14 +578,14 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
       decoration: BoxDecoration(
         color: AppColors.bgSecondary,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.borderPrimary),
+        border: Border.all(color: const Color(0x332D363D)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Row(
           children: [
             CircleAvatar(
-              backgroundColor: AppColors.pinkNeon.withOpacity(0.2),
+              backgroundColor: AppColors.pinkNeon.withValues(alpha: 0.2),
               child: Text(
                 (name as String).isNotEmpty ? name[0].toUpperCase() : '?',
                 style: const TextStyle(
@@ -791,11 +801,11 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
       ),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: AppColors.cyanNeon.withOpacity(0.2),
+          backgroundColor: AppColors.primaryLight.withValues(alpha: 0.2),
           child: Text(
             (name as String).isNotEmpty ? name[0].toUpperCase() : '?',
             style: const TextStyle(
-                color: AppColors.cyanNeon, fontWeight: FontWeight.bold),
+                color: AppColors.primaryLight, fontWeight: FontWeight.bold),
           ),
         ),
         title: Text(name,
@@ -809,7 +819,7 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: actionColor.withOpacity(0.1),
+                  color: actionColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(actionLabel,
@@ -946,7 +956,7 @@ class _FriendActivityPageState extends State<_FriendActivityPage> {
       decoration: BoxDecoration(
         color: AppColors.bgSecondary,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.borderPrimary),
+        border: Border.all(color: const Color(0x332D363D)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -955,7 +965,7 @@ class _FriendActivityPageState extends State<_FriendActivityPage> {
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: AppColors.purpleNeon.withOpacity(0.15),
+              color: AppColors.purpleNeon.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(10),
             ),
             child:

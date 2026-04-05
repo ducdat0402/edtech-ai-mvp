@@ -142,7 +142,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
     _learning = _buildSection(
       title: 'Năng lực học tập',
       subtitle: 'Đo qua hành vi trong ứng dụng',
-      color: AppColors.cyanNeon,
+      color: AppColors.primaryLight,
       template: _learningTemplate,
       values: const {},
     );
@@ -223,24 +223,29 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
             : null,
       );
       _creativityTooltip = _buildCreativityTooltip(
-        formula:
-            data['formulaInfo'] is Map ? data['formulaInfo']['creativity'] : null,
+        formula: data['formulaInfo'] is Map
+            ? data['formulaInfo']['creativity']
+            : null,
       );
       _communicationTooltip = _buildCommunicationTooltip(
-        formula:
-            data['formulaInfo'] is Map ? data['formulaInfo']['communication'] : null,
+        formula: data['formulaInfo'] is Map
+            ? data['formulaInfo']['communication']
+            : null,
       );
       _selfLeadershipTooltip = _buildSelfLeadershipTooltip(
-        formula:
-            data['formulaInfo'] is Map ? data['formulaInfo']['selfLeadership'] : null,
+        formula: data['formulaInfo'] is Map
+            ? data['formulaInfo']['selfLeadership']
+            : null,
       );
       _disciplineTooltip = _buildDisciplineTooltip(
-        formula:
-            data['formulaInfo'] is Map ? data['formulaInfo']['discipline'] : null,
+        formula: data['formulaInfo'] is Map
+            ? data['formulaInfo']['discipline']
+            : null,
       );
       _growthMindsetTooltip = _buildGrowthMindsetTooltip(
-        formula:
-            data['formulaInfo'] is Map ? data['formulaInfo']['growthMindset'] : null,
+        formula: data['formulaInfo'] is Map
+            ? data['formulaInfo']['growthMindset']
+            : null,
       );
       _criticalThinkingTooltip = _buildCriticalThinkingTooltip(
         formula: data['formulaInfo'] is Map
@@ -248,8 +253,9 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
             : null,
       );
       _collaborationTooltip = _buildCollaborationTooltip(
-        formula:
-            data['formulaInfo'] is Map ? data['formulaInfo']['collaboration'] : null,
+        formula: data['formulaInfo'] is Map
+            ? data['formulaInfo']['collaboration']
+            : null,
       );
 
       if (!mounted) return;
@@ -257,7 +263,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
         _learning = _buildSection(
           title: 'Năng lực học tập',
           subtitle: 'Đo qua hành vi trong ứng dụng',
-          color: AppColors.cyanNeon,
+          color: AppColors.primaryLight,
           template: _learningTemplate,
           values: learningValues,
           memoryTooltip: _memoryTooltip,
@@ -491,10 +497,8 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
   String? _buildMetacognitionTooltip({dynamic formula}) {
     if (formula is! Map) return null;
 
-    final validSamples =
-        (formula['validSamples'] ?? 0) as num;
-    final minSamples =
-        (formula['minSamples'] ?? 20) as num;
+    final validSamples = (formula['validSamples'] ?? 0) as num;
+    final minSamples = (formula['minSamples'] ?? 20) as num;
     final provisional = (formula['provisional'] ?? false) as bool;
 
     final lines = <String>[
@@ -516,8 +520,9 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
   String? _buildPersistenceTooltip({dynamic formula}) {
     final activeDays =
         formula is Map ? ((formula['activeDays'] ?? 0) as num).toInt() : 0;
-    final weeklyConsistency =
-        formula is Map ? ((formula['weeklyConsistency'] ?? 0) as num).toInt() : 0;
+    final weeklyConsistency = formula is Map
+        ? ((formula['weeklyConsistency'] ?? 0) as num).toInt()
+        : 0;
     final lines = <String>[
       'Cách tăng điểm Bền bỉ học tập:',
       '• Học đều nhiều ngày trong tuần, tránh dồn bài vào một ngày.',
@@ -544,7 +549,8 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
       '• Theo dõi tiến bộ qua nhiều lần làm để tăng learning gain.',
     ];
     if (gainGroups < 2 || provisional) {
-      lines.add('• Cần thêm các lần làm lại cùng bài để hệ thống đo mức tiến bộ rõ hơn.');
+      lines.add(
+          '• Cần thêm các lần làm lại cùng bài để hệ thống đo mức tiến bộ rõ hơn.');
       lines.add('• Điểm đang tạm thời do chưa đủ dữ liệu đo.');
     }
     return lines.join('\n');
@@ -568,7 +574,8 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
     ];
 
     if (provisional || weightedTotal < minWeightedTotal) {
-      lines.add('• Cần thêm dữ liệu câu có trọng số “systems_thinking” để điểm ổn định.');
+      lines.add(
+          '• Cần thêm dữ liệu câu có trọng số “systems_thinking” để điểm ổn định.');
       lines.add('• Điểm đang tạm thời do chưa đủ dữ liệu đo.');
     }
 
@@ -591,7 +598,8 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
     ];
 
     if (provisional || weightedTotal < minWeightedTotal) {
-      lines.add('• Cần thêm dữ liệu câu có trọng số “creativity” để điểm ổn định.');
+      lines.add(
+          '• Cần thêm dữ liệu câu có trọng số “creativity” để điểm ổn định.');
       lines.add('• Điểm đang tạm thời do chưa đủ dữ liệu đo.');
     }
 
@@ -643,7 +651,8 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
   String? _buildDisciplineTooltip({dynamic formula}) {
     if (formula is! Map) return null;
     final activeDays = ((formula['activeDays'] ?? 0) as num).toInt();
-    final weeklyRhythmWeeks = ((formula['weeklyRhythmWeeks'] ?? 0) as num).toInt();
+    final weeklyRhythmWeeks =
+        ((formula['weeklyRhythmWeeks'] ?? 0) as num).toInt();
     final provisional = (formula['provisional'] ?? false) as bool;
     final lines = <String>[
       'Cách tăng điểm Kỷ luật & thói quen:',
@@ -689,7 +698,8 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
       '• Sau câu sai, đổi cách lập luận và thử lại để cải thiện.',
     ];
     if (provisional || failGroups < 3) {
-      lines.add('• Cần thêm dữ liệu câu phản biện và chu kỳ fail -> retry để điểm ổn định.');
+      lines.add(
+          '• Cần thêm dữ liệu câu phản biện và chu kỳ fail -> retry để điểm ổn định.');
       lines.add('• Điểm đang tạm thời do chưa đủ dữ liệu đo.');
     }
     return lines.join('\n');
@@ -698,8 +708,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
   String? _buildCollaborationTooltip({dynamic formula}) {
     if (formula is! Map) return null;
     final peerCount = ((formula['uniquePeerCount'] ?? 0) as num).toInt();
-    final interactions =
-        ((formula['publicMessageCount'] ?? 0) as num).toInt() +
+    final interactions = ((formula['publicMessageCount'] ?? 0) as num).toInt() +
         ((formula['dmSentCount'] ?? 0) as num).toInt();
     final provisional = (formula['provisional'] ?? false) as bool;
     final lines = <String>[
@@ -725,13 +734,13 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
         elevation: 0,
         title: Text(
           'Năng lực',
-          style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary),
+          style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
         ),
         iconTheme: const IconThemeData(color: AppColors.textPrimary),
       ),
       body: _loading
           ? const Center(
-              child: CircularProgressIndicator(color: AppColors.purpleNeon),
+              child: CircularProgressIndicator(color: AppColors.primaryLight),
             )
           : _error != null
               ? Center(
@@ -755,6 +764,8 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
                         const SizedBox(height: 10),
                         TextButton(
                           onPressed: _load,
+                          style: TextButton.styleFrom(
+                              foregroundColor: AppColors.purpleNeon),
                           child: const Text('Thử lại'),
                         ),
                       ],
@@ -777,7 +788,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
 
                     return RefreshIndicator(
                       onRefresh: _load,
-                      color: AppColors.purpleNeon,
+                      color: AppColors.primaryLight,
                       child: SingleChildScrollView(
                         physics: const AlwaysScrollableScrollPhysics(),
                         padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
@@ -875,7 +886,7 @@ class _CompetencySection extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.bgSecondary,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.borderPrimary),
+        border: Border.all(color: const Color(0x332D363D)),
       ),
       child: LayoutBuilder(
         builder: (context, c) {
@@ -915,7 +926,8 @@ class _CompetencySection extends StatelessWidget {
                                 section.systemsThinkingTooltip,
                             creativityTooltip: section.creativityTooltip,
                             communicationTooltip: section.communicationTooltip,
-                            selfLeadershipTooltip: section.selfLeadershipTooltip,
+                            selfLeadershipTooltip:
+                                section.selfLeadershipTooltip,
                             disciplineTooltip: section.disciplineTooltip,
                             growthMindsetTooltip: section.growthMindsetTooltip,
                             criticalThinkingTooltip:
@@ -951,14 +963,12 @@ class _CompetencySection extends StatelessWidget {
                                   knowledgeTooltip: section.knowledgeTooltip,
                                   systemsThinkingTooltip:
                                       section.systemsThinkingTooltip,
-                                  creativityTooltip:
-                                      section.creativityTooltip,
+                                  creativityTooltip: section.creativityTooltip,
                                   communicationTooltip:
                                       section.communicationTooltip,
                                   selfLeadershipTooltip:
                                       section.selfLeadershipTooltip,
-                                  disciplineTooltip:
-                                      section.disciplineTooltip,
+                                  disciplineTooltip: section.disciplineTooltip,
                                   growthMindsetTooltip:
                                       section.growthMindsetTooltip,
                                   criticalThinkingTooltip:
@@ -993,7 +1003,7 @@ class _RadarCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.bgTertiary.withValues(alpha: 0.35),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.borderPrimary),
+        border: Border.all(color: const Color(0x332D363D)),
       ),
       child: Column(
         children: [
@@ -1172,28 +1182,28 @@ class _MetricRow extends StatelessWidget {
                                 ? criticalThinkingTooltip!
                                 : (showCollaborationTooltip
                                     ? collaborationTooltip!
-            : (showMemoryTooltip
-            ? memoryTooltip!
-            : (showLogicalTooltip
-                ? logicalTooltip!
-                : (showProcessingTooltip
-                    ? processingTooltip!
-                    : (showPracticalTooltip
-                        ? practicalTooltip!
-                        : (showMetacognitionTooltip
-                            ? metacognitionTooltip!
-                            : (showPersistenceTooltip
-                                ? persistenceTooltip!
-                                : (showKnowledgeTooltip
-                                    ? knowledgeTooltip!
-                                    : null))))))))))))));
+                                    : (showMemoryTooltip
+                                        ? memoryTooltip!
+                                        : (showLogicalTooltip
+                                            ? logicalTooltip!
+                                            : (showProcessingTooltip
+                                                ? processingTooltip!
+                                                : (showPracticalTooltip
+                                                    ? practicalTooltip!
+                                                    : (showMetacognitionTooltip
+                                                        ? metacognitionTooltip!
+                                                        : (showPersistenceTooltip
+                                                            ? persistenceTooltip!
+                                                            : (showKnowledgeTooltip
+                                                                ? knowledgeTooltip!
+                                                                : null))))))))))))));
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         color: AppColors.bgTertiary.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.borderPrimary),
+        border: Border.all(color: const Color(0x332D363D)),
       ),
       child: Row(
         children: [
@@ -1292,11 +1302,9 @@ class _RadarChart extends StatelessWidget {
       RadarChartData(
         radarBackgroundColor: Colors.transparent,
         borderData: FlBorderData(show: false),
-        radarBorderData: const BorderSide(color: AppColors.borderPrimary),
-        tickBorderData:
-            BorderSide(color: AppColors.borderPrimary.withValues(alpha: 0.7)),
-        gridBorderData:
-            BorderSide(color: AppColors.borderPrimary.withValues(alpha: 0.4)),
+        radarBorderData: const BorderSide(color: Color(0x332D363D)),
+        tickBorderData: const BorderSide(color: Color(0x552D363D)),
+        gridBorderData: const BorderSide(color: Color(0x332D363D)),
         ticksTextStyle: AppTextStyles.caption.copyWith(
           color: AppColors.textTertiary,
           fontSize: 10,

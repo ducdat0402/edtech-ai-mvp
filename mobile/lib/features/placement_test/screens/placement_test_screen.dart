@@ -235,7 +235,9 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
                 style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
           ],
         ),
-        leading: const AppBarLeadingBackAndHome(),
+        leading: const AppBarLeadingBackAndHome(
+          iconColor: AppColors.textSecondary,
+        ),
         leadingWidth: 112,
         automaticallyImplyLeading: false,
       ),
@@ -261,12 +263,13 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.purpleNeon.withOpacity(0.4),
+                  color: AppColors.purpleNeon.withValues(alpha: 0.4),
                   blurRadius: 20,
                 ),
               ],
             ),
-            child: const CircularProgressIndicator(color: Colors.white),
+            child:
+                const CircularProgressIndicator(color: AppColors.primaryLight),
           ),
           const SizedBox(height: 24),
           Text(
@@ -289,7 +292,7 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: AppColors.errorNeon.withOpacity(0.15),
+                color: AppColors.errorNeon.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.error_outline_rounded,
@@ -376,12 +379,12 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColors.purpleNeon.withOpacity(0.15),
-            AppColors.pinkNeon.withOpacity(0.1)
+            AppColors.purpleNeon.withValues(alpha: 0.15),
+            AppColors.pinkNeon.withValues(alpha: 0.1)
           ],
         ),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.purpleNeon.withOpacity(0.3)),
+        border: Border.all(color: const Color(0x332D363D)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -428,7 +431,7 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
                     borderRadius: BorderRadius.circular(4),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.purpleNeon.withOpacity(0.5),
+                        color: AppColors.purpleNeon.withValues(alpha: 0.5),
                         blurRadius: 8,
                       ),
                     ],
@@ -447,9 +450,9 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
       padding: const EdgeInsets.all(16),
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: AppColors.warningNeon.withOpacity(0.1),
+        color: AppColors.warningNeon.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.warningNeon.withOpacity(0.3)),
+        border: Border.all(color: AppColors.warningNeon.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -478,7 +481,7 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
       decoration: BoxDecoration(
         color: AppColors.bgSecondary,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.borderPrimary),
+        border: Border.all(color: const Color(0x332D363D)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -526,13 +529,13 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
             color: isSelected ? null : AppColors.bgTertiary,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: isSelected ? Colors.transparent : AppColors.borderPrimary,
+              color: isSelected ? Colors.transparent : const Color(0x332D363D),
               width: 2,
             ),
             boxShadow: isSelected
                 ? [
                     BoxShadow(
-                      color: AppColors.purpleNeon.withOpacity(0.3),
+                      color: AppColors.purpleNeon.withValues(alpha: 0.3),
                       blurRadius: 12,
                     ),
                   ]
@@ -545,7 +548,7 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
                 height: 36,
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? Colors.white.withOpacity(0.2)
+                      ? Colors.white.withValues(alpha: 0.2)
                       : AppColors.bgSecondary,
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -574,7 +577,7 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
                 Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(Icons.check_rounded,

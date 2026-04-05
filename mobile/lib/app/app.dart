@@ -47,11 +47,12 @@ class _EdTechAppState extends State<EdTechApp> {
         Provider<AuthService>.value(value: authService),
         Provider<ApiService>.value(value: apiService),
         Provider<DmSocketService>.value(value: dmSocketService),
-        ChangeNotifierProvider<ThemeModeService>.value(value: _themeModeService),
+        ChangeNotifierProvider<ThemeModeService>.value(
+            value: _themeModeService),
       ],
       child: Consumer<ThemeModeService>(
         builder: (context, themeService, _) => MaterialApp.router(
-          title: 'Gamistu - Learn more smartly',
+          title: 'Gamistu',
           debugShowCheckedModeBanner: false,
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,

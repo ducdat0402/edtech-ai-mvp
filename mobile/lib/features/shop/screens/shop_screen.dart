@@ -176,7 +176,7 @@ class _ShopScreenState extends State<ShopScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Lỗi: ${_extractError(e)}'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.errorNeon,
           ),
         );
       }
@@ -206,7 +206,7 @@ class _ShopScreenState extends State<ShopScreen>
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.cyanNeon,
+              backgroundColor: AppColors.primaryLight,
               foregroundColor: Colors.black,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
@@ -233,7 +233,7 @@ class _ShopScreenState extends State<ShopScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content: Text('Lỗi: ${_extractError(e)}'),
-              backgroundColor: Colors.red),
+              backgroundColor: AppColors.errorNeon),
         );
       }
     }
@@ -270,10 +270,10 @@ class _ShopScreenState extends State<ShopScreen>
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: AppColors.coinGold.withOpacity(0.1),
+                  color: AppColors.coinGold.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(14),
-                  border:
-                      Border.all(color: AppColors.coinGold.withOpacity(0.3)),
+                  border: Border.all(
+                      color: AppColors.coinGold.withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -307,7 +307,7 @@ class _ShopScreenState extends State<ShopScreen>
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.cyanNeon,
+              backgroundColor: AppColors.primaryLight,
               foregroundColor: Colors.black,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
@@ -334,7 +334,8 @@ class _ShopScreenState extends State<ShopScreen>
     return Scaffold(
       backgroundColor: AppColors.bgPrimary,
       appBar: AppBar(
-        backgroundColor: AppColors.bgPrimary,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         title: Text('Cửa hàng',
             style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
         leading: const AppBarLeadingBackAndHome(),
@@ -345,9 +346,10 @@ class _ShopScreenState extends State<ShopScreen>
             margin: const EdgeInsets.only(right: 12),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: AppColors.coinGold.withOpacity(0.15),
+              color: AppColors.coinGold.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.coinGold.withOpacity(0.3)),
+              border:
+                  Border.all(color: AppColors.coinGold.withValues(alpha: 0.3)),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -366,8 +368,8 @@ class _ShopScreenState extends State<ShopScreen>
         ],
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: AppColors.cyanNeon,
-          labelColor: AppColors.cyanNeon,
+          indicatorColor: AppColors.primaryLight,
+          labelColor: AppColors.primaryLight,
           unselectedLabelColor: AppColors.textTertiary,
           tabs: const [
             Tab(
@@ -380,7 +382,8 @@ class _ShopScreenState extends State<ShopScreen>
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.primaryLight))
           : _error != null
               ? Center(
                   child: Column(
@@ -390,7 +393,13 @@ class _ShopScreenState extends State<ShopScreen>
                           style: TextStyle(color: AppColors.textSecondary)),
                       const SizedBox(height: 12),
                       ElevatedButton(
-                          onPressed: _loadData, child: const Text('Thử lại')),
+                        onPressed: _loadData,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.purpleNeon,
+                          foregroundColor: Colors.white,
+                        ),
+                        child: const Text('Thử lại'),
+                      ),
                     ],
                   ),
                 )
@@ -428,12 +437,12 @@ class _ShopScreenState extends State<ShopScreen>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColors.coinGold.withOpacity(0.12),
-            AppColors.orangeNeon.withOpacity(0.06)
+            AppColors.coinGold.withValues(alpha: 0.12),
+            AppColors.orangeNeon.withValues(alpha: 0.06)
           ],
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.coinGold.withOpacity(0.25)),
+        border: Border.all(color: AppColors.coinGold.withValues(alpha: 0.25)),
       ),
       child: Row(
         children: [
@@ -467,7 +476,7 @@ class _ShopScreenState extends State<ShopScreen>
       decoration: BoxDecoration(
         color: AppColors.bgSecondary,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.borderPrimary),
+        border: Border.all(color: const Color(0x332D363D)),
       ),
       child: Material(
         color: Colors.transparent,
@@ -482,7 +491,7 @@ class _ShopScreenState extends State<ShopScreen>
                   width: 52,
                   height: 52,
                   decoration: BoxDecoration(
-                    color: categoryColor.withOpacity(0.12),
+                    color: categoryColor.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Icon(_getItemIcon(iconName),
@@ -592,9 +601,9 @@ class _ShopScreenState extends State<ShopScreen>
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
+        color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: color.withOpacity(0.35)),
+        border: Border.all(color: color.withValues(alpha: 0.35)),
       ),
       child: Row(
         children: [
@@ -630,8 +639,8 @@ class _ShopScreenState extends State<ShopScreen>
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
             color: isActive
-                ? categoryColor.withOpacity(0.5)
-                : AppColors.borderPrimary),
+                ? categoryColor.withValues(alpha: 0.5)
+                : const Color(0x332D363D)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -641,7 +650,7 @@ class _ShopScreenState extends State<ShopScreen>
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: categoryColor.withOpacity(0.12),
+                color: categoryColor.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(12),
               ),
               child:
@@ -696,7 +705,7 @@ class _ShopScreenState extends State<ShopScreen>
                       padding: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: AppColors.cyanNeon,
+                        color: AppColors.primaryLight,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Text('Dùng',
@@ -736,7 +745,7 @@ class _ShopScreenState extends State<ShopScreen>
       case 'boost':
         return AppColors.orangeNeon;
       case 'protection':
-        return AppColors.cyanNeon;
+        return AppColors.primaryLight;
       case 'consumable':
         return AppColors.purpleNeon;
       case 'mystery':

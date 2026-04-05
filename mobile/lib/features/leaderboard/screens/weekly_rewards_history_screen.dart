@@ -27,7 +27,10 @@ class _WeeklyRewardsHistoryScreenState
   }
 
   Future<void> _load() async {
-    setState(() { _isLoading = true; _error = null; });
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
     try {
       final api = Provider.of<ApiService>(context, listen: false);
       final results = await Future.wait([
@@ -40,7 +43,10 @@ class _WeeklyRewardsHistoryScreenState
         _isLoading = false;
       });
     } catch (e) {
-      setState(() { _error = e.toString(); _isLoading = false; });
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
     }
   }
 
@@ -55,14 +61,16 @@ class _WeeklyRewardsHistoryScreenState
         leadingWidth: 112,
         automaticallyImplyLeading: false,
         title: Text('Phần thưởng tuần',
-            style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary)),
+            style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppColors.purpleNeon))
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.primaryLight))
           : _error != null
               ? AppErrorWidget(message: _error!, onRetry: _load)
               : RefreshIndicator(
                   onRefresh: _load,
+                  color: AppColors.primaryLight,
                   child: CustomScrollView(
                     slivers: [
                       SliverToBoxAdapter(child: _buildStats()),
@@ -88,8 +96,8 @@ class _WeeklyRewardsHistoryScreenState
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColors.purpleNeon.withOpacity(0.8),
-            AppColors.cyanNeon.withOpacity(0.6),
+            AppColors.purpleNeon.withValues(alpha: 0.8),
+            AppColors.cyanNeon.withValues(alpha: 0.6),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -97,7 +105,7 @@ class _WeeklyRewardsHistoryScreenState
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: AppColors.purpleNeon.withOpacity(0.3),
+            color: AppColors.purpleNeon.withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -110,27 +118,31 @@ class _WeeklyRewardsHistoryScreenState
           const SizedBox(height: 16),
           Row(
             children: [
-              Expanded(child: _StatItem(
+              Expanded(
+                  child: _StatItem(
                 icon: Icons.diamond_rounded,
-                iconColor: Colors.lightBlueAccent,
+                iconColor: AppColors.primaryLight,
                 value: '$totalDiamonds',
                 label: 'Kim cương',
               )),
-              Expanded(child: _StatItem(
+              Expanded(
+                  child: _StatItem(
                 icon: Icons.calendar_month_rounded,
-                iconColor: Colors.greenAccent,
+                iconColor: AppColors.successNeon,
                 value: '$totalWeeks',
                 label: 'Tuần',
               )),
-              Expanded(child: _StatItem(
+              Expanded(
+                  child: _StatItem(
                 icon: Icons.emoji_events_rounded,
-                iconColor: Colors.amber,
+                iconColor: AppColors.xpGold,
                 value: bestRank > 0 ? '#$bestRank' : '--',
                 label: 'Hạng cao nhất',
               )),
-              Expanded(child: _StatItem(
+              Expanded(
+                  child: _StatItem(
                 icon: Icons.workspace_premium_rounded,
-                iconColor: Colors.orangeAccent,
+                iconColor: AppColors.orangeNeon,
                 value: '$topThreeCount',
                 label: 'Top 3',
               )),
@@ -187,10 +199,13 @@ class _WeeklyRewardsHistoryScreenState
   Widget _buildHistoryList() {
     final items = _historyData?['items'] as List? ?? [];
     if (items.isEmpty) {
-      return const SliverFillRemaining(
+      return SliverFillRemaining(
         child: Center(
-          child: Text('Chưa có phần thưởng nào',
-              style: TextStyle(color: AppColors.textSecondary)),
+          child: Text(
+            'Chưa có phần thưởng nào',
+            style: AppTextStyles.bodyMedium
+                .copyWith(color: AppColors.textSecondary),
+          ),
         ),
       );
     }
@@ -225,10 +240,12 @@ class _StatItem extends StatelessWidget {
       children: [
         Icon(icon, color: iconColor, size: 24),
         const SizedBox(height: 6),
-        Text(value, style: AppTextStyles.numberMedium.copyWith(color: Colors.white)),
+        Text(value,
+            style: AppTextStyles.numberMedium.copyWith(color: Colors.white)),
         const SizedBox(height: 2),
         Text(label,
-            style: AppTextStyles.caption.copyWith(color: Colors.white70, fontSize: 10),
+            style: AppTextStyles.caption
+                .copyWith(color: Colors.white70, fontSize: 10),
             textAlign: TextAlign.center),
       ],
     );
@@ -239,7 +256,8 @@ class _BadgeCard extends StatelessWidget {
   final String name;
   final String iconUrl;
   final int count;
-  const _BadgeCard({required this.name, required this.iconUrl, required this.count});
+  const _BadgeCard(
+      {required this.name, required this.iconUrl, required this.count});
 
   @override
   Widget build(BuildContext context) {
@@ -249,10 +267,10 @@ class _BadgeCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.bgSecondary,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.purpleNeon.withOpacity(0.3)),
+        border: Border.all(color: const Color(0x332D363D)),
         boxShadow: [
           BoxShadow(
-            color: AppColors.purpleNeon.withOpacity(0.1),
+            color: AppColors.purpleNeon.withValues(alpha: 0.1),
             blurRadius: 8,
           ),
         ],
@@ -263,11 +281,15 @@ class _BadgeCard extends StatelessWidget {
           Text(iconUrl, style: const TextStyle(fontSize: 28)),
           const SizedBox(height: 4),
           Text(name,
-              style: AppTextStyles.caption.copyWith(color: AppColors.textPrimary),
-              maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center),
+              style:
+                  AppTextStyles.caption.copyWith(color: AppColors.textPrimary),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center),
           if (count > 1)
             Text('${count}x',
-                style: AppTextStyles.caption.copyWith(color: AppColors.purpleNeon, fontWeight: FontWeight.bold)),
+                style: AppTextStyles.caption.copyWith(
+                    color: AppColors.purpleNeon, fontWeight: FontWeight.bold)),
         ],
       ),
     );
@@ -304,8 +326,8 @@ class _HistoryItem extends StatelessWidget {
         color: AppColors.bgSecondary,
         borderRadius: BorderRadius.circular(14),
         border: rank <= 3
-            ? Border.all(color: rankColor.withOpacity(0.4))
-            : Border.all(color: AppColors.borderPrimary),
+            ? Border.all(color: rankColor.withValues(alpha: 0.4))
+            : Border.all(color: const Color(0x332D363D)),
       ),
       child: Row(
         children: [
@@ -313,7 +335,7 @@ class _HistoryItem extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: rankColor.withOpacity(0.15),
+              color: rankColor.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Center(
@@ -327,10 +349,12 @@ class _HistoryItem extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(weekCode,
-                    style: AppTextStyles.labelMedium.copyWith(color: AppColors.textPrimary)),
+                    style: AppTextStyles.labelMedium
+                        .copyWith(color: AppColors.textPrimary)),
                 const SizedBox(height: 2),
                 Text('$xp XP',
-                    style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary)),
+                    style: AppTextStyles.caption
+                        .copyWith(color: AppColors.textSecondary)),
               ],
             ),
           ),
@@ -340,16 +364,19 @@ class _HistoryItem extends StatelessWidget {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.diamond_rounded, size: 16, color: Colors.lightBlueAccent),
+                  const Icon(Icons.diamond_rounded,
+                      size: 16, color: AppColors.primaryLight),
                   const SizedBox(width: 4),
                   Text('+$diamonds',
-                      style: AppTextStyles.labelMedium.copyWith(color: Colors.lightBlueAccent)),
+                      style: AppTextStyles.labelMedium
+                          .copyWith(color: AppColors.primaryLight)),
                 ],
               ),
               if (badge != null)
                 const Padding(
                   padding: EdgeInsets.only(top: 4),
-                  child: Icon(Icons.workspace_premium_rounded, size: 18, color: Colors.amber),
+                  child: Icon(Icons.workspace_premium_rounded,
+                      size: 18, color: AppColors.xpGold),
                 ),
             ],
           ),

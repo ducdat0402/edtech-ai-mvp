@@ -59,7 +59,7 @@ class _GamingButtonState extends State<GamingButton> {
           boxShadow: widget.onPressed != null
               ? [
                   BoxShadow(
-                    color: glowColor.withOpacity(_isPressed ? 0.3 : 0.5),
+                    color: glowColor.withValues(alpha: _isPressed ? 0.3 : 0.5),
                     blurRadius: _isPressed ? 10 : 20,
                     spreadRadius: 0,
                     offset: const Offset(0, 4),
@@ -151,7 +151,9 @@ class _GamingButtonOutlinedState extends State<GamingButtonOutlined> {
         width: widget.width,
         height: widget.height,
         decoration: BoxDecoration(
-          color: _isPressed ? borderColor.withOpacity(0.1) : Colors.transparent,
+          color: _isPressed
+              ? borderColor.withValues(alpha: 0.1)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: borderColor,
@@ -159,7 +161,7 @@ class _GamingButtonOutlinedState extends State<GamingButtonOutlined> {
           ),
           boxShadow: [
             BoxShadow(
-              color: borderColor.withOpacity(0.3),
+              color: borderColor.withValues(alpha: 0.3),
               blurRadius: 8,
               spreadRadius: 0,
             ),

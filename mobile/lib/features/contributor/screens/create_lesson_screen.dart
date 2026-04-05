@@ -121,7 +121,7 @@ class _CreateLessonScreenState extends State<CreateLessonScreen> {
             ),
             const SizedBox(height: 16),
             Text('Đã gửi yêu cầu!',
-                style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary)),
+                style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
             const SizedBox(height: 8),
             Text(
               'Bài học "${_nameController.text.trim()}" đang chờ Admin duyệt.\n\nSau khi được duyệt, bạn có thể thêm các dạng bài học (hình ảnh, video, văn bản...).',
@@ -153,7 +153,7 @@ class _CreateLessonScreenState extends State<CreateLessonScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text('Tạo Bài Học Mới',
-            style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary)),
+            style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
         leading: const AppBarLeadingBackAndHome(),
         leadingWidth: 112,
         automaticallyImplyLeading: false,
@@ -365,19 +365,19 @@ class _CreateLessonScreenState extends State<CreateLessonScreen> {
         'value': 'easy',
         'label': 'Dễ',
         'icon': Icons.sentiment_satisfied,
-        'color': Colors.green
+        'color': AppColors.successNeon
       },
       {
         'value': 'medium',
         'label': 'Trung bình',
         'icon': Icons.sentiment_neutral,
-        'color': Colors.orange
+        'color': AppColors.orangeNeon
       },
       {
         'value': 'hard',
         'label': 'Khó',
         'icon': Icons.sentiment_very_dissatisfied,
-        'color': Colors.red
+        'color': AppColors.errorNeon
       },
     ];
 

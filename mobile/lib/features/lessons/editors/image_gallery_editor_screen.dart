@@ -194,11 +194,11 @@ class _ImageGalleryEditorScreenState extends State<ImageGalleryEditorScreen> {
       fillColor: AppColors.bgSecondary,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.borderPrimary),
+        borderSide: const BorderSide(color: Color(0x332D363D)),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.borderPrimary),
+        borderSide: const BorderSide(color: Color(0x332D363D)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -294,7 +294,7 @@ class _ImageGalleryEditorScreenState extends State<ImageGalleryEditorScreen> {
               decoration: const BoxDecoration(
                 color: AppColors.bgSecondary,
                 border: Border(
-                  top: BorderSide(color: AppColors.borderPrimary),
+                  top: BorderSide(color: Color(0x332D363D)),
                 ),
               ),
               child: ElevatedButton(
@@ -328,7 +328,7 @@ class _ImageGalleryEditorScreenState extends State<ImageGalleryEditorScreen> {
       decoration: BoxDecoration(
         color: AppColors.bgSecondary,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.borderPrimary),
+        border: Border.all(color: const Color(0x332D363D)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -353,7 +353,7 @@ class _ImageGalleryEditorScreenState extends State<ImageGalleryEditorScreen> {
                 ),
             ],
           ),
-          const Divider(color: AppColors.borderPrimary, height: 20),
+          const Divider(color: Color(0x332D363D), height: 20),
 
           // Image upload/preview
           Column(
@@ -377,7 +377,7 @@ class _ImageGalleryEditorScreenState extends State<ImageGalleryEditorScreen> {
                   margin: const EdgeInsets.only(bottom: 8),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.borderPrimary),
+                    border: Border.all(color: const Color(0x332D363D)),
                     image: DecorationImage(
                       image: NetworkImage(img.urlController.text),
                       fit: BoxFit.cover,

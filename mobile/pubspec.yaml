@@ -1,5 +1,5 @@
 name: edtech_mobile
-description: "EdTech AI MVP - Personalized learning platform with AI"
+description: "Gamistu — học tập cá nhân hóa, gamification tinh tế."
 publish_to: 'none'
 version: 1.2.0+2
 
@@ -64,6 +64,7 @@ dependencies:
   # Icons
   cupertino_icons: ^1.0.6
 
+  dart_quill_delta: any
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -73,7 +74,5 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-  
-  # assets:
-  #   - assets/images/
-  #   - assets/icons/
+  assets:
+    - assets/mascot/

@@ -214,7 +214,7 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
         const SnackBar(
           content: Text(
               'Tiêu đề phần quá ngắn. Vui lòng nhập tiêu đề ít nhất 5 ký tự.'),
-          backgroundColor: Colors.orange,
+          backgroundColor: AppColors.warningNeon,
         ),
       );
       return;
@@ -266,7 +266,7 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(errorMsg),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.errorNeon,
         ),
       );
     } finally {
@@ -385,11 +385,11 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
       fillColor: AppColors.bgSecondary,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.borderPrimary),
+        borderSide: const BorderSide(color: Color(0x332D363D)),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.borderPrimary),
+        borderSide: const BorderSide(color: Color(0x332D363D)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -483,11 +483,12 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
                             child: TextButton.icon(
                               onPressed: () => _addInlineQuiz(index),
                               icon: const Icon(Icons.quiz_outlined,
-                                  color: AppColors.cyanNeon, size: 18),
+                                  color: AppColors.primaryLight, size: 18),
                               label: const Text(
                                 'Thêm câu hỏi',
                                 style: TextStyle(
-                                    color: AppColors.cyanNeon, fontSize: 13),
+                                    color: AppColors.primaryLight,
+                                    fontSize: 13),
                               ),
                             ),
                           ),
@@ -582,7 +583,7 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
               decoration: const BoxDecoration(
                 color: AppColors.bgSecondary,
                 border: Border(
-                  top: BorderSide(color: AppColors.borderPrimary),
+                  top: BorderSide(color: Color(0x332D363D)),
                 ),
               ),
               child: ElevatedButton(
@@ -656,9 +657,9 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
       margin: const EdgeInsets.only(bottom: 8, top: 4),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: typeColor.withOpacity(0.05),
+        color: typeColor.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: typeColor.withOpacity(0.3)),
+        border: Border.all(color: typeColor.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -770,7 +771,7 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
       decoration: BoxDecoration(
         color: AppColors.bgSecondary,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.borderPrimary),
+        border: Border.all(color: const Color(0x332D363D)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -795,7 +796,7 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
                 ),
             ],
           ),
-          const Divider(color: AppColors.borderPrimary, height: 20),
+          const Divider(color: Color(0x332D363D), height: 20),
 
           // Section title
           TextFormField(
@@ -822,12 +823,12 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
           Row(
             children: [
               const Icon(Icons.lightbulb_outline,
-                  color: Colors.amber, size: 16),
+                  color: AppColors.xpGold, size: 16),
               const SizedBox(width: 4),
               Text(
                 'Ví dụ minh họa (${section.examples.length})',
                 style: const TextStyle(
-                    color: Colors.amber,
+                    color: AppColors.xpGold,
                     fontSize: 13,
                     fontWeight: FontWeight.w600),
               ),
@@ -836,9 +837,10 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
                 height: 28,
                 child: TextButton.icon(
                   onPressed: () => _addExampleToSection(index),
-                  icon: const Icon(Icons.add, color: Colors.amber, size: 14),
+                  icon:
+                      const Icon(Icons.add, color: AppColors.xpGold, size: 14),
                   label: const Text('Thêm',
-                      style: TextStyle(color: Colors.amber, fontSize: 12)),
+                      style: TextStyle(color: AppColors.xpGold, fontSize: 12)),
                   style: TextButton.styleFrom(
                       padding: const EdgeInsets.symmetric(horizontal: 6)),
                 ),
@@ -1158,7 +1160,8 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
       decoration: BoxDecoration(
         color: AppColors.bgSecondary,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.cyanNeon.withOpacity(0.4)),
+        border:
+            Border.all(color: AppColors.primaryLight.withValues(alpha: 0.4)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1167,13 +1170,13 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
           Row(
             children: [
               const Icon(Icons.quiz_outlined,
-                  color: AppColors.cyanNeon, size: 18),
+                  color: AppColors.primaryLight, size: 18),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
                   'Câu hỏi inline (sau phần ${quiz.afterSectionIndex + 1})',
                   style: const TextStyle(
-                    color: AppColors.cyanNeon,
+                    color: AppColors.primaryLight,
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
                   ),
@@ -1200,10 +1203,11 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: AppColors.orangeNeon.withOpacity(0.1),
+                          color: AppColors.orangeNeon.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                              color: AppColors.orangeNeon.withOpacity(0.3)),
+                              color:
+                                  AppColors.orangeNeon.withValues(alpha: 0.3)),
                         ),
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
@@ -1227,7 +1231,7 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
               ),
             ],
           ),
-          const Divider(color: AppColors.borderPrimary, height: 16),
+          const Divider(color: Color(0x332D363D), height: 16),
 
           // Question
           TextFormField(

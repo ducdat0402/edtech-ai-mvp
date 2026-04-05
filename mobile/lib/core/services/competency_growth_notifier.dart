@@ -136,4 +136,3 @@ class CompetencyGrowthNotifier {
     return out;
   }
 }
-

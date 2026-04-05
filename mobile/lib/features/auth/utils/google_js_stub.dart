@@ -7,4 +7,3 @@ void startGoogleJsSignIn(
 ) {
   onError('Google JS sign-in is not supported on this platform.');
 }
-

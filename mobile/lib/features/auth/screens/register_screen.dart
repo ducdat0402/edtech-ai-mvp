@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:edtech_mobile/core/services/auth_service.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 
@@ -148,33 +149,51 @@ class _RegisterScreenState extends State<RegisterScreen>
   Widget _buildHeader() {
     return Column(
       children: [
-        // Icon with glow
-        Container(
-          width: 80,
-          height: 80,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: AppGradients.success,
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.successNeon.withOpacity(0.4),
-                blurRadius: 25,
-                spreadRadius: 5,
+        SizedBox(
+          height: 112,
+          child: Stack(
+            alignment: Alignment.center,
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                width: 96,
+                height: 96,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.purpleNeon.withValues(alpha: 0.2),
+                      blurRadius: 28,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+              ),
+              Positioned(
+                bottom: -6,
+                child: SvgPicture.asset(
+                  'assets/mascot/celebrating.svg',
+                  width: 108,
+                  height: 108,
+                  fit: BoxFit.contain,
+                ),
               ),
             ],
           ),
-          child: const Icon(
-            Icons.person_add_rounded,
-            size: 40,
-            color: Colors.white,
-          ),
         ),
-        const SizedBox(height: 20),
-        Text(
-          'TẠO TÀI KHOẢN',
-          style: AppTextStyles.h2.copyWith(
-            color: AppColors.textPrimary,
-            letterSpacing: 3,
+        const SizedBox(height: 16),
+        ShaderMask(
+          shaderCallback: (bounds) => AppGradients.primary.createShader(
+            Rect.fromLTWH(0, 0, bounds.width, bounds.height),
+          ),
+          blendMode: BlendMode.srcIn,
+          child: Text(
+            'Tham gia Gamistu',
+            style: AppTextStyles.h2.copyWith(
+              color: Colors.white,
+              letterSpacing: 0.2,
+            ),
+            textAlign: TextAlign.center,
           ),
         ),
         const SizedBox(height: 8),
@@ -183,6 +202,7 @@ class _RegisterScreenState extends State<RegisterScreen>
           style: AppTextStyles.bodyMedium.copyWith(
             color: AppColors.textSecondary,
           ),
+          textAlign: TextAlign.center,
         ),
       ],
     );
@@ -194,12 +214,12 @@ class _RegisterScreenState extends State<RegisterScreen>
       decoration: BoxDecoration(
         color: AppColors.bgSecondary,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.borderPrimary),
+        border: Border.all(color: const Color(0x332D363D)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
+            color: Colors.black.withValues(alpha: 0.35),
+            blurRadius: 28,
+            offset: const Offset(0, 14),
           ),
         ],
       ),
@@ -275,9 +295,10 @@ class _RegisterScreenState extends State<RegisterScreen>
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.errorNeon.withOpacity(0.1),
+                color: AppColors.errorNeon.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.errorNeon.withOpacity(0.3)),
+                border: Border.all(
+                    color: AppColors.errorNeon.withValues(alpha: 0.3)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -305,7 +326,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                         child: Text(
                           'Đăng nhập ngay →',
                           style: AppTextStyles.bodySmall.copyWith(
-                            color: AppColors.cyanNeon,
+                            color: AppColors.primaryLight,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -322,8 +343,7 @@ class _RegisterScreenState extends State<RegisterScreen>
             text: 'Đăng ký',
             onPressed: _isLoading ? null : _handleRegister,
             isLoading: _isLoading,
-            gradient: AppGradients.success,
-            glowColor: AppColors.successNeon,
+            glowColor: AppColors.primaryLight,
             icon: Icons.check_rounded,
           ),
 
@@ -371,19 +391,21 @@ class _RegisterScreenState extends State<RegisterScreen>
             prefixIcon: Icon(icon, color: AppColors.textTertiary, size: 20),
             suffixIcon: suffixIcon,
             filled: true,
-            fillColor: AppColors.bgTertiary,
+            fillColor: AppColors.bgOverlay,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.borderPrimary),
+              borderSide: const BorderSide(color: Color(0x332D363D)),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide:
-                  const BorderSide(color: AppColors.successNeon, width: 2),
+              borderSide: BorderSide(
+                color: AppColors.purpleNeon.withValues(alpha: 0.45),
+                width: 1,
+              ),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
@@ -413,7 +435,7 @@ class _RegisterScreenState extends State<RegisterScreen>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.bgTertiary.withOpacity(0.5),
+        color: AppColors.bgTertiary.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.borderPrimary),
       ),
@@ -457,7 +479,7 @@ class _RegisterScreenState extends State<RegisterScreen>
           child: Text(
             'Đăng nhập',
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.cyanNeon,
+              color: AppColors.primaryLight,
               fontWeight: FontWeight.w600,
             ),
           ),

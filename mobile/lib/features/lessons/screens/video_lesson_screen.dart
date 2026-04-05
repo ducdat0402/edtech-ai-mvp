@@ -30,18 +30,22 @@ class VideoLessonScreen extends StatefulWidget {
 
 class _VideoLessonScreenState extends State<VideoLessonScreen> {
   String get _videoUrl =>
-      (widget.lessonData['videoUrl'] ?? widget.lessonData['video'] ?? '').toString();
+      (widget.lessonData['videoUrl'] ?? widget.lessonData['video'] ?? '')
+          .toString();
 
   String get _summary =>
-      (widget.lessonData['summary'] ?? widget.lessonData['description'] ?? '').toString();
+      (widget.lessonData['summary'] ?? widget.lessonData['description'] ?? '')
+          .toString();
 
   List<Map<String, dynamic>> get _keyPoints {
-    final raw = widget.lessonData['keyPoints'] ?? widget.lessonData['key_points'] ?? [];
+    final raw =
+        widget.lessonData['keyPoints'] ?? widget.lessonData['key_points'] ?? [];
     return List<Map<String, dynamic>>.from(raw);
   }
 
   List<String> get _keywords {
-    final raw = widget.lessonData['keywords'] ?? widget.lessonData['tags'] ?? [];
+    final raw =
+        widget.lessonData['keywords'] ?? widget.lessonData['tags'] ?? [];
     return List<String>.from(raw.map((e) => e.toString()));
   }
 
@@ -50,7 +54,7 @@ class _VideoLessonScreenState extends State<VideoLessonScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text('Đã sao chép link!'),
-        backgroundColor: AppColors.successNeon.withOpacity(0.9),
+        backgroundColor: AppColors.successNeon.withValues(alpha: 0.9),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         duration: const Duration(seconds: 2),
@@ -109,7 +113,7 @@ class _VideoLessonScreenState extends State<VideoLessonScreen> {
                         decoration: BoxDecoration(
                           color: AppColors.bgSecondary,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.borderPrimary),
+                          border: Border.all(color: const Color(0x332D363D)),
                         ),
                         child: Text(
                           _summary,
@@ -160,9 +164,11 @@ class _VideoLessonScreenState extends State<VideoLessonScreen> {
                                   fontSize: 13,
                                 ),
                               ),
-                              backgroundColor: AppColors.purpleNeon.withOpacity(0.1),
+                              backgroundColor:
+                                  AppColors.purpleNeon.withValues(alpha: 0.1),
                               side: BorderSide(
-                                color: AppColors.purpleNeon.withOpacity(0.3),
+                                color:
+                                    AppColors.purpleNeon.withValues(alpha: 0.3),
                               ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(20),
@@ -194,7 +200,8 @@ class _VideoLessonScreenState extends State<VideoLessonScreen> {
                         nodeId: widget.nodeId,
                         title: widget.title,
                         lessonType: widget.lessonType ?? 'video',
-                        questions: (widget.endQuiz?['questions'] as List?)?.cast<dynamic>(),
+                        questions: (widget.endQuiz?['questions'] as List?)
+                            ?.cast<dynamic>(),
                         contributor: widget.contributor,
                       ),
                     ),
@@ -225,7 +232,7 @@ class _VideoLessonScreenState extends State<VideoLessonScreen> {
       decoration: BoxDecoration(
         color: AppColors.bgSecondary,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.borderPrimary),
+        border: Border.all(color: const Color(0x332D363D)),
       ),
       child: Column(
         children: [
@@ -243,8 +250,8 @@ class _VideoLessonScreenState extends State<VideoLessonScreen> {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  AppColors.purpleNeon.withOpacity(0.15),
-                  AppColors.pinkNeon.withOpacity(0.1),
+                  AppColors.purpleNeon.withValues(alpha: 0.15),
+                  AppColors.pinkNeon.withValues(alpha: 0.1),
                 ],
               ),
             ),
@@ -283,13 +290,14 @@ class _VideoLessonScreenState extends State<VideoLessonScreen> {
               padding: const EdgeInsets.all(12),
               child: Row(
                 children: [
-                  const Icon(Icons.link, color: AppColors.cyanNeon, size: 18),
+                  const Icon(Icons.link,
+                      color: AppColors.primaryLight, size: 18),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       _videoUrl,
                       style: const TextStyle(
-                        color: AppColors.cyanNeon,
+                        color: AppColors.primaryLight,
                         fontSize: 13,
                         decoration: TextDecoration.underline,
                       ),
@@ -299,11 +307,13 @@ class _VideoLessonScreenState extends State<VideoLessonScreen> {
                   ),
                   const SizedBox(width: 8),
                   IconButton(
-                    icon: const Icon(Icons.copy, color: AppColors.textSecondary, size: 18),
+                    icon: const Icon(Icons.copy,
+                        color: AppColors.textSecondary, size: 18),
                     onPressed: () => _copyToClipboard(_videoUrl),
                     tooltip: 'Sao chép link',
                     padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                    constraints:
+                        const BoxConstraints(minWidth: 36, minHeight: 36),
                   ),
                 ],
               ),
@@ -351,7 +361,8 @@ class _VideoLessonScreenState extends State<VideoLessonScreen> {
 
   Widget _buildKeyPointCard(int index, Map<String, dynamic> point) {
     final pointTitle = (point['title'] ?? point['name'] ?? '').toString();
-    final description = (point['description'] ?? point['content'] ?? '').toString();
+    final description =
+        (point['description'] ?? point['content'] ?? '').toString();
     final timestamp = (point['timestamp'] ?? point['time'] ?? '').toString();
 
     return Container(
@@ -361,7 +372,7 @@ class _VideoLessonScreenState extends State<VideoLessonScreen> {
       decoration: BoxDecoration(
         color: AppColors.bgSecondary,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.borderPrimary),
+        border: Border.all(color: const Color(0x332D363D)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -372,7 +383,7 @@ class _VideoLessonScreenState extends State<VideoLessonScreen> {
             height: 28,
             margin: const EdgeInsets.only(top: 2),
             decoration: BoxDecoration(
-              color: AppColors.purpleNeon.withOpacity(0.2),
+              color: AppColors.purpleNeon.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(8),
             ),
             alignment: Alignment.center,
@@ -406,15 +417,16 @@ class _VideoLessonScreenState extends State<VideoLessonScreen> {
                     ),
                     if (timestamp.isNotEmpty)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
-                          color: AppColors.cyanNeon.withOpacity(0.15),
+                          color: AppColors.primaryLight.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
                           timestamp,
                           style: const TextStyle(
-                            color: AppColors.cyanNeon,
+                            color: AppColors.primaryLight,
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
                           ),

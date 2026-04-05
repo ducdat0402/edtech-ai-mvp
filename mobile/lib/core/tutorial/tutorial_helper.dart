@@ -120,15 +120,15 @@ class _TutorialContent extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColors.purpleNeon.withOpacity(0.2),
-            AppColors.cyanNeon.withOpacity(0.1),
+            AppColors.purpleNeon.withValues(alpha: 0.2),
+            AppColors.cyanNeon.withValues(alpha: 0.1),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: AppColors.purpleNeon.withOpacity(0.4),
+          color: AppColors.purpleNeon.withValues(alpha: 0.4),
           width: 1.5,
         ),
       ),
@@ -140,9 +140,10 @@ class _TutorialContent extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.cyanNeon.withOpacity(0.2),
+                  color: AppColors.cyanNeon.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -177,7 +178,7 @@ class _TutorialContent extends StatelessWidget {
           Text(
             description,
             style: TextStyle(
-              color: Colors.white.withOpacity(0.85),
+              color: Colors.white.withValues(alpha: 0.85),
               fontSize: 13,
               height: 1.4,
             ),
@@ -188,7 +189,8 @@ class _TutorialContent extends StatelessWidget {
             child: GestureDetector(
               onTap: onNext,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [AppColors.purpleNeon, AppColors.cyanNeon],
@@ -207,7 +209,8 @@ class _TutorialContent extends StatelessWidget {
                       ),
                     ),
                     SizedBox(width: 4),
-                    Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 16),
+                    Icon(Icons.arrow_forward_rounded,
+                        color: Colors.white, size: 16),
                   ],
                 ),
               ),

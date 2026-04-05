@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'colors.dart';
 
-/// Gamified Learning App Theme
-///
-/// Cyberpunk Edgy with Gaming Typography
-/// Dark Mode with Neon Accents
+/// Gamistu — theme theo `DESIGN.md` (Luminal Scholar, dark-first).
 class AppTheme {
   AppTheme._();
 
@@ -15,9 +12,10 @@ class AppTheme {
       useMaterial3: true,
       brightness: Brightness.light,
       colorScheme: const ColorScheme.light(
-        primary: Color(0xFF6D28D9),
-        secondary: Color(0xFF0891B2),
-        surface: Color(0xFFF8FAFC),
+        primary: Color(0xFF7354F5),
+        secondary: Color(0xFFEAB308),
+        tertiary: Color(0xFF16A34A),
+        surface: Color(0xFFF1F5F9),
         error: Color(0xFFDC2626),
       ),
       scaffoldBackgroundColor: const Color(0xFFF3F4F6),
@@ -74,7 +72,7 @@ class AppTheme {
         }),
         trackColor: WidgetStateProperty.resolveWith((states) {
           return states.contains(WidgetState.selected)
-              ? const Color(0xFF6D28D9).withOpacity(0.4)
+              ? const Color(0xFF6D28D9).withValues(alpha: 0.4)
               : const Color(0xFFE5E7EB);
         }),
       ),
@@ -91,13 +89,18 @@ class AppTheme {
       scaffoldBackgroundColor: AppColors.bgPrimary,
       colorScheme: const ColorScheme.dark(
         primary: AppColors.purpleNeon,
-        secondary: AppColors.cyanNeon,
-        surface: AppColors.bgSecondary,
-        error: AppColors.errorNeon,
         onPrimary: Colors.white,
-        onSecondary: Colors.white,
+        secondary: AppColors.coinGold,
+        onSecondary: Color(0xFF1A1408),
+        tertiary: AppColors.successNeon,
+        onTertiary: Color(0xFF04140C),
+        surface: AppColors.bgSecondary,
         onSurface: AppColors.textPrimary,
+        onSurfaceVariant: AppColors.textSecondary,
+        error: AppColors.errorNeon,
         onError: Colors.white,
+        outline: Color(0x33474554),
+        outlineVariant: Color(0x33474554),
       ),
 
       // Typography
@@ -123,7 +126,7 @@ class AppTheme {
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: AppColors.borderPrimary),
+          side: const BorderSide(color: Color(0x332D363D)),
         ),
       ),
 
@@ -146,13 +149,13 @@ class AppTheme {
 
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.cyanNeon,
+          foregroundColor: AppColors.primaryLight,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          side: const BorderSide(color: AppColors.cyanNeon, width: 2),
-          textStyle: GoogleFonts.beVietnamPro(
+          side: const BorderSide(color: Color(0x33474554), width: 1),
+          textStyle: GoogleFonts.manrope(
             fontSize: 14,
             fontWeight: FontWeight.w600,
             letterSpacing: 0.2,
@@ -162,8 +165,8 @@ class AppTheme {
 
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: AppColors.cyanNeon,
-          textStyle: GoogleFonts.beVietnamPro(
+          foregroundColor: AppColors.primaryLight,
+          textStyle: GoogleFonts.manrope(
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
@@ -172,26 +175,29 @@ class AppTheme {
 
       // Text selection (cursor, selection handles)
       textSelectionTheme: const TextSelectionThemeData(
-        cursorColor: AppColors.cyanNeon,
-        selectionColor: AppColors.purpleNeon,
-        selectionHandleColor: AppColors.cyanNeon,
+        cursorColor: AppColors.primaryLight,
+        selectionColor: Color(0x667354F5),
+        selectionHandleColor: AppColors.primaryLight,
       ),
 
       // Input fields
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.bgSecondary,
+        fillColor: AppColors.bgOverlay,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.borderPrimary),
+          borderSide: const BorderSide(color: Color(0x332D363D)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.borderPrimary),
+          borderSide: const BorderSide(color: Color(0x332D363D)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.cyanNeon, width: 2),
+          borderSide: BorderSide(
+            color: AppColors.purpleNeon.withValues(alpha: 0.4),
+            width: 1,
+          ),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -238,7 +244,8 @@ class AppTheme {
       // Snackbar
       snackBarTheme: SnackBarThemeData(
         backgroundColor: AppColors.bgSecondary,
-        contentTextStyle: GoogleFonts.beVietnamPro(color: AppColors.textPrimary),
+        contentTextStyle:
+            GoogleFonts.beVietnamPro(color: AppColors.textPrimary),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
@@ -256,7 +263,7 @@ class AppTheme {
         activeTrackColor: AppColors.purpleNeon,
         inactiveTrackColor: AppColors.bgTertiary,
         thumbColor: AppColors.purpleNeon,
-        overlayColor: AppColors.purpleNeon.withOpacity(0.2),
+        overlayColor: AppColors.purpleNeon.withValues(alpha: 0.2),
       ),
 
       // Switch
@@ -269,7 +276,7 @@ class AppTheme {
         }),
         trackColor: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return AppColors.purpleNeon.withOpacity(0.5);
+            return AppColors.purpleNeon.withValues(alpha: 0.5);
           }
           return AppColors.bgTertiary;
         }),
@@ -292,7 +299,7 @@ class AppTheme {
 
       // Divider
       dividerTheme: const DividerThemeData(
-        color: AppColors.borderPrimary,
+        color: Color(0x222D363D),
         thickness: 1,
       ),
 
@@ -382,19 +389,19 @@ class AppTheme {
         color: AppColors.textTertiary,
         height: 1.45,
       ),
-      labelLarge: GoogleFonts.beVietnamPro(
+      labelLarge: GoogleFonts.manrope(
         fontSize: 14,
         fontWeight: FontWeight.w600,
         color: AppColors.textPrimary,
         letterSpacing: 0.2,
       ),
-      labelMedium: GoogleFonts.beVietnamPro(
+      labelMedium: GoogleFonts.manrope(
         fontSize: 12,
         fontWeight: FontWeight.w500,
         color: AppColors.textSecondary,
         letterSpacing: 0.15,
       ),
-      labelSmall: GoogleFonts.beVietnamPro(
+      labelSmall: GoogleFonts.manrope(
         fontSize: 10,
         fontWeight: FontWeight.w500,
         color: AppColors.textTertiary,

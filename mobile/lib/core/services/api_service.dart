@@ -41,7 +41,8 @@ class ApiService {
 
   /// Get all learning nodes for a subject (includes all nodes, not just unlocked)
   Future<List<dynamic>> getLearningNodesBySubject(String subjectId) async {
-    final response = await _apiClient.get(ApiConstants.nodesBySubject(subjectId));
+    final response =
+        await _apiClient.get(ApiConstants.nodesBySubject(subjectId));
     return List<Map<String, dynamic>>.from(response.data);
   }
 
@@ -130,17 +131,21 @@ class ApiService {
     return Map<String, dynamic>.from(response.data);
   }
 
-  Future<Map<String, dynamic>> updateLessonContent(String nodeId, Map<String, dynamic> data) async {
-    final response = await _apiClient.put(ApiConstants.updateLessonContent(nodeId), data: data);
+  Future<Map<String, dynamic>> updateLessonContent(
+      String nodeId, Map<String, dynamic> data) async {
+    final response = await _apiClient
+        .put(ApiConstants.updateLessonContent(nodeId), data: data);
     return Map<String, dynamic>.from(response.data);
   }
 
   Future<Map<String, dynamic>> generateEndQuiz(String nodeId) async {
-    final response = await _apiClient.post(ApiConstants.generateEndQuiz(nodeId));
+    final response =
+        await _apiClient.post(ApiConstants.generateEndQuiz(nodeId));
     return Map<String, dynamic>.from(response.data);
   }
 
-  Future<Map<String, dynamic>> generateExample(String title, String content, String exampleType) async {
+  Future<Map<String, dynamic>> generateExample(
+      String title, String content, String exampleType) async {
     final response = await _apiClient.post(
       ApiConstants.generateExample,
       data: {'title': title, 'content': content, 'exampleType': exampleType},
@@ -194,7 +199,8 @@ class ApiService {
       ApiConstants.submitCommunicationAttempt(nodeId),
       data: {
         'responseText': responseText,
-        if (lessonType != null && lessonType.isNotEmpty) 'lessonType': lessonType,
+        if (lessonType != null && lessonType.isNotEmpty)
+          'lessonType': lessonType,
       },
     );
     return Map<String, dynamic>.from(response.data);
@@ -235,10 +241,12 @@ class ApiService {
       data: {
         'followedPlan': followedPlan,
         if (nodeId != null && nodeId.isNotEmpty) 'nodeId': nodeId,
-        if (lessonType != null && lessonType.isNotEmpty) 'lessonType': lessonType,
+        if (lessonType != null && lessonType.isNotEmpty)
+          'lessonType': lessonType,
         if (deviationReason != null && deviationReason.isNotEmpty)
           'deviationReason': deviationReason,
-        if (nextAction != null && nextAction.isNotEmpty) 'nextAction': nextAction,
+        if (nextAction != null && nextAction.isNotEmpty)
+          'nextAction': nextAction,
       },
     );
     return Map<String, dynamic>.from(response.data);
@@ -261,7 +269,8 @@ class ApiService {
   }
 
   /// Web / khi chỉ có bytes (không có đường dẫn file).
-  Future<String> uploadImageBytes(List<int> bytes, {String filename = 'avatar.jpg'}) async {
+  Future<String> uploadImageBytes(List<int> bytes,
+      {String filename = 'avatar.jpg'}) async {
     final response = await _apiClient.postMultipartBytes(
       ApiConstants.uploadImage,
       fileKey: 'image',
@@ -422,7 +431,8 @@ class ApiService {
     return response.data;
   }
 
-  Future<Map<String, dynamic>> getWeeklyRewardHistory({int limit = 20, int offset = 0}) async {
+  Future<Map<String, dynamic>> getWeeklyRewardHistory(
+      {int limit = 20, int offset = 0}) async {
     final response = await _apiClient.get(
       ApiConstants.weeklyRewardHistory,
       queryParameters: {'limit': limit, 'offset': offset},
@@ -479,7 +489,8 @@ class ApiService {
   // === New: Lesson type completion cascade ===
 
   /// Complete a specific lesson type for a node (triggers cascade rewards)
-  Future<Map<String, dynamic>> completeLessonType(String nodeId, String lessonType) async {
+  Future<Map<String, dynamic>> completeLessonType(
+      String nodeId, String lessonType) async {
     final response = await _apiClient.post(
       ApiConstants.completeLessonType,
       data: {'nodeId': nodeId, 'lessonType': lessonType},
@@ -489,7 +500,8 @@ class ApiService {
 
   /// Get lesson type progress for a node (which types completed)
   Future<Map<String, dynamic>> getLessonTypeProgress(String nodeId) async {
-    final response = await _apiClient.get(ApiConstants.lessonTypeProgress(nodeId));
+    final response =
+        await _apiClient.get(ApiConstants.lessonTypeProgress(nodeId));
     return Map<String, dynamic>.from(response.data);
   }
 
@@ -501,13 +513,15 @@ class ApiService {
 
   /// Get domain progress for current user
   Future<Map<String, dynamic>> getDomainProgress(String domainId) async {
-    final response = await _apiClient.get(ApiConstants.domainProgress(domainId));
+    final response =
+        await _apiClient.get(ApiConstants.domainProgress(domainId));
     return Map<String, dynamic>.from(response.data);
   }
 
   /// Get all lesson type contents for a node
   Future<Map<String, dynamic>> getLessonTypeContents(String nodeId) async {
-    final response = await _apiClient.get(ApiConstants.lessonTypeContentsByNode(nodeId));
+    final response =
+        await _apiClient.get(ApiConstants.lessonTypeContentsByNode(nodeId));
     return Map<String, dynamic>.from(response.data);
   }
 
@@ -515,17 +529,14 @@ class ApiService {
   Future<Map<String, dynamic>> submitEndQuizForType(
     String nodeId,
     String lessonType,
-    List<int> answers,
-    {
+    List<int> answers, {
     List<int>? responseTimesMs,
     int? confidencePercent,
-  }
-  ) async {
+  }) async {
     final body = <String, dynamic>{
       'answers': answers,
       if (responseTimesMs != null) 'responseTimesMs': responseTimesMs,
-      if (confidencePercent != null)
-        'confidencePercent': confidencePercent,
+      if (confidencePercent != null) 'confidencePercent': confidencePercent,
     };
     final response = await _apiClient.post(
       ApiConstants.submitEndQuizForType(nodeId, lessonType),
@@ -535,8 +546,10 @@ class ApiService {
   }
 
   /// Get lesson data for a specific type
-  Future<Map<String, dynamic>> getLessonDataByType(String nodeId, String lessonType) async {
-    final response = await _apiClient.get(ApiConstants.getLessonDataByType(nodeId, lessonType));
+  Future<Map<String, dynamic>> getLessonDataByType(
+      String nodeId, String lessonType) async {
+    final response = await _apiClient
+        .get(ApiConstants.getLessonDataByType(nodeId, lessonType));
     return Map<String, dynamic>.from(response.data);
   }
 
@@ -571,7 +584,8 @@ class ApiService {
     return response.data;
   }
 
-  Future<Map<String, dynamic>> completeOnboarding(Map<String, dynamic> data) async {
+  Future<Map<String, dynamic>> completeOnboarding(
+      Map<String, dynamic> data) async {
     final response = await _apiClient.post(
       ApiConstants.onboardingComplete,
       data: data,
@@ -588,14 +602,16 @@ class ApiService {
   }
 
   // Adaptive Placement Test
-  Future<Map<String, dynamic>> startAdaptivePlacementTest(String subjectId) async {
+  Future<Map<String, dynamic>> startAdaptivePlacementTest(
+      String subjectId) async {
     final response = await _apiClient.post(
       ApiConstants.startAdaptiveTest(subjectId),
     );
     return response.data;
   }
 
-  Future<Map<String, dynamic>> submitAdaptiveAnswer(String testId, int answer) async {
+  Future<Map<String, dynamic>> submitAdaptiveAnswer(
+      String testId, int answer) async {
     final response = await _apiClient.post(
       ApiConstants.submitAdaptiveAnswer(testId),
       data: {'answer': answer},
@@ -666,7 +682,8 @@ class ApiService {
   }
 
   // Personal Mind Map - Chat
-  Future<Map<String, dynamic>> startPersonalMindMapChat(String subjectId) async {
+  Future<Map<String, dynamic>> startPersonalMindMapChat(
+      String subjectId) async {
     final response = await _apiClient.post(
       ApiConstants.startPersonalMindMapChat(subjectId),
     );
@@ -684,21 +701,24 @@ class ApiService {
     return response.data;
   }
 
-  Future<Map<String, dynamic>> getPersonalMindMapChatSession(String subjectId) async {
+  Future<Map<String, dynamic>> getPersonalMindMapChatSession(
+      String subjectId) async {
     final response = await _apiClient.get(
       ApiConstants.getPersonalMindMapChatSession(subjectId),
     );
     return response.data;
   }
 
-  Future<Map<String, dynamic>> generatePersonalMindMapFromChat(String subjectId) async {
+  Future<Map<String, dynamic>> generatePersonalMindMapFromChat(
+      String subjectId) async {
     final response = await _apiClient.post(
       ApiConstants.generatePersonalMindMapFromChat(subjectId),
     );
     return response.data;
   }
 
-  Future<Map<String, dynamic>> resetPersonalMindMapChat(String subjectId) async {
+  Future<Map<String, dynamic>> resetPersonalMindMapChat(
+      String subjectId) async {
     final response = await _apiClient.post(
       ApiConstants.resetPersonalMindMapChat(subjectId),
     );
@@ -812,7 +832,8 @@ class ApiService {
     return response.data;
   }
 
-  Future<Map<String, dynamic>> createLessonContribution(Map<String, dynamic> data) async {
+  Future<Map<String, dynamic>> createLessonContribution(
+      Map<String, dynamic> data) async {
     final response = await _apiClient.post(
       ApiConstants.createLessonContribution,
       data: data,
@@ -865,7 +886,8 @@ class ApiService {
   }
 
   // Lesson Content Edit contribution
-  Future<Map<String, dynamic>> createLessonContentEditContribution(Map<String, dynamic> data) async {
+  Future<Map<String, dynamic>> createLessonContentEditContribution(
+      Map<String, dynamic> data) async {
     final response = await _apiClient.post(
       ApiConstants.createLessonContentEdit,
       data: data,
@@ -874,7 +896,8 @@ class ApiService {
   }
 
   // Lesson Type Version History
-  Future<Map<String, dynamic>> getLessonTypeHistory(String nodeId, String lessonType) async {
+  Future<Map<String, dynamic>> getLessonTypeHistory(
+      String nodeId, String lessonType) async {
     final response = await _apiClient.get(
       ApiConstants.lessonTypeHistory(nodeId, lessonType),
     );
@@ -918,7 +941,8 @@ class ApiService {
   }
 
   // Analytics (Admin)
-  Future<Map<String, dynamic>> getAnalyticsOverview({String period = '30d'}) async {
+  Future<Map<String, dynamic>> getAnalyticsOverview(
+      {String period = '30d'}) async {
     final response = await _apiClient.get(
       ApiConstants.analyticsOverview,
       queryParameters: {'period': period},
@@ -968,7 +992,8 @@ class ApiService {
   // =====================
 
   Future<Map<String, dynamic>> getUnlockPricing(String subjectId) async {
-    final response = await _apiClient.get(ApiConstants.unlockPricing(subjectId));
+    final response =
+        await _apiClient.get(ApiConstants.unlockPricing(subjectId));
     return response.data;
   }
 
@@ -1030,7 +1055,8 @@ class ApiService {
     return response.data;
   }
 
-  Future<Map<String, dynamic>> purchaseShopItem(String itemId, {int quantity = 1}) async {
+  Future<Map<String, dynamic>> purchaseShopItem(String itemId,
+      {int quantity = 1}) async {
     final response = await _apiClient.post(
       '/shop/purchase',
       data: {'itemId': itemId, 'quantity': quantity},
@@ -1050,14 +1076,16 @@ class ApiService {
   // World Chat APIs
   // =====================
 
-  Future<Map<String, dynamic>> getChatMessages({int limit = 30, String? after}) async {
+  Future<Map<String, dynamic>> getChatMessages(
+      {int limit = 30, String? after}) async {
     String url = '/world-chat/messages?limit=$limit';
     if (after != null) url += '&after=$after';
     final response = await _apiClient.get(url);
     return response.data;
   }
 
-  Future<Map<String, dynamic>> sendChatMessage(String message, {String? replyToId}) async {
+  Future<Map<String, dynamic>> sendChatMessage(String message,
+      {String? replyToId}) async {
     final response = await _apiClient.post(
       '/world-chat/send',
       data: {'message': message, if (replyToId != null) 'replyToId': replyToId},
@@ -1104,7 +1132,8 @@ class ApiService {
     return List<Map<String, dynamic>>.from(response.data);
   }
 
-  Future<Map<String, dynamic>> getFriendActivities({int page = 1, int limit = 20}) async {
+  Future<Map<String, dynamic>> getFriendActivities(
+      {int page = 1, int limit = 20}) async {
     final response = await _apiClient.get(
       ApiConstants.friendActivities,
       queryParameters: {'page': page, 'limit': limit},
@@ -1113,27 +1142,32 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>> sendFriendRequest(String userId) async {
-    final response = await _apiClient.post(ApiConstants.sendFriendRequest(userId));
+    final response =
+        await _apiClient.post(ApiConstants.sendFriendRequest(userId));
     return response.data;
   }
 
   Future<Map<String, dynamic>> acceptFriendRequest(String friendshipId) async {
-    final response = await _apiClient.post(ApiConstants.acceptFriendRequest(friendshipId));
+    final response =
+        await _apiClient.post(ApiConstants.acceptFriendRequest(friendshipId));
     return response.data;
   }
 
   Future<Map<String, dynamic>> rejectFriendRequest(String friendshipId) async {
-    final response = await _apiClient.post(ApiConstants.rejectFriendRequest(friendshipId));
+    final response =
+        await _apiClient.post(ApiConstants.rejectFriendRequest(friendshipId));
     return response.data;
   }
 
   Future<Map<String, dynamic>> cancelFriendRequest(String friendshipId) async {
-    final response = await _apiClient.post(ApiConstants.cancelFriendRequest(friendshipId));
+    final response =
+        await _apiClient.post(ApiConstants.cancelFriendRequest(friendshipId));
     return response.data;
   }
 
   Future<Map<String, dynamic>> unfriend(String friendshipId) async {
-    final response = await _apiClient.delete(ApiConstants.unfriend(friendshipId));
+    final response =
+        await _apiClient.delete(ApiConstants.unfriend(friendshipId));
     return response.data;
   }
 
@@ -1156,13 +1190,15 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>> getFriendRelationship(String userId) async {
-    final response = await _apiClient.get(ApiConstants.friendRelationship(userId));
+    final response =
+        await _apiClient.get(ApiConstants.friendRelationship(userId));
     final data = response.data;
     if (data is Map<String, dynamic>) return data;
     return Map<String, dynamic>.from(data as Map);
   }
 
-  Future<Map<String, dynamic>> listCommunityStatuses({int limit = 20, String? before}) async {
+  Future<Map<String, dynamic>> listCommunityStatuses(
+      {int limit = 20, String? before}) async {
     final response = await _apiClient.get(
       ApiConstants.communityStatuses,
       queryParameters: {
@@ -1189,7 +1225,8 @@ class ApiService {
     await _apiClient.delete(ApiConstants.communityStatus(id));
   }
 
-  Future<Map<String, dynamic>> reactCommunityStatus(String id, String kind) async {
+  Future<Map<String, dynamic>> reactCommunityStatus(
+      String id, String kind) async {
     final response = await _apiClient.post(
       ApiConstants.communityStatusReact(id),
       data: {'kind': kind},
@@ -1199,7 +1236,8 @@ class ApiService {
     return Map<String, dynamic>.from(data as Map);
   }
 
-  Future<List<dynamic>> listCommunityComments(String statusId, {int limit = 50}) async {
+  Future<List<dynamic>> listCommunityComments(String statusId,
+      {int limit = 50}) async {
     final response = await _apiClient.get(
       ApiConstants.communityStatusComments(statusId),
       queryParameters: {'limit': limit},
@@ -1207,7 +1245,8 @@ class ApiService {
     return List<Map<String, dynamic>>.from(response.data as List);
   }
 
-  Future<Map<String, dynamic>> addCommunityComment(String statusId, String content) async {
+  Future<Map<String, dynamic>> addCommunityComment(
+      String statusId, String content) async {
     final response = await _apiClient.post(
       ApiConstants.communityStatusComments(statusId),
       data: {'content': content},
@@ -1255,5 +1294,4 @@ class ApiService {
       return null;
     }
   }
-
 }

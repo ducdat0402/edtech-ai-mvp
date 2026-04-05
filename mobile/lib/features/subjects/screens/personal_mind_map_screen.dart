@@ -6,6 +6,7 @@ import 'package:edtech_mobile/core/services/tutorial_service.dart';
 import 'package:edtech_mobile/core/tutorial/tutorial_helper.dart';
 import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:go_router/go_router.dart';
+import 'package:edtech_mobile/theme/theme.dart';
 
 class PersonalMindMapScreen extends StatefulWidget {
   final String subjectId;
@@ -100,7 +101,8 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
           TutorialHelper.buildTarget(
             key: _welcomeButtonKey,
             title: 'Tạo lộ trình cá nhân',
-            description: 'Nhấn nút này để chat với AI và tạo lộ trình học tập phù hợp với bạn!',
+            description:
+                'Nhấn nút này để chat với AI và tạo lộ trình học tập phù hợp với bạn!',
             icon: Icons.route,
             stepLabel: 'Bắt đầu',
             align: ContentAlign.top,
@@ -134,14 +136,16 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
           TutorialHelper.buildTarget(
             key: _progressHeaderKey,
             title: 'Tiến độ học tập',
-            description: 'Theo dõi mục tiêu và tiến độ hoàn thành. Nhấn "Tạo lại" nếu muốn thay đổi lộ trình.',
+            description:
+                'Theo dõi mục tiêu và tiến độ hoàn thành. Nhấn "Tạo lại" nếu muốn thay đổi lộ trình.',
             icon: Icons.trending_up,
             stepLabel: 'Bước 1/2',
           ),
           TutorialHelper.buildTarget(
             key: _topicCardsKey,
             title: 'Danh sách chủ đề',
-            description: 'Nhấn vào từng chủ đề để xem bài học bên trong. Hoàn thành tất cả để đạt mục tiêu!',
+            description:
+                'Nhấn vào từng chủ đề để xem bài học bên trong. Hoàn thành tất cả để đạt mục tiêu!',
             icon: Icons.list_alt,
             stepLabel: 'Bước 2/2',
             align: ContentAlign.top,
@@ -220,7 +224,7 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content: Text('Lỗi: ${e.toString()}'),
-              backgroundColor: Colors.red),
+              backgroundColor: AppColors.errorNeon),
         );
       }
     }
@@ -251,7 +255,7 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(message),
-              backgroundColor: Colors.green,
+              backgroundColor: AppColors.successNeon,
             ),
           );
         }
@@ -262,7 +266,7 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
             SnackBar(
               content:
                   Text(message.isNotEmpty ? message : 'Không thể tạo lộ trình'),
-              backgroundColor: Colors.orange,
+              backgroundColor: AppColors.warningNeon,
             ),
           );
         }
@@ -273,7 +277,7 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content: Text('Lỗi: ${e.toString()}'),
-              backgroundColor: Colors.red),
+              backgroundColor: AppColors.errorNeon),
         );
       }
     }
@@ -284,20 +288,29 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Tạo lại lộ trình?'),
-        content: const Text(
+        backgroundColor: AppColors.bgSecondary,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text('Tạo lại lộ trình?',
+            style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
+        content: Text(
           'Lộ trình hiện tại sẽ bị xóa và bạn sẽ cần trả lời lại các câu hỏi để tạo lộ trình mới.\n\n'
           'Bạn có chắc chắn muốn tiếp tục?',
+          style:
+              AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Hủy'),
+            child: Text('Hủy',
+                style: AppTextStyles.labelLarge
+                    .copyWith(color: AppColors.textSecondary)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Tạo lại', style: TextStyle(color: Colors.white)),
+            style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.errorNeon,
+                foregroundColor: Colors.white),
+            child: const Text('Tạo lại'),
           ),
         ],
       ),
@@ -325,7 +338,7 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content: Text('Lỗi: ${e.toString()}'),
-              backgroundColor: Colors.red),
+              backgroundColor: AppColors.errorNeon),
         );
       }
     }
@@ -334,8 +347,12 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.bgPrimary,
       appBar: AppBar(
-        title: const Text('Lộ trình của bạn'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Text('Lộ trình của bạn',
+            style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
         leading: AppBarLeadingBackAndHome(
           onBack: () {
             if (_isChatMode && !_exists) {
@@ -368,14 +385,16 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
                     ],
                   ),
                 ),
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'recreate',
                   child: Row(
                     children: [
-                      Icon(Icons.replay, size: 20, color: Colors.orange),
-                      SizedBox(width: 8),
+                      const Icon(Icons.replay,
+                          size: 20, color: AppColors.warningNeon),
+                      const SizedBox(width: 8),
                       Text('Tạo lại lộ trình',
-                          style: TextStyle(color: Colors.orange)),
+                          style: AppTextStyles.labelLarge
+                              .copyWith(color: AppColors.warningNeon)),
                     ],
                   ),
                 ),
@@ -384,7 +403,8 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.primaryLight))
           : _error != null
               ? _buildErrorView()
               : _isChatMode
@@ -400,9 +420,15 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.error_outline, size: 64, color: Colors.red),
+          const Icon(Icons.error_outline, size: 64, color: AppColors.errorNeon),
           const SizedBox(height: 16),
-          Text('Lỗi: $_error', textAlign: TextAlign.center),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Text('Lỗi: $_error',
+                textAlign: TextAlign.center,
+                style: AppTextStyles.bodyMedium
+                    .copyWith(color: AppColors.textSecondary)),
+          ),
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: () {
@@ -412,6 +438,10 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
               });
               _checkAndLoadMindMap();
             },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.purpleNeon,
+              foregroundColor: Colors.white,
+            ),
             child: const Text('Thử lại'),
           ),
         ],
@@ -430,24 +460,23 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
           Container(
             width: 120,
             height: 120,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.purple.shade300, Colors.blue.shade400],
-              ),
+            decoration: const BoxDecoration(
+              gradient: AppGradients.primary,
               shape: BoxShape.circle,
             ),
             child: const Icon(Icons.route, size: 60, color: Colors.white),
           ),
           const SizedBox(height: 32),
-          const Text(
+          Text(
             'Tạo Lộ Trình Cá Nhân',
-            style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+            style: AppTextStyles.h2.copyWith(color: AppColors.textPrimary),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
           Text(
             'AI sẽ hỏi bạn về kinh nghiệm, mục tiêu và sở thích để tạo lộ trình học tập phù hợp nhất với bạn.',
-            style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+            style: AppTextStyles.bodyMedium
+                .copyWith(color: AppColors.textSecondary, height: 1.5),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 40),
@@ -466,7 +495,8 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
             child: ElevatedButton(
               onPressed: _startSubjectChat,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.purple,
+                backgroundColor: AppColors.purpleNeon,
+                foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -502,13 +532,16 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: Colors.purple.shade50,
+              color: AppColors.purpleNeon.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, color: Colors.purple),
+            child: Icon(icon, color: AppColors.primaryLight),
           ),
           const SizedBox(width: 16),
-          Expanded(child: Text(text, style: const TextStyle(fontSize: 16))),
+          Expanded(
+              child: Text(text,
+                  style: AppTextStyles.bodyMedium
+                      .copyWith(color: AppColors.textPrimary))),
         ],
       ),
     );
@@ -522,24 +555,23 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
         if (_subjectInfo != null)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            color: Colors.purple.shade50,
+            color: AppColors.bgSecondary,
             child: Row(
               children: [
-                const Icon(Icons.school, color: Colors.purple, size: 20),
+                const Icon(Icons.school,
+                    color: AppColors.primaryLight, size: 20),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     _subjectInfo!['name'] as String? ?? 'Môn học',
-                    style: TextStyle(
-                      color: Colors.purple.shade700,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
+                    style: AppTextStyles.labelLarge
+                        .copyWith(color: AppColors.textPrimary),
                   ),
                 ),
                 Text(
                   '${_subjectInfo!['totalLessons'] ?? 0} bài học',
-                  style: TextStyle(color: Colors.purple.shade500, fontSize: 12),
+                  style: AppTextStyles.caption
+                      .copyWith(color: AppColors.textTertiary),
                 ),
               ],
             ),
@@ -547,15 +579,17 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
         if (!_canGenerate)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            color: Colors.orange.shade50,
+            color: AppColors.warningNeon.withValues(alpha: 0.12),
             child: Row(
               children: [
-                const Icon(Icons.psychology, color: Colors.orange, size: 20),
+                const Icon(Icons.psychology,
+                    color: AppColors.warningNeon, size: 20),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     '🔄 Đang thu thập thông tin từ bạn...',
-                    style: TextStyle(color: Colors.orange.shade700, fontSize: 13),
+                    style: AppTextStyles.bodySmall
+                        .copyWith(color: AppColors.warningNeon),
                   ),
                 ),
               ],
@@ -579,10 +613,7 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
           ),
         ),
         // Bottom area: big generate button OR text input
-        if (_canGenerate)
-          _buildGenerateButton()
-        else
-          _buildChatInput(),
+        if (_canGenerate) _buildGenerateButton() else _buildChatInput(),
       ],
     );
   }
@@ -590,15 +621,11 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
   Widget _buildGenerateButton() {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
-      decoration: BoxDecoration(
-        color: Theme.of(context).scaffoldBackgroundColor,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
-        ],
+      decoration: const BoxDecoration(
+        color: AppColors.bgSecondary,
+        border: Border(
+          top: BorderSide(color: Color(0x332D363D)),
+        ),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -606,17 +633,19 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
-              color: Colors.green.shade50,
+              color: AppColors.successNeon.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Row(
               children: [
-                Icon(Icons.check_circle, color: Colors.green.shade600, size: 18),
+                const Icon(Icons.check_circle,
+                    color: AppColors.successNeon, size: 18),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     'Đã đủ thông tin! Nhấn nút bên dưới để tạo lộ trình.',
-                    style: TextStyle(color: Colors.green.shade700, fontSize: 13),
+                    style: AppTextStyles.bodySmall
+                        .copyWith(color: AppColors.successNeon),
                   ),
                 ),
               ],
@@ -630,17 +659,24 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
               onPressed: _isGenerating ? null : _generateMindMap,
               icon: _isGenerating
                   ? const SizedBox(
-                      width: 20, height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: Colors.white),
                     )
-                  : const Icon(Icons.auto_awesome, color: Colors.white, size: 24),
+                  : const Icon(Icons.auto_awesome,
+                      color: Colors.white, size: 24),
               label: Text(
                 _isGenerating ? 'Đang tạo lộ trình...' : 'Tạo lộ trình ngay!',
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.deepPurple,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                backgroundColor: AppColors.purpleNeon,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
                 elevation: 4,
               ),
             ),
@@ -653,32 +689,40 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
   Widget _buildChatInput() {
     return Container(
       padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Theme.of(context).scaffoldBackgroundColor,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
-        ],
+      decoration: const BoxDecoration(
+        color: AppColors.bgSecondary,
+        border: Border(
+          top: BorderSide(color: Color(0x332D363D)),
+        ),
       ),
       child: Row(
         children: [
           Expanded(
             child: TextField(
               controller: _chatController,
-              style: const TextStyle(color: Colors.black87, fontSize: 15),
+              style: AppTextStyles.bodyMedium
+                  .copyWith(color: AppColors.textPrimary),
               decoration: InputDecoration(
                 hintText: 'Nhập tin nhắn...',
-                hintStyle: TextStyle(color: Colors.grey.shade500),
+                hintStyle: AppTextStyles.bodyMedium
+                    .copyWith(color: AppColors.textTertiary),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(24),
-                  borderSide: BorderSide.none,
+                  borderSide: const BorderSide(color: Color(0x332D363D)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(24),
+                  borderSide: const BorderSide(color: Color(0x332D363D)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(24),
+                  borderSide: BorderSide(
+                      color: AppColors.primaryLight.withValues(alpha: 0.6)),
                 ),
                 filled: true,
-                fillColor: Colors.grey.shade100,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                fillColor: AppColors.bgTertiary,
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               ),
               onSubmitted: (_) => _sendMessage(),
             ),
@@ -686,7 +730,10 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
           const SizedBox(width: 8),
           IconButton(
             onPressed: _isSending ? null : _sendMessage,
-            icon: Icon(Icons.send, color: _isSending ? Colors.grey : Colors.purple),
+            icon: Icon(Icons.send_rounded,
+                color: _isSending
+                    ? AppColors.textTertiary
+                    : AppColors.primaryLight),
           ),
         ],
       ),
@@ -704,9 +751,9 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
           if (!isUser) ...[
             CircleAvatar(
               radius: 16,
-              backgroundColor: Colors.purple.shade100,
-              child:
-                  const Icon(Icons.smart_toy, size: 18, color: Colors.purple),
+              backgroundColor: AppColors.purpleNeon.withValues(alpha: 0.25),
+              child: const Icon(Icons.smart_toy,
+                  size: 18, color: AppColors.primaryLight),
             ),
             const SizedBox(width: 8),
           ],
@@ -714,7 +761,9 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: isUser ? Colors.purple : Colors.grey.shade100,
+                color: isUser ? AppColors.purpleNeon : AppColors.bgSecondary,
+                border:
+                    isUser ? null : Border.all(color: const Color(0x332D363D)),
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(16),
                   topRight: const Radius.circular(16),
@@ -724,19 +773,19 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
               ),
               child: Text(
                 text,
-                style: TextStyle(
-                  color: isUser ? Colors.white : Colors.black87,
-                  fontSize: 15,
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: isUser ? Colors.white : AppColors.textPrimary,
                 ),
               ),
             ),
           ),
           if (isUser) ...[
             const SizedBox(width: 8),
-            CircleAvatar(
+            const CircleAvatar(
               radius: 16,
-              backgroundColor: Colors.blue.shade100,
-              child: const Icon(Icons.person, size: 18, color: Colors.blue),
+              backgroundColor: AppColors.bgTertiary,
+              child:
+                  Icon(Icons.person, size: 18, color: AppColors.primaryLight),
             ),
           ],
         ],
@@ -751,14 +800,16 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
         children: [
           CircleAvatar(
             radius: 16,
-            backgroundColor: Colors.purple.shade100,
-            child: const Icon(Icons.smart_toy, size: 18, color: Colors.purple),
+            backgroundColor: AppColors.purpleNeon.withValues(alpha: 0.25),
+            child: const Icon(Icons.smart_toy,
+                size: 18, color: AppColors.primaryLight),
           ),
           const SizedBox(width: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: Colors.grey.shade100,
+              color: AppColors.bgSecondary,
+              border: Border.all(color: const Color(0x332D363D)),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Row(
@@ -784,8 +835,8 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
           margin: const EdgeInsets.symmetric(horizontal: 2),
           width: 8,
           height: 8,
-          decoration: BoxDecoration(
-            color: Colors.grey.shade400,
+          decoration: const BoxDecoration(
+            color: AppColors.textTertiary,
             shape: BoxShape.circle,
           ),
         );
@@ -795,7 +846,13 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
 
   Widget _buildMindMapView() {
     if (_mindMapData == null) {
-      return const Center(child: Text('Không có dữ liệu'));
+      return Center(
+        child: Text(
+          'Không có dữ liệu',
+          style:
+              AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+        ),
+      );
     }
 
     final nodes = _mindMapData!['nodes'] as List<dynamic>? ?? [];
@@ -825,10 +882,8 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
         Container(
           key: _progressHeaderKey,
           padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.purple.shade400, Colors.blue.shade400],
-            ),
+          decoration: const BoxDecoration(
+            gradient: AppGradients.primary,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -936,8 +991,10 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
     }).toList();
 
     topicNodes.sort((a, b) {
-      final posA = (a as Map<String, dynamic>)['position'] as Map<String, dynamic>?;
-      final posB = (b as Map<String, dynamic>)['position'] as Map<String, dynamic>?;
+      final posA =
+          (a as Map<String, dynamic>)['position'] as Map<String, dynamic>?;
+      final posB =
+          (b as Map<String, dynamic>)['position'] as Map<String, dynamic>?;
       final yA = (posA?['y'] as num?)?.toDouble() ?? 0.0;
       final yB = (posB?['y'] as num?)?.toDouble() ?? 0.0;
       if (yA != yB) return yA.compareTo(yB);
@@ -947,15 +1004,17 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
     });
 
     if (topicNodes.isEmpty) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.info_outline, size: 48, color: Colors.grey),
-            SizedBox(height: 16),
+            const Icon(Icons.info_outline,
+                size: 48, color: AppColors.textTertiary),
+            const SizedBox(height: 16),
             Text(
               'Chưa có chủ đề nào trong lộ trình này',
-              style: TextStyle(color: Colors.grey, fontSize: 16),
+              style: AppTextStyles.bodyLarge
+                  .copyWith(color: AppColors.textSecondary),
             ),
           ],
         ),
@@ -977,7 +1036,8 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
         // Đếm số bài học con (level 3) thuộc topic này, sắp xếp theo position
         final childLessonsRaw = allNodes.where((n) {
           final node = n as Map<String, dynamic>;
-          return node['parentId'] == topicId && (node['level'] as int? ?? 3) == 3;
+          return node['parentId'] == topicId &&
+              (node['level'] as int? ?? 3) == 3;
         }).toList();
         final childLessons = List<Map<String, dynamic>>.from(childLessonsRaw);
         childLessons.sort((a, b) {
@@ -991,44 +1051,49 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
           return xA.compareTo(xB);
         });
 
-        final completedLessons = childLessons.where((n) => n['status'] == 'completed').length;
+        final completedLessons =
+            childLessons.where((n) => n['status'] == 'completed').length;
 
         final totalLessons = childLessons.length;
 
         // Check diamond lock status from backend
-        final allLessonsLocked = childLessons.every((l) => l['isLocked'] == true && l['status'] != 'completed');
+        final allLessonsLocked = childLessons
+            .every((l) => l['isLocked'] == true && l['status'] != 'completed');
 
         Color statusColor;
         IconData statusIcon;
         String statusText;
 
         if (completedLessons == totalLessons && totalLessons > 0) {
-          statusColor = Colors.green;
+          statusColor = AppColors.successNeon;
           statusIcon = Icons.check_circle;
           statusText = 'Hoàn thành';
         } else if (completedLessons > 0) {
-          statusColor = Colors.blue;
+          statusColor = AppColors.primaryLight;
           statusIcon = Icons.play_circle;
           statusText = 'Đang học';
         } else if (!allLessonsLocked) {
-          statusColor = Colors.blue;
+          statusColor = AppColors.primaryLight;
           statusIcon = Icons.play_circle;
           statusText = 'Sẵn sàng';
         } else {
-          statusColor = Colors.orange;
+          statusColor = AppColors.coinGold;
           statusIcon = Icons.lock;
           statusText = 'Cần mở khóa 💎';
         }
 
         return Card(
+          color: AppColors.bgSecondary,
+          elevation: 0,
           margin: const EdgeInsets.only(bottom: 12),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
             side: BorderSide(
               color: completedLessons == totalLessons && totalLessons > 0
-                  ? Colors.green.shade200
-                  : Colors.transparent,
-              width: 2,
+                  ? AppColors.successNeon.withValues(alpha: 0.45)
+                  : const Color(0x332D363D),
+              width:
+                  completedLessons == totalLessons && totalLessons > 0 ? 2 : 1,
             ),
           ),
           child: InkWell(
@@ -1056,7 +1121,7 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
                         width: 36,
                         height: 36,
                         decoration: BoxDecoration(
-                          color: statusColor.withOpacity(0.1),
+                          color: statusColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Center(
@@ -1081,8 +1146,8 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
                           children: [
                             Text(
                               title,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
+                              style: AppTextStyles.labelLarge.copyWith(
+                                color: AppColors.textPrimary,
                                 fontSize: 16,
                               ),
                             ),
@@ -1093,7 +1158,8 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
                                 const SizedBox(width: 4),
                                 Text(
                                   statusText,
-                                  style: TextStyle(fontSize: 12, color: statusColor),
+                                  style: TextStyle(
+                                      fontSize: 12, color: statusColor),
                                 ),
                               ],
                             ),
@@ -1103,9 +1169,10 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
                       // Lesson count badge
                       if (totalLessons > 0)
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            color: statusColor.withOpacity(0.1),
+                            color: statusColor.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
@@ -1124,7 +1191,8 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
                     const SizedBox(height: 10),
                     Text(
                       description,
-                      style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                      style: AppTextStyles.bodySmall
+                          .copyWith(color: AppColors.textTertiary),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -1133,8 +1201,10 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
                   if (totalLessons > 0) ...[
                     const SizedBox(height: 10),
                     LinearProgressIndicator(
-                      value: totalLessons > 0 ? completedLessons / totalLessons : 0,
-                      backgroundColor: Colors.grey.shade200,
+                      value: totalLessons > 0
+                          ? completedLessons / totalLessons
+                          : 0,
+                      backgroundColor: AppColors.bgTertiary,
                       valueColor: AlwaysStoppedAnimation<Color>(statusColor),
                       minHeight: 4,
                       borderRadius: BorderRadius.circular(2),
@@ -1172,6 +1242,7 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
       // All lessons locked -> show unlock dialog
       showModalBottomSheet(
         context: context,
+        backgroundColor: AppColors.bgSecondary,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
@@ -1182,11 +1253,14 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
             children: [
               const Text('🔒', style: TextStyle(fontSize: 48)),
               const SizedBox(height: 12),
-              Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              Text(title,
+                  style:
+                      AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
               const SizedBox(height: 8),
               Text(
                 'Chủ đề này cần mở khóa bằng kim cương.\nBạn có thể mở khóa từng topic, chương hoặc cả môn.',
-                style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+                style: AppTextStyles.bodyMedium
+                    .copyWith(color: AppColors.textSecondary, height: 1.45),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 20),
@@ -1196,7 +1270,10 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
                     child: OutlinedButton(
                       onPressed: () => Navigator.pop(ctx),
                       style: OutlinedButton.styleFrom(
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        foregroundColor: AppColors.textSecondary,
+                        side: const BorderSide(color: Color(0x332D363D)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                       child: const Text('Đóng'),
@@ -1211,10 +1288,15 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
                         context.push('/subjects/${widget.subjectId}/unlock');
                       },
                       icon: const Text('💎', style: TextStyle(fontSize: 16)),
-                      label: const Text('Mở khóa', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      label: const Text('Mở khóa',
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold)),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.deepPurple,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        backgroundColor: AppColors.primaryLight,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                     ),
@@ -1231,6 +1313,7 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
     // Show lesson list with diamond-based lock status
     showModalBottomSheet(
       context: context,
+      backgroundColor: AppColors.bgSecondary,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -1253,7 +1336,7 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
                       width: 40,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade300,
+                        color: AppColors.textTertiary.withValues(alpha: 0.35),
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -1268,11 +1351,14 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                            Text(title,
+                                style: AppTextStyles.h4
+                                    .copyWith(color: AppColors.textPrimary)),
                             const SizedBox(height: 2),
                             Text(
                               '$completedLessons/$totalLessons bài hoàn thành',
-                              style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                              style: AppTextStyles.bodySmall
+                                  .copyWith(color: AppColors.textTertiary),
                             ),
                           ],
                         ),
@@ -1283,9 +1369,12 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(4),
                     child: LinearProgressIndicator(
-                      value: totalLessons > 0 ? completedLessons / totalLessons : 0,
-                      backgroundColor: Colors.grey.shade200,
-                      valueColor: const AlwaysStoppedAnimation<Color>(Colors.green),
+                      value: totalLessons > 0
+                          ? completedLessons / totalLessons
+                          : 0,
+                      backgroundColor: AppColors.bgTertiary,
+                      valueColor: const AlwaysStoppedAnimation<Color>(
+                          AppColors.successNeon),
                       minHeight: 6,
                     ),
                   ),
@@ -1297,12 +1386,18 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
                       itemCount: childLessons.length,
                       separatorBuilder: (_, __) => const SizedBox(height: 8),
                       itemBuilder: (context, index) {
-                        final lesson = childLessons[index] as Map<String, dynamic>;
-                        final lessonTitle = lesson['title'] as String? ?? 'Bài học';
-                        final lessonStatus = lesson['status'] as String? ?? 'not_started';
-                        final lessonMeta = lesson['metadata'] as Map<String, dynamic>?;
-                        final lessonIcon = lessonMeta?['icon'] as String? ?? '📖';
-                        final linkedNodeId = lessonMeta?['linkedLearningNodeId'] as String?;
+                        final lesson =
+                            childLessons[index] as Map<String, dynamic>;
+                        final lessonTitle =
+                            lesson['title'] as String? ?? 'Bài học';
+                        final lessonStatus =
+                            lesson['status'] as String? ?? 'not_started';
+                        final lessonMeta =
+                            lesson['metadata'] as Map<String, dynamic>?;
+                        final lessonIcon =
+                            lessonMeta?['icon'] as String? ?? '📖';
+                        final linkedNodeId =
+                            lessonMeta?['linkedLearningNodeId'] as String?;
                         final isLocked = lesson['isLocked'] as bool? ?? false;
                         final diamondCost = lesson['diamondCost'] as int? ?? 50;
                         final isCompleted = lessonStatus == 'completed';
@@ -1311,20 +1406,22 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
                         Color tileColor;
                         IconData trailingIcon;
                         if (isCompleted) {
-                          tileColor = Colors.green;
+                          tileColor = AppColors.successNeon;
                           trailingIcon = Icons.replay;
                         } else if (accessible) {
-                          tileColor = Colors.blue;
+                          tileColor = AppColors.primaryLight;
                           trailingIcon = Icons.play_circle_fill;
                         } else {
-                          tileColor = Colors.grey;
+                          tileColor = AppColors.textTertiary;
                           trailingIcon = Icons.lock_outline;
                         }
 
                         return Material(
                           color: isCompleted
-                              ? Colors.green.withOpacity(0.04)
-                              : accessible ? null : Colors.grey.shade100,
+                              ? AppColors.successNeon.withValues(alpha: 0.06)
+                              : accessible
+                                  ? Colors.transparent
+                                  : AppColors.bgTertiary,
                           borderRadius: BorderRadius.circular(12),
                           child: InkWell(
                             onTap: () {
@@ -1336,63 +1433,103 @@ class _PersonalMindMapScreenState extends State<PersonalMindMapScreen> {
                                 ).then((_) => _checkAndLoadMindMap());
                               } else if (!accessible) {
                                 Navigator.pop(ctx);
-                                _showUnlockDialog(linkedNodeId ?? '', lessonTitle);
+                                _showUnlockDialog(
+                                    linkedNodeId ?? '', lessonTitle);
                               }
                             },
                             borderRadius: BorderRadius.circular(12),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 14, vertical: 12),
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
                                   color: isCompleted
-                                      ? Colors.green.withOpacity(0.3)
-                                      : accessible ? tileColor.withOpacity(0.3) : Colors.grey.shade200,
+                                      ? AppColors.successNeon
+                                          .withValues(alpha: 0.35)
+                                      : accessible
+                                          ? tileColor.withValues(alpha: 0.35)
+                                          : const Color(0x332D363D),
                                 ),
                               ),
                               child: Row(
                                 children: [
                                   Container(
-                                    width: 30, height: 30,
+                                    width: 30,
+                                    height: 30,
                                     decoration: BoxDecoration(
-                                      color: tileColor.withOpacity(0.15),
+                                      color: tileColor.withValues(alpha: 0.15),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Center(
                                       child: isCompleted
-                                          ? Icon(Icons.check, color: tileColor, size: 18)
-                                          : Text('${index + 1}', style: TextStyle(fontWeight: FontWeight.bold, color: tileColor, fontSize: 14)),
+                                          ? Icon(Icons.check,
+                                              color: tileColor, size: 18)
+                                          : Text('${index + 1}',
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  color: tileColor,
+                                                  fontSize: 14)),
                                     ),
                                   ),
                                   const SizedBox(width: 10),
-                                  Text(lessonIcon, style: const TextStyle(fontSize: 22)),
+                                  Text(lessonIcon,
+                                      style: const TextStyle(fontSize: 22)),
                                   const SizedBox(width: 10),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
-                                        Text(lessonTitle, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: accessible ? null : Colors.grey)),
+                                        Text(lessonTitle,
+                                            style: AppTextStyles.labelMedium
+                                                .copyWith(
+                                              fontSize: 14,
+                                              color: accessible
+                                                  ? AppColors.textPrimary
+                                                  : AppColors.textTertiary,
+                                            )),
                                         const SizedBox(height: 2),
                                         if (isCompleted)
                                           Row(children: [
-                                            Icon(Icons.check_circle, size: 12, color: Colors.green.shade400),
+                                            const Icon(Icons.check_circle,
+                                                size: 12,
+                                                color: AppColors.successNeon),
                                             const SizedBox(width: 3),
-                                            Text('Đã hoàn thành', style: TextStyle(fontSize: 11, color: Colors.green.shade600)),
+                                            Text('Đã hoàn thành',
+                                                style: AppTextStyles.caption
+                                                    .copyWith(
+                                                        color: AppColors
+                                                            .successNeon)),
                                             const SizedBox(width: 6),
-                                            Text('· Nhấn để xem lại', style: TextStyle(fontSize: 10, color: Colors.grey.shade500)),
+                                            Text('· Nhấn để xem lại',
+                                                style: AppTextStyles.caption
+                                                    .copyWith(
+                                                        color: AppColors
+                                                            .textTertiary,
+                                                        fontSize: 10)),
                                           ])
                                         else if (accessible)
-                                          Text('Nhấn để học', style: TextStyle(fontSize: 11, color: tileColor))
+                                          Text('Nhấn để học',
+                                              style: AppTextStyles.caption
+                                                  .copyWith(color: tileColor))
                                         else
                                           Row(children: [
-                                            Icon(Icons.lock, size: 11, color: Colors.orange.shade400),
+                                            const Icon(Icons.lock,
+                                                size: 11,
+                                                color: AppColors.coinGold),
                                             const SizedBox(width: 3),
-                                            Text('$diamondCost 💎 để mở khóa', style: TextStyle(fontSize: 11, color: Colors.orange.shade600)),
+                                            Text('$diamondCost 💎 để mở khóa',
+                                                style: AppTextStyles.caption
+                                                    .copyWith(
+                                                        color: AppColors
+                                                            .coinGold)),
                                           ]),
                                       ],
                                     ),
                                   ),
-                                  Icon(trailingIcon, color: tileColor, size: 24),
+                                  Icon(trailingIcon,
+                                      color: tileColor, size: 24),
                                 ],
                               ),
                             ),

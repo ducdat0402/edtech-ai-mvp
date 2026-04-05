@@ -115,7 +115,7 @@ class _CreateTopicScreenState extends State<CreateTopicScreen> {
             ),
             const SizedBox(height: 16),
             Text('Đã gửi yêu cầu!',
-                style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary)),
+                style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
             const SizedBox(height: 8),
             Text(
               'Topic "${_nameController.text.trim()}" đang chờ Admin duyệt.',
@@ -147,7 +147,7 @@ class _CreateTopicScreenState extends State<CreateTopicScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text('Tạo Topic Mới',
-            style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary)),
+            style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
         leading: const AppBarLeadingBackAndHome(),
         leadingWidth: 112,
         automaticallyImplyLeading: false,
@@ -364,7 +364,7 @@ class _CreateTopicScreenState extends State<CreateTopicScreen> {
         'value': 'easy',
         'label': 'Dễ',
         'icon': Icons.sentiment_satisfied,
-        'color': Colors.green
+        'color': AppColors.successNeon
       },
       {
         'value': 'medium',
@@ -376,7 +376,7 @@ class _CreateTopicScreenState extends State<CreateTopicScreen> {
         'value': 'hard',
         'label': 'Khó',
         'icon': Icons.sentiment_very_dissatisfied,
-        'color': Colors.red
+        'color': AppColors.errorNeon
       },
     ];
 

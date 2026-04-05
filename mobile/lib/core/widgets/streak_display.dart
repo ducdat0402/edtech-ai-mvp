@@ -37,7 +37,7 @@ class StreakDisplay extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.orange.withOpacity(0.3),
+            color: Colors.orange.withValues(alpha: 0.3),
             blurRadius: 20,
             spreadRadius: 5,
           ),
@@ -86,7 +86,7 @@ class StreakDisplay extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
@@ -187,7 +187,7 @@ class StreakDisplay extends StatelessWidget {
                 dayName,
                 style: TextStyle(
                   fontSize: 10,
-                  color: Colors.white.withOpacity(0.8),
+                  color: Colors.white.withValues(alpha: 0.8),
                   fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
                 ),
               ),
@@ -200,7 +200,7 @@ class StreakDisplay extends StatelessWidget {
                       ? (isWeekend
                           ? Colors.yellow.shade400
                           : Colors.blue.shade400)
-                      : Colors.white.withOpacity(0.2),
+                      : Colors.white.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                   border: isToday
                       ? Border.all(color: Colors.white, width: 2)

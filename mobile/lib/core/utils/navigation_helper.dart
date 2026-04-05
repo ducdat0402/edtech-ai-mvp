@@ -23,7 +23,8 @@ class NavigationHelper {
   }
 
   /// Pop with result
-  static void safePopWithResult<T>(BuildContext context, T result, {String? fallbackRoute}) {
+  static void safePopWithResult<T>(BuildContext context, T result,
+      {String? fallbackRoute}) {
     try {
       if (context.canPop()) {
         context.pop(result);
@@ -38,4 +39,3 @@ class NavigationHelper {
     }
   }
 }
-

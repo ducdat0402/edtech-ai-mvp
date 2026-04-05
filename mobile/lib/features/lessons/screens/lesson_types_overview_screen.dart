@@ -31,11 +31,6 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
   Map<String, dynamic>? _nodeContributor;
   List<String> _completedTypes = [];
   bool _isLessonComplete = false;
-  final bool _aiLessonTypesViewTracked = false;
-  int? _aiMasteryPct;
-  String? _aiSuggestedDifficulty;
-  String? _aiItsReason;
-  bool? _aiShouldSkip;
 
   @override
   void initState() {
@@ -105,7 +100,7 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
             content: const Text(
               'Bạn cần hoàn thành đủ 4 dạng bài trong bài này để được tính 1 streak.',
             ),
-            backgroundColor: AppColors.orangeNeon.withOpacity(0.9),
+            backgroundColor: AppColors.orangeNeon.withValues(alpha: 0.9),
             duration: const Duration(seconds: 4),
           ),
         );
@@ -133,7 +128,7 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
       ),
       body: _isLoading
           ? const Center(
-              child: CircularProgressIndicator(color: AppColors.purpleNeon))
+              child: CircularProgressIndicator(color: AppColors.primaryLight))
           : _error != null
               ? _buildErrorState()
               : _contents.isEmpty
@@ -181,7 +176,7 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.purpleNeon.withOpacity(0.1),
+                color: AppColors.purpleNeon.withValues(alpha: 0.1),
               ),
               child: const Icon(Icons.school_outlined,
                   size: 48, color: AppColors.purpleNeon),
@@ -245,9 +240,9 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.orangeNeon.withOpacity(0.12),
+        color: AppColors.orangeNeon.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.orangeNeon.withOpacity(0.35)),
+        border: Border.all(color: AppColors.orangeNeon.withValues(alpha: 0.35)),
       ),
       child: Row(
         children: [
@@ -275,12 +270,12 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColors.purpleNeon.withOpacity(0.1),
-            AppColors.cyanNeon.withOpacity(0.1),
+            AppColors.purpleNeon.withValues(alpha: 0.1),
+            AppColors.primaryLight.withValues(alpha: 0.1),
           ],
         ),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.purpleNeon.withOpacity(0.2)),
+        border: Border.all(color: AppColors.purpleNeon.withValues(alpha: 0.2)),
       ),
       child: Column(
         children: [
@@ -316,8 +311,8 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
                     const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 decoration: BoxDecoration(
                   color: _isLessonComplete
-                      ? AppColors.successNeon.withOpacity(0.15)
-                      : AppColors.purpleNeon.withOpacity(0.15),
+                      ? AppColors.successNeon.withValues(alpha: 0.15)
+                      : AppColors.purpleNeon.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
@@ -367,13 +362,13 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
             color: isCompleted
-                ? AppColors.successNeon.withOpacity(0.4)
-                : AppColors.borderPrimary,
+                ? AppColors.successNeon.withValues(alpha: 0.4)
+                : const Color(0x332D363D),
             width: isCompleted ? 2 : 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 6,
               offset: const Offset(0, 2),
             ),
@@ -391,7 +386,7 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
                       ? [AppColors.successNeon, const Color(0xFF2DD4BF)]
                       : [
                           info['color'] as Color,
-                          (info['color'] as Color).withOpacity(0.7)
+                          (info['color'] as Color).withValues(alpha: 0.7)
                         ],
                 ),
                 borderRadius: BorderRadius.circular(14),
@@ -449,12 +444,12 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColors.successNeon.withOpacity(0.15),
-            AppColors.cyanNeon.withOpacity(0.15),
+            AppColors.successNeon.withValues(alpha: 0.15),
+            AppColors.primaryLight.withValues(alpha: 0.15),
           ],
         ),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.successNeon.withOpacity(0.3)),
+        border: Border.all(color: AppColors.successNeon.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -462,7 +457,7 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppColors.successNeon.withOpacity(0.2),
+              color: AppColors.successNeon.withValues(alpha: 0.2),
             ),
             child: const Icon(Icons.emoji_events_rounded,
                 color: AppColors.successNeon, size: 28),

@@ -36,7 +36,8 @@ class XPBar extends StatelessWidget {
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       gradient: AppGradients.forLevel(level),
                       borderRadius: BorderRadius.circular(6),
@@ -90,7 +91,7 @@ class XPBar extends StatelessWidget {
                   boxShadow: showGlow
                       ? [
                           BoxShadow(
-                            color: AppColors.xpGold.withOpacity(0.6),
+                            color: AppColors.xpGold.withValues(alpha: 0.6),
                             blurRadius: 8,
                             spreadRadius: 0,
                           ),

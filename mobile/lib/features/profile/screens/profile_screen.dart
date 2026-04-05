@@ -87,9 +87,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final results = await Future.wait<dynamic>([
         apiService.getUserProfile(),
         apiService.getWeeklyBadges().catchError((_) => <String, dynamic>{}),
-        apiService
-            .getUserCompetencies()
-            .catchError((_) => <String, dynamic>{}),
+        apiService.getUserCompetencies().catchError((_) => <String, dynamic>{}),
         apiService.getCurrency().catchError((_) => <String, dynamic>{}),
         apiService.getDashboardSummary().catchError((_) => <String, dynamic>{}),
       ]);
@@ -136,7 +134,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Color get _bgSecondary =>
       _isContributor ? AppColors.contributorBgSecondary : AppColors.bgSecondary;
   Color get _borderColor =>
-      _isContributor ? AppColors.contributorBorder : AppColors.borderPrimary;
+      _isContributor ? AppColors.contributorBorder : const Color(0x332D363D);
 
   LinearGradient get _primaryGradient =>
       _isContributor ? AppGradients.contributor : AppGradients.primary;
@@ -179,8 +177,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             if ((_profileData?['avatarUrl'] as String?)?.isNotEmpty ?? false)
               ListTile(
-                leading:
-                    const Icon(Icons.delete_outline, color: AppColors.errorNeon),
+                leading: const Icon(Icons.delete_outline,
+                    color: AppColors.errorNeon),
                 title: const Text('Xóa ảnh đại diện',
                     style: TextStyle(color: AppColors.errorNeon)),
                 onTap: () {
@@ -274,8 +272,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _editDisplayName() async {
-    final current =
-        (_profileData?['fullName'] as String?)?.trim() ?? '';
+    final current = (_profileData?['fullName'] as String?)?.trim() ?? '';
     final controller = TextEditingController(text: current);
     final ok = await showDialog<bool>(
       context: context,
@@ -288,12 +285,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
           controller: controller,
           maxLength: 120,
           autofocus: true,
-          style: AppTextStyles.bodyMedium
-              .copyWith(color: AppColors.textPrimary),
+          style:
+              AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary),
           decoration: InputDecoration(
             hintText: 'Tên của bạn',
-            hintStyle:
-                const TextStyle(color: AppColors.textTertiary),
+            hintStyle: const TextStyle(color: AppColors.textTertiary),
             counterStyle: const TextStyle(color: AppColors.textTertiary),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
@@ -497,13 +493,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
         leadingWidth: 112,
         automaticallyImplyLeading: false,
         title: Text('Hồ sơ',
-            style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary)),
+            style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
         actions: [
           IconButton(
             icon: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AppColors.errorNeon.withOpacity(0.15),
+                color: AppColors.errorNeon.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Icon(Icons.logout,
@@ -526,7 +522,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               style: AppTextStyles.bodyMedium))
                       : RefreshIndicator(
                           onRefresh: _loadProfile,
-                          color: _accentColor,
+                          color: AppColors.primaryLight,
                           child: _buildContent(),
                         ),
           const FloatingChatBubble(),
@@ -541,7 +537,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const CircularProgressIndicator(color: AppColors.purpleNeon),
+          const CircularProgressIndicator(color: AppColors.primaryLight),
           const SizedBox(height: 16),
           Text('Đang tải...',
               style: AppTextStyles.bodyMedium
@@ -566,9 +562,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             children: [
               Flexible(
                 child: Text(
-                  _profileData!['fullName'] ??
-                      _profileData!['email'] ??
-                      'User',
+                  _profileData!['fullName'] ?? _profileData!['email'] ?? 'User',
                   textAlign: TextAlign.center,
                   style:
                       AppTextStyles.h2.copyWith(color: AppColors.textPrimary),
@@ -577,8 +571,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               IconButton(
                 onPressed: _editDisplayName,
                 tooltip: 'Đổi tên',
-                icon: Icon(Icons.edit_rounded,
-                    color: _accentColor, size: 22),
+                icon: Icon(Icons.edit_rounded, color: _accentColor, size: 22),
               ),
             ],
           ),
@@ -593,7 +586,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: _accentColor.withOpacity(0.3),
+                    color: _accentColor.withValues(alpha: 0.3),
                     blurRadius: 10,
                   ),
                 ],
@@ -638,8 +631,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               competenciesData: _competenciesData,
               bgSecondary: _bgSecondary,
               borderColor: _borderColor,
-              onTapLearning: () => context.push('/profile/competencies?focus=learning'),
-              onTapHuman: () => context.push('/profile/competencies?focus=human'),
+              onTapLearning: () =>
+                  context.push('/profile/competencies?focus=learning'),
+              onTapHuman: () =>
+                  context.push('/profile/competencies?focus=human'),
             ),
           ),
           const SizedBox(height: 12),
@@ -656,7 +651,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               icon: Icons.admin_panel_settings,
               title: 'Admin Panel',
               subtitle: 'Duyệt đóng góp từ cộng đồng',
-              color: AppColors.cyanNeon,
+              color: AppColors.primaryLight,
               onTap: () => context.push('/admin/panel'),
             ),
 
@@ -723,7 +718,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: _accentColor.withOpacity(0.15),
+              color: _accentColor.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
@@ -748,7 +743,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 SizedBox(height: 2),
                 Text(
                   'Bật/tắt Light mode',
-                  style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                  style:
+                      TextStyle(color: AppColors.textSecondary, fontSize: 12),
                 ),
               ],
             ),
@@ -784,11 +780,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
                   color: !_isContributor
-                      ? AppColors.purpleNeon.withOpacity(0.2)
+                      ? AppColors.purpleNeon.withValues(alpha: 0.2)
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(12),
                   border: !_isContributor
-                      ? Border.all(color: AppColors.purpleNeon.withOpacity(0.5))
+                      ? Border.all(
+                          color: AppColors.purpleNeon.withValues(alpha: 0.5))
                       : null,
                 ),
                 child: Row(
@@ -830,12 +827,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
                   color: _isContributor
-                      ? AppColors.contributorBlue.withOpacity(0.2)
+                      ? AppColors.contributorBlue.withValues(alpha: 0.2)
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(12),
                   border: _isContributor
                       ? Border.all(
-                          color: AppColors.contributorBlue.withOpacity(0.5))
+                          color:
+                              AppColors.contributorBlue.withValues(alpha: 0.5))
                       : null,
                 ),
                 child: Row(
@@ -891,7 +889,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             gradient: RadialGradient(
-              colors: [_accentColor.withOpacity(0.3), Colors.transparent],
+              colors: [_accentColor.withValues(alpha: 0.3), Colors.transparent],
             ),
           ),
         ),
@@ -908,7 +906,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 gradient: _primaryGradient,
                 boxShadow: [
                   BoxShadow(
-                    color: _accentColor.withOpacity(0.5),
+                    color: _accentColor.withValues(alpha: 0.5),
                     blurRadius: 20,
                     spreadRadius: 2,
                   ),
@@ -934,7 +932,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               height: 28,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                color: AppColors.purpleNeon,
+                                color: AppColors.primaryLight,
                               ),
                             ),
                           ),
@@ -993,7 +991,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: Colors.black.withValues(alpha: 0.2),
                     blurRadius: 4,
                   ),
                 ],
@@ -1048,7 +1046,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   width: 1,
                   height: 28,
                   margin: const EdgeInsets.symmetric(horizontal: 6),
-                  color: AppColors.borderPrimary.withValues(alpha: 0.45),
+                  color: const Color(0x332D363D),
                 ),
                 Expanded(
                   child: _statStripCell(
@@ -1062,7 +1060,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   width: 1,
                   height: 28,
                   margin: const EdgeInsets.symmetric(horizontal: 6),
-                  color: AppColors.borderPrimary.withValues(alpha: 0.45),
+                  color: const Color(0x332D363D),
                 ),
                 Expanded(
                   child: _statStripCell(
@@ -1132,7 +1130,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Row(
           children: [
             const Icon(Icons.workspace_premium_rounded,
-                color: Colors.amber, size: 20),
+                color: AppColors.xpGold, size: 20),
             const SizedBox(width: 8),
             Text('Huy hiệu',
                 style: AppTextStyles.labelLarge
@@ -1161,7 +1159,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 decoration: BoxDecoration(
                   color: _bgSecondary,
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: Colors.amber.withOpacity(0.3)),
+                  border: Border.all(color: const Color(0x332D363D)),
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -1172,7 +1170,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     if (count > 1)
                       Text('${count}x',
                           style: AppTextStyles.caption.copyWith(
-                              color: Colors.amber,
+                              color: AppColors.xpGold,
                               fontWeight: FontWeight.bold)),
                     Text(b['name'] ?? '',
                         maxLines: 1,
@@ -1201,7 +1199,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       decoration: BoxDecoration(
         color: _bgSecondary,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: ListTile(
         onTap: () {
@@ -1212,7 +1210,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         leading: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.15),
+            color: color.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(icon, color: color, size: 24),
@@ -1252,11 +1250,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const SizedBox(height: 16),
           _buildInfoRow(Icons.badge_outlined, 'Tên',
               _profileData!['fullName'] ?? 'Chưa cập nhật'),
-          const Divider(color: AppColors.borderPrimary, height: 24),
+          const Divider(color: Color(0x332D363D), height: 24),
           _buildInfoRow(
               Icons.email_outlined, 'Email', _profileData!['email'] ?? ''),
           if (_profileData!['phone'] != null) ...[
-            const Divider(color: AppColors.borderPrimary, height: 24),
+            const Divider(color: Color(0x332D363D), height: 24),
             _buildInfoRow(Icons.phone_outlined, 'Số điện thoại',
                 _profileData!['phone'] ?? ''),
           ],
@@ -1297,9 +1295,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.errorNeon.withOpacity(0.1),
+          color: AppColors.errorNeon.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.errorNeon.withOpacity(0.3)),
+          border: Border.all(color: AppColors.errorNeon.withValues(alpha: 0.3)),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,

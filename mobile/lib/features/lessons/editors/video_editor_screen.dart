@@ -175,11 +175,11 @@ class _VideoEditorScreenState extends State<VideoEditorScreen> {
       fillColor: AppColors.bgSecondary,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.borderPrimary),
+        borderSide: const BorderSide(color: Color(0x332D363D)),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.borderPrimary),
+        borderSide: const BorderSide(color: Color(0x332D363D)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -343,8 +343,7 @@ class _VideoEditorScreenState extends State<VideoEditorScreen> {
                                   const TextStyle(color: AppColors.textPrimary),
                             ),
                             backgroundColor: AppColors.bgTertiary,
-                            side: const BorderSide(
-                                color: AppColors.borderPrimary),
+                            side: const BorderSide(color: Color(0x332D363D)),
                             deleteIcon: const Icon(Icons.close,
                                 size: 16, color: AppColors.textSecondary),
                             onDeleted: () => _removeKeyword(i),
@@ -365,7 +364,7 @@ class _VideoEditorScreenState extends State<VideoEditorScreen> {
               decoration: const BoxDecoration(
                 color: AppColors.bgSecondary,
                 border: Border(
-                  top: BorderSide(color: AppColors.borderPrimary),
+                  top: BorderSide(color: Color(0x332D363D)),
                 ),
               ),
               child: ElevatedButton(
@@ -399,7 +398,7 @@ class _VideoEditorScreenState extends State<VideoEditorScreen> {
       decoration: BoxDecoration(
         color: AppColors.bgSecondary,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.borderPrimary),
+        border: Border.all(color: const Color(0x332D363D)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -423,7 +422,7 @@ class _VideoEditorScreenState extends State<VideoEditorScreen> {
               ),
             ],
           ),
-          const Divider(color: AppColors.borderPrimary, height: 16),
+          const Divider(color: Color(0x332D363D), height: 16),
 
           // Title
           TextFormField(

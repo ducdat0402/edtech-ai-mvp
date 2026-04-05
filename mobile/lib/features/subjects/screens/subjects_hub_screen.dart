@@ -70,7 +70,9 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
       final profile = results[1];
       final rawSubjects = dashboard['subjects'] as List? ?? const [];
       setState(() {
-        _subjects = rawSubjects.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+        _subjects = rawSubjects
+            .map((e) => Map<String, dynamic>.from(e as Map))
+            .toList();
         _profileData = Map<String, dynamic>.from(profile as Map);
         _loading = false;
       });
@@ -84,14 +86,15 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
 
   // === Role helpers ===
   String get _currentRole => _profileData?['role']?.toString() ?? 'user';
-  bool get _isContributor => _currentRole == 'contributor' || _currentRole == 'admin';
+  bool get _isContributor =>
+      _currentRole == 'contributor' || _currentRole == 'admin';
 
   Color get _bgPrimary =>
       _isContributor ? AppColors.contributorBgPrimary : AppColors.bgPrimary;
   Color get _bgSecondary =>
       _isContributor ? AppColors.contributorBgSecondary : AppColors.bgSecondary;
   Color get _borderColor =>
-      _isContributor ? AppColors.contributorBorder : AppColors.borderPrimary;
+      _isContributor ? AppColors.contributorBorder : const Color(0x332D363D);
 
   Future<void> _handleSwitchRole() async {
     if (_isSwitchingRole) return;
@@ -106,7 +109,9 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(targetRole == 'contributor' ? 'Đã chuyển sang chế độ Contributor' : 'Đã chuyển sang chế độ Learner'),
+            content: Text(targetRole == 'contributor'
+                ? 'Đã chuyển sang chế độ Contributor'
+                : 'Đã chuyển sang chế độ Learner'),
             backgroundColor: targetRole == 'contributor'
                 ? AppColors.contributorBlue
                 : AppColors.successNeon,
@@ -171,7 +176,8 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
         ],
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator(color: AppColors.purpleNeon))
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.purpleNeon))
           : _error != null
               ? Center(
                   child: Padding(
@@ -179,12 +185,14 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.error_outline, color: AppColors.errorNeon, size: 44),
+                        const Icon(Icons.error_outline,
+                            color: AppColors.errorNeon, size: 44),
                         const SizedBox(height: 8),
                         Text(
                           'Không tải được danh sách môn học.\n$_error',
                           textAlign: TextAlign.center,
-                          style: const TextStyle(color: AppColors.textSecondary),
+                          style:
+                              const TextStyle(color: AppColors.textSecondary),
                         ),
                         const SizedBox(height: 12),
                         ElevatedButton(
@@ -303,8 +311,11 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
       cursorColor: AppColors.purpleNeon,
       decoration: InputDecoration(
         hintText: 'Tìm theo tên hoặc mô tả môn học…',
-        hintStyle: TextStyle(color: AppColors.textSecondary.withValues(alpha: 0.85), fontSize: 14),
-        prefixIcon: const Icon(Icons.search, color: AppColors.textSecondary, size: 22),
+        hintStyle: TextStyle(
+            color: AppColors.textSecondary.withValues(alpha: 0.85),
+            fontSize: 14),
+        prefixIcon:
+            const Icon(Icons.search, color: AppColors.textSecondary, size: 22),
         suffixIcon: _searchController.text.isEmpty
             ? null
             : IconButton(
@@ -321,15 +332,18 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
         contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
         border: const OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(12)),
-          borderSide: BorderSide(color: AppColors.borderPrimary),
+          borderSide: BorderSide(color: Color(0x332D363D)),
         ),
         enabledBorder: const OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(12)),
-          borderSide: BorderSide(color: AppColors.borderPrimary),
+          borderSide: BorderSide(color: Color(0x332D363D)),
         ),
-        focusedBorder: const OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(12)),
-          borderSide: BorderSide(color: AppColors.purpleNeon, width: 1.2),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: const BorderRadius.all(Radius.circular(12)),
+          borderSide: BorderSide(
+            color: AppColors.purpleNeon.withValues(alpha: 0.45),
+            width: 1,
+          ),
         ),
       ),
       textInputAction: TextInputAction.search,
@@ -352,28 +366,30 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                   AppColors.successNeon.withValues(alpha: 0.04),
                 ]
               : [
-                  AppColors.orangeNeon.withValues(alpha: 0.14),
-                  AppColors.orangeNeon.withValues(alpha: 0.05),
+                  AppColors.purpleNeon.withValues(alpha: 0.14),
+                  AppColors.primaryLight.withValues(alpha: 0.05),
                 ],
         ),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: _isContributor
               ? AppColors.successNeon.withValues(alpha: 0.4)
-              : AppColors.orangeNeon.withValues(alpha: 0.4),
+              : AppColors.purpleNeon.withValues(alpha: 0.35),
         ),
       ),
       child: Row(
         children: [
           Icon(
             _isContributor ? Icons.verified : Icons.info_outline,
-            color: _isContributor ? AppColors.successNeon : AppColors.orangeNeon,
+            color:
+                _isContributor ? AppColors.successNeon : AppColors.primaryLight,
           ),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               text,
-              style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+              style:
+                  const TextStyle(color: AppColors.textSecondary, fontSize: 13),
             ),
           ),
         ],
@@ -393,28 +409,28 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
             label: const Text('Tất cả'),
             selected: _subjectFilter == 'all',
             onSelected: (_) => setState(() => _subjectFilter = 'all'),
-            selectedColor: AppColors.purpleNeon.withOpacity(0.18),
+            selectedColor: AppColors.purpleNeon.withValues(alpha: 0.18),
             backgroundColor: _bgSecondary,
           ),
           ChoiceChip(
             label: const Text('Cá nhân'),
             selected: _subjectFilter == 'private',
             onSelected: (_) => setState(() => _subjectFilter = 'private'),
-            selectedColor: AppColors.cyanNeon.withOpacity(0.18),
+            selectedColor: AppColors.primaryLight.withValues(alpha: 0.16),
             backgroundColor: _bgSecondary,
           ),
           ChoiceChip(
             label: const Text('Cộng đồng'),
             selected: _subjectFilter == 'community',
             onSelected: (_) => setState(() => _subjectFilter = 'community'),
-            selectedColor: AppColors.orangeNeon.withOpacity(0.18),
+            selectedColor: AppColors.orangeNeon.withValues(alpha: 0.18),
             backgroundColor: _bgSecondary,
           ),
           ChoiceChip(
             label: const Text('Chuyên gia'),
             selected: _subjectFilter == 'expert',
             onSelected: (_) => setState(() => _subjectFilter = 'expert'),
-            selectedColor: AppColors.pinkNeon.withOpacity(0.18),
+            selectedColor: AppColors.purpleNeon.withValues(alpha: 0.2),
             backgroundColor: _bgSecondary,
           ),
         ],
@@ -443,12 +459,12 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
                   color: !_isContributor
-                      ? AppColors.purpleNeon.withOpacity(0.2)
+                      ? AppColors.purpleNeon.withValues(alpha: 0.2)
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(12),
                   border: !_isContributor
                       ? Border.all(
-                          color: AppColors.purpleNeon.withOpacity(0.5),
+                          color: AppColors.purpleNeon.withValues(alpha: 0.5),
                         )
                       : null,
                 ),
@@ -491,12 +507,13 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
                   color: _isContributor
-                      ? AppColors.contributorBlue.withOpacity(0.2)
+                      ? AppColors.contributorBlue.withValues(alpha: 0.2)
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(12),
                   border: _isContributor
                       ? Border.all(
-                          color: AppColors.contributorBlue.withOpacity(0.5),
+                          color:
+                              AppColors.contributorBlue.withValues(alpha: 0.5),
                         )
                       : null,
                 ),
@@ -565,8 +582,8 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
         Text(title, style: AppTextStyles.h3.copyWith(fontSize: 18)),
         const SizedBox(height: 10),
         if (items.isEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 20),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 20),
             child: Text(
               'Không có môn phù hợp với bộ lọc hiện tại.',
               style: TextStyle(color: AppColors.textSecondary),
@@ -577,7 +594,8 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: _gridCrossAxisCount(MediaQuery.sizeOf(context).width - 28),
+              crossAxisCount:
+                  _gridCrossAxisCount(MediaQuery.sizeOf(context).width - 28),
               mainAxisSpacing: 10,
               crossAxisSpacing: 10,
               childAspectRatio: 0.92,
@@ -617,7 +635,8 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                   color: AppColors.purpleNeon.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.menu_book_rounded, color: AppColors.purpleNeon),
+                child: const Icon(Icons.menu_book_rounded,
+                    color: AppColors.primaryLight),
               ),
               const SizedBox(width: 10),
               const Expanded(
@@ -652,11 +671,11 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
       hash = (hash * 31 + name.codeUnitAt(i)) & 0xFFFFFF;
     }
     final palette = <int>[
-      0xFF8B5CF6,
-      0xFF06B6D4,
-      0xFF10B981,
-      0xFFF59E0B,
-      0xFFEC4899,
+      0xFF7354F5,
+      0xFF8B9CFF,
+      0xFF41E184,
+      0xFFFFD647,
+      0xFFCABEFF,
     ];
     return palette[hash % palette.length];
   }
@@ -693,11 +712,13 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
     return custom;
   }
 
-  Widget _subjectIconWatermark(Map<String, dynamic> subject, String name, Color accent) {
+  Widget _subjectIconWatermark(
+      Map<String, dynamic> subject, String name, Color accent) {
     final meta = _metadata(subject);
     final iconRaw = meta?['icon']?.toString().trim();
     if (iconRaw != null && iconRaw.isNotEmpty) {
-      final hasPicto = RegExp(r'\p{Extended_Pictographic}', unicode: true).hasMatch(iconRaw);
+      final hasPicto =
+          RegExp(r'\p{Extended_Pictographic}', unicode: true).hasMatch(iconRaw);
       if (hasPicto) {
         return Text(
           iconRaw,
@@ -735,8 +756,10 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
     );
   }
 
-  Widget _iconBackdrop(Map<String, dynamic> subject, String name, Color accent) {
-    final base = Color.lerp(accent, const Color(0xFF0A0A0F), 0.72) ?? _bgSecondary;
+  Widget _iconBackdrop(
+      Map<String, dynamic> subject, String name, Color accent) {
+    final base =
+        Color.lerp(accent, const Color(0xFF0A0A0F), 0.72) ?? _bgSecondary;
     final deep = Color.lerp(accent, Colors.black, 0.55) ?? _bgSecondary;
     return Container(
       decoration: BoxDecoration(
@@ -804,7 +827,8 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                 if (progress == null) return child;
                 return _iconBackdrop(subject, name, accent);
               },
-              errorBuilder: (_, __, ___) => _iconBackdrop(subject, name, accent),
+              errorBuilder: (_, __, ___) =>
+                  _iconBackdrop(subject, name, accent),
             )
           else
             _iconBackdrop(subject, name, accent),
@@ -854,8 +878,9 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                     height: 66,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: _bgSecondary.withOpacity(_isContributor ? 0.35 : 0.25),
-                      border: Border.all(color: accent.withOpacity(0.55)),
+                      color: _bgSecondary.withValues(
+                          alpha: _isContributor ? 0.35 : 0.25),
+                      border: Border.all(color: accent.withValues(alpha: 0.55)),
                     ),
                     child: Center(
                       child: Text(
@@ -933,10 +958,12 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
     if (!mounted) return;
     try {
       final api = Provider.of<ApiService>(context, listen: false);
-      await api.requestSubjectPromotion(subjectId: subjectId, targetType: target);
+      await api.requestSubjectPromotion(
+          subjectId: subjectId, targetType: target);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Đã gửi yêu cầu nâng hạng, chờ admin phê duyệt')),
+        const SnackBar(
+            content: Text('Đã gửi yêu cầu nâng hạng, chờ admin phê duyệt')),
       );
     } catch (e) {
       if (!mounted) return;
@@ -958,7 +985,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
       decoration: BoxDecoration(
         color: AppColors.bgSecondary,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.borderPrimary),
+        border: Border.all(color: const Color(0x332D363D)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -977,7 +1004,8 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
               ),
               Tooltip(
                 message: tooltip,
-                child: const Icon(Icons.info_outline, color: AppColors.textSecondary, size: 18),
+                child: const Icon(Icons.info_outline,
+                    color: AppColors.textSecondary, size: 18),
               ),
               const SizedBox(width: 8),
               TextButton.icon(
@@ -990,7 +1018,8 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
           const SizedBox(height: 6),
           Text(
             tooltip,
-            style: const TextStyle(color: AppColors.textSecondary, fontSize: 12.5),
+            style:
+                const TextStyle(color: AppColors.textSecondary, fontSize: 12.5),
           ),
           const SizedBox(height: 10),
           if (items.isEmpty)
@@ -1006,7 +1035,8 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: _gridCrossAxisCount(MediaQuery.sizeOf(context).width - 28),
+                crossAxisCount:
+                    _gridCrossAxisCount(MediaQuery.sizeOf(context).width - 28),
                 mainAxisSpacing: 10,
                 crossAxisSpacing: 10,
                 childAspectRatio: 0.92,
@@ -1022,7 +1052,8 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
   Future<void> _showCreatePrivateDialog() async {
     await _showCreateDialog(
       title: 'Tạo môn học cá nhân',
-      onSubmit: (api, name, desc) => api.createPrivateSubject(name: name, description: desc),
+      onSubmit: (api, name, desc) =>
+          api.createPrivateSubject(name: name, description: desc),
       successMessage: 'Đã tạo môn private thành công',
     );
   }
@@ -1030,7 +1061,8 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
   Future<void> _showCreateCommunityDialog() async {
     await _showCreateDialog(
       title: 'Đề xuất môn cộng đồng',
-      onSubmit: (api, name, desc) => api.createSubjectContribution(name: name, description: desc),
+      onSubmit: (api, name, desc) =>
+          api.createSubjectContribution(name: name, description: desc),
       successMessage: 'Đã gửi đề xuất môn cộng đồng, chờ admin duyệt',
     );
   }
@@ -1039,7 +1071,8 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
     await _showCreateDialog(
       title: 'Tạo môn rồi gửi duyệt chuyên gia',
       onSubmit: (api, name, desc) async {
-        final created = await api.createPrivateSubject(name: name, description: desc);
+        final created =
+            await api.createPrivateSubject(name: name, description: desc);
         final subjectId = (created['id'] ?? '').toString();
         if (subjectId.isNotEmpty) {
           await api.requestSubjectPromotion(
@@ -1056,7 +1089,9 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
 
   Future<void> _showCreateDialog({
     required String title,
-    required Future<Map<String, dynamic>> Function(ApiService api, String name, String description) onSubmit,
+    required Future<Map<String, dynamic>> Function(
+            ApiService api, String name, String description)
+        onSubmit,
     required String successMessage,
   }) async {
     final nameCtrl = TextEditingController();
@@ -1065,7 +1100,8 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.bgSecondary,
-        title: Text(title, style: const TextStyle(color: AppColors.textPrimary)),
+        title:
+            Text(title, style: const TextStyle(color: AppColors.textPrimary)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -1082,8 +1118,12 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Hủy')),
-          ElevatedButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Tạo')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Hủy')),
+          ElevatedButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Tạo')),
         ],
       ),
     );

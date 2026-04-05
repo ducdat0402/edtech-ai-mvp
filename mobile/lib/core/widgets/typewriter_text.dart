@@ -78,7 +78,8 @@ class _TypeWriterTextState extends State<TypeWriterText> {
         } else if (char == '.' || char == '!' || char == '?') {
           delay = Duration(milliseconds: widget.speed.inMilliseconds * 2);
         } else if (char == ',' || char == ';' || char == ':') {
-          delay = Duration(milliseconds: (widget.speed.inMilliseconds * 1.5).round());
+          delay = Duration(
+              milliseconds: (widget.speed.inMilliseconds * 1.5).round());
         }
       }
 

@@ -691,11 +691,11 @@ class _QuizEditorScreenState extends State<QuizEditorScreen> {
       fillColor: AppColors.bgSecondary,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.borderPrimary),
+        borderSide: const BorderSide(color: Color(0x332D363D)),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.borderPrimary),
+        borderSide: const BorderSide(color: Color(0x332D363D)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -751,7 +751,7 @@ class _QuizEditorScreenState extends State<QuizEditorScreen> {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              color: AppColors.bgSecondary.withOpacity(0.5),
+              color: AppColors.bgSecondary.withValues(alpha: 0.5),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -767,8 +767,8 @@ class _QuizEditorScreenState extends State<QuizEditorScreen> {
                         const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: _questions.length >= _minQuestions
-                          ? AppColors.successNeon.withOpacity(0.15)
-                          : AppColors.warningNeon.withOpacity(0.15),
+                          ? AppColors.successNeon.withValues(alpha: 0.15)
+                          : AppColors.warningNeon.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
@@ -836,7 +836,7 @@ class _QuizEditorScreenState extends State<QuizEditorScreen> {
               decoration: const BoxDecoration(
                 color: AppColors.bgSecondary,
                 border: Border(
-                  top: BorderSide(color: AppColors.borderPrimary),
+                  top: BorderSide(color: Color(0x332D363D)),
                 ),
               ),
               child: Column(
@@ -851,8 +851,9 @@ class _QuizEditorScreenState extends State<QuizEditorScreen> {
                           icon: const Icon(Icons.visibility_outlined, size: 18),
                           label: const Text('Xem trước'),
                           style: OutlinedButton.styleFrom(
-                            foregroundColor: AppColors.cyanNeon,
-                            side: const BorderSide(color: AppColors.cyanNeon),
+                            foregroundColor: AppColors.primaryLight,
+                            side:
+                                const BorderSide(color: AppColors.primaryLight),
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -935,7 +936,7 @@ class _QuizEditorScreenState extends State<QuizEditorScreen> {
       decoration: BoxDecoration(
         color: AppColors.bgSecondary,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.borderPrimary),
+        border: Border.all(color: const Color(0x332D363D)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -973,10 +974,11 @@ class _QuizEditorScreenState extends State<QuizEditorScreen> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 6),
                         decoration: BoxDecoration(
-                          color: AppColors.orangeNeon.withOpacity(0.1),
+                          color: AppColors.orangeNeon.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                              color: AppColors.orangeNeon.withOpacity(0.3)),
+                              color:
+                                  AppColors.orangeNeon.withValues(alpha: 0.3)),
                         ),
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
@@ -1001,7 +1003,7 @@ class _QuizEditorScreenState extends State<QuizEditorScreen> {
                 ),
             ],
           ),
-          const Divider(color: AppColors.borderPrimary, height: 20),
+          const Divider(color: Color(0x332D363D), height: 20),
 
           // Question text
           TextFormField(
@@ -1074,22 +1076,22 @@ class _QuizEditorScreenState extends State<QuizEditorScreen> {
           }),
 
           const SizedBox(height: 8),
-          const Divider(color: AppColors.borderPrimary),
+          const Divider(color: Color(0x332D363D)),
           const SizedBox(height: 8),
-          Row(
+          const Row(
             children: [
-              const Text(
+              Text(
                 'Tag đánh giá cho câu hỏi',
                 style: TextStyle(
                   color: AppColors.textPrimary,
                   fontWeight: FontWeight.w700,
                 ),
               ),
-              const SizedBox(width: 6),
+              SizedBox(width: 6),
               Tooltip(
                 message:
                     'Chọn kiểu tư duy mà câu hỏi đang đo. Có thể chọn nhiều tag.',
-                child: const Icon(
+                child: Icon(
                   Icons.info_outline,
                   size: 16,
                   color: AppColors.textTertiary,
@@ -1116,12 +1118,13 @@ class _QuizEditorScreenState extends State<QuizEditorScreen> {
                 },
                 label: Text(_logicTypeLabels[tag] ?? tag),
                 tooltip: _logicTypeTooltips[tag],
-                selectedColor: AppColors.cyanNeon.withValues(alpha: 0.2),
-                checkmarkColor: AppColors.cyanNeon,
-                side: const BorderSide(color: AppColors.borderPrimary),
+                selectedColor: AppColors.primaryLight.withValues(alpha: 0.2),
+                checkmarkColor: AppColors.primaryLight,
+                side: const BorderSide(color: Color(0x332D363D)),
                 labelStyle: TextStyle(
-                  color:
-                      selected ? AppColors.cyanNeon : AppColors.textSecondary,
+                  color: selected
+                      ? AppColors.primaryLight
+                      : AppColors.textSecondary,
                   fontSize: 12,
                 ),
                 backgroundColor: AppColors.bgTertiary,
@@ -1284,7 +1287,7 @@ class _LessonComparisonSheet extends StatelessWidget {
               ],
             ),
           ),
-          const Divider(color: AppColors.borderPrimary),
+          const Divider(color: Color(0x332D363D)),
           // Content
           Expanded(
             child: ListView(
@@ -1330,7 +1333,7 @@ class _LessonComparisonSheet extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: AppColors.bgTertiary,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.borderPrimary),
+                    border: Border.all(color: const Color(0x332D363D)),
                   ),
                   child: Row(
                     children: [

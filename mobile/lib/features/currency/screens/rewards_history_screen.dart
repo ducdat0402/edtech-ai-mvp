@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/widgets/error_widget.dart';
 import 'package:edtech_mobile/core/widgets/empty_state.dart';
+import 'package:edtech_mobile/theme/theme.dart';
 
 class RewardsHistoryScreen extends StatefulWidget {
   const RewardsHistoryScreen({super.key});
@@ -85,11 +86,17 @@ class _RewardsHistoryScreenState extends State<RewardsHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.bgPrimary,
       appBar: AppBar(
-        title: const Text('Lịch sử phần thưởng'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Text(
+          'Lịch sử phần thưởng',
+          style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+        ),
         actions: [
           PopupMenuButton<String>(
-            icon: const Icon(Icons.filter_list),
+            icon: const Icon(Icons.filter_list, color: AppColors.textSecondary),
             onSelected: _onSourceFilterChanged,
             itemBuilder: (context) => [
               const PopupMenuItem(
@@ -105,14 +112,15 @@ class _RewardsHistoryScreenState extends State<RewardsHistoryScreen> {
             ],
           ),
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh, color: AppColors.textSecondary),
             onPressed: () => _loadHistory(),
             tooltip: 'Làm mới',
           ),
         ],
       ),
       body: _isLoading && _transactions.isEmpty
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.primaryLight))
           : _error != null
               ? AppErrorWidget(
                   message: _error!,
@@ -146,11 +154,18 @@ class _RewardsHistoryScreenState extends State<RewardsHistoryScreen> {
       child: Center(
         child: ElevatedButton(
           onPressed: _isLoading ? null : () => _loadHistory(loadMore: true),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.purpleNeon,
+            foregroundColor: Colors.white,
+          ),
           child: _isLoading
               ? const SizedBox(
                   width: 20,
                   height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
                 )
               : const Text('Tải thêm'),
         ),
@@ -170,7 +185,13 @@ class _RewardsHistoryScreenState extends State<RewardsHistoryScreen> {
     final hasRewards = xp > 0 || coins > 0 || shards.isNotEmpty;
 
     return Card(
+      color: AppColors.bgSecondary,
+      elevation: 0,
       margin: const EdgeInsets.only(bottom: 12),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(color: Color(0x332D363D)),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -185,18 +206,16 @@ class _RewardsHistoryScreenState extends State<RewardsHistoryScreen> {
                     children: [
                       Text(
                         sourceName.isNotEmpty ? sourceName : sourceLabel,
-                        style: const TextStyle(
+                        style: AppTextStyles.labelLarge.copyWith(
                           fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         sourceLabel,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey.shade600,
-                        ),
+                        style: AppTextStyles.caption
+                            .copyWith(color: AppColors.textTertiary),
                       ),
                     ],
                   ),
@@ -204,16 +223,14 @@ class _RewardsHistoryScreenState extends State<RewardsHistoryScreen> {
                 if (createdAt != null)
                   Text(
                     _formatDate(createdAt),
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey.shade500,
-                    ),
+                    style: AppTextStyles.caption
+                        .copyWith(color: AppColors.textTertiary),
                   ),
               ],
             ),
             if (hasRewards) ...[
               const SizedBox(height: 12),
-              const Divider(),
+              const Divider(color: Color(0x332D363D)),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 12,
@@ -223,19 +240,19 @@ class _RewardsHistoryScreenState extends State<RewardsHistoryScreen> {
                     _buildRewardChip(
                       icon: Icons.star,
                       label: '$xp XP',
-                      color: Colors.amber,
+                      color: AppColors.xpGold,
                     ),
                   if (coins > 0)
                     _buildRewardChip(
                       icon: Icons.monetization_on,
                       label: '$coins xu',
-                      color: Colors.orange,
+                      color: AppColors.orangeNeon,
                     ),
                   ...shards.entries.map(
                     (entry) => _buildRewardChip(
                       icon: Icons.diamond,
                       label: '${entry.value} ${_formatShardName(entry.key)}',
-                      color: Colors.purple,
+                      color: AppColors.primaryLight,
                     ),
                   ),
                 ],
@@ -255,9 +272,9 @@ class _RewardsHistoryScreenState extends State<RewardsHistoryScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

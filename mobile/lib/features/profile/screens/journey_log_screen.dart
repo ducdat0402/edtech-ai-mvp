@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/widgets/error_widget.dart';
 import 'package:edtech_mobile/core/widgets/skeleton_loader.dart';
+import 'package:edtech_mobile/theme/theme.dart';
 import 'package:intl/intl.dart';
 
 class JourneyLogScreen extends StatefulWidget {
@@ -26,21 +27,13 @@ class _JourneyLogScreenState extends State<JourneyLogScreen> {
   Future<void> _loadHistory() async {
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
-      // Load contributions as journey history
       final history = await apiService.getMyPendingContributions();
-      
-      print('🔍 Journey Log: Loaded ${history.length} history entries');
-      for (int i = 0; i < history.length; i++) {
-        final item = history[i];
-        print('📝 Entry $i: action=${item['action']}, description=${item['description']}, createdAt=${item['createdAt']}');
-      }
-      
+
       setState(() {
         _history = history;
         _isLoading = false;
       });
     } catch (e) {
-      print('❌ Journey Log Error: $e');
       setState(() {
         _error = e.toString();
         _isLoading = false;
@@ -51,8 +44,15 @@ class _JourneyLogScreenState extends State<JourneyLogScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.bgPrimary,
       appBar: AppBar(
-        title: const Text('Nhật Ký Hành Trình'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: AppColors.textPrimary),
+        title: Text(
+          'Nhật ký hành trình',
+          style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+        ),
       ),
       body: _isLoading
           ? _buildLoading()
@@ -62,16 +62,21 @@ class _JourneyLogScreenState extends State<JourneyLogScreen> {
                   onRetry: _loadHistory,
                 )
               : _history.isEmpty
-                  ? const Center(
-                      child: Text('Chưa có hoạt động nào được ghi lại'),
+                  ? Center(
+                      child: Text(
+                        'Chưa có hoạt động nào được ghi lại',
+                        style: AppTextStyles.bodyMedium
+                            .copyWith(color: AppColors.textSecondary),
+                      ),
                     )
                   : RefreshIndicator(
                       onRefresh: _loadHistory,
+                      color: AppColors.primaryLight,
                       child: ListView.builder(
                         padding: const EdgeInsets.all(16),
                         itemCount: _history.length,
                         itemBuilder: (context, index) {
-                          final item = _history[index];
+                          final item = _history[index] as Map<String, dynamic>;
                           return _buildHistoryItem(item);
                         },
                       ),
@@ -97,11 +102,11 @@ class _JourneyLogScreenState extends State<JourneyLogScreen> {
     final createdAt = item['createdAt'] as String?;
     final details = item['description'] as String? ?? '';
     final contentItem = item['contentItem'] as Map<String, dynamic>? ?? {};
-    final contentTitle = contentItem['title'] as String? ?? 'Bài học chưa đặt tên';
+    final contentTitle =
+        contentItem['title'] as String? ?? 'Bài học chưa đặt tên';
     final user = item['user'] as Map<String, dynamic>? ?? {};
-    final performerName = user['fullName'] ?? user['email'] ?? 'Hệ thống';
-    
-    // Format date
+    final performerName = user['fullName'] ?? user['email'];
+
     String dateStr = '';
     if (createdAt != null) {
       try {
@@ -118,119 +123,117 @@ class _JourneyLogScreenState extends State<JourneyLogScreen> {
 
     switch (action) {
       case 'approve':
-        statusColor = Colors.green;
+        statusColor = AppColors.successNeon;
         statusText = 'Đã duyệt';
-        statusIcon = Icons.check_circle;
+        statusIcon = Icons.check_circle_rounded;
         break;
       case 'reject':
-        statusColor = Colors.red;
+        statusColor = AppColors.errorNeon;
         statusText = 'Từ chối';
-        statusIcon = Icons.cancel;
+        statusIcon = Icons.cancel_rounded;
         break;
       case 'submit':
-        statusColor = Colors.blue;
+        statusColor = AppColors.primaryLight;
         statusText = 'Đã gửi';
-        statusIcon = Icons.send;
+        statusIcon = Icons.send_rounded;
         break;
       case 'create':
-        statusColor = Colors.purple;
+        statusColor = AppColors.purpleNeon;
         statusText = 'Tạo mới';
-        statusIcon = Icons.add_circle;
+        statusIcon = Icons.add_circle_rounded;
         break;
       case 'update':
-        statusColor = Colors.orange;
+        statusColor = AppColors.orangeNeon;
         statusText = 'Cập nhật';
-        statusIcon = Icons.edit;
+        statusIcon = Icons.edit_rounded;
         break;
       case 'remove':
-        statusColor = Colors.red;
+        statusColor = AppColors.errorNeon;
         statusText = 'Đã gỡ';
-        statusIcon = Icons.delete;
+        statusIcon = Icons.delete_rounded;
         break;
       default:
-        statusColor = Colors.grey;
+        statusColor = AppColors.textSecondary;
         statusText = 'Hoạt động';
-        statusIcon = Icons.info;
+        statusIcon = Icons.info_rounded;
         break;
     }
 
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: statusColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: statusColor.withOpacity(0.3)),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(statusIcon, size: 14, color: statusColor),
-                      const SizedBox(width: 4),
-                      Text(
-                        statusText,
-                        style: TextStyle(
-                          color: statusColor,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.bgSecondary,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0x332D363D)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12),
+                  border:
+                      Border.all(color: statusColor.withValues(alpha: 0.35)),
                 ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(statusIcon, size: 14, color: statusColor),
+                    const SizedBox(width: 4),
+                    Text(
+                      statusText,
+                      style: AppTextStyles.labelSmall.copyWith(
+                        color: statusColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Text(
+                dateStr,
+                style: AppTextStyles.caption
+                    .copyWith(color: AppColors.textTertiary),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            details,
+            style:
+                AppTextStyles.labelLarge.copyWith(color: AppColors.textPrimary),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Bài học: $contentTitle',
+            style: AppTextStyles.bodySmall
+                .copyWith(color: AppColors.textSecondary),
+          ),
+          if (performerName != null &&
+              (action == 'approve' || action == 'reject')) ...[
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Icon(Icons.admin_panel_settings_rounded,
+                    size: 14, color: AppColors.primaryLight),
+                const SizedBox(width: 4),
                 Text(
-                  dateStr,
-                  style: TextStyle(
-                    color: Colors.grey.shade600,
-                    fontSize: 12,
+                  'Xử lý bởi: Admin',
+                  style: AppTextStyles.caption.copyWith(
+                    color: AppColors.primaryLight,
+                    fontStyle: FontStyle.italic,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            Text(
-              details,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 15,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Bài học: $contentTitle',
-              style: TextStyle(
-                color: Colors.grey.shade800,
-                fontSize: 14,
-              ),
-            ),
-            if (performerName != null && action == 'approve' || action == 'reject') ...[
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                   Icon(Icons.admin_panel_settings, size: 14, color: Colors.blue.shade700),
-                   const SizedBox(width: 4),
-                   Text(
-                    'Xử lý bởi: Admin',
-                    style: TextStyle(
-                      color: Colors.blue.shade700,
-                      fontSize: 12,
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
-                ],
-              ),
-            ],
           ],
-        ),
+        ],
       ),
     );
   }

@@ -22,9 +22,10 @@ class AiGeneratedNotice extends StatelessWidget {
         vertical: compact ? 8 : 10,
       ),
       decoration: BoxDecoration(
-        color: AppColors.warningNeon.withOpacity(0.12),
+        color: AppColors.warningNeon.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.warningNeon.withOpacity(0.35)),
+        border:
+            Border.all(color: AppColors.warningNeon.withValues(alpha: 0.35)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -46,4 +47,3 @@ class AiGeneratedNotice extends StatelessWidget {
     );
   }
 }
-

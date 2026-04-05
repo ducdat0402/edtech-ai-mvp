@@ -68,7 +68,7 @@ class _MyContributionsScreenState extends State<MyContributionsScreen>
     return Scaffold(
       backgroundColor: AppColors.bgPrimary,
       appBar: AppBar(
-        backgroundColor: AppColors.bgSecondary,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         leading: const AppBarLeadingBackAndHome(),
         leadingWidth: 112,
@@ -77,9 +77,9 @@ class _MyContributionsScreenState extends State<MyContributionsScreen>
             style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: AppColors.purpleNeon,
+          indicatorColor: AppColors.primaryLight,
           indicatorWeight: 3,
-          labelColor: AppColors.purpleNeon,
+          labelColor: AppColors.primaryLight,
           unselectedLabelColor: AppColors.textSecondary,
           labelStyle: AppTextStyles.labelMedium,
           tabs: [
@@ -94,7 +94,7 @@ class _MyContributionsScreenState extends State<MyContributionsScreen>
       ),
       body: _isLoading
           ? const Center(
-              child: CircularProgressIndicator(color: AppColors.purpleNeon))
+              child: CircularProgressIndicator(color: AppColors.primaryLight))
           : _error != null
               ? _buildErrorState()
               : TabBarView(
@@ -117,7 +117,7 @@ class _MyContributionsScreenState extends State<MyContributionsScreen>
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: AppColors.errorNeon.withOpacity(0.15),
+                color: AppColors.errorNeon.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.error_outline_rounded,
@@ -151,7 +151,7 @@ class _MyContributionsScreenState extends State<MyContributionsScreen>
 
     return RefreshIndicator(
       onRefresh: _loadData,
-      color: AppColors.purpleNeon,
+      color: AppColors.primaryLight,
       child: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: _myEdits.length,
@@ -177,7 +177,7 @@ class _MyContributionsScreenState extends State<MyContributionsScreen>
 
     return RefreshIndicator(
       onRefresh: _loadData,
-      color: AppColors.purpleNeon,
+      color: AppColors.primaryLight,
       child: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: _myHistory.length,
@@ -209,7 +209,7 @@ class _MyContributionsScreenState extends State<MyContributionsScreen>
               decoration: BoxDecoration(
                 color: AppColors.bgSecondary,
                 shape: BoxShape.circle,
-                border: Border.all(color: AppColors.borderPrimary),
+                border: Border.all(color: const Color(0x332D363D)),
               ),
               child: Icon(icon, size: 48, color: AppColors.textTertiary),
             ),
@@ -242,23 +242,23 @@ class _MyContributionsScreenState extends State<MyContributionsScreen>
     String typeLabel;
     switch (type) {
       case 'add_video':
-        typeIcon = Icons.videocam;
-        typeColor = Colors.purple;
+        typeIcon = Icons.videocam_rounded;
+        typeColor = AppColors.purpleNeon;
         typeLabel = 'Video';
         break;
       case 'add_image':
-        typeIcon = Icons.image;
-        typeColor = Colors.teal;
+        typeIcon = Icons.image_rounded;
+        typeColor = AppColors.primaryLight;
         typeLabel = 'Hình ảnh';
         break;
       case 'add_text':
-        typeIcon = Icons.text_fields;
-        typeColor = Colors.blue;
+        typeIcon = Icons.text_fields_rounded;
+        typeColor = AppColors.successNeon;
         typeLabel = 'Văn bản';
         break;
       default:
-        typeIcon = Icons.edit;
-        typeColor = Colors.indigo;
+        typeIcon = Icons.edit_rounded;
+        typeColor = AppColors.primaryLight;
         typeLabel = 'Nội dung';
     }
 
@@ -268,19 +268,19 @@ class _MyContributionsScreenState extends State<MyContributionsScreen>
     IconData statusIcon;
     switch (status) {
       case 'approved':
-        statusColor = Colors.green;
+        statusColor = AppColors.successNeon;
         statusLabel = 'Đã duyệt';
-        statusIcon = Icons.check_circle;
+        statusIcon = Icons.check_circle_rounded;
         break;
       case 'rejected':
-        statusColor = Colors.red;
+        statusColor = AppColors.errorNeon;
         statusLabel = 'Bị từ chối';
-        statusIcon = Icons.cancel;
+        statusIcon = Icons.cancel_rounded;
         break;
       default:
-        statusColor = Colors.orange;
+        statusColor = AppColors.orangeNeon;
         statusLabel = 'Đang chờ duyệt';
-        statusIcon = Icons.hourglass_empty;
+        statusIcon = Icons.hourglass_empty_rounded;
     }
 
     // Format date
@@ -295,147 +295,146 @@ class _MyContributionsScreenState extends State<MyContributionsScreen>
       }
     }
 
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(
+      decoration: BoxDecoration(
+        color: AppColors.bgSecondary,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0x332D363D)),
       ),
-      elevation: 2,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: () => _showEditDetails(edit),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header row
-              Row(
-                children: [
-                  // Type icon
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: typeColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () => _showEditDetails(edit),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header row
+                Row(
+                  children: [
+                    // Type icon
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: typeColor.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(typeIcon, color: typeColor, size: 24),
                     ),
-                    child: Icon(typeIcon, color: typeColor, size: 24),
-                  ),
-                  const SizedBox(width: 12),
-                  // Title and type
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          title ?? description ?? 'Đóng góp $typeLabel',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
+                    const SizedBox(width: 12),
+                    // Title and type
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title ?? description ?? 'Đóng góp $typeLabel',
+                            style: AppTextStyles.labelLarge
+                                .copyWith(color: AppColors.textPrimary),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: typeColor.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                typeLabel,
-                                style: TextStyle(
-                                  color: typeColor,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w500,
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: typeColor.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  typeLabel,
+                                  style: AppTextStyles.labelSmall.copyWith(
+                                    color: typeColor,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              formattedDate,
-                              style: TextStyle(
-                                color: Colors.grey.shade600,
-                                fontSize: 12,
+                              const SizedBox(width: 8),
+                              Text(
+                                formattedDate,
+                                style: AppTextStyles.caption
+                                    .copyWith(color: AppColors.textTertiary),
                               ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                const Divider(color: Color(0x332D363D), height: 1),
+                const SizedBox(height: 8),
+                // Status and votes row
+                Row(
+                  children: [
+                    // Status badge
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: statusColor.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                            color: statusColor.withValues(alpha: 0.5)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(statusIcon, size: 16, color: statusColor),
+                          const SizedBox(width: 6),
+                          Text(
+                            statusLabel,
+                            style: AppTextStyles.labelSmall.copyWith(
+                              color: statusColor,
+                              fontWeight: FontWeight.bold,
                             ),
-                          ],
-                        ),
-                      ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              const Divider(),
-              const SizedBox(height: 8),
-              // Status and votes row
-              Row(
-                children: [
-                  // Status badge
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: statusColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: statusColor.withOpacity(0.5)),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
+                    const Spacer(),
+                    // Votes
+                    Row(
                       children: [
-                        Icon(statusIcon, size: 16, color: statusColor),
-                        const SizedBox(width: 6),
+                        const Icon(Icons.thumb_up_rounded,
+                            size: 16, color: AppColors.successNeon),
+                        const SizedBox(width: 4),
                         Text(
-                          statusLabel,
-                          style: TextStyle(
-                            color: statusColor,
+                          '$upvotes',
+                          style: AppTextStyles.labelMedium.copyWith(
+                            color: AppColors.successNeon,
                             fontWeight: FontWeight.bold,
-                            fontSize: 12,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        const Icon(Icons.thumb_down_rounded,
+                            size: 16, color: AppColors.errorNeon),
+                        const SizedBox(width: 4),
+                        Text(
+                          '$downvotes',
+                          style: AppTextStyles.labelMedium.copyWith(
+                            color: AppColors.errorNeon,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ],
                     ),
-                  ),
-                  const Spacer(),
-                  // Votes
-                  Row(
-                    children: [
-                      Icon(Icons.thumb_up,
-                          size: 16, color: Colors.green.shade600),
-                      const SizedBox(width: 4),
-                      Text(
-                        '$upvotes',
-                        style: TextStyle(
-                          color: Colors.green.shade600,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Icon(Icons.thumb_down,
-                          size: 16, color: Colors.red.shade600),
-                      const SizedBox(width: 4),
-                      Text(
-                        '$downvotes',
-                        style: TextStyle(
-                          color: Colors.red.shade600,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -452,24 +451,24 @@ class _MyContributionsScreenState extends State<MyContributionsScreen>
     Color actionColor;
     switch (action) {
       case 'submit':
-        actionIcon = Icons.upload;
-        actionColor = Colors.blue;
+        actionIcon = Icons.upload_rounded;
+        actionColor = AppColors.primaryLight;
         break;
       case 'approve':
-        actionIcon = Icons.check_circle;
-        actionColor = Colors.green;
+        actionIcon = Icons.check_circle_rounded;
+        actionColor = AppColors.successNeon;
         break;
       case 'reject':
-        actionIcon = Icons.cancel;
-        actionColor = Colors.red;
+        actionIcon = Icons.cancel_rounded;
+        actionColor = AppColors.errorNeon;
         break;
       case 'remove':
-        actionIcon = Icons.delete;
-        actionColor = Colors.orange;
+        actionIcon = Icons.delete_rounded;
+        actionColor = AppColors.orangeNeon;
         break;
       default:
-        actionIcon = Icons.info;
-        actionColor = Colors.grey;
+        actionIcon = Icons.info_rounded;
+        actionColor = AppColors.textSecondary;
     }
 
     // Format date
@@ -488,14 +487,9 @@ class _MyContributionsScreenState extends State<MyContributionsScreen>
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.bgSecondary,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-          ),
-        ],
+        border: Border.all(color: const Color(0x332D363D)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -504,7 +498,7 @@ class _MyContributionsScreenState extends State<MyContributionsScreen>
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: actionColor.withOpacity(0.1),
+              color: actionColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(actionIcon, color: actionColor, size: 22),
@@ -516,17 +510,14 @@ class _MyContributionsScreenState extends State<MyContributionsScreen>
               children: [
                 Text(
                   description,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: AppTextStyles.bodyMedium
+                      .copyWith(color: AppColors.textPrimary),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   formattedDate,
-                  style: TextStyle(
-                    color: Colors.grey.shade600,
-                    fontSize: 12,
-                  ),
+                  style: AppTextStyles.caption
+                      .copyWith(color: AppColors.textTertiary),
                 ),
               ],
             ),
@@ -554,23 +545,23 @@ class _MyContributionsScreenState extends State<MyContributionsScreen>
     String typeLabel;
     switch (type) {
       case 'add_video':
-        typeIcon = Icons.videocam;
-        typeColor = Colors.purple;
+        typeIcon = Icons.videocam_rounded;
+        typeColor = AppColors.purpleNeon;
         typeLabel = 'Video';
         break;
       case 'add_image':
-        typeIcon = Icons.image;
-        typeColor = Colors.teal;
+        typeIcon = Icons.image_rounded;
+        typeColor = AppColors.primaryLight;
         typeLabel = 'Hình ảnh';
         break;
       case 'add_text':
-        typeIcon = Icons.text_fields;
-        typeColor = Colors.blue;
+        typeIcon = Icons.text_fields_rounded;
+        typeColor = AppColors.successNeon;
         typeLabel = 'Văn bản';
         break;
       default:
-        typeIcon = Icons.edit;
-        typeColor = Colors.indigo;
+        typeIcon = Icons.edit_rounded;
+        typeColor = AppColors.primaryLight;
         typeLabel = 'Nội dung';
     }
 
@@ -589,6 +580,7 @@ class _MyContributionsScreenState extends State<MyContributionsScreen>
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      backgroundColor: AppColors.bgSecondary,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -612,7 +604,7 @@ class _MyContributionsScreenState extends State<MyContributionsScreen>
                         width: 56,
                         height: 56,
                         decoration: BoxDecoration(
-                          color: typeColor.withOpacity(0.1),
+                          color: typeColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Icon(typeIcon, color: typeColor, size: 32),
@@ -624,30 +616,28 @@ class _MyContributionsScreenState extends State<MyContributionsScreen>
                           children: [
                             Text(
                               title ?? 'Đóng góp $typeLabel',
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: AppTextStyles.h4
+                                  .copyWith(color: AppColors.textPrimary),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               formattedDate,
-                              style: TextStyle(
-                                color: Colors.grey.shade600,
-                                fontSize: 13,
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: AppColors.textTertiary,
                               ),
                             ),
                           ],
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.close),
+                        icon: const Icon(Icons.close_rounded,
+                            color: AppColors.textSecondary),
                         onPressed: () => Navigator.pop(context),
                       ),
                     ],
                   ),
                   const SizedBox(height: 20),
-                  const Divider(),
+                  const Divider(color: Color(0x332D363D)),
                   const SizedBox(height: 16),
 
                   // Content item info
@@ -655,28 +645,28 @@ class _MyContributionsScreenState extends State<MyContributionsScreen>
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
+                        color: AppColors.bgTertiary,
                         borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0x332D363D)),
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.book, color: Colors.grey.shade600),
+                          const Icon(Icons.book_rounded,
+                              color: AppColors.textTertiary),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
+                                Text(
                                   'Bài học',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey,
-                                  ),
+                                  style: AppTextStyles.caption
+                                      .copyWith(color: AppColors.textTertiary),
                                 ),
                                 Text(
                                   contentItem['title']?.toString() ?? 'N/A',
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.w500),
+                                  style: AppTextStyles.labelMedium
+                                      .copyWith(color: AppColors.textPrimary),
                                 ),
                               ],
                             ),
@@ -689,29 +679,26 @@ class _MyContributionsScreenState extends State<MyContributionsScreen>
 
                   // Description
                   if (description != null && description.isNotEmpty) ...[
-                    const Text(
+                    Text(
                       'Mô tả',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
+                      style: AppTextStyles.labelLarge
+                          .copyWith(color: AppColors.textPrimary),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       description,
-                      style: TextStyle(color: Colors.grey.shade700),
+                      style: AppTextStyles.bodyMedium
+                          .copyWith(color: AppColors.textSecondary),
                     ),
                     const SizedBox(height: 16),
                   ],
 
                   // Media preview
                   if (media != null) ...[
-                    const Text(
+                    Text(
                       'Nội dung đóng góp',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
+                      style: AppTextStyles.labelLarge
+                          .copyWith(color: AppColors.textPrimary),
                     ),
                     const SizedBox(height: 8),
                     if (media['videoUrl'] != null)
@@ -728,12 +715,12 @@ class _MyContributionsScreenState extends State<MyContributionsScreen>
                             children: [
                               Icon(Icons.play_circle_fill,
                                   size: 64,
-                                  color: Colors.white.withOpacity(0.8)),
+                                  color: Colors.white.withValues(alpha: 0.8)),
                               const SizedBox(height: 8),
                               Text(
                                 'Video đã tải lên',
                                 style: TextStyle(
-                                  color: Colors.white.withOpacity(0.8),
+                                  color: Colors.white.withValues(alpha: 0.8),
                                 ),
                               ),
                             ],
@@ -751,11 +738,11 @@ class _MyContributionsScreenState extends State<MyContributionsScreen>
                           errorBuilder: (_, __, ___) => Container(
                             height: 180,
                             decoration: BoxDecoration(
-                              color: Colors.grey.shade200,
+                              color: AppColors.bgTertiary,
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: Icon(Icons.broken_image,
-                                size: 48, color: Colors.grey.shade400),
+                            child: const Icon(Icons.broken_image_rounded,
+                                size: 48, color: AppColors.textTertiary),
                           ),
                         ),
                       ),
@@ -766,15 +753,18 @@ class _MyContributionsScreenState extends State<MyContributionsScreen>
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
+                      color: AppColors.bgTertiary,
                       borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0x332D363D)),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        _buildVoteStat(Icons.thumb_up, upvotes, Colors.green),
+                        _buildVoteStat(Icons.thumb_up_rounded, upvotes,
+                            AppColors.successNeon),
                         const SizedBox(width: 32),
-                        _buildVoteStat(Icons.thumb_down, downvotes, Colors.red),
+                        _buildVoteStat(Icons.thumb_down_rounded, downvotes,
+                            AppColors.errorNeon),
                       ],
                     ),
                   ),
@@ -793,6 +783,8 @@ class _MyContributionsScreenState extends State<MyContributionsScreen>
                         label: const Text('Xem lịch sử chỉnh sửa'),
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.all(16),
+                          foregroundColor: AppColors.primaryLight,
+                          side: const BorderSide(color: Color(0x332D363D)),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -816,11 +808,7 @@ class _MyContributionsScreenState extends State<MyContributionsScreen>
         const SizedBox(height: 4),
         Text(
           '$count',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: color,
-          ),
+          style: AppTextStyles.h4.copyWith(color: color),
         ),
       ],
     );
@@ -830,11 +818,11 @@ class _MyContributionsScreenState extends State<MyContributionsScreen>
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const Center(child: CircularProgressIndicator()),
+      builder: (context) => const Center(
+          child: CircularProgressIndicator(color: AppColors.primaryLight)),
     );
 
     try {
-      final apiService = context.read<ApiService>();
       final List<dynamic> history = []; // Old edit history removed
 
       if (!mounted) return;
@@ -843,6 +831,7 @@ class _MyContributionsScreenState extends State<MyContributionsScreen>
       showModalBottomSheet(
         context: context,
         isScrollControlled: true,
+        backgroundColor: AppColors.bgSecondary,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
@@ -861,23 +850,23 @@ class _MyContributionsScreenState extends State<MyContributionsScreen>
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.history, color: Colors.indigo.shade700),
+                        const Icon(Icons.history_rounded,
+                            color: AppColors.primaryLight),
                         const SizedBox(width: 8),
-                        const Text(
+                        Text(
                           'Lịch sử',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: AppTextStyles.h4
+                              .copyWith(color: AppColors.textPrimary),
                         ),
                         const Spacer(),
                         IconButton(
-                          icon: const Icon(Icons.close),
+                          icon: const Icon(Icons.close_rounded,
+                              color: AppColors.textSecondary),
                           onPressed: () => Navigator.pop(context),
                         ),
                       ],
                     ),
-                    const Divider(),
+                    const Divider(color: Color(0x332D363D)),
                     const SizedBox(height: 12),
                     if (history.isEmpty)
                       Center(
@@ -885,7 +874,8 @@ class _MyContributionsScreenState extends State<MyContributionsScreen>
                           padding: const EdgeInsets.all(32),
                           child: Text(
                             'Chưa có lịch sử',
-                            style: TextStyle(color: Colors.grey.shade600),
+                            style: AppTextStyles.bodyMedium
+                                .copyWith(color: AppColors.textSecondary),
                           ),
                         ),
                       )
@@ -903,7 +893,8 @@ class _MyContributionsScreenState extends State<MyContributionsScreen>
       if (mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi: $e'), backgroundColor: Colors.red),
+          SnackBar(
+              content: Text('Lỗi: $e'), backgroundColor: AppColors.errorNeon),
         );
       }
     }

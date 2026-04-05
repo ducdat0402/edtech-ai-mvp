@@ -26,4 +26,3 @@ class ThemeModeService extends ChangeNotifier {
     await prefs.setString(_key, enabled ? 'dark' : 'light');
   }
 }
-

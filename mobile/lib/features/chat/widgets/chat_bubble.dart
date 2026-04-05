@@ -27,7 +27,7 @@ class _CornerRedDot extends StatelessWidget {
         border: Border.all(color: AppColors.bgPrimary, width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: Colors.red.withOpacity(0.45),
+            color: AppColors.errorNeon.withValues(alpha: 0.45),
             blurRadius: 4,
           ),
         ],
@@ -83,8 +83,8 @@ class _FloatingChatBubbleState extends State<FloatingChatBubble>
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _refreshChatUnreadBadge();
-      _badgePollTimer =
-          Timer.periodic(const Duration(seconds: 25), (_) => _refreshChatUnreadBadge());
+      _badgePollTimer = Timer.periodic(
+          const Duration(seconds: 25), (_) => _refreshChatUnreadBadge());
     });
   }
 
@@ -116,8 +116,7 @@ class _FloatingChatBubbleState extends State<FloatingChatBubble>
         final lastSeen = DateTime.tryParse(lastSeenStr ?? '') ??
             DateTime.fromMillisecondsSinceEpoch(0);
 
-        _cachedUserId ??=
-            (await api.getUserProfile())['id'] as String?;
+        _cachedUserId ??= (await api.getUserProfile())['id'] as String?;
 
         final data = await api.getChatMessages(limit: 1);
         final msgs = data['messages'] as List<dynamic>? ?? [];
@@ -154,7 +153,8 @@ class _FloatingChatBubbleState extends State<FloatingChatBubble>
             position: Tween<Offset>(
               begin: const Offset(0.0, 1.0),
               end: Offset.zero,
-            ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOut)),
+            ).animate(
+                CurvedAnimation(parent: animation, curve: Curves.easeOut)),
             child: child,
           );
         },
@@ -257,13 +257,13 @@ class _FloatingChatBubbleState extends State<FloatingChatBubble>
         onTap: _openChat,
         showDot: _chatUnreadDot,
         gradient: const LinearGradient(
-          colors: [AppColors.cyanNeon, AppColors.purpleNeon],
+          colors: [AppColors.primaryLight, AppColors.purpleNeon],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         shadows: [
           BoxShadow(
-            color: AppColors.cyanNeon.withOpacity(0.35),
+            color: AppColors.primaryLight.withValues(alpha: 0.35),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
@@ -281,7 +281,7 @@ class _FloatingChatBubbleState extends State<FloatingChatBubble>
             _ShortcutPill(
               icon: Icons.task_alt_rounded,
               label: 'Nhiệm vụ',
-              color: AppColors.cyanNeon,
+              color: AppColors.primaryLight,
               onTap: _goQuests,
               showBadge: widget.hasClaimableQuest,
             ),
@@ -315,10 +315,10 @@ class _FloatingChatBubbleState extends State<FloatingChatBubble>
               _circleButton(
                 onTap: _toggleShortcuts,
                 color: AppColors.bgSecondary,
-                border: Border.all(color: AppColors.borderPrimary),
+                border: Border.all(color: const Color(0x332D363D)),
                 shadows: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.25),
+                    color: Colors.black.withValues(alpha: 0.25),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -343,8 +343,7 @@ class _FloatingChatBubbleState extends State<FloatingChatBubble>
       ],
     );
 
-    if (widget.shortcutsTutorialKey != null &&
-        widget.showQuestShopShortcuts) {
+    if (widget.shortcutsTutorialKey != null && widget.showQuestShopShortcuts) {
       column = KeyedSubtree(
         key: widget.shortcutsTutorialKey,
         child: column,

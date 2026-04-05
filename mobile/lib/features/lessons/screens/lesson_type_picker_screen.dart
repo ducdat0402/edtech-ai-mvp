@@ -112,7 +112,7 @@ class _LessonTypePickerScreenState extends State<LessonTypePickerScreen> {
                     icon: Icons.photo_library_outlined,
                     title: 'Hình ảnh\n(Thư viện)',
                     description: 'Nhiều hình ảnh kèm mô tả chi tiết',
-                    color: AppColors.cyanNeon,
+                    color: AppColors.primaryLight,
                     onTap: () => _navigateToEditor(context, 'image_gallery'),
                   ),
                   _buildTypeCard(
@@ -155,7 +155,7 @@ class _LessonTypePickerScreenState extends State<LessonTypePickerScreen> {
         decoration: BoxDecoration(
           color: AppColors.bgSecondary,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: color.withOpacity(0.3)),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -164,7 +164,7 @@ class _LessonTypePickerScreenState extends State<LessonTypePickerScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Icon(icon, color: color, size: 36),
@@ -273,10 +273,10 @@ class _LessonTypePickerScreenState extends State<LessonTypePickerScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.warningNeon.withOpacity(0.1),
+                color: AppColors.warningNeon.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
-                border:
-                    Border.all(color: AppColors.warningNeon.withOpacity(0.3)),
+                border: Border.all(
+                    color: AppColors.warningNeon.withValues(alpha: 0.3)),
               ),
               child: Row(
                 children: [

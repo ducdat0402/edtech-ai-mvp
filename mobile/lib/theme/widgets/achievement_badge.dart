@@ -40,7 +40,7 @@ class AchievementBadge extends StatelessWidget {
               boxShadow: isUnlocked
                   ? [
                       BoxShadow(
-                        color: AppColors.purpleNeon.withOpacity(0.6),
+                        color: AppColors.purpleNeon.withValues(alpha: 0.6),
                         blurRadius: 20,
                         spreadRadius: 2,
                       ),
@@ -125,14 +125,14 @@ class AchievementCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isUnlocked
-              ? AppColors.purpleNeon.withOpacity(0.5)
+              ? AppColors.purpleNeon.withValues(alpha: 0.5)
               : AppColors.borderPrimary,
           width: isUnlocked ? 2 : 1,
         ),
         boxShadow: isUnlocked
             ? [
                 BoxShadow(
-                  color: AppColors.purpleNeon.withOpacity(0.2),
+                  color: AppColors.purpleNeon.withValues(alpha: 0.2),
                   blurRadius: 12,
                 ),
               ]

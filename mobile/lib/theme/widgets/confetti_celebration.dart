@@ -57,7 +57,7 @@ class _ConfettiCelebrationState extends State<ConfettiCelebration> {
     final random = Random();
     // Randomly choose between star, circle, or rectangle
     final shape = random.nextInt(3);
-    
+
     switch (shape) {
       case 0:
         return _starPath(size);
@@ -81,7 +81,8 @@ class _ConfettiCelebrationState extends State<ConfettiCelebration> {
     path.moveTo(size.width, halfWidth);
 
     for (double step = 0; step < fullAngle; step += degreesPerStep) {
-      path.lineTo(halfWidth + externalRadius * cos(step), halfWidth + externalRadius * sin(step));
+      path.lineTo(halfWidth + externalRadius * cos(step),
+          halfWidth + externalRadius * sin(step));
       path.lineTo(halfWidth + internalRadius * cos(step + halfDegreesPerStep),
           halfWidth + internalRadius * sin(step + halfDegreesPerStep));
     }
@@ -90,7 +91,10 @@ class _ConfettiCelebrationState extends State<ConfettiCelebration> {
   }
 
   Path _circlePath(Size size) {
-    return Path()..addOval(Rect.fromCircle(center: Offset(size.width / 2, size.height / 2), radius: size.width / 2));
+    return Path()
+      ..addOval(Rect.fromCircle(
+          center: Offset(size.width / 2, size.height / 2),
+          radius: size.width / 2));
   }
 
   Path _rectanglePath(Size size) {
@@ -103,7 +107,8 @@ class CelebrationController {
   final ConfettiController _confettiController;
 
   CelebrationController()
-      : _confettiController = ConfettiController(duration: const Duration(seconds: 3));
+      : _confettiController =
+            ConfettiController(duration: const Duration(seconds: 3));
 
   ConfettiController get controller => _confettiController;
 
@@ -167,16 +172,17 @@ class _LevelUpCelebrationState extends State<LevelUpCelebration>
   @override
   void initState() {
     super.initState();
-    _confettiController = ConfettiController(duration: const Duration(seconds: 5));
+    _confettiController =
+        ConfettiController(duration: const Duration(seconds: 5));
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 800),
     );
-    
+
     _scaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.elasticOut),
     );
-    
+
     _glowAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
@@ -213,10 +219,13 @@ class _LevelUpCelebrationState extends State<LevelUpCelebration>
                   decoration: BoxDecoration(
                     color: AppColors.bgSecondary,
                     borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: widget.levelColor.withOpacity(0.5), width: 2),
+                    border: Border.all(
+                        color: widget.levelColor.withValues(alpha: 0.5),
+                        width: 2),
                     boxShadow: [
                       BoxShadow(
-                        color: widget.levelColor.withOpacity(0.3 * _glowAnimation.value),
+                        color: widget.levelColor
+                            .withValues(alpha: 0.3 * _glowAnimation.value),
                         blurRadius: 40 * _glowAnimation.value,
                         spreadRadius: 10 * _glowAnimation.value,
                       ),
@@ -229,49 +238,60 @@ class _LevelUpCelebrationState extends State<LevelUpCelebration>
                       Container(
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          gradient: LinearGradient(colors: [widget.levelColor, widget.levelColor.withOpacity(0.7)]),
+                          gradient: LinearGradient(colors: [
+                            widget.levelColor,
+                            widget.levelColor.withValues(alpha: 0.7)
+                          ]),
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: widget.levelColor.withOpacity(0.5),
+                              color: widget.levelColor.withValues(alpha: 0.5),
                               blurRadius: 20,
                               spreadRadius: 5,
                             ),
                           ],
                         ),
-                        child: const Icon(Icons.emoji_events_rounded, size: 48, color: Colors.white),
+                        child: const Icon(Icons.emoji_events_rounded,
+                            size: 48, color: Colors.white),
                       ),
                       const SizedBox(height: 24),
-                      
+
                       // Level up text
                       ShaderMask(
-                        shaderCallback: (bounds) => AppGradients.primary.createShader(bounds),
-                        child: Text('LEVEL UP!', style: AppTextStyles.h1.copyWith(color: Colors.white, fontSize: 28)),
+                        shaderCallback: (bounds) =>
+                            AppGradients.primary.createShader(bounds),
+                        child: Text('LEVEL UP!',
+                            style: AppTextStyles.h1
+                                .copyWith(color: Colors.white, fontSize: 28)),
                       ),
                       const SizedBox(height: 16),
-                      
+
                       // New level
                       AnimatedCounter(
                         value: widget.newLevel,
-                        style: AppTextStyles.numberXLarge.copyWith(color: widget.levelColor, fontSize: 64),
+                        style: AppTextStyles.numberXLarge
+                            .copyWith(color: widget.levelColor, fontSize: 64),
                       ),
                       const SizedBox(height: 8),
-                      
+
                       // Level title
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 8),
                         decoration: BoxDecoration(
-                          color: widget.levelColor.withOpacity(0.2),
+                          color: widget.levelColor.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: widget.levelColor.withOpacity(0.3)),
+                          border: Border.all(
+                              color: widget.levelColor.withValues(alpha: 0.3)),
                         ),
                         child: Text(
                           widget.levelTitle,
-                          style: AppTextStyles.labelLarge.copyWith(color: widget.levelColor),
+                          style: AppTextStyles.labelLarge
+                              .copyWith(color: widget.levelColor),
                         ),
                       ),
                       const SizedBox(height: 32),
-                      
+
                       // Continue button
                       GamingButton(
                         text: 'Tuyệt vời!',
@@ -280,7 +300,10 @@ class _LevelUpCelebrationState extends State<LevelUpCelebration>
                           Navigator.of(context).pop();
                           widget.onDismiss?.call();
                         },
-                        gradient: LinearGradient(colors: [widget.levelColor, widget.levelColor.withOpacity(0.8)]),
+                        gradient: LinearGradient(colors: [
+                          widget.levelColor,
+                          widget.levelColor.withValues(alpha: 0.8)
+                        ]),
                         glowColor: widget.levelColor,
                       ),
                     ],
@@ -290,7 +313,7 @@ class _LevelUpCelebrationState extends State<LevelUpCelebration>
             },
           ),
         ),
-        
+
         // Confetti
         Align(
           alignment: Alignment.topCenter,
@@ -363,10 +386,12 @@ class AchievementUnlockedCelebration extends StatefulWidget {
   }
 
   @override
-  State<AchievementUnlockedCelebration> createState() => _AchievementUnlockedCelebrationState();
+  State<AchievementUnlockedCelebration> createState() =>
+      _AchievementUnlockedCelebrationState();
 }
 
-class _AchievementUnlockedCelebrationState extends State<AchievementUnlockedCelebration>
+class _AchievementUnlockedCelebrationState
+    extends State<AchievementUnlockedCelebration>
     with SingleTickerProviderStateMixin {
   late final ConfettiController _confettiController;
   late final AnimationController _animationController;
@@ -376,16 +401,17 @@ class _AchievementUnlockedCelebrationState extends State<AchievementUnlockedCele
   @override
   void initState() {
     super.initState();
-    _confettiController = ConfettiController(duration: const Duration(seconds: 3));
+    _confettiController =
+        ConfettiController(duration: const Duration(seconds: 3));
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 600),
     );
-    
+
     _slideAnimation = Tween<double>(begin: 50, end: 0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeOutBack),
     );
-    
+
     _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeIn),
     );
@@ -422,9 +448,13 @@ class _AchievementUnlockedCelebrationState extends State<AchievementUnlockedCele
                     decoration: BoxDecoration(
                       color: AppColors.bgSecondary,
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: widget.color.withOpacity(0.5), width: 2),
+                      border: Border.all(
+                          color: widget.color.withValues(alpha: 0.5), width: 2),
                       boxShadow: [
-                        BoxShadow(color: widget.color.withOpacity(0.3), blurRadius: 30, spreadRadius: 5),
+                        BoxShadow(
+                            color: widget.color.withValues(alpha: 0.3),
+                            blurRadius: 30,
+                            spreadRadius: 5),
                       ],
                     ),
                     child: Column(
@@ -435,22 +465,39 @@ class _AchievementUnlockedCelebrationState extends State<AchievementUnlockedCele
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
                             gradient: SweepGradient(
-                              colors: [widget.color, widget.color.withOpacity(0.5), widget.color],
+                              colors: [
+                                widget.color,
+                                widget.color.withValues(alpha: 0.5),
+                                widget.color
+                              ],
                             ),
                             shape: BoxShape.circle,
-                            boxShadow: [BoxShadow(color: widget.color.withOpacity(0.5), blurRadius: 15)],
+                            boxShadow: [
+                              BoxShadow(
+                                  color: widget.color.withValues(alpha: 0.5),
+                                  blurRadius: 15)
+                            ],
                           ),
-                          child: Icon(widget.icon, size: 40, color: Colors.white),
+                          child:
+                              Icon(widget.icon, size: 40, color: Colors.white),
                         ),
                         const SizedBox(height: 20),
-                        
+
                         // Title
-                        Text('THÀNH TỰU MỚI!', style: AppTextStyles.labelMedium.copyWith(color: widget.color)),
+                        Text('THÀNH TỰU MỚI!',
+                            style: AppTextStyles.labelMedium
+                                .copyWith(color: widget.color)),
                         const SizedBox(height: 8),
-                        Text(widget.title, style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary), textAlign: TextAlign.center),
+                        Text(widget.title,
+                            style: AppTextStyles.h3
+                                .copyWith(color: AppColors.textPrimary),
+                            textAlign: TextAlign.center),
                         const SizedBox(height: 8),
-                        Text(widget.description, style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary), textAlign: TextAlign.center),
-                        
+                        Text(widget.description,
+                            style: AppTextStyles.bodySmall
+                                .copyWith(color: AppColors.textSecondary),
+                            textAlign: TextAlign.center),
+
                         // Rewards
                         if (widget.xpReward > 0 || widget.coinReward > 0) ...[
                           const SizedBox(height: 20),
@@ -458,14 +505,23 @@ class _AchievementUnlockedCelebrationState extends State<AchievementUnlockedCele
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               if (widget.xpReward > 0)
-                                _RewardChip(icon: Icons.star_rounded, value: '+${widget.xpReward}', label: 'XP', color: AppColors.xpGold),
-                              if (widget.xpReward > 0 && widget.coinReward > 0) const SizedBox(width: 16),
+                                _RewardChip(
+                                    icon: Icons.star_rounded,
+                                    value: '+${widget.xpReward}',
+                                    label: 'XP',
+                                    color: AppColors.xpGold),
+                              if (widget.xpReward > 0 && widget.coinReward > 0)
+                                const SizedBox(width: 16),
                               if (widget.coinReward > 0)
-                                _RewardChip(icon: Icons.monetization_on_rounded, value: '+${widget.coinReward}', label: 'Xu', color: AppColors.coinGold),
+                                _RewardChip(
+                                    icon: Icons.monetization_on_rounded,
+                                    value: '+${widget.coinReward}',
+                                    label: 'Xu',
+                                    color: AppColors.coinGold),
                             ],
                           ),
                         ],
-                        
+
                         const SizedBox(height: 24),
                         GamingButton(
                           text: 'Tuyệt vời!',
@@ -474,7 +530,10 @@ class _AchievementUnlockedCelebrationState extends State<AchievementUnlockedCele
                             Navigator.of(context).pop();
                             widget.onDismiss?.call();
                           },
-                          gradient: LinearGradient(colors: [widget.color, widget.color.withOpacity(0.8)]),
+                          gradient: LinearGradient(colors: [
+                            widget.color,
+                            widget.color.withValues(alpha: 0.8)
+                          ]),
                           glowColor: widget.color,
                         ),
                       ],
@@ -485,7 +544,6 @@ class _AchievementUnlockedCelebrationState extends State<AchievementUnlockedCele
             },
           ),
         ),
-        
         Align(
           alignment: Alignment.topCenter,
           child: ConfettiWidget(
@@ -498,7 +556,12 @@ class _AchievementUnlockedCelebrationState extends State<AchievementUnlockedCele
             numberOfParticles: 25,
             gravity: 0.2,
             shouldLoop: false,
-            colors: [widget.color, AppColors.purpleNeon, AppColors.pinkNeon, AppColors.xpGold],
+            colors: [
+              widget.color,
+              AppColors.purpleNeon,
+              AppColors.pinkNeon,
+              AppColors.xpGold
+            ],
           ),
         ),
       ],
@@ -524,9 +587,9 @@ class _RewardChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.15),
+        color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

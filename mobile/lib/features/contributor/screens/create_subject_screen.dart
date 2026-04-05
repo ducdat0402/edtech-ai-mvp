@@ -67,7 +67,7 @@ class _CreateSubjectScreenState extends State<CreateSubjectScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.contributorBlue.withOpacity(0.15),
+                color: AppColors.contributorBlue.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -79,7 +79,7 @@ class _CreateSubjectScreenState extends State<CreateSubjectScreen> {
             const SizedBox(height: 16),
             Text(
               'Đã gửi yêu cầu!',
-              style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary),
+              style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
             ),
             const SizedBox(height: 8),
             Text(
@@ -125,7 +125,7 @@ class _CreateSubjectScreenState extends State<CreateSubjectScreen> {
         elevation: 0,
         title: Text(
           'Tạo Môn Học Mới',
-          style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary),
+          style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
         ),
         leading: const AppBarLeadingBackAndHome(),
         leadingWidth: 112,
@@ -187,7 +187,7 @@ class _CreateSubjectScreenState extends State<CreateSubjectScreen> {
                       borderRadius: BorderRadius.circular(14),
                     ),
                     disabledBackgroundColor:
-                        AppColors.contributorBlue.withOpacity(0.5),
+                        AppColors.contributorBlue.withValues(alpha: 0.5),
                   ),
                   child: _isSubmitting
                       ? const SizedBox(
@@ -226,9 +226,10 @@ class _CreateSubjectScreenState extends State<CreateSubjectScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.contributorBlue.withOpacity(0.1),
+        color: AppColors.contributorBlue.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.contributorBlue.withOpacity(0.3)),
+        border:
+            Border.all(color: AppColors.contributorBlue.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -339,7 +340,7 @@ class _CreateSubjectScreenState extends State<CreateSubjectScreen> {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.contributorBlue.withOpacity(0.15)
+              ? AppColors.contributorBlue.withValues(alpha: 0.15)
               : AppColors.contributorBgSecondary,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(

@@ -202,7 +202,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                               color: AppColors.bgSecondary,
                               borderRadius: BorderRadius.circular(16),
                               border:
-                                  Border.all(color: AppColors.borderPrimary),
+                                  Border.all(color: const Color(0x332D363D)),
                             ),
                             child: ListTile(
                               contentPadding: const EdgeInsets.symmetric(

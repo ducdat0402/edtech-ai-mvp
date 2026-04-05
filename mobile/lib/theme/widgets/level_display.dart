@@ -31,7 +31,7 @@ class LevelBadge extends StatelessWidget {
             gradient: AppGradients.forLevel(level),
             boxShadow: [
               BoxShadow(
-                color: AppColors.getLevelColor(level).withOpacity(0.5),
+                color: AppColors.getLevelColor(level).withValues(alpha: 0.5),
                 blurRadius: 12,
                 spreadRadius: 2,
               ),
@@ -140,12 +140,12 @@ class LevelCard extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                  color: Colors.white.withOpacity(0.95), width: borderW),
+                  color: Colors.white.withValues(alpha: 0.95), width: borderW),
               boxShadow: strip
                   ? []
                   : [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.25),
+                        color: Colors.black.withValues(alpha: 0.25),
                         blurRadius: 6,
                         offset: const Offset(0, 2),
                       ),
@@ -157,13 +157,13 @@ class LevelCard extends StatelessWidget {
                       imageUrl: resolvedAvatar,
                       fit: BoxFit.cover,
                       placeholder: (_, __) => Container(
-                        color: Colors.white.withOpacity(0.15),
+                        color: Colors.white.withValues(alpha: 0.15),
                         child: Center(
                           child: SizedBox(
                             width: strip ? 14 : 18,
                             height: strip ? 14 : 18,
-                            child: const CircularProgressIndicator(
-                                strokeWidth: 2),
+                            child:
+                                const CircularProgressIndicator(strokeWidth: 2),
                           ),
                         ),
                       ),
@@ -184,7 +184,7 @@ class LevelCard extends StatelessWidget {
               decoration: BoxDecoration(
                 color: const Color(0xFFB91C1C),
                 borderRadius: BorderRadius.circular(strip ? 5 : 6),
-                border: Border.all(color: Colors.white.withOpacity(0.85)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.85)),
               ),
               child: Text(
                 'Lv.$level',
@@ -237,7 +237,7 @@ class LevelCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.labelSmall.copyWith(
-                    color: Colors.white.withOpacity(0.85),
+                    color: Colors.white.withValues(alpha: 0.85),
                   ),
                 ),
               ],
@@ -255,10 +255,10 @@ class LevelCard extends StatelessWidget {
                             borderRadius: BorderRadius.circular(4),
                             child: LinearProgressIndicator(
                               value: progress,
-                              minHeight: strip
-                                  ? (_showStripResources ? 3 : 4)
-                                  : 6,
-                              backgroundColor: Colors.white.withOpacity(0.22),
+                              minHeight:
+                                  strip ? (_showStripResources ? 3 : 4) : 6,
+                              backgroundColor:
+                                  Colors.white.withValues(alpha: 0.22),
                               valueColor: const AlwaysStoppedAnimation<Color>(
                                   Colors.white),
                             ),
@@ -269,7 +269,7 @@ class LevelCard extends StatelessWidget {
                           Text(
                             '$totalXP XP',
                             style: AppTextStyles.labelSmall.copyWith(
-                              color: Colors.white.withOpacity(0.9),
+                              color: Colors.white.withValues(alpha: 0.9),
                               fontWeight: FontWeight.w600,
                               fontSize: 11,
                             ),
@@ -282,7 +282,7 @@ class LevelCard extends StatelessWidget {
                             icon: Icon(
                               Icons.info_outline_rounded,
                               size: strip ? 16 : 20,
-                              color: Colors.white.withOpacity(0.92),
+                              color: Colors.white.withValues(alpha: 0.92),
                             ),
                             padding: EdgeInsets.zero,
                             constraints: BoxConstraints(
@@ -345,7 +345,7 @@ class LevelCard extends StatelessWidget {
                     Text(
                       'Cấp tiếp: ${level + 1}',
                       style: AppTextStyles.labelSmall.copyWith(
-                        color: Colors.white.withOpacity(0.65),
+                        color: Colors.white.withValues(alpha: 0.65),
                         fontSize: 10,
                       ),
                     ),
@@ -353,7 +353,7 @@ class LevelCard extends StatelessWidget {
                     Text(
                       '$currentXP / $xpForNextLevel · ${(progress * 100).toStringAsFixed(1)}%',
                       style: AppTextStyles.labelSmall.copyWith(
-                        color: Colors.white.withOpacity(0.85),
+                        color: Colors.white.withValues(alpha: 0.85),
                         fontSize: 10,
                         fontWeight: FontWeight.w600,
                       ),
@@ -381,7 +381,7 @@ class LevelCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: levelColor.withOpacity(0.35),
+            color: levelColor.withValues(alpha: 0.35),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -396,7 +396,7 @@ class LevelCard extends StatelessWidget {
       width: 1,
       height: 14,
       margin: const EdgeInsets.symmetric(horizontal: 5),
-      color: Colors.white.withOpacity(0.35),
+      color: Colors.white.withValues(alpha: 0.35),
     );
   }
 
@@ -415,7 +415,7 @@ class LevelCard extends StatelessWidget {
         Text(
           '$value$suffix',
           style: TextStyle(
-            color: Colors.white.withOpacity(0.95),
+            color: Colors.white.withValues(alpha: 0.95),
             fontSize: 10,
             fontWeight: FontWeight.w700,
           ),
@@ -443,7 +443,7 @@ class LevelCard extends StatelessWidget {
 
   Widget _levelNumberFallback(double fontSize) {
     return Container(
-      color: Colors.white.withOpacity(0.2),
+      color: Colors.white.withValues(alpha: 0.2),
       alignment: Alignment.center,
       child: Text(
         '$level',
@@ -492,7 +492,7 @@ class LevelTitle extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.15),
+              color: color.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(_icon, color: color, size: 18),

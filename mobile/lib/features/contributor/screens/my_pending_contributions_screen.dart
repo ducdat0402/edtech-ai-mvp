@@ -53,7 +53,7 @@ class _MyPendingContributionsScreenState
         backgroundColor: AppColors.contributorBgSecondary,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text('Xóa đóng góp',
-            style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary)),
+            style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
         content: Text(
           'Bạn có chắc muốn xóa đóng góp này?',
           style:
@@ -106,7 +106,7 @@ class _MyPendingContributionsScreenState
         elevation: 0,
         title: Text(
           'Đóng góp của tôi',
-          style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary),
+          style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
         ),
         leading: const AppBarLeadingBackAndHome(),
         leadingWidth: 112,
@@ -122,15 +122,14 @@ class _MyPendingContributionsScreenState
       ),
       body: _isLoading
           ? const Center(
-              child:
-                  CircularProgressIndicator(color: AppColors.contributorBlue))
+              child: CircularProgressIndicator(color: AppColors.primaryLight))
           : _error != null
               ? AppErrorWidget(message: _error!, onRetry: _loadContributions)
               : _contributions.isEmpty
                   ? _buildEmptyState()
                   : RefreshIndicator(
                       onRefresh: _loadContributions,
-                      color: AppColors.contributorBlue,
+                      color: AppColors.primaryLight,
                       child: ListView.builder(
                         padding: const EdgeInsets.all(16),
                         itemCount: _contributions.length,
@@ -160,13 +159,13 @@ class _MyPendingContributionsScreenState
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: AppColors.contributorBlue.withOpacity(0.1),
+                color: AppColors.contributorBlue.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.volunteer_activism,
                 size: 64,
-                color: AppColors.contributorBlue.withOpacity(0.5),
+                color: AppColors.contributorBlue.withValues(alpha: 0.5),
               ),
             ),
             const SizedBox(height: 24),
@@ -205,8 +204,8 @@ class _MyPendingContributionsScreenState
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: action == 'delete'
-              ? AppColors.errorNeon.withOpacity(0.3)
-              : _getStatusColor(status).withOpacity(0.3),
+              ? AppColors.errorNeon.withValues(alpha: 0.3)
+              : _getStatusColor(status).withValues(alpha: 0.3),
         ),
       ),
       child: Padding(
@@ -242,15 +241,15 @@ class _MyPendingContributionsScreenState
                 width: double.infinity,
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: _getActionColor(action).withOpacity(0.06),
+                  color: _getActionColor(action).withValues(alpha: 0.06),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                      color: _getActionColor(action).withOpacity(0.15)),
+                      color: _getActionColor(action).withValues(alpha: 0.15)),
                 ),
                 child: Text(
                   contextDescription,
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: const Color(0xFF2D3748),
+                    color: AppColors.textSecondary,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -285,7 +284,7 @@ class _MyPendingContributionsScreenState
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: _getStatusColor(status).withOpacity(0.08),
+                  color: _getStatusColor(status).withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
@@ -347,7 +346,7 @@ class _MyPendingContributionsScreenState
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
+        color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -366,11 +365,11 @@ class _MyPendingContributionsScreenState
   Color _getActionColor(String action) {
     switch (action) {
       case 'edit':
-        return Colors.blue;
+        return AppColors.primaryLight;
       case 'delete':
-        return Colors.red;
+        return AppColors.errorNeon;
       default:
-        return Colors.green;
+        return AppColors.successNeon;
     }
   }
 
@@ -379,7 +378,7 @@ class _MyPendingContributionsScreenState
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: config['color'].withOpacity(0.15),
+        color: config['color'].withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -406,7 +405,7 @@ class _MyPendingContributionsScreenState
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.15),
+        color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
@@ -431,7 +430,7 @@ class _MyPendingContributionsScreenState
         return {
           'icon': Icons.folder,
           'label': 'Domain',
-          'color': AppColors.cyanNeon
+          'color': AppColors.primaryLight
         };
       case 'topic':
         return {

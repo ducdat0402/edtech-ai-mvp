@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:edtech_mobile/theme/theme.dart';
 
 class AppErrorWidget extends StatelessWidget {
   final String message;
@@ -25,40 +26,29 @@ class AppErrorWidget extends StatelessWidget {
             Icon(
               icon ?? Icons.error_outline,
               size: 64,
-              color: Colors.red.shade400,
+              color: AppColors.errorNeon,
             ),
             const SizedBox(height: 16),
             if (title != null) ...[
               Text(
                 title!,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
             ],
             Text(
               message,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey.shade600,
-              ),
+              style: AppTextStyles.bodyMedium
+                  .copyWith(color: AppColors.textSecondary),
               textAlign: TextAlign.center,
             ),
             if (onRetry != null) ...[
               const SizedBox(height: 24),
-              ElevatedButton.icon(
+              GamingButton(
+                text: 'Thử lại',
                 onPressed: onRetry,
-                icon: const Icon(Icons.refresh),
-                label: const Text('Thử lại'),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
-                  ),
-                ),
+                icon: Icons.refresh_rounded,
               ),
             ],
           ],
@@ -107,5 +97,3 @@ class NotFoundErrorWidget extends StatelessWidget {
     );
   }
 }
-
-

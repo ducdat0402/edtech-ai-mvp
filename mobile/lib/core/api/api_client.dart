@@ -9,6 +9,7 @@ class ApiClient {
   late Dio _dio;
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
   static const String _tokenKey = 'auth_token';
+
   /// Thời điểm lưu token (ms epoch) — cửa sổ “ghi nhớ đăng nhập” 30 ngày.
   static const String _loginAtKey = 'auth_login_at_ms';
 
@@ -75,7 +76,8 @@ class ApiClient {
                 onSessionInvalidated?.call();
               });
             } else if (kDebugMode) {
-              debugPrint('[API] 401 on non-auth path: $path (skip session invalidate)');
+              debugPrint(
+                  '[API] 401 on non-auth path: $path (skip session invalidate)');
             }
           }
           // For 200 with null/empty response, don't treat as error

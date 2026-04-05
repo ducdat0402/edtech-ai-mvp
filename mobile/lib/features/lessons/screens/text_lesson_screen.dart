@@ -37,10 +37,7 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
     final raw = widget.lessonData['sections'] ?? widget.lessonData['content'];
     if (raw is List) {
       return List<Map<String, dynamic>>.from(
-        raw
-            .whereType<Map>()
-            .map((e) => Map<String, dynamic>.from(e))
-            .toList(),
+        raw.whereType<Map>().map((e) => Map<String, dynamic>.from(e)).toList(),
       );
     }
     if (raw is String && raw.trim().isNotEmpty) {
@@ -240,9 +237,9 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: AppColors.purpleNeon.withOpacity(0.1),
+        color: AppColors.purpleNeon.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.purpleNeon.withOpacity(0.3)),
+        border: Border.all(color: AppColors.purpleNeon.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -295,13 +292,12 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
   Widget _buildSectionCard(Map<String, dynamic> section) {
     final rawSectionTitle =
         (section['title'] ?? section['heading'] ?? '').toString();
-    final content =
-        (section['content'] ??
-                section['text'] ??
-                section['description'] ??
-                section['body'] ??
-                '')
-            .toString();
+    final content = (section['content'] ??
+            section['text'] ??
+            section['description'] ??
+            section['body'] ??
+            '')
+        .toString();
     final titlePrefix = '${widget.title} - ';
     final sectionTitle = rawSectionTitle.startsWith(titlePrefix)
         ? rawSectionTitle.substring(titlePrefix.length).trim()
@@ -317,39 +313,39 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
         decoration: BoxDecoration(
           color: AppColors.bgSecondary,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.borderPrimary),
+          border: Border.all(color: const Color(0x332D363D)),
         ),
         child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (sectionTitle.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Text(
-                sectionTitle,
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (sectionTitle.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Text(
+                  sectionTitle,
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-            ),
-          if (content.isNotEmpty)
-            Text(
-              content,
-              style: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 15,
-                height: 1.7,
+            if (content.isNotEmpty)
+              Text(
+                content,
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 15,
+                  height: 1.7,
+                ),
               ),
-            ),
-          // Per-section examples
-          if (examples.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            ...examples.map((example) => _buildExampleItem(example)),
+            // Per-section examples
+            if (examples.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              ...examples.map((example) => _buildExampleItem(example)),
+            ],
           ],
-        ],
-      ),
+        ),
       ),
     );
   }
@@ -368,8 +364,8 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
-        color: color.withOpacity(0.05),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+        color: color.withValues(alpha: 0.05),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -377,7 +373,7 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.12),
+              color: color.withValues(alpha: 0.12),
               borderRadius:
                   const BorderRadius.vertical(top: Radius.circular(11)),
             ),
@@ -406,9 +402,9 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
                   const SizedBox(height: 4),
                 if (content.isNotEmpty)
                   Text(content,
-                      style: TextStyle(
+                      style: const TextStyle(
                           fontSize: 13,
-                          color: Colors.grey.shade600,
+                          color: AppColors.textSecondary,
                           height: 1.5)),
               ],
             ),
@@ -436,9 +432,9 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
         border: Border.all(
           color: revealed
               ? (selected == correctIndex
-                  ? AppColors.successNeon.withOpacity(0.5)
-                  : AppColors.errorNeon.withOpacity(0.5))
-              : AppColors.purpleNeon.withOpacity(0.3),
+                  ? AppColors.successNeon.withValues(alpha: 0.5)
+                  : AppColors.errorNeon.withValues(alpha: 0.5))
+              : AppColors.purpleNeon.withValues(alpha: 0.3),
           width: 1.5,
         ),
       ),
@@ -451,7 +447,7 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.purpleNeon.withOpacity(0.2),
+                  color: AppColors.purpleNeon.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: const Row(
@@ -494,18 +490,18 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
             final isCorrect = optIdx == correctIndex;
             final isSelected = selected == optIdx;
 
-            Color borderColor = AppColors.borderPrimary;
+            Color borderColor = const Color(0x332D363D);
             Color bgColor = AppColors.bgTertiary;
             Color labelColor = AppColors.textSecondary;
 
             if (revealed) {
               if (isCorrect) {
                 borderColor = AppColors.successNeon;
-                bgColor = AppColors.successNeon.withOpacity(0.1);
+                bgColor = AppColors.successNeon.withValues(alpha: 0.1);
                 labelColor = AppColors.successNeon;
               } else if (isSelected && !isCorrect) {
                 borderColor = AppColors.errorNeon;
-                bgColor = AppColors.errorNeon.withOpacity(0.1);
+                bgColor = AppColors.errorNeon.withValues(alpha: 0.1);
                 labelColor = AppColors.errorNeon;
               }
             }
@@ -531,9 +527,9 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
                         height: 30,
                         decoration: BoxDecoration(
                           color: revealed && isCorrect
-                              ? AppColors.successNeon.withOpacity(0.2)
+                              ? AppColors.successNeon.withValues(alpha: 0.2)
                               : revealed && isSelected
-                                  ? AppColors.errorNeon.withOpacity(0.2)
+                                  ? AppColors.errorNeon.withValues(alpha: 0.2)
                                   : AppColors.bgSecondary,
                           borderRadius: BorderRadius.circular(6),
                         ),
@@ -585,13 +581,13 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: selected == correctIndex
-                            ? AppColors.successNeon.withOpacity(0.08)
-                            : AppColors.errorNeon.withOpacity(0.08),
+                            ? AppColors.successNeon.withValues(alpha: 0.08)
+                            : AppColors.errorNeon.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
                           color: selected == correctIndex
-                              ? AppColors.successNeon.withOpacity(0.3)
-                              : AppColors.errorNeon.withOpacity(0.3),
+                              ? AppColors.successNeon.withValues(alpha: 0.3)
+                              : AppColors.errorNeon.withValues(alpha: 0.3),
                         ),
                       ),
                       child: Row(
@@ -673,13 +669,13 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
       decoration: BoxDecoration(
         color: AppColors.bgSecondary,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.purpleNeon.withOpacity(0.3)),
+        border: Border.all(color: AppColors.purpleNeon.withValues(alpha: 0.3)),
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
             AppColors.bgSecondary,
-            AppColors.purpleNeon.withOpacity(0.05),
+            AppColors.purpleNeon.withValues(alpha: 0.05),
           ],
         ),
       ),
@@ -691,7 +687,7 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppColors.purpleNeon.withOpacity(0.15),
+                  color: AppColors.purpleNeon.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(Icons.auto_awesome,
@@ -729,7 +725,7 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
       decoration: BoxDecoration(
         color: AppColors.bgSecondary,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.borderPrimary),
+        border: Border.all(color: const Color(0x332D363D)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -739,11 +735,11 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppColors.cyanNeon.withOpacity(0.15),
+                  color: AppColors.primaryLight.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(Icons.checklist,
-                    color: AppColors.cyanNeon, size: 22),
+                    color: AppColors.primaryLight, size: 22),
               ),
               const SizedBox(width: 12),
               const Text(
@@ -781,7 +777,7 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
                       margin: const EdgeInsets.only(top: 2),
                       decoration: BoxDecoration(
                         color: isChecked
-                            ? AppColors.successNeon.withOpacity(0.15)
+                            ? AppColors.successNeon.withValues(alpha: 0.15)
                             : Colors.transparent,
                         borderRadius: BorderRadius.circular(6),
                         border: Border.all(

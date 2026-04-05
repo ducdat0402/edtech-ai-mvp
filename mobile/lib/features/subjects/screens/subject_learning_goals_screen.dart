@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/utils/navigation_helper.dart';
 import 'package:edtech_mobile/core/widgets/typewriter_text.dart';
+import 'package:edtech_mobile/theme/theme.dart';
 
 class SubjectLearningGoalsScreen extends StatefulWidget {
   final String subjectId;
@@ -14,20 +15,21 @@ class SubjectLearningGoalsScreen extends StatefulWidget {
   });
 
   @override
-  State<SubjectLearningGoalsScreen> createState() => _SubjectLearningGoalsScreenState();
+  State<SubjectLearningGoalsScreen> createState() =>
+      _SubjectLearningGoalsScreenState();
 }
 
-class _SubjectLearningGoalsScreenState extends State<SubjectLearningGoalsScreen> {
+class _SubjectLearningGoalsScreenState
+    extends State<SubjectLearningGoalsScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final List<Map<String, dynamic>> _messages = [];
-  final Set<int> _animatedMessages = {}; // Track which messages have been animated
+  final Set<int> _animatedMessages =
+      {}; // Track which messages have been animated
   bool _isLoading = false;
-  String? _sessionId;
   bool _isCompleted = false;
   bool _shouldSkipPlacementTest = false;
   Map<String, dynamic>? _extractedData;
-  Map<String, dynamic>? _mindMap;
 
   @override
   void initState() {
@@ -45,12 +47,11 @@ class _SubjectLearningGoalsScreenState extends State<SubjectLearningGoalsScreen>
       final response = await apiService.startLearningGoals(widget.subjectId);
 
       setState(() {
-        _sessionId = response['sessionId'] as String?;
         _messages.add({
           'role': 'assistant',
-          'content': response['response'] as String? ?? 'Xin chào! Tôi sẽ giúp bạn xác định mục tiêu học tập.',
+          'content': response['response'] as String? ??
+              'Xin chào! Tôi sẽ giúp bạn xác định mục tiêu học tập.',
         });
-        _mindMap = response['mindMap'] as Map<String, dynamic>?;
         _isLoading = false;
       });
 
@@ -59,7 +60,8 @@ class _SubjectLearningGoalsScreenState extends State<SubjectLearningGoalsScreen>
       setState(() {
         _messages.add({
           'role': 'assistant',
-          'content': 'Xin chào! Tôi sẽ giúp bạn xác định mục tiêu học tập. Bạn có thể cho tôi biết trình độ hiện tại của bạn không?',
+          'content':
+              'Xin chào! Tôi sẽ giúp bạn xác định mục tiêu học tập. Bạn có thể cho tôi biết trình độ hiện tại của bạn không?',
         });
         _isLoading = false;
       });
@@ -83,15 +85,18 @@ class _SubjectLearningGoalsScreenState extends State<SubjectLearningGoalsScreen>
 
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
-      final response = await apiService.chatLearningGoals(widget.subjectId, message);
+      final response =
+          await apiService.chatLearningGoals(widget.subjectId, message);
 
       setState(() {
         _messages.add({
           'role': 'assistant',
-          'content': response['response'] as String? ?? 'Xin lỗi, tôi không hiểu. Bạn có thể nói lại được không?',
+          'content': response['response'] as String? ??
+              'Xin lỗi, tôi không hiểu. Bạn có thể nói lại được không?',
         });
         _isCompleted = response['completed'] as bool? ?? false;
-        _shouldSkipPlacementTest = response['shouldSkipPlacementTest'] as bool? ?? false;
+        _shouldSkipPlacementTest =
+            response['shouldSkipPlacementTest'] as bool? ?? false;
         _extractedData = response['extractedData'] as Map<String, dynamic>?;
         _isLoading = false;
       });
@@ -150,7 +155,7 @@ class _SubjectLearningGoalsScreenState extends State<SubjectLearningGoalsScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Lỗi: ${e.toString()}'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.errorNeon,
           ),
         );
       }
@@ -179,12 +184,17 @@ class _SubjectLearningGoalsScreenState extends State<SubjectLearningGoalsScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.bgPrimary,
       appBar: AppBar(
-        title: const Text('Xác định mục tiêu học tập'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Text(
+          'Xác định mục tiêu học tập',
+          style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+        ),
       ),
       body: Column(
         children: [
-          // Chat messages
           Expanded(
             child: ListView.builder(
               controller: _scrollController,
@@ -194,16 +204,23 @@ class _SubjectLearningGoalsScreenState extends State<SubjectLearningGoalsScreen>
                 final message = _messages[index];
                 final isUser = message['role'] == 'user';
                 final content = message['content'] as String? ?? '';
-                final shouldAnimate = !isUser && !_animatedMessages.contains(index);
+                final shouldAnimate =
+                    !isUser && !_animatedMessages.contains(index);
 
                 return Align(
-                  alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+                  alignment:
+                      isUser ? Alignment.centerRight : Alignment.centerLeft,
                   child: Container(
                     margin: const EdgeInsets.only(bottom: 12),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
                     decoration: BoxDecoration(
-                      color: isUser ? Colors.blue.shade100 : Colors.grey.shade200,
+                      color:
+                          isUser ? AppColors.purpleNeon : AppColors.bgSecondary,
                       borderRadius: BorderRadius.circular(16),
+                      border: isUser
+                          ? null
+                          : Border.all(color: const Color(0x332D363D)),
                     ),
                     constraints: BoxConstraints(
                       maxWidth: MediaQuery.of(context).size.width * 0.75,
@@ -212,9 +229,8 @@ class _SubjectLearningGoalsScreenState extends State<SubjectLearningGoalsScreen>
                         ? TypeWriterText(
                             key: ValueKey('typewriter_$index'),
                             text: content,
-                            style: TextStyle(
-                              color: Colors.grey.shade900,
-                            ),
+                            style: AppTextStyles.bodyMedium
+                                .copyWith(color: AppColors.textPrimary),
                             speed: const Duration(milliseconds: 30),
                             onComplete: () {
                               setState(() {
@@ -224,8 +240,9 @@ class _SubjectLearningGoalsScreenState extends State<SubjectLearningGoalsScreen>
                           )
                         : Text(
                             content,
-                            style: TextStyle(
-                              color: isUser ? Colors.blue.shade900 : Colors.grey.shade900,
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              color:
+                                  isUser ? Colors.white : AppColors.textPrimary,
                             ),
                           ),
                   ),
@@ -233,36 +250,45 @@ class _SubjectLearningGoalsScreenState extends State<SubjectLearningGoalsScreen>
               },
             ),
           ),
-
-          // Loading indicator
           if (_isLoading)
             const Padding(
               padding: EdgeInsets.all(8.0),
-              child: CircularProgressIndicator(),
+              child: CircularProgressIndicator(color: AppColors.primaryLight),
             ),
-
-          // Input field
           Container(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.shade300,
-                  blurRadius: 4,
-                  offset: const Offset(0, -2),
-                ),
-              ],
+            decoration: const BoxDecoration(
+              color: AppColors.bgSecondary,
+              border: Border(
+                top: BorderSide(color: Color(0x332D363D)),
+              ),
             ),
             child: Row(
               children: [
                 Expanded(
                   child: TextField(
                     controller: _messageController,
+                    style: AppTextStyles.bodyMedium
+                        .copyWith(color: AppColors.textPrimary),
                     decoration: InputDecoration(
                       hintText: 'Nhập tin nhắn...',
+                      hintStyle: AppTextStyles.bodyMedium
+                          .copyWith(color: AppColors.textTertiary),
+                      filled: true,
+                      fillColor: AppColors.bgTertiary,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(24),
+                        borderSide: const BorderSide(color: Color(0x332D363D)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(24),
+                        borderSide: const BorderSide(color: Color(0x332D363D)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(24),
+                        borderSide: BorderSide(
+                            color:
+                                AppColors.primaryLight.withValues(alpha: 0.6)),
                       ),
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16,
@@ -274,9 +300,9 @@ class _SubjectLearningGoalsScreenState extends State<SubjectLearningGoalsScreen>
                 ),
                 const SizedBox(width: 8),
                 IconButton(
-                  icon: const Icon(Icons.send),
+                  icon: const Icon(Icons.send_rounded),
                   onPressed: _sendMessage,
-                  color: Colors.blue,
+                  color: AppColors.primaryLight,
                 ),
               ],
             ),
@@ -286,4 +312,3 @@ class _SubjectLearningGoalsScreenState extends State<SubjectLearningGoalsScreen>
     );
   }
 }
-

@@ -215,11 +215,11 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
       fillColor: AppColors.bgSecondary,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.borderPrimary),
+        borderSide: const BorderSide(color: Color(0x332D363D)),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.borderPrimary),
+        borderSide: const BorderSide(color: Color(0x332D363D)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -328,7 +328,7 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
               decoration: const BoxDecoration(
                 color: AppColors.bgSecondary,
                 border: Border(
-                  top: BorderSide(color: AppColors.borderPrimary),
+                  top: BorderSide(color: Color(0x332D363D)),
                 ),
               ),
               child: ElevatedButton(
@@ -529,7 +529,7 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
             icon: const Text('💎', style: TextStyle(fontSize: 16)),
             label: const Text('Mua kim cương'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.cyanNeon,
+              backgroundColor: AppColors.primaryLight,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10)),
@@ -709,7 +709,7 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
       decoration: BoxDecoration(
         color: AppColors.bgSecondary,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.borderPrimary),
+        border: Border.all(color: const Color(0x332D363D)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -750,10 +750,11 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 6),
                         decoration: BoxDecoration(
-                          color: AppColors.orangeNeon.withOpacity(0.1),
+                          color: AppColors.orangeNeon.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                              color: AppColors.orangeNeon.withOpacity(0.3)),
+                              color:
+                                  AppColors.orangeNeon.withValues(alpha: 0.3)),
                         ),
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
@@ -778,7 +779,7 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
                 ),
             ],
           ),
-          const Divider(color: AppColors.borderPrimary, height: 20),
+          const Divider(color: Color(0x332D363D), height: 20),
 
           // Image upload/preview
           Column(
@@ -802,7 +803,7 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
                   margin: const EdgeInsets.only(bottom: 8),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.borderPrimary),
+                    border: Border.all(color: const Color(0x332D363D)),
                     image: DecorationImage(
                       image: NetworkImage(slide.imageUrlController.text),
                       fit: BoxFit.cover,

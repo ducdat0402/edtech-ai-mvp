@@ -4,7 +4,7 @@
     <application
         android:usesCleartextTraffic="true"
         android:networkSecurityConfig="@xml/network_security_config"
-        android:label="edtech_mobile"
+        android:label="Gamistu"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

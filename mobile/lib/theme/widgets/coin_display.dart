@@ -43,7 +43,7 @@ class CoinDisplay extends StatelessWidget {
               gradient: AppGradients.coin,
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.coinGold.withOpacity(0.5),
+                  color: AppColors.coinGold.withValues(alpha: 0.5),
                   blurRadius: compact ? 4 : 8,
                 ),
               ],
@@ -103,7 +103,7 @@ class CoinDisplayLarge extends StatelessWidget {
         color: AppColors.bgSecondary,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: AppColors.coinGold.withOpacity(0.3),
+          color: AppColors.coinGold.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -119,7 +119,7 @@ class CoinDisplayLarge extends StatelessWidget {
               gradient: AppGradients.coin,
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.coinGold.withOpacity(0.5),
+                  color: AppColors.coinGold.withValues(alpha: 0.5),
                   blurRadius: 12,
                   spreadRadius: 2,
                 ),

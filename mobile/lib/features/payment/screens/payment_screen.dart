@@ -108,8 +108,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
     return Scaffold(
       backgroundColor: AppColors.bgPrimary,
       appBar: AppBar(
-        title: Text('Mua Kim Cương', style: AppTextStyles.h3),
-        backgroundColor: AppColors.bgPrimary,
+        title: Text('Mua Kim Cương',
+            style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         leading: const AppBarLeadingBackAndHome(),
         leadingWidth: 112,
         automaticallyImplyLeading: false,
@@ -203,10 +205,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.cyanNeon.withOpacity(0.3)),
+        border:
+            Border.all(color: AppColors.primaryLight.withValues(alpha: 0.3)),
         boxShadow: [
           BoxShadow(
-            color: AppColors.cyanNeon.withOpacity(0.1),
+            color: AppColors.primaryLight.withValues(alpha: 0.1),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -224,7 +227,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.cyanNeon.withOpacity(0.3),
+                  color: AppColors.primaryLight.withValues(alpha: 0.3),
                   blurRadius: 12,
                 ),
               ],
@@ -246,7 +249,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 Text(
                   _formatNumber(diamonds),
                   style: const TextStyle(
-                    color: AppColors.cyanNeon,
+                    color: AppColors.primaryLight,
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
                   ),
@@ -274,9 +277,18 @@ class _PaymentScreenState extends State<PaymentScreen> {
     // Colors based on package tier
     final tierColors = [
       [AppColors.textSecondary, AppColors.bgTertiary], // Starter
-      [AppColors.purpleNeon, AppColors.purpleNeon.withOpacity(0.08)], // Popular
-      [AppColors.orangeNeon, AppColors.orangeNeon.withOpacity(0.08)], // Pro
-      [AppColors.cyanNeon, AppColors.cyanNeon.withOpacity(0.08)], // Premium
+      [
+        AppColors.purpleNeon,
+        AppColors.purpleNeon.withValues(alpha: 0.08)
+      ], // Popular
+      [
+        AppColors.orangeNeon,
+        AppColors.orangeNeon.withValues(alpha: 0.08)
+      ], // Pro
+      [
+        AppColors.primaryLight,
+        AppColors.primaryLight.withValues(alpha: 0.08)
+      ], // Premium
     ];
     final accentColor = tierColors[index][0];
     final bgColor = tierColors[index][1];
@@ -294,7 +306,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
               color: bgColor,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: isPopular ? accentColor : AppColors.borderPrimary,
+                color: isPopular ? accentColor : const Color(0x332D363D),
                 width: isPopular ? 2 : 1,
               ),
             ),
@@ -306,7 +318,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: accentColor.withOpacity(0.15),
+                        color: accentColor.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(Icons.diamond, color: accentColor, size: 24),
@@ -369,8 +381,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 6, vertical: 1),
                                   decoration: BoxDecoration(
-                                    color:
-                                        AppColors.successNeon.withOpacity(0.15),
+                                    color: AppColors.successNeon
+                                        .withValues(alpha: 0.15),
                                     borderRadius: BorderRadius.circular(6),
                                   ),
                                   child: Text(
@@ -446,14 +458,14 @@ class _PaymentScreenState extends State<PaymentScreen> {
       decoration: BoxDecoration(
         color: AppColors.bgSecondary,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.borderPrimary),
+        border: Border.all(color: const Color(0x332D363D)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Row(
             children: [
-              Icon(Icons.info_outline, color: AppColors.cyanNeon, size: 18),
+              Icon(Icons.info_outline, color: AppColors.primaryLight, size: 18),
               SizedBox(width: 8),
               Text(
                 'Kim cương dùng để làm gì?',
@@ -516,11 +528,13 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 colors: [Color(0xFF1A1A2E), Color(0xFF16213E)],
               ),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.cyanNeon.withOpacity(0.3)),
+              border: Border.all(
+                  color: AppColors.primaryLight.withValues(alpha: 0.3)),
             ),
             child: Row(
               children: [
-                const Icon(Icons.diamond, color: AppColors.cyanNeon, size: 32),
+                const Icon(Icons.diamond,
+                    color: AppColors.primaryLight, size: 32),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -533,7 +547,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       Text(
                         '$diamondAmount kim cương',
                         style: const TextStyle(
-                            color: AppColors.cyanNeon,
+                            color: AppColors.primaryLight,
                             fontSize: 22,
                             fontWeight: FontWeight.bold),
                       ),
@@ -583,8 +597,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
                               return const SizedBox(
                                 width: 250,
                                 height: 250,
-                                child:
-                                    Center(child: CircularProgressIndicator()),
+                                child: Center(
+                                    child: CircularProgressIndicator(
+                                        color: AppColors.primaryLight)),
                               );
                             },
                             errorBuilder: (context, error, stackTrace) {
@@ -593,7 +608,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                 height: 250,
                                 child: Center(
                                     child: Icon(Icons.error,
-                                        size: 48, color: Colors.red)),
+                                        size: 48, color: AppColors.errorNeon)),
                               );
                             },
                           )
@@ -651,9 +666,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.warningNeon.withOpacity(0.1),
+              color: AppColors.warningNeon.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.warningNeon.withOpacity(0.3)),
+              border: Border.all(
+                  color: AppColors.warningNeon.withValues(alpha: 0.3)),
             ),
             child: Row(
               children: [
@@ -684,7 +700,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     });
                   },
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: AppColors.borderPrimary),
+                    side: const BorderSide(color: Color(0x332D363D)),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12)),
@@ -784,7 +800,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
               value,
               style: TextStyle(
                 color: important
-                    ? AppColors.cyanNeon
+                    ? AppColors.primaryLight
                     : highlight
                         ? AppColors.textPrimary
                         : AppColors.textSecondary,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:edtech_mobile/theme/colors.dart';
 
 class SkeletonLoader extends StatefulWidget {
   final double width;
@@ -52,10 +53,10 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
             gradient: LinearGradient(
               begin: Alignment(_animation.value, 0),
               end: Alignment(_animation.value + 1, 0),
-              colors: [
-                Colors.grey.shade300,
-                Colors.grey.shade100,
-                Colors.grey.shade300,
+              colors: const [
+                AppColors.bgTertiary,
+                AppColors.borderPrimary,
+                AppColors.bgTertiary,
               ],
             ),
           ),
@@ -127,10 +128,16 @@ class SkeletonListTile extends StatelessWidget {
                 ),
                 if (hasSubtitle) ...[
                   const SizedBox(height: 8),
-                  SkeletonLoader(
-                    width: double.infinity * 0.7,
-                    height: 12,
-                    borderRadius: BorderRadius.circular(4),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: FractionallySizedBox(
+                      widthFactor: 0.7,
+                      child: SkeletonLoader(
+                        width: double.infinity,
+                        height: 12,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
                   ),
                 ],
               ],

@@ -166,7 +166,7 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
               icon: const Text('💎', style: TextStyle(fontSize: 16)),
               label: const Text('Mua kim cương'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.cyanNeon,
+                backgroundColor: AppColors.primaryLight,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10)),
               ),
@@ -221,7 +221,7 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
               decoration: BoxDecoration(
                 color: AppColors.bgSecondary,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.borderPrimary),
+                border: Border.all(color: const Color(0x332D363D)),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -231,7 +231,7 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
                   Text(
                     '${_pricing!['userBalance'] ?? 0}',
                     style: AppTextStyles.labelLarge
-                        .copyWith(color: AppColors.cyanNeon),
+                        .copyWith(color: AppColors.primaryLight),
                   ),
                 ],
               ),
@@ -239,7 +239,8 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.primaryLight))
           : _error != null
               ? Center(
                   child: Text('Lỗi: $_error',
@@ -290,18 +291,18 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
       decoration: BoxDecoration(
         gradient: isUnlocked
             ? LinearGradient(colors: [
-                AppColors.successNeon.withOpacity(0.15),
-                AppColors.successNeon.withOpacity(0.05)
+                AppColors.successNeon.withValues(alpha: 0.15),
+                AppColors.successNeon.withValues(alpha: 0.05)
               ])
             : LinearGradient(colors: [
-                AppColors.purpleNeon.withOpacity(0.15),
-                AppColors.pinkNeon.withOpacity(0.1)
+                AppColors.purpleNeon.withValues(alpha: 0.15),
+                AppColors.pinkNeon.withValues(alpha: 0.1)
               ]),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
             color: isUnlocked
-                ? AppColors.successNeon.withOpacity(0.3)
-                : AppColors.purpleNeon.withOpacity(0.3)),
+                ? AppColors.successNeon.withValues(alpha: 0.3)
+                : AppColors.purpleNeon.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -312,8 +313,8 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   color: isUnlocked
-                      ? AppColors.successNeon.withOpacity(0.2)
-                      : AppColors.purpleNeon.withOpacity(0.2),
+                      ? AppColors.successNeon.withValues(alpha: 0.2)
+                      : AppColors.purpleNeon.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
@@ -347,7 +348,7 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppColors.errorNeon.withOpacity(0.15),
+                    color: AppColors.errorNeon.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Text('-30%',
@@ -377,7 +378,7 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
                               color: AppColors.textTertiary, fontSize: 12)),
                       Text('$price 💎',
                           style: const TextStyle(
-                              color: AppColors.cyanNeon,
+                              color: AppColors.primaryLight,
                               fontWeight: FontWeight.bold,
                               fontSize: 16)),
                     ],
@@ -454,12 +455,12 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
-                color: AppColors.cyanNeon.withOpacity(0.15),
+                color: AppColors.primaryLight.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(6),
               ),
               child: const Text('-15%',
                   style: TextStyle(
-                      color: AppColors.cyanNeon,
+                      color: AppColors.primaryLight,
                       fontSize: 11,
                       fontWeight: FontWeight.bold)),
             ),
@@ -479,13 +480,13 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               color: isUnlocked
-                  ? AppColors.successNeon.withOpacity(0.06)
+                  ? AppColors.successNeon.withValues(alpha: 0.06)
                   : AppColors.bgSecondary,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
                   color: isUnlocked
-                      ? AppColors.successNeon.withOpacity(0.2)
-                      : AppColors.borderPrimary),
+                      ? AppColors.successNeon.withValues(alpha: 0.2)
+                      : const Color(0x332D363D)),
             ),
             child: Row(
               children: [
@@ -506,7 +507,8 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
                         const SizedBox(height: 2),
                         Text('$lessonsCount x 50 x 0.85 = $price 💎',
                             style: TextStyle(
-                                color: AppColors.cyanNeon.withOpacity(0.8),
+                                color: AppColors.primaryLight
+                                    .withValues(alpha: 0.8),
                                 fontSize: 11)),
                       ],
                     ],
@@ -517,7 +519,7 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
-                      color: AppColors.successNeon.withOpacity(0.15),
+                      color: AppColors.successNeon.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Text('Đã mở',
@@ -530,7 +532,7 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
                   ElevatedButton(
                     onPressed: () => _unlockDomain(d),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.cyanNeon,
+                      backgroundColor: AppColors.primaryLight,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(
                           horizontal: 14, vertical: 8),
@@ -601,7 +603,7 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
             decoration: BoxDecoration(
               color: AppColors.bgSecondary,
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: AppColors.borderPrimary),
+              border: Border.all(color: const Color(0x332D363D)),
             ),
             child: Theme(
               data:
@@ -631,7 +633,7 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
                       color: isUnlocked
-                          ? AppColors.successNeon.withOpacity(0.05)
+                          ? AppColors.successNeon.withValues(alpha: 0.05)
                           : AppColors.bgTertiary,
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -680,11 +682,12 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 10, vertical: 5),
                               decoration: BoxDecoration(
-                                color: AppColors.orangeNeon.withOpacity(0.15),
+                                color: AppColors.orangeNeon
+                                    .withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(8),
                                 border: Border.all(
-                                    color:
-                                        AppColors.orangeNeon.withOpacity(0.3)),
+                                    color: AppColors.orangeNeon
+                                        .withValues(alpha: 0.3)),
                               ),
                               child: Text('$price 💎',
                                   style: const TextStyle(

@@ -188,7 +188,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                 height: 64,
                 decoration: BoxDecoration(
                   color: unlocked
-                      ? rarityColor.withOpacity(0.2)
+                      ? rarityColor.withValues(alpha: 0.2)
                       : Colors.grey.shade200,
                   borderRadius: BorderRadius.circular(12),
                   border: unlocked

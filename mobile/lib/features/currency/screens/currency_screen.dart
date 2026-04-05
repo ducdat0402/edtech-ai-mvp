@@ -52,14 +52,20 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.bgPrimary,
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         leading: const AppBarLeadingBackAndHome(),
         leadingWidth: 112,
         automaticallyImplyLeading: false,
-        title: const Text('Tiền tệ & Phần thưởng'),
+        title: Text(
+          'Tiền tệ & Phần thưởng',
+          style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh, color: AppColors.textSecondary),
             onPressed: _loadCurrency,
             tooltip: 'Làm mới',
           ),
@@ -68,7 +74,9 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
       body: Stack(
         children: [
           _isLoading
-              ? const Center(child: CircularProgressIndicator())
+              ? const Center(
+                  child:
+                      CircularProgressIndicator(color: AppColors.primaryLight))
               : _error != null
                   ? AppErrorWidget(
                       message: _error!,
@@ -104,14 +112,14 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _buildHeaderCard(coins, diamonds, xp, streak),
-          
+
           const SizedBox(height: 24),
 
           _buildCurrencyCard(
             title: 'Xu',
             value: coins.toString(),
             icon: Icons.monetization_on,
-            color: Colors.amber,
+            color: AppColors.orangeNeon,
             description: 'Kiếm qua học tập, dùng trong Cửa hàng',
           ),
 
@@ -121,7 +129,7 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
             title: 'Kim cương',
             value: diamonds.toString(),
             icon: Icons.diamond,
-            color: Colors.cyanAccent.shade400,
+            color: AppColors.primaryLight,
             description: 'Mở khóa nội dung & tính năng AI',
           ),
 
@@ -131,31 +139,31 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
             title: 'Experience Points (XP)',
             value: xp.toString(),
             icon: Icons.star,
-            color: Colors.blue,
+            color: AppColors.xpGold,
             description: 'Điểm kinh nghiệm',
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Streak Card - chuỗi ngày học (tuần + countdown)
           StreakWeekCard(
             currentStreak: streak,
             maxStreak: maxStreak,
             lastActiveDate: lastActiveDate,
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Shards Section
           _buildShardsSection(shards),
-          
+
           const SizedBox(height: 24),
-          
+
           // Info Card
           _buildInfoCard(),
-          
+
           const SizedBox(height: 24),
-          
+
           // Rewards History Button
           ElevatedButton.icon(
             onPressed: () => Navigator.push(
@@ -170,9 +178,9 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
               padding: const EdgeInsets.symmetric(vertical: 16),
             ),
           ),
-          
+
           const SizedBox(height: 12),
-          
+
           // Achievements Button
           ElevatedButton.icon(
             onPressed: () => Navigator.push(
@@ -198,15 +206,11 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.purple.shade400, Colors.blue.shade400],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        gradient: AppGradients.primary,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.purple.withOpacity(0.3),
+            color: AppColors.purpleNeon.withValues(alpha: 0.35),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -278,7 +282,7 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
         Text(
           label,
           style: TextStyle(
-            color: Colors.white.withOpacity(0.9),
+            color: Colors.white.withValues(alpha: 0.9),
             fontSize: 12,
           ),
         ),
@@ -294,9 +298,11 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
     required String description,
   }) {
     return Card(
-      elevation: 4,
+      color: AppColors.bgSecondary,
+      elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(color: Color(0x332D363D)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -305,7 +311,7 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, color: color, size: 32),
@@ -317,18 +323,16 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: AppTextStyles.labelLarge.copyWith(
                       fontSize: 16,
-                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     description,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey.shade600,
-                    ),
+                    style: AppTextStyles.caption
+                        .copyWith(color: AppColors.textTertiary),
                   ),
                 ],
               ),
@@ -352,35 +356,33 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
 
     if (shardEntries.isEmpty) {
       return Card(
-        elevation: 2,
+        color: AppColors.bgSecondary,
+        elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
+          side: const BorderSide(color: Color(0x332D363D)),
         ),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              Icon(
+              const Icon(
                 Icons.diamond_outlined,
                 size: 48,
-                color: Colors.grey.shade400,
+                color: AppColors.textTertiary,
               ),
               const SizedBox(height: 8),
               Text(
                 'Chưa có Shards',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey.shade600,
+                style: AppTextStyles.labelLarge.copyWith(
+                  color: AppColors.textSecondary,
                 ),
               ),
               const SizedBox(height: 4),
               Text(
                 'Hoàn thành bài học để nhận mảnh!',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey.shade500,
-                ),
+                style: AppTextStyles.caption
+                    .copyWith(color: AppColors.textTertiary),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -390,9 +392,11 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
     }
 
     return Card(
-      elevation: 2,
+      color: AppColors.bgSecondary,
+      elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(color: Color(0x332D363D)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -401,14 +405,12 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
           children: [
             Row(
               children: [
-                Icon(Icons.diamond, color: Colors.purple.shade400),
+                const Icon(Icons.diamond, color: AppColors.primaryLight),
                 const SizedBox(width: 8),
-                const Text(
+                Text(
                   'Mảnh',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style:
+                      AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
                 ),
               ],
             ),
@@ -433,27 +435,27 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.purple.shade50,
+        color: AppColors.purpleNeon.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.purple.shade200),
+        border:
+            Border.all(color: AppColors.primaryLight.withValues(alpha: 0.35)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.diamond, size: 20, color: Colors.purple.shade400),
+          const Icon(Icons.diamond, size: 20, color: AppColors.primaryLight),
           const SizedBox(width: 8),
           Text(
             _formatShardName(name),
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Colors.purple.shade700,
+            style: AppTextStyles.labelMedium.copyWith(
+              color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(width: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
             decoration: BoxDecoration(
-              color: Colors.purple.shade400,
+              color: AppColors.purpleNeon,
               borderRadius: BorderRadius.circular(10),
             ),
             child: Text(
@@ -472,16 +474,18 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
 
   Widget _buildInfoCard() {
     return Card(
-      elevation: 2,
-      color: Colors.blue.shade50,
+      elevation: 0,
+      color: AppColors.bgSecondary,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(color: Color(0x332D363D)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.info_outline, color: Colors.blue.shade700),
+            const Icon(Icons.info_outline, color: AppColors.primaryLight),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -489,11 +493,8 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
                 children: [
                   Text(
                     'Cách kiếm phần thưởng',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blue.shade900,
-                    ),
+                    style: AppTextStyles.labelLarge
+                        .copyWith(color: AppColors.textPrimary),
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -501,10 +502,8 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
                     '• Xu dùng để mua vật phẩm trong cửa hàng\n'
                     '• Kim cương dùng để mở khóa nội dung & AI\n'
                     '• Học đều đặn để tăng chuỗi ngày',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.blue.shade700,
-                    ),
+                    style: AppTextStyles.caption
+                        .copyWith(color: AppColors.textSecondary, height: 1.45),
                   ),
                 ],
               ),
@@ -519,10 +518,8 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
     // Convert "ai-shard" to "AI Shard"
     return name
         .split('-')
-        .map((word) => word.isEmpty
-            ? ''
-            : word[0].toUpperCase() + word.substring(1))
+        .map((word) =>
+            word.isEmpty ? '' : word[0].toUpperCase() + word.substring(1))
         .join(' ');
   }
 }
-

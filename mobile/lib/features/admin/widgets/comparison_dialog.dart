@@ -4,6 +4,7 @@ import 'package:dart_quill_delta/dart_quill_delta.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:edtech_mobile/core/config/api_config.dart';
 import 'package:edtech_mobile/features/content/widgets/web_video_player.dart';
+import 'package:edtech_mobile/theme/theme.dart';
 
 class _ComparisonDialog extends StatefulWidget {
   final Map<String, dynamic> comparison;
@@ -69,7 +70,8 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
     if (quizData == null) {
       return const Text(
         '(Không có quiz)',
-        style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
+        style: TextStyle(
+            color: AppColors.textTertiary, fontStyle: FontStyle.italic),
       );
     }
 
@@ -81,17 +83,17 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade300),
+        border: Border.all(color: const Color(0x332D363D)),
         borderRadius: BorderRadius.circular(8),
-        color: Colors.grey.shade50,
+        color: AppColors.bgTertiary,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             question.isEmpty ? '(Không có câu hỏi)' : question,
-            style: const TextStyle(
-              fontSize: 16,
+            style: AppTextStyles.labelLarge.copyWith(
+              color: AppColors.textPrimary,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -103,9 +105,13 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
               child: Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: isCorrect ? Colors.green.shade100 : Colors.white,
+                  color: isCorrect
+                      ? AppColors.successNeon.withValues(alpha: 0.12)
+                      : AppColors.bgSecondary,
                   border: Border.all(
-                    color: isCorrect ? Colors.green : Colors.grey.shade300,
+                    color: isCorrect
+                        ? AppColors.successNeon
+                        : const Color(0x332D363D),
                     width: isCorrect ? 2 : 1,
                   ),
                   borderRadius: BorderRadius.circular(8),
@@ -116,7 +122,9 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
                       isCorrect
                           ? Icons.check_circle
                           : Icons.radio_button_unchecked,
-                      color: isCorrect ? Colors.green : Colors.grey,
+                      color: isCorrect
+                          ? AppColors.successNeon
+                          : AppColors.textTertiary,
                       size: 20,
                     ),
                     const SizedBox(width: 8),
@@ -134,7 +142,7 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: Colors.green,
+                          color: AppColors.successNeon,
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: const Text(
@@ -152,22 +160,24 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.blue.shade50,
+                color: AppColors.primaryLight.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.blue.shade200),
+                border: Border.all(
+                    color: AppColors.primaryLight.withValues(alpha: 0.35)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Giải thích:',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
+                    style: AppTextStyles.labelMedium.copyWith(
+                      color: AppColors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(explanation),
+                  Text(explanation,
+                      style: AppTextStyles.bodySmall
+                          .copyWith(color: AppColors.textSecondary)),
                 ],
               ),
             ),
@@ -181,7 +191,8 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
     if (richContent == null) {
       return const Text(
         '(Không có nội dung)',
-        style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
+        style: TextStyle(
+            color: AppColors.textTertiary, fontStyle: FontStyle.italic),
       );
     }
 
@@ -203,7 +214,7 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
         constraints: const BoxConstraints(maxHeight: 300),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey.shade300),
+          border: Border.all(color: const Color(0x332D363D)),
           borderRadius: BorderRadius.circular(8),
         ),
         child: SingleChildScrollView(
@@ -220,7 +231,7 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
     } catch (e) {
       return Text(
         richContent.toString(),
-        style: const TextStyle(fontSize: 14),
+        style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary),
       );
     }
   }
@@ -287,14 +298,17 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
                       placeholder: (context, url) => Container(
                         width: 100,
                         height: 100,
-                        color: Colors.grey.shade200,
-                        child: const Center(child: CircularProgressIndicator()),
+                        color: AppColors.bgTertiary,
+                        child: const Center(
+                            child: CircularProgressIndicator(
+                                color: AppColors.primaryLight)),
                       ),
                       errorWidget: (context, url, error) => Container(
                         width: 100,
                         height: 100,
-                        color: Colors.grey.shade200,
-                        child: const Icon(Icons.error),
+                        color: AppColors.bgTertiary,
+                        child: const Icon(Icons.error_outline_rounded,
+                            color: AppColors.errorNeon),
                       ),
                     ),
                   ),
@@ -318,13 +332,16 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
               fit: BoxFit.cover,
               placeholder: (context, url) => Container(
                 height: 200,
-                color: Colors.grey.shade200,
-                child: const Center(child: CircularProgressIndicator()),
+                color: AppColors.bgTertiary,
+                child: const Center(
+                    child: CircularProgressIndicator(
+                        color: AppColors.primaryLight)),
               ),
               errorWidget: (context, url, error) => Container(
                 height: 200,
-                color: Colors.grey.shade200,
-                child: const Icon(Icons.error),
+                color: AppColors.bgTertiary,
+                child: const Icon(Icons.error_outline_rounded,
+                    color: AppColors.errorNeon),
               ),
             ),
           ),
@@ -371,19 +388,18 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
+        color: AppColors.bgTertiary,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey.shade300),
+        border: Border.all(color: const Color(0x332D363D)),
       ),
       child: Row(
         children: [
-          Icon(icon, color: Colors.grey.shade500, size: 20),
+          Icon(icon, color: AppColors.textTertiary, size: 20),
           const SizedBox(width: 12),
           Text(
             text,
-            style: TextStyle(
-              fontSize: 13,
-              color: Colors.grey.shade600,
+            style: AppTextStyles.bodySmall.copyWith(
+              color: AppColors.textSecondary,
               fontStyle: FontStyle.italic,
             ),
           ),
@@ -400,6 +416,7 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
         widget.comparison['proposed'] as Map<String, dynamic>? ?? {};
 
     return Dialog(
+      backgroundColor: AppColors.bgSecondary,
       insetPadding: const EdgeInsets.all(16),
       child: Container(
         constraints: const BoxConstraints(maxHeight: 800),
@@ -409,16 +426,16 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
             // Header
             Container(
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.blue.shade50,
-                borderRadius: const BorderRadius.only(
+              decoration: const BoxDecoration(
+                gradient: AppGradients.primary,
+                borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(12),
                   topRight: Radius.circular(12),
                 ),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.compare_arrows, color: Colors.blue),
+                  const Icon(Icons.compare_arrows, color: Colors.white),
                   const SizedBox(width: 8),
                   const Expanded(
                     child: Text(
@@ -426,11 +443,13 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close),
+                    icon:
+                        const Icon(Icons.close_rounded, color: Colors.white70),
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                 ],
@@ -445,10 +464,12 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
                     child: ElevatedButton(
                       onPressed: () => setState(() => _showOriginal = true),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            _showOriginal ? Colors.blue : Colors.grey.shade300,
-                        foregroundColor:
-                            _showOriginal ? Colors.white : Colors.black,
+                        backgroundColor: _showOriginal
+                            ? AppColors.purpleNeon
+                            : AppColors.bgTertiary,
+                        foregroundColor: _showOriginal
+                            ? Colors.white
+                            : AppColors.textSecondary,
                       ),
                       child: const Text('Bản gốc'),
                     ),
@@ -459,10 +480,11 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
                       onPressed: () => setState(() => _showOriginal = false),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: !_showOriginal
-                            ? Colors.green
-                            : Colors.grey.shade300,
-                        foregroundColor:
-                            !_showOriginal ? Colors.white : Colors.black,
+                            ? AppColors.successNeon
+                            : AppColors.bgTertiary,
+                        foregroundColor: !_showOriginal
+                            ? Colors.white
+                            : AppColors.textSecondary,
                       ),
                       child: const Text('Bản đề xuất'),
                     ),
@@ -482,7 +504,9 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
                       'Tiêu đề:',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: _showOriginal ? Colors.blue : Colors.green,
+                        color: _showOriginal
+                            ? AppColors.primaryLight
+                            : AppColors.successNeon,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -492,8 +516,9 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
                               '(Không có tiêu đề)')
                           : (proposed['title'] as String? ??
                               '(Không có tiêu đề)'),
-                      style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.w600),
+                      style: AppTextStyles.labelLarge.copyWith(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.w600),
                     ),
                     const SizedBox(height: 16),
                     // Quiz or Rich Content
@@ -506,7 +531,9 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
                         'Quiz:',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: _showOriginal ? Colors.blue : Colors.green,
+                          color: _showOriginal
+                              ? AppColors.primaryLight
+                              : AppColors.successNeon,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -521,14 +548,16 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
                         'Nội dung (3 dạng):',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: _showOriginal ? Colors.blue : Colors.green,
+                          color: _showOriginal
+                              ? AppColors.primaryLight
+                              : AppColors.successNeon,
                         ),
                       ),
                       const SizedBox(height: 8),
                       // Complexity selector
                       Container(
                         decoration: BoxDecoration(
-                          color: Colors.grey.shade200,
+                          color: AppColors.bgTertiary,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         padding: const EdgeInsets.all(4),
@@ -536,9 +565,9 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
                           children: List.generate(3, (index) {
                             final isSelected = _complexityIndex == index;
                             final colors = [
-                              Colors.green,
-                              Colors.blue,
-                              Colors.orange
+                              AppColors.successNeon,
+                              AppColors.purpleNeon,
+                              AppColors.orangeNeon
                             ];
                             return Expanded(
                               child: GestureDetector(
@@ -559,7 +588,7 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
                                     style: TextStyle(
                                       color: isSelected
                                           ? Colors.white
-                                          : Colors.grey.shade700,
+                                          : AppColors.textSecondary,
                                       fontWeight: isSelected
                                           ? FontWeight.bold
                                           : FontWeight.normal,

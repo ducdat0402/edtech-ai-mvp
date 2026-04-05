@@ -8,15 +8,14 @@ class AppGradients {
   // ═══════════════════════════════════════════════════════════════════
   // PRIMARY GRADIENTS
   // ═══════════════════════════════════════════════════════════════════
-  
-  /// Main gradient (Purple → Pink → Orange)
+
+  /// CTA chính — 135° violet (DESIGN.md: primary_container → primary)
   static const LinearGradient primary = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
     colors: [
       AppColors.purpleNeon,
-      AppColors.pinkNeon,
-      AppColors.orangeNeon,
+      AppColors.primaryLight,
     ],
   );
 
@@ -43,7 +42,7 @@ class AppGradients {
   // ═══════════════════════════════════════════════════════════════════
   // XP & PROGRESS GRADIENTS
   // ═══════════════════════════════════════════════════════════════════
-  
+
   /// XP bar gradient (Gold → Orange)
   static const LinearGradient xpBar = LinearGradient(
     begin: Alignment.centerLeft,
@@ -65,7 +64,7 @@ class AppGradients {
   // ═══════════════════════════════════════════════════════════════════
   // STREAK GRADIENTS
   // ═══════════════════════════════════════════════════════════════════
-  
+
   /// Streak fire gradient
   static const LinearGradient streak = LinearGradient(
     begin: Alignment.topLeft,
@@ -79,7 +78,7 @@ class AppGradients {
   // ═══════════════════════════════════════════════════════════════════
   // COIN GRADIENTS
   // ═══════════════════════════════════════════════════════════════════
-  
+
   /// Coin gradient
   static const RadialGradient coin = RadialGradient(
     colors: [
@@ -91,23 +90,23 @@ class AppGradients {
   // ═══════════════════════════════════════════════════════════════════
   // ACHIEVEMENT GRADIENTS
   // ═══════════════════════════════════════════════════════════════════
-  
+
   /// Rainbow sweep gradient for achievements
   static const SweepGradient achievementRainbow = SweepGradient(
     colors: [
-      Color(0xFFFF00FF),  // Magenta
-      Color(0xFF8B5CF6),  // Purple
-      Color(0xFF06B6D4),  // Cyan
-      Color(0xFF00FF88),  // Green
-      Color(0xFFFFE31A),  // Yellow
-      Color(0xFFFF00FF),  // Magenta (close loop)
+      Color(0xFFFF00FF), // Magenta
+      Color(0xFF8B5CF6), // Purple
+      Color(0xFF06B6D4), // Cyan
+      Color(0xFF00FF88), // Green
+      Color(0xFFFFE31A), // Yellow
+      Color(0xFFFF00FF), // Magenta (close loop)
     ],
   );
 
   // ═══════════════════════════════════════════════════════════════════
   // FUNCTIONAL GRADIENTS
   // ═══════════════════════════════════════════════════════════════════
-  
+
   /// Success gradient
   static const LinearGradient success = LinearGradient(
     begin: Alignment.topLeft,
@@ -165,14 +164,14 @@ class AppGradients {
   // ═══════════════════════════════════════════════════════════════════
   // CARD/SURFACE GRADIENTS
   // ═══════════════════════════════════════════════════════════════════
-  
+
   /// Glass card gradient (subtle)
   static LinearGradient glassCard = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
     colors: [
-      AppColors.bgSecondary.withOpacity(0.6),
-      AppColors.bgSecondary.withOpacity(0.3),
+      AppColors.bgSecondary.withValues(alpha: 0.6),
+      AppColors.bgSecondary.withValues(alpha: 0.3),
     ],
   );
 
@@ -189,7 +188,7 @@ class AppGradients {
   // ═══════════════════════════════════════════════════════════════════
   // LEVEL GRADIENTS
   // ═══════════════════════════════════════════════════════════════════
-  
+
   /// Get gradient based on level
   static LinearGradient forLevel(int level) {
     final colors = AppColors.getLevelGradient(level);

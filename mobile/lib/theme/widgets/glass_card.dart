@@ -29,7 +29,8 @@ class GlassCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: (backgroundColor ?? AppColors.bgSecondary).withOpacity(0.6),
+        color:
+            (backgroundColor ?? AppColors.bgSecondary).withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(borderRadius),
         border: Border.all(
           color: borderColor ?? AppColors.borderPrimary,
@@ -38,7 +39,7 @@ class GlassCard extends StatelessWidget {
         boxShadow: boxShadow ??
             [
               BoxShadow(
-                color: Colors.black.withOpacity(0.3),
+                color: Colors.black.withValues(alpha: 0.3),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -110,14 +111,14 @@ class _NeonCardState extends State<NeonCard> {
           boxShadow: showGlow
               ? [
                   BoxShadow(
-                    color: widget.glowColor.withOpacity(0.4),
+                    color: widget.glowColor.withValues(alpha: 0.4),
                     blurRadius: 20,
                     spreadRadius: 0,
                   ),
                 ]
               : [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: Colors.black.withValues(alpha: 0.2),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
                   ),

@@ -1,8 +1,8 @@
-# 📱 EdTech AI MVP - Flutter Mobile App
+# 📱 Gamistu — Flutter app
 
 ## 🎯 Overview
 
-Flutter mobile application cho EdTech AI MVP - Personalized learning platform với AI.
+Ứng dụng Flutter của **Gamistu**: học cá nhân hóa, gamification tinh tế (xem `DESIGN.md`).
 
 ## 🏗️ Architecture
 

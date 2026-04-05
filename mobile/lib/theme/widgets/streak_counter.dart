@@ -32,7 +32,7 @@ class StreakCounter extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: AppColors.streakOrange.withOpacity(0.5),
+            color: AppColors.streakOrange.withValues(alpha: 0.5),
             blurRadius: 16,
             spreadRadius: 0,
           ),
@@ -58,7 +58,7 @@ class StreakCounter extends StatelessWidget {
                 Text(
                   streak == 1 ? 'DAY' : 'DAYS',
                   style: AppTextStyles.labelSmall.copyWith(
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withValues(alpha: 0.9),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -77,7 +77,7 @@ class StreakCounter extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppColors.streakOrange.withOpacity(0.4),
+            color: AppColors.streakOrange.withValues(alpha: 0.4),
             blurRadius: 8,
           ),
         ],
@@ -120,13 +120,13 @@ class StreakDisplay extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppColors.streakOrange.withOpacity(0.2),
-            AppColors.streakYellow.withOpacity(0.1),
+            AppColors.streakOrange.withValues(alpha: 0.2),
+            AppColors.streakYellow.withValues(alpha: 0.1),
           ],
         ),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: AppColors.streakOrange.withOpacity(0.3),
+          color: AppColors.streakOrange.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -141,7 +141,7 @@ class StreakDisplay extends StatelessWidget {
               gradient: AppGradients.streak,
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.streakOrange.withOpacity(0.6),
+                  color: AppColors.streakOrange.withValues(alpha: 0.6),
                   blurRadius: 24,
                   spreadRadius: 4,
                 ),

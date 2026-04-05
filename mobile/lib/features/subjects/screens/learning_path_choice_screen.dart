@@ -81,7 +81,7 @@ class _LearningPathChoiceScreenState extends State<LearningPathChoiceScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const CircularProgressIndicator(color: AppColors.purpleNeon),
+              const CircularProgressIndicator(color: AppColors.primaryLight),
               const SizedBox(height: 16),
               Text(
                 'Đang kiểm tra lộ trình...',
@@ -132,7 +132,7 @@ class _LearningPathChoiceScreenState extends State<LearningPathChoiceScreen> {
               description:
                   'AI sẽ hỏi về kinh nghiệm, mục tiêu học tập và sở thích của bạn để tạo ra lộ trình cá nhân hóa.',
               icon: Icons.chat_bubble_rounded,
-              gradient: [AppColors.purpleNeon, AppColors.pinkNeon],
+              gradient: [AppColors.purpleNeon, AppColors.primaryLight],
               duration: '5-10 phút',
               features: [
                 'Trò chuyện tự nhiên',
@@ -151,7 +151,7 @@ class _LearningPathChoiceScreenState extends State<LearningPathChoiceScreen> {
             // Divider with "hoặc"
             Row(
               children: [
-                const Expanded(child: Divider(color: AppColors.borderPrimary)),
+                const Expanded(child: Divider(color: Color(0x332D363D))),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Text(
@@ -160,7 +160,7 @@ class _LearningPathChoiceScreenState extends State<LearningPathChoiceScreen> {
                         .copyWith(color: AppColors.textTertiary),
                   ),
                 ),
-                const Expanded(child: Divider(color: AppColors.borderPrimary)),
+                const Expanded(child: Divider(color: Color(0x332D363D))),
               ],
             ),
 
@@ -174,7 +174,7 @@ class _LearningPathChoiceScreenState extends State<LearningPathChoiceScreen> {
               description:
                   'Bài test thích ứng sẽ đánh giá kiến thức của bạn qua 15-30 câu hỏi và tạo lộ trình dựa trên kết quả.',
               icon: Icons.quiz_rounded,
-              gradient: [AppColors.cyanNeon, AppColors.successNeon],
+              gradient: [AppColors.primaryLight, AppColors.successNeon],
               duration: '15-25 phút',
               features: [
                 'Đánh giá chính xác',
@@ -196,14 +196,14 @@ class _LearningPathChoiceScreenState extends State<LearningPathChoiceScreen> {
               decoration: BoxDecoration(
                 color: AppColors.bgSecondary,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.borderPrimary),
+                border: Border.all(color: const Color(0x332D363D)),
               ),
               child: Row(
                 children: [
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: AppColors.warningNeon.withOpacity(0.15),
+                      color: AppColors.warningNeon.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Icon(Icons.info_outline_rounded,
@@ -234,7 +234,7 @@ class _LearningPathChoiceScreenState extends State<LearningPathChoiceScreen> {
       children: [
         ShaderMask(
           shaderCallback: (bounds) => const LinearGradient(
-            colors: [AppColors.purpleNeon, AppColors.cyanNeon],
+            colors: [AppColors.purpleNeon, AppColors.primaryLight],
           ).createShader(bounds),
           child: Text(
             'Chọn cách tạo lộ trình',
@@ -271,10 +271,10 @@ class _LearningPathChoiceScreenState extends State<LearningPathChoiceScreen> {
         decoration: BoxDecoration(
           color: AppColors.bgSecondary,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.borderPrimary),
+          border: Border.all(color: const Color(0x332D363D)),
           boxShadow: [
             BoxShadow(
-              color: gradient[0].withOpacity(0.1),
+              color: gradient[0].withValues(alpha: 0.1),
               blurRadius: 20,
               offset: const Offset(0, 4),
             ),
@@ -293,7 +293,7 @@ class _LearningPathChoiceScreenState extends State<LearningPathChoiceScreen> {
                     borderRadius: BorderRadius.circular(14),
                     boxShadow: [
                       BoxShadow(
-                        color: gradient[0].withOpacity(0.4),
+                        color: gradient[0].withValues(alpha: 0.4),
                         blurRadius: 12,
                         offset: const Offset(0, 4),
                       ),
@@ -327,7 +327,7 @@ class _LearningPathChoiceScreenState extends State<LearningPathChoiceScreen> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: gradient[0].withOpacity(0.15),
+                    color: gradient[0].withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(Icons.arrow_forward_rounded,
@@ -348,7 +348,7 @@ class _LearningPathChoiceScreenState extends State<LearningPathChoiceScreen> {
             ),
 
             const SizedBox(height: 16),
-            const Divider(color: AppColors.borderPrimary),
+            const Divider(color: Color(0x332D363D)),
             const SizedBox(height: 16),
 
             // Duration and features
@@ -359,7 +359,7 @@ class _LearningPathChoiceScreenState extends State<LearningPathChoiceScreen> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: gradient[0].withOpacity(0.15),
+                    color: gradient[0].withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(

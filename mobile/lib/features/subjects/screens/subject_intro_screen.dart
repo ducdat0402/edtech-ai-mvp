@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
@@ -6,7 +5,6 @@ import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/services/tutorial_service.dart';
 import 'package:edtech_mobile/core/tutorial/tutorial_helper.dart';
-import 'package:edtech_mobile/core/utils/navigation_helper.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 
 class SubjectIntroScreen extends StatefulWidget {
@@ -62,7 +60,8 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
     targets.add(TutorialHelper.buildTarget(
       key: _mindMapButtonsKey,
       title: 'Chế độ xem',
-      description: 'Mind map: bản đồ kiến thức, Lộ trình: danh sách bài học, Cá nhân: tạo lộ trình riêng.',
+      description:
+          'Mind map: bản đồ kiến thức, Lộ trình: danh sách bài học, Cá nhân: tạo lộ trình riêng.',
       icon: Icons.view_module,
       stepLabel: 'Bước 2/4',
     ));
@@ -70,7 +69,8 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
     targets.add(TutorialHelper.buildTarget(
       key: _knowledgeGraphKey,
       title: 'Bản đồ kiến thức',
-      description: 'Nhấn vào node để mở rộng: Môn học → Domain → Topic. Khám phá cấu trúc kiến thức!',
+      description:
+          'Nhấn vào node để mở rộng: Môn học → Domain → Topic. Khám phá cấu trúc kiến thức!',
       icon: Icons.account_tree,
       stepLabel: 'Bước 3/4',
       align: ContentAlign.top,
@@ -242,187 +242,6 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
     );
   }
 
-  Future<void> _handleTopicClick(String topicNodeId, String topicTitle) async {
-    if (!mounted) return;
-
-    final apiService = Provider.of<ApiService>(context, listen: false);
-    BuildContext? dialogContext;
-    Timer? progressTimer;
-    StateSetter? setDialogState;
-    double dialogProgress = 0.0;
-    String dialogStatus = 'Đang khởi tạo...';
-
-    // Show loading dialog with progress
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) {
-        dialogContext = ctx;
-        return StatefulBuilder(
-          builder: (context, setState) {
-            setDialogState = setState;
-            return AlertDialog(
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const CircularProgressIndicator(),
-                  const SizedBox(height: 16),
-                  Text('Đang tạo bài học cho "$topicTitle"...'),
-                  const SizedBox(height: 8),
-                  Text(
-                    dialogStatus,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey.shade600,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    '${dialogProgress.toInt()}%',
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blue,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  LinearProgressIndicator(
-                    value: dialogProgress / 100,
-                    backgroundColor: Colors.grey.shade200,
-                    valueColor:
-                        AlwaysStoppedAnimation<Color>(Colors.blue.shade400),
-                    minHeight: 6,
-                    borderRadius: BorderRadius.circular(3),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-
-    try {
-      // Start generation and get taskId
-      final result = await apiService.generateLearningNodesFromTopic(
-        widget.subjectId,
-        topicNodeId,
-      );
-
-      final alreadyExists = result['alreadyExists'] as bool? ?? false;
-      final taskId = result['taskId'] as String?;
-
-      if (alreadyExists) {
-        // Already exists, close dialog and navigate
-        if (!mounted || dialogContext == null) return;
-        NavigationHelper.safePop(dialogContext!);
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(result['message'] ?? 'Đang mở bài học...'),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 3),
-          ),
-        );
-
-        Future.delayed(const Duration(milliseconds: 500), () {
-          if (mounted) {
-            context.go('/skill-tree?subjectId=${widget.subjectId}');
-          }
-        });
-        return;
-      }
-
-      if (taskId == null) {
-        throw Exception('Task ID not returned from server');
-      }
-
-      // Poll progress if we have a taskId
-      progressTimer?.cancel();
-      progressTimer =
-          Timer.periodic(const Duration(milliseconds: 500), (timer) async {
-        if (!mounted || dialogContext == null) {
-          timer.cancel();
-          return;
-        }
-
-        try {
-          final progressData = await apiService.getGenerationProgress(
-            widget.subjectId,
-            taskId,
-          );
-
-          if (progressData['error'] != null) {
-            timer.cancel();
-            return;
-          }
-
-          final progress =
-              (progressData['progress'] as num?)?.toDouble() ?? 0.0;
-          final status = progressData['status'] as String? ?? 'generating';
-          final currentStep =
-              progressData['currentStep'] as String? ?? 'Đang xử lý...';
-
-          dialogProgress = progress;
-          dialogStatus = currentStep;
-
-          // Update dialog state
-          setDialogState?.call(() {});
-
-          // If completed or error, stop polling
-          if (status == 'completed') {
-            timer.cancel();
-            if (!mounted || dialogContext == null) return;
-            NavigationHelper.safePop(dialogContext!);
-
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content:
-                    Text(result['message'] ?? 'Đã tạo bài học thành công!'),
-                backgroundColor: Colors.green,
-                duration: const Duration(seconds: 3),
-              ),
-            );
-
-            Future.delayed(const Duration(milliseconds: 500), () {
-              if (mounted) {
-                context.go('/skill-tree?subjectId=${widget.subjectId}');
-              }
-            });
-          } else if (status == 'error') {
-            timer.cancel();
-            if (!mounted || dialogContext == null) return;
-            NavigationHelper.safePop(dialogContext!);
-
-            final errorMsg =
-                progressData['error'] as String? ?? 'Có lỗi xảy ra';
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Lỗi: $errorMsg'),
-                backgroundColor: Colors.red,
-              ),
-            );
-          }
-        } catch (e) {
-          // Continue polling on error
-          print('Error polling progress: $e');
-        }
-      });
-    } catch (e) {
-      progressTimer?.cancel();
-      if (!mounted || dialogContext == null) return;
-      NavigationHelper.safePop(dialogContext!);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Lỗi: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -458,7 +277,7 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
                       Container(
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color: AppColors.errorNeon.withOpacity(0.15),
+                          color: AppColors.errorNeon.withValues(alpha: 0.15),
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(Icons.error_outline_rounded,
@@ -488,35 +307,28 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
                         children: [
                           _buildSubjectHeader(),
                           const SizedBox(height: 24),
-
                           KeyedSubtree(
                             key: _courseOutlineKey,
                             child: _buildCourseOutline(),
                           ),
                           const SizedBox(height: 16),
-
                           if (!_isContributor) _buildUnlockBanner(),
                           const SizedBox(height: 16),
-
                           KeyedSubtree(
                             key: _mindMapButtonsKey,
                             child: _buildMindMapButtons(),
                           ),
-
                           KeyedSubtree(
                             key: _knowledgeGraphKey,
                             child: _buildKnowledgeGraphContent(),
                           ),
                           const SizedBox(height: 24),
-
                           KeyedSubtree(
                             key: _domainsListKey,
                             child: _buildDomainsList(),
                           ),
                           const SizedBox(height: 24),
-
-                          if (_isContributor)
-                            _buildContributorQuickAccess(),
+                          if (_isContributor) _buildContributorQuickAccess(),
                         ],
                       ),
                     ),
@@ -527,16 +339,19 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
     final subject = _introData!['subject'] as Map<String, dynamic>;
     final track = subject['track'] as String;
     final trackColor =
-        track == 'explorer' ? AppColors.successNeon : AppColors.cyanNeon;
+        track == 'explorer' ? AppColors.successNeon : AppColors.primaryLight;
 
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [trackColor.withOpacity(0.15), trackColor.withOpacity(0.05)],
+          colors: [
+            trackColor.withValues(alpha: 0.15),
+            trackColor.withValues(alpha: 0.05)
+          ],
         ),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: trackColor.withOpacity(0.3)),
+        border: Border.all(color: trackColor.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -545,10 +360,11 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                  colors: [trackColor, trackColor.withOpacity(0.8)]),
+                  colors: [trackColor, trackColor.withValues(alpha: 0.8)]),
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
-                BoxShadow(color: trackColor.withOpacity(0.4), blurRadius: 8)
+                BoxShadow(
+                    color: trackColor.withValues(alpha: 0.4), blurRadius: 8)
               ],
             ),
             child: Text(
@@ -575,9 +391,10 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.contributorBlue.withOpacity(0.06),
+        color: AppColors.contributorBlue.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.contributorBlue.withOpacity(0.2)),
+        border:
+            Border.all(color: AppColors.contributorBlue.withValues(alpha: 0.2)),
       ),
       child: InkWell(
         onTap: () async {
@@ -593,7 +410,7 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: AppColors.contributorBlue.withOpacity(0.12),
+                color: AppColors.contributorBlue.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Icon(Icons.account_tree,
@@ -641,7 +458,7 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
               child: _CompactMindMapButton(
                 title: 'Mind map',
                 icon: Icons.account_tree_rounded,
-                color: AppColors.cyanNeon,
+                color: AppColors.primaryLight,
                 isSelected: true,
                 onTap: () {
                   // Scroll down to show the mind map on this page
@@ -736,13 +553,13 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [nodeColor.withOpacity(0.9), nodeColor],
+                colors: [nodeColor.withValues(alpha: 0.9), nodeColor],
               ),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: Colors.white, width: 4),
               boxShadow: [
                 BoxShadow(
-                  color: nodeColor.withOpacity(0.4),
+                  color: nodeColor.withValues(alpha: 0.4),
                   blurRadius: 12,
                   spreadRadius: 2,
                 ),
@@ -773,7 +590,7 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Row(
@@ -1069,7 +886,7 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.3),
+                                    color: Colors.black.withValues(alpha: 0.3),
                                     blurRadius: level == 1
                                         ? 12
                                         : level == 2
@@ -1147,7 +964,7 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
       decoration: BoxDecoration(
         color: AppColors.bgSecondary,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.borderPrimary),
+        border: Border.all(color: const Color(0x332D363D)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1168,13 +985,13 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
                       icon: Icons.topic_rounded,
                       label: 'Topic',
                       value: '${outline['totalTopics'] ?? 0}',
-                      color: AppColors.cyanNeon)),
+                      color: AppColors.primaryLight)),
               Expanded(
                   child: _OutlineItem(
                       icon: Icons.category_rounded,
                       label: 'Domain',
                       value: '${outline['totalDomains'] ?? 0}',
-                      color: AppColors.pinkNeon)),
+                      color: AppColors.coinGold)),
             ],
           ),
         ],
@@ -1195,19 +1012,20 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              AppColors.purpleNeon.withOpacity(0.12),
-              AppColors.cyanNeon.withOpacity(0.08)
+              AppColors.purpleNeon.withValues(alpha: 0.12),
+              AppColors.primaryLight.withValues(alpha: 0.08)
             ],
           ),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.purpleNeon.withOpacity(0.25)),
+          border:
+              Border.all(color: AppColors.purpleNeon.withValues(alpha: 0.25)),
         ),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: AppColors.purpleNeon.withOpacity(0.2),
+                color: AppColors.purpleNeon.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Text('💎', style: TextStyle(fontSize: 24)),
@@ -1235,7 +1053,7 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AppColors.purpleNeon.withOpacity(0.15),
+                color: AppColors.purpleNeon.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Icon(Icons.chevron_right_rounded,
@@ -1245,50 +1063,6 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
         ),
       ),
     );
-  }
-
-  Future<void> _startLearning() async {
-    try {
-      final apiService = Provider.of<ApiService>(context, listen: false);
-
-      // Show loading
-      if (mounted) {
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (context) => const Center(
-            child: CircularProgressIndicator(),
-          ),
-        );
-      }
-
-      // Skill tree generation removed (tables dropped)
-
-      // Close loading
-      if (mounted) {
-        NavigationHelper.safePop(context);
-      }
-
-      // Navigate to skill tree
-      if (mounted) {
-        context.go('/skill-tree?subjectId=${widget.subjectId}');
-      }
-    } catch (e) {
-      // Close loading if still open
-      if (mounted) {
-        NavigationHelper.safePop(context);
-      }
-
-      // Show error
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Lỗi: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
   }
 
   Widget _buildDomainsList() {
@@ -1301,10 +1075,10 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
     }
 
     final colors = [
-      [AppColors.purpleNeon, AppColors.pinkNeon],
-      [AppColors.cyanNeon, AppColors.successNeon],
-      [AppColors.orangeNeon, AppColors.xpGold],
-      [AppColors.pinkNeon, AppColors.purpleNeon],
+      [AppColors.purpleNeon, AppColors.primaryLight],
+      [AppColors.primaryLight, AppColors.successNeon],
+      [AppColors.coinGold, AppColors.orangeNeon],
+      [AppColors.primaryLight, AppColors.purpleNeon],
     ];
 
     return Column(
@@ -1331,7 +1105,7 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
             decoration: BoxDecoration(
               color: AppColors.bgSecondary,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.borderPrimary),
+              border: Border.all(color: const Color(0x332D363D)),
             ),
             child: Material(
               color: Colors.transparent,
@@ -1355,7 +1129,7 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
-                                color: colorPair[0].withOpacity(0.3),
+                                color: colorPair[0].withValues(alpha: 0.3),
                                 blurRadius: 8)
                           ],
                         ),
@@ -1423,7 +1197,6 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
       ],
     );
   }
-
 }
 
 class _OutlineItem extends StatelessWidget {
@@ -1448,7 +1221,7 @@ class _OutlineItem extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.15),
+              color: color.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, size: 24, color: color),
@@ -1467,68 +1240,7 @@ class _OutlineItem extends StatelessWidget {
   }
 }
 
-class _MindMapButton extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final IconData icon;
-  final Color color;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _MindMapButton({
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-    required this.color,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.15) : AppColors.bgSecondary,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color:
-                isSelected ? color.withOpacity(0.5) : AppColors.borderPrimary,
-            width: isSelected ? 2 : 1,
-          ),
-          boxShadow: isSelected
-              ? [BoxShadow(color: color.withOpacity(0.2), blurRadius: 10)]
-              : null,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(icon, color: color, size: 24),
-            ),
-            const SizedBox(height: 12),
-            Text(title,
-                style: AppTextStyles.labelMedium.copyWith(
-                    color: isSelected ? color : AppColors.textPrimary)),
-            const SizedBox(height: 4),
-            Text(subtitle,
-                style: AppTextStyles.caption
-                    .copyWith(color: AppColors.textTertiary)),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Compact version of _MindMapButton for 3-column layout
+/// Mind map style tile (compact, 3-column layout on intro)
 class _CompactMindMapButton extends StatelessWidget {
   final String title;
   final IconData icon;
@@ -1551,15 +1263,18 @@ class _CompactMindMapButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
         decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.15) : AppColors.bgSecondary,
+          color: isSelected
+              ? color.withValues(alpha: 0.15)
+              : AppColors.bgSecondary,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color:
-                isSelected ? color.withOpacity(0.5) : AppColors.borderPrimary,
+            color: isSelected
+                ? color.withValues(alpha: 0.5)
+                : const Color(0x332D363D),
             width: isSelected ? 2 : 1,
           ),
           boxShadow: isSelected
-              ? [BoxShadow(color: color.withOpacity(0.2), blurRadius: 8)]
+              ? [BoxShadow(color: color.withValues(alpha: 0.2), blurRadius: 8)]
               : null,
         ),
         child: Column(
@@ -1568,7 +1283,7 @@ class _CompactMindMapButton extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.2),
+                color: color.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, color: color, size: 22),

@@ -68,7 +68,6 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
     });
 
     try {
-      final apiService = Provider.of<ApiService>(context, listen: false);
       final List<dynamic> edits = []; // Old content edits system removed
       setState(() {
         _pendingEdits = edits.map((e) => Map<String, dynamic>.from(e)).toList();
@@ -88,7 +87,6 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
     });
 
     try {
-      final apiService = Provider.of<ApiService>(context, listen: false);
       final List<dynamic> items = []; // Old content items system removed
       setState(() {
         _allContentItems =
@@ -108,7 +106,6 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
     });
 
     try {
-      final apiService = Provider.of<ApiService>(context, listen: false);
       final List<dynamic> history = []; // Old edit history system removed
       setState(() {
         _editHistory =
@@ -122,27 +119,16 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
     }
   }
 
-  Future<void> _approveEdit(String editId) async {
+  Future<void> _approveEdit(String _) async {
     try {
-      final apiService = Provider.of<ApiService>(context, listen: false);
       // Old content edit approval removed - use pending contributions instead
       throw Exception('Old content edit system removed');
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Đã duyệt đóng góp thành công!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        _loadPendingEdits(); // Reload list
-      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Lỗi khi duyệt: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.errorNeon,
           ),
         );
       }
@@ -163,7 +149,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style: TextButton.styleFrom(foregroundColor: AppColors.errorNeon),
             child: const Text('Từ chối'),
           ),
         ],
@@ -172,25 +158,14 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
 
     if (shouldReject == true) {
       try {
-        final apiService = Provider.of<ApiService>(context, listen: false);
         // Old content edit rejection removed - use pending contributions instead
         throw Exception('Old content edit system removed');
-
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Đã từ chối đóng góp'),
-              backgroundColor: Colors.orange,
-            ),
-          );
-          _loadPendingEdits(); // Reload list
-        }
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Lỗi khi từ chối: $e'),
-              backgroundColor: Colors.red,
+              backgroundColor: AppColors.errorNeon,
             ),
           );
         }
@@ -238,14 +213,15 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
               content: Text('Đã duyệt đóng góp!'),
-              backgroundColor: Colors.green),
+              backgroundColor: AppColors.successNeon),
         );
         _loadPendingContributions();
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi: $e'), backgroundColor: Colors.red),
+          SnackBar(
+              content: Text('Lỗi: $e'), backgroundColor: AppColors.errorNeon),
         );
       }
     }
@@ -345,7 +321,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                       ],
                     ),
                   ),
-                  const Divider(color: AppColors.borderPrimary),
+                  const Divider(color: Color(0x332D363D)),
                   Expanded(
                     child: ListView(
                       controller: scrollController,
@@ -429,7 +405,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                           decoration: BoxDecoration(
                             color: AppColors.bgTertiary,
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: AppColors.borderPrimary),
+                            border: Border.all(color: const Color(0x332D363D)),
                           ),
                           child: const Row(
                             children: [
@@ -559,14 +535,15 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
               content: Text('Đã từ chối đóng góp'),
-              backgroundColor: Colors.orange),
+              backgroundColor: AppColors.orangeNeon),
         );
         _loadPendingContributions();
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi: $e'), backgroundColor: Colors.red),
+          SnackBar(
+              content: Text('Lỗi: $e'), backgroundColor: AppColors.errorNeon),
         );
       }
     }
@@ -577,7 +554,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
     return Scaffold(
       backgroundColor: AppColors.bgPrimary,
       appBar: AppBar(
-        backgroundColor: AppColors.bgSecondary,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         leading: const AppBarLeadingBackAndHome(),
         leadingWidth: 112,
@@ -600,8 +577,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
         ),
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: AppColors.purpleNeon,
-          labelColor: AppColors.purpleNeon,
+          indicatorColor: AppColors.primaryLight,
+          labelColor: AppColors.primaryLight,
           unselectedLabelColor: AppColors.textSecondary,
           labelStyle: AppTextStyles.labelMedium,
           isScrollable: true,
@@ -659,7 +636,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                     Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: AppColors.errorNeon.withOpacity(0.15),
+                        color: AppColors.errorNeon.withValues(alpha: 0.15),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(Icons.error_outline_rounded,
@@ -685,7 +662,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                         Container(
                           padding: const EdgeInsets.all(20),
                           decoration: BoxDecoration(
-                            color: AppColors.successNeon.withOpacity(0.15),
+                            color:
+                                AppColors.successNeon.withValues(alpha: 0.15),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(Icons.check_circle_outline_rounded,
@@ -700,7 +678,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                   )
                 : RefreshIndicator(
                     onRefresh: _loadPendingEdits,
-                    color: AppColors.purpleNeon,
+                    color: AppColors.primaryLight,
                     child: ListView.builder(
                       padding: const EdgeInsets.all(16),
                       itemCount: _pendingEdits.length,
@@ -718,8 +696,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
   Widget _buildPendingContributionsTab() {
     if (_isLoadingContributions) {
       return const Center(
-          child:
-              CircularProgressIndicator(color: AppColors.contributorBlueLight));
+          child: CircularProgressIndicator(color: AppColors.primaryLight));
     }
     if (_pendingContributions.isEmpty) {
       return Center(
@@ -727,7 +704,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.check_circle_outline,
-                size: 64, color: AppColors.successNeon.withOpacity(0.3)),
+                size: 64, color: AppColors.successNeon.withValues(alpha: 0.3)),
             const SizedBox(height: 16),
             Text('Không có đóng góp nào chờ duyệt',
                 style: AppTextStyles.bodyMedium
@@ -738,6 +715,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
     }
     return RefreshIndicator(
       onRefresh: _loadPendingContributions,
+      color: AppColors.primaryLight,
       child: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: _pendingContributions.length,
@@ -774,7 +752,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
         break;
       case 'domain':
         typeIcon = Icons.folder;
-        typeColor = AppColors.cyanNeon;
+        typeColor = AppColors.primaryLight;
         typeLabel = 'Domain';
         break;
       case 'topic':
@@ -800,26 +778,26 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
     switch (action) {
       case 'edit':
         actionIcon = Icons.edit_outlined;
-        actionColor = Colors.blue;
+        actionColor = AppColors.primaryLight;
         actionLabel = 'Sửa';
         break;
       case 'delete':
         actionIcon = Icons.delete_outline;
-        actionColor = Colors.red;
+        actionColor = AppColors.errorNeon;
         actionLabel = 'Xóa';
         break;
       default: // create
         actionIcon = Icons.add_circle_outline;
-        actionColor = Colors.green;
+        actionColor = AppColors.successNeon;
         actionLabel = 'Tạo mới';
     }
 
     // Border color based on action
     final borderColor = action == 'delete'
-        ? Colors.red.withOpacity(0.4)
+        ? AppColors.errorNeon.withValues(alpha: 0.4)
         : action == 'edit'
-            ? Colors.blue.withOpacity(0.4)
-            : typeColor.withOpacity(0.3);
+            ? AppColors.primaryLight.withValues(alpha: 0.4)
+            : typeColor.withValues(alpha: 0.3);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -840,7 +818,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: typeColor.withOpacity(0.15),
+                  color: typeColor.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
@@ -858,7 +836,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: actionColor.withOpacity(0.12),
+                  color: actionColor.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
@@ -889,9 +867,9 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
               width: double.infinity,
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: actionColor.withOpacity(0.06),
+                color: actionColor.withValues(alpha: 0.06),
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: actionColor.withOpacity(0.15)),
+                border: Border.all(color: actionColor.withValues(alpha: 0.15)),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -909,10 +887,9 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                   Expanded(
                     child: Text(
                       contextDescription,
-                      style: const TextStyle(
-                        fontSize: 13,
+                      style: AppTextStyles.bodySmall.copyWith(
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF2D3748),
+                        color: AppColors.textSecondary,
                         height: 1.4,
                       ),
                     ),
@@ -989,8 +966,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                     icon: const Icon(Icons.visibility_outlined, size: 18),
                     label: const Text('Xem trước bài học'),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.cyanNeon,
-                      side: const BorderSide(color: AppColors.cyanNeon),
+                      foregroundColor: AppColors.primaryLight,
+                      side: const BorderSide(color: AppColors.primaryLight),
                       padding: const EdgeInsets.symmetric(vertical: 10),
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10)),
@@ -1027,8 +1004,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                   label: const Text('Từ chối'),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.errorNeon,
-                    side:
-                        BorderSide(color: AppColors.errorNeon.withOpacity(0.5)),
+                    side: BorderSide(
+                        color: AppColors.errorNeon.withValues(alpha: 0.5)),
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10)),
@@ -1043,10 +1020,10 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                       size: 18),
                   label: Text(action == 'delete' ? 'Duyệt xóa' : 'Duyệt'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        action == 'delete' ? Colors.red : AppColors.successNeon,
-                    foregroundColor:
-                        action == 'delete' ? Colors.white : Colors.black,
+                    backgroundColor: action == 'delete'
+                        ? AppColors.errorNeon
+                        : AppColors.successNeon,
+                    foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10)),
@@ -1070,8 +1047,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
         rows.add(_buildDataRow('Tên cũ', data['oldName']));
       }
       if (data['newName'] != null) {
-        rows.add(
-            _buildHighlightDataRow('Tên mới', data['newName'], Colors.blue));
+        rows.add(_buildHighlightDataRow(
+            'Tên mới', data['newName'], AppColors.primaryLight));
       }
       if (data['subjectName'] != null) {
         rows.add(_buildDataRow('Môn học', data['subjectName']));
@@ -1082,8 +1059,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
     } else if (action == 'delete') {
       // Show what will be deleted
       if (data['entityName'] != null) {
-        rows.add(
-            _buildHighlightDataRow('Sẽ xóa', data['entityName'], Colors.red));
+        rows.add(_buildHighlightDataRow(
+            'Sẽ xóa', data['entityName'], AppColors.errorNeon));
       }
       if (data['subjectName'] != null) {
         rows.add(_buildDataRow('Trong môn', data['subjectName']));
@@ -1239,13 +1216,15 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
       elevation: 2,
       child: ExpansionTile(
         leading: CircleAvatar(
-          backgroundColor: editsCount > 0 ? Colors.green : Colors.grey,
+          backgroundColor:
+              editsCount > 0 ? AppColors.successNeon : AppColors.textTertiary,
           child:
               Text('$editsCount', style: const TextStyle(color: Colors.white)),
         ),
         title: Text(
           title,
-          style: const TextStyle(fontWeight: FontWeight.bold),
+          style:
+              AppTextStyles.labelLarge.copyWith(color: AppColors.textPrimary),
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1269,11 +1248,11 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
         trailing: editsCount > 0
             ? Chip(
                 label: Text('$editsCount đóng góp'),
-                backgroundColor: Colors.green.shade50,
+                backgroundColor: AppColors.successNeon.withValues(alpha: 0.2),
               )
             : const Chip(
                 label: Text('Chưa có đóng góp'),
-                backgroundColor: Colors.grey,
+                backgroundColor: AppColors.bgTertiary,
               ),
         children: [
           // Nút xem lịch sử phiên bản
@@ -1289,7 +1268,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
               icon: const Icon(Icons.history),
               label: const Text('Xem lịch sử phiên bản'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
+                backgroundColor: AppColors.purpleNeon,
                 foregroundColor: Colors.white,
               ),
             ),
@@ -1301,7 +1280,6 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
 
   Future<void> _showComparisonDialog(String editId) async {
     try {
-      final apiService = Provider.of<ApiService>(context, listen: false);
       final Map<String, dynamic> comparison = {}; // Old edit comparison removed
 
       if (!mounted) return;
@@ -1314,50 +1292,6 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Lỗi khi tải dữ liệu so sánh: $e')),
-        );
-      }
-    }
-  }
-
-  Future<void> _removeEdit(String editId) async {
-    // Show confirmation dialog
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Gỡ bài đóng góp'),
-        content: const Text(
-            'Bạn có chắc chắn muốn gỡ bài đóng góp này? Hành động này sẽ xóa bài và revert các thay đổi đã áp dụng.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Hủy'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Gỡ bài'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed != true) return;
-
-    try {
-      final apiService = Provider.of<ApiService>(context, listen: false);
-      // Old content edit removal removed
-      throw Exception('Old content edit system removed');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Đã gỡ bài đóng góp thành công')),
-        );
-        _loadAllContentItems(); // Reload list
-        _loadPendingEdits(); // Also reload pending if on that tab
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi khi gỡ bài: $e')),
         );
       }
     }
@@ -1406,18 +1340,14 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                       const SizedBox(height: 4),
                       Text(
                         'Bài học: $contentTitle',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey.shade600,
-                        ),
+                        style: AppTextStyles.caption
+                            .copyWith(color: AppColors.textSecondary),
                       ),
                       if (createdAt != null)
                         Text(
                           'Ngày: ${_formatDate(createdAt)}',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Colors.grey.shade500,
-                          ),
+                          style: AppTextStyles.caption
+                              .copyWith(color: AppColors.textTertiary),
                         ),
                     ],
                   ),
@@ -1426,7 +1356,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.orange.shade100,
+                    color: AppColors.orangeNeon.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -1435,9 +1365,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                         : type == 'add_image'
                             ? 'Hình ảnh'
                             : 'Text',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.orange.shade700,
+                    style: AppTextStyles.labelSmall.copyWith(
+                      color: AppColors.orangeNeon,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -1511,8 +1440,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                     icon: const Icon(Icons.compare_arrows, size: 18),
                     label: const Text('Xem so sánh (Trước/Sau)'),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.blue,
-                      side: const BorderSide(color: Colors.blue),
+                      foregroundColor: AppColors.primaryLight,
+                      side: const BorderSide(color: Color(0x332D363D)),
                     ),
                   ),
                 ),
@@ -1525,8 +1454,10 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                         icon: const Icon(Icons.close, size: 18),
                         label: const Text('Từ chối'),
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.red,
-                          side: const BorderSide(color: Colors.red),
+                          foregroundColor: AppColors.errorNeon,
+                          side: BorderSide(
+                              color:
+                                  AppColors.errorNeon.withValues(alpha: 0.6)),
                         ),
                       ),
                     ),
@@ -1537,7 +1468,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                         icon: const Icon(Icons.check, size: 18),
                         label: const Text('Duyệt'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
+                          backgroundColor: AppColors.successNeon,
                           foregroundColor: Colors.white,
                         ),
                       ),
@@ -1581,9 +1512,11 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
 
   Widget _buildHistoryTab() {
     return _isLoadingHistory
-        ? const Center(child: CircularProgressIndicator())
+        ? const Center(
+            child: CircularProgressIndicator(color: AppColors.primaryLight))
         : RefreshIndicator(
             onRefresh: _loadEditHistory,
+            color: AppColors.primaryLight,
             child: _editHistory.isEmpty
                 ? Center(
                     child: Column(
@@ -1646,37 +1579,37 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
     switch (action) {
       case 'submit':
         actionIcon = Icons.send;
-        actionColor = Colors.blue;
+        actionColor = AppColors.primaryLight;
         actionText = 'Gửi đóng góp';
         break;
       case 'approve':
         actionIcon = Icons.check_circle;
-        actionColor = Colors.green;
+        actionColor = AppColors.successNeon;
         actionText = 'Duyệt';
         break;
       case 'reject':
         actionIcon = Icons.cancel;
-        actionColor = Colors.red;
+        actionColor = AppColors.errorNeon;
         actionText = 'Từ chối';
         break;
       case 'remove':
         actionIcon = Icons.delete;
-        actionColor = Colors.orange;
+        actionColor = AppColors.orangeNeon;
         actionText = 'Gỡ bài';
         break;
       case 'create':
         actionIcon = Icons.add_circle;
-        actionColor = Colors.purple;
+        actionColor = AppColors.purpleNeon;
         actionText = 'Tạo mới';
         break;
       case 'update':
         actionIcon = Icons.edit;
-        actionColor = Colors.blue;
+        actionColor = AppColors.primaryLight;
         actionText = 'Cập nhật';
         break;
       default:
         actionIcon = Icons.info;
-        actionColor = Colors.grey;
+        actionColor = AppColors.textSecondary;
         actionText = action;
     }
 
@@ -1691,7 +1624,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
               height: 40,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: actionColor.withOpacity(0.1),
+                color: actionColor.withValues(alpha: 0.1),
                 border: Border.all(color: actionColor, width: 2),
               ),
               child: Icon(actionIcon, color: actionColor, size: 20),
@@ -1890,7 +1823,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
           _buildRoleDistributionChart(users),
           const SizedBox(height: 24),
           _buildAnalyticsSectionTitle(
-              'Learning Metrics', Icons.school_rounded, AppColors.cyanNeon),
+              'Learning Metrics', Icons.school_rounded, AppColors.primaryLight),
           const SizedBox(height: 12),
           _buildLearningMetricsCards(learning),
           const SizedBox(height: 8),
@@ -1951,7 +1884,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                 border: Border.all(
                     color: isActive
                         ? AppColors.purpleNeon
-                        : AppColors.borderPrimary),
+                        : const Color(0x332D363D)),
               ),
               child: Text(label,
                   style: AppTextStyles.labelMedium.copyWith(
@@ -1982,7 +1915,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
         decoration: BoxDecoration(
             color: AppColors.bgSecondary,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.borderPrimary)),
+            border: Border.all(color: const Color(0x332D363D))),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           if (icon != null)
             Icon(icon, color: color ?? AppColors.textTertiary, size: 18),
@@ -2010,7 +1943,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
         const SizedBox(width: 8),
         _buildAnalyticsStatCard(
             'Mới trong kỳ', '${users['newUsersPeriod'] ?? 0}',
-            icon: Icons.trending_up, color: AppColors.cyanNeon),
+            icon: Icons.trending_up, color: AppColors.primaryLight),
       ]),
       const SizedBox(height: 8),
       Row(children: [
@@ -2032,7 +1965,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
     if (dist.isEmpty) return const SizedBox.shrink();
     final colors = [
       AppColors.purpleNeon,
-      AppColors.cyanNeon,
+      AppColors.primaryLight,
       AppColors.orangeNeon
     ];
     return Container(
@@ -2040,7 +1973,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
       decoration: BoxDecoration(
           color: AppColors.bgSecondary,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.borderPrimary)),
+          border: Border.all(color: const Color(0x332D363D))),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text('Phân bổ vai trò', style: AppTextStyles.labelLarge),
         const SizedBox(height: 12),
@@ -2097,7 +2030,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
             icon: Icons.check_circle, color: AppColors.successNeon),
         const SizedBox(width: 8),
         _buildAnalyticsStatCard('Tỉ lệ', '${learning['completionRate'] ?? 0}%',
-            icon: Icons.pie_chart, color: AppColors.cyanNeon),
+            icon: Icons.pie_chart, color: AppColors.primaryLight),
         const SizedBox(width: 8),
         _buildAnalyticsStatCard(
             'TB tiến độ', '${learning['avgProgress'] ?? 0}%',
@@ -2127,7 +2060,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
       decoration: BoxDecoration(
           color: AppColors.bgSecondary,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.borderPrimary)),
+          border: Border.all(color: const Color(0x332D363D))),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text('Hoàn thành theo môn', style: AppTextStyles.labelLarge),
         const SizedBox(height: 16),
@@ -2177,7 +2110,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                       borderRadius: BorderRadius.circular(4)),
                   BarChartRodData(
                       toY: completed,
-                      color: AppColors.cyanNeon,
+                      color: AppColors.primaryLight,
                       width: 16,
                       borderRadius: BorderRadius.circular(4)),
                 ]);
@@ -2200,7 +2133,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
     final colors = <String, Color>{
       'free': AppColors.successNeon,
       'coins': AppColors.orangeNeon,
-      'diamonds': AppColors.cyanNeon,
+      'diamonds': AppColors.primaryLight,
     };
 
     return Container(
@@ -2208,7 +2141,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
       decoration: BoxDecoration(
         color: AppColors.bgSecondary,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.borderPrimary),
+        border: Border.all(color: const Color(0x332D363D)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -2288,7 +2221,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
     final colors = <String, Color>{
       'private': AppColors.purpleNeon,
       'community': AppColors.successNeon,
-      'expert': AppColors.cyanNeon,
+      'expert': AppColors.primaryLight,
     };
 
     return Container(
@@ -2296,7 +2229,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
       decoration: BoxDecoration(
         color: AppColors.bgSecondary,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.borderPrimary),
+        border: Border.all(color: const Color(0x332D363D)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -2358,7 +2291,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
         const SizedBox(width: 8),
         _buildAnalyticsStatCard(
             'Diamonds', '${revenue['totalDiamondsSold'] ?? 0}',
-            icon: Icons.diamond, color: AppColors.cyanNeon),
+            icon: Icons.diamond, color: AppColors.primaryLight),
         const SizedBox(width: 8),
         _buildAnalyticsStatCard('Giao dịch', '${revenue['paidCount'] ?? 0}',
             icon: Icons.receipt, color: AppColors.purpleNeon),
@@ -2384,7 +2317,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
     final colors = [
       AppColors.xpGold,
       AppColors.purpleNeon,
-      AppColors.cyanNeon,
+      AppColors.primaryLight,
       AppColors.pinkNeon
     ];
     return Container(
@@ -2392,7 +2325,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
       decoration: BoxDecoration(
           color: AppColors.bgSecondary,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.borderPrimary)),
+          border: Border.all(color: const Color(0x332D363D))),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text('Doanh thu theo gói', style: AppTextStyles.labelLarge),
         const SizedBox(height: 12),
@@ -2451,7 +2384,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
     if (data.isEmpty) return const SizedBox.shrink();
     final colors = [
       AppColors.textTertiary,
-      AppColors.cyanNeon,
+      AppColors.primaryLight,
       AppColors.successNeon,
       AppColors.orangeNeon,
       AppColors.errorNeon
@@ -2461,7 +2394,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
       decoration: BoxDecoration(
           color: AppColors.bgSecondary,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.borderPrimary)),
+          border: Border.all(color: const Color(0x332D363D))),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text('Phân bổ chuỗi ngày', style: AppTextStyles.labelLarge),
         const SizedBox(height: 12),
@@ -2511,7 +2444,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
           icon: Icons.book, color: AppColors.purpleNeon),
       const SizedBox(width: 8),
       _buildAnalyticsStatCard('Tổng bài học', '${content['totalNodes'] ?? 0}',
-          icon: Icons.library_books, color: AppColors.cyanNeon),
+          icon: Icons.library_books, color: AppColors.primaryLight),
       const SizedBox(width: 8),
       _buildAnalyticsStatCard(
           'Đóng góp mới', '${content['recentContributions'] ?? 0}',
@@ -2528,7 +2461,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
       decoration: BoxDecoration(
           color: AppColors.bgSecondary,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.borderPrimary)),
+          border: Border.all(color: const Color(0x332D363D))),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text('Top người đóng góp', style: AppTextStyles.labelLarge),
         const SizedBox(height: 12),
@@ -2703,7 +2636,7 @@ class _AdminContentEditComparisonViewState
       decoration: BoxDecoration(
         color: AppColors.bgSecondary,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -2711,7 +2644,7 @@ class _AdminContentEditComparisonViewState
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.15),
+              color: color.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(label,
@@ -2722,7 +2655,7 @@ class _AdminContentEditComparisonViewState
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(
-              color: AppColors.purpleNeon.withOpacity(0.15),
+              color: AppColors.purpleNeon.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(6),
             ),
             child: Text(_getLessonTypeLabel(widget.lessonType),
@@ -2779,7 +2712,7 @@ class _AdminContentEditComparisonViewState
             ],
           ),
         ),
-        const Divider(color: AppColors.borderPrimary),
+        const Divider(color: Color(0x332D363D)),
         Expanded(
           child: _isLoading
               ? const Center(child: CircularProgressIndicator())
@@ -2826,7 +2759,7 @@ class _AdminContentEditComparisonViewState
                       decoration: BoxDecoration(
                         color: AppColors.bgTertiary,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.borderPrimary),
+                        border: Border.all(color: const Color(0x332D363D)),
                       ),
                       child: Row(
                         children: [
@@ -3098,7 +3031,7 @@ class _VideoPlayerWidgetState extends State<_VideoPlayerWidget> {
                         Container(
                           padding: const EdgeInsets.all(6),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.1),
+                            color: Colors.white.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Row(
@@ -3126,7 +3059,7 @@ class _VideoPlayerWidgetState extends State<_VideoPlayerWidget> {
                             label: const Text('Mở trong trình duyệt',
                                 style: TextStyle(fontSize: 12)),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue.shade700,
+                              backgroundColor: AppColors.purpleNeon,
                               foregroundColor: Colors.white,
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 12),
@@ -3213,8 +3146,8 @@ class _VideoPlayerWidgetState extends State<_VideoPlayerWidget> {
             _controller!,
             allowScrubbing: true,
             colors: const VideoProgressColors(
-              playedColor: Colors.red,
-              bufferedColor: Colors.grey,
+              playedColor: AppColors.primaryLight,
+              bufferedColor: AppColors.textTertiary,
               backgroundColor: Colors.white24,
             ),
           ),

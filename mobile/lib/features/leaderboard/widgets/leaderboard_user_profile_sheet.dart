@@ -152,7 +152,7 @@ class _LeaderboardUserProfileSheetBodyState
       decoration: const BoxDecoration(
         color: AppColors.bgSecondary,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        border: Border(top: BorderSide(color: AppColors.borderPrimary)),
+        border: Border(top: BorderSide(color: Color(0x332D363D))),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -223,7 +223,12 @@ class _LeaderboardUserProfileSheetBodyState
               style:
                   AppTextStyles.bodySmall.copyWith(color: AppColors.errorNeon),
             ),
-            TextButton(onPressed: _load, child: const Text('Thử lại')),
+            TextButton(
+              onPressed: _load,
+              style:
+                  TextButton.styleFrom(foregroundColor: AppColors.purpleNeon),
+              child: const Text('Thử lại'),
+            ),
           ],
           if (!_loading && _error == null && _data != null) ...[
             const SizedBox(height: 20),
@@ -235,7 +240,7 @@ class _LeaderboardUserProfileSheetBodyState
           if (_loading) ...[
             const SizedBox(height: 24),
             const Center(
-              child: CircularProgressIndicator(color: AppColors.purpleNeon),
+              child: CircularProgressIndicator(color: AppColors.primaryLight),
             ),
           ],
         ],
@@ -259,10 +264,9 @@ class _StatGrid extends StatelessWidget {
     final streak = _asInt(data['currentStreak']);
     final maxStreak = _asInt(data['maxStreak']);
     final weeklyApi = _asInt(data['weeklyXp']);
-    final weekly =
-        weeklyXpFromBoard != null && weeklyXpFromBoard! > 0
-            ? weeklyXpFromBoard!
-            : weeklyApi;
+    final weekly = weeklyXpFromBoard != null && weeklyXpFromBoard! > 0
+        ? weeklyXpFromBoard!
+        : weeklyApi;
 
     final memberSince = data['memberSince'] as String?;
     DateTime? joined;
@@ -280,12 +284,12 @@ class _StatGrid extends StatelessWidget {
             _chip(Icons.star_rounded, AppColors.xpGold, 'Tổng XP', '$totalXP'),
             _chip(Icons.monetization_on_rounded, AppColors.coinGold, 'Xu',
                 '$coins'),
-            _chip(Icons.diamond_rounded, Colors.lightBlueAccent, 'Kim cương',
+            _chip(Icons.diamond_rounded, AppColors.primaryLight, 'Kim cương',
                 '$diamonds'),
-            _chip(Icons.trending_up_rounded, AppColors.cyanNeon, 'Cấp',
+            _chip(Icons.trending_up_rounded, AppColors.primaryLight, 'Cấp',
                 '$level'),
-            _chip(Icons.local_fire_department_rounded,
-                AppColors.streakOrange, 'Chuỗi', '$streak'),
+            _chip(Icons.local_fire_department_rounded, AppColors.streakOrange,
+                'Chuỗi', '$streak'),
             if (maxStreak > 0)
               _chip(Icons.emoji_events_rounded, AppColors.orangeNeon,
                   'Chuỗi tối đa', '$maxStreak'),
@@ -298,8 +302,8 @@ class _StatGrid extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             'Tham gia: ${DateFormat.yMMMd().format(joined)}',
-            style: AppTextStyles.caption
-                .copyWith(color: AppColors.textTertiary),
+            style:
+                AppTextStyles.caption.copyWith(color: AppColors.textTertiary),
           ),
         ],
         if (data['role'] == 'contributor' || data['role'] == 'admin') ...[
@@ -307,7 +311,7 @@ class _StatGrid extends StatelessWidget {
           Text(
             data['role'] == 'admin' ? 'Quản trị viên' : 'Cộng tác viên',
             style: AppTextStyles.labelSmall
-                .copyWith(color: AppColors.cyanNeon),
+                .copyWith(color: AppColors.primaryLight),
           ),
         ],
       ],
@@ -326,7 +330,7 @@ class _StatGrid extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.bgTertiary,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.borderPrimary),
+        border: Border.all(color: const Color(0x332D363D)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

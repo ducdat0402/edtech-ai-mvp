@@ -36,7 +36,8 @@ class _ImageQuizLessonScreenState extends State<ImageQuizLessonScreen> {
   final Map<int, bool> _revealedAnswers = {};
 
   List<Map<String, dynamic>> get _slides {
-    final raw = widget.lessonData['slides'] ?? widget.lessonData['questions'] ?? [];
+    final raw =
+        widget.lessonData['slides'] ?? widget.lessonData['questions'] ?? [];
     return List<Map<String, dynamic>>.from(raw);
   }
 
@@ -78,7 +79,8 @@ class _ImageQuizLessonScreenState extends State<ImageQuizLessonScreen> {
   Widget build(BuildContext context) {
     final totalSlides = _slides.length;
     final answeredCount = _selectedAnswers.values.whereType<int>().length;
-    final hasAnsweredAllSlides = totalSlides > 0 && answeredCount >= totalSlides;
+    final hasAnsweredAllSlides =
+        totalSlides > 0 && answeredCount >= totalSlides;
 
     return Scaffold(
       backgroundColor: AppColors.bgPrimary,
@@ -136,15 +138,17 @@ class _ImageQuizLessonScreenState extends State<ImageQuizLessonScreen> {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(4),
                   child: LinearProgressIndicator(
-                    value: totalSlides > 0 ? (_currentPage + 1) / totalSlides : 0,
+                    value:
+                        totalSlides > 0 ? (_currentPage + 1) / totalSlides : 0,
                     backgroundColor: AppColors.bgSecondary,
-                    valueColor: const AlwaysStoppedAnimation<Color>(AppColors.purpleNeon),
+                    valueColor: const AlwaysStoppedAnimation<Color>(
+                        AppColors.purpleNeon),
                     minHeight: 6,
                   ),
                 ),
                 if (totalSlides > 1) ...[
                   const SizedBox(height: 8),
-                  Row(
+                  const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
@@ -152,7 +156,7 @@ class _ImageQuizLessonScreenState extends State<ImageQuizLessonScreen> {
                         color: AppColors.textTertiary,
                         size: 14,
                       ),
-                      const SizedBox(width: 6),
+                      SizedBox(width: 6),
                       Text(
                         kIsWeb
                             ? 'Dùng nút Trước/Sau để chuyển câu'
@@ -171,13 +175,14 @@ class _ImageQuizLessonScreenState extends State<ImageQuizLessonScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       OutlinedButton.icon(
-                        onPressed:
-                            _currentPage > 0 ? () => _goToPage(_currentPage - 1) : null,
+                        onPressed: _currentPage > 0
+                            ? () => _goToPage(_currentPage - 1)
+                            : null,
                         icon: const Icon(Icons.chevron_left, size: 16),
                         label: const Text('Trước'),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.textSecondary,
-                          side: const BorderSide(color: AppColors.borderPrimary),
+                          side: const BorderSide(color: Color(0x332D363D)),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -229,8 +234,8 @@ class _ImageQuizLessonScreenState extends State<ImageQuizLessonScreen> {
                               nodeId: widget.nodeId,
                               title: widget.title,
                               lessonType: widget.lessonType ?? 'image_quiz',
-                              questions:
-                                  (widget.endQuiz?['questions'] as List?)?.cast<dynamic>(),
+                              questions: (widget.endQuiz?['questions'] as List?)
+                                  ?.cast<dynamic>(),
                               contributor: widget.contributor,
                             ),
                           ),
@@ -245,17 +250,19 @@ class _ImageQuizLessonScreenState extends State<ImageQuizLessonScreen> {
                       ),
                       child: const Text(
                         'Làm bài kiểm tra',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                     ),
                   )
                 : Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 12),
                     decoration: BoxDecoration(
                       color: AppColors.bgSecondary,
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: AppColors.borderPrimary),
+                      border: Border.all(color: const Color(0x332D363D)),
                     ),
                     child: Text(
                       'Hãy trả lời hết tất cả slide trước khi làm bài kiểm tra '
@@ -323,14 +330,17 @@ class _ImageQuizLessonScreenState extends State<ImageQuizLessonScreen> {
                         decoration: BoxDecoration(
                           color: AppColors.bgSecondary,
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: AppColors.borderPrimary),
+                          border: Border.all(color: const Color(0x332D363D)),
                         ),
                         child: const Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.image_not_supported, color: AppColors.textTertiary, size: 48),
+                            Icon(Icons.image_not_supported,
+                                color: AppColors.textTertiary, size: 48),
                             SizedBox(height: 8),
-                            Text('Không thể tải hình ảnh', style: TextStyle(color: AppColors.textTertiary)),
+                            Text('Không thể tải hình ảnh',
+                                style:
+                                    TextStyle(color: AppColors.textTertiary)),
                           ],
                         ),
                       ),
@@ -376,14 +386,16 @@ class _ImageQuizLessonScreenState extends State<ImageQuizLessonScreen> {
               padding: const EdgeInsets.all(12),
               margin: const EdgeInsets.only(bottom: 16),
               decoration: BoxDecoration(
-                color: AppColors.purpleNeon.withOpacity(0.1),
+                color: AppColors.purpleNeon.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.purpleNeon.withOpacity(0.3)),
+                border: Border.all(
+                    color: AppColors.purpleNeon.withValues(alpha: 0.3)),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.lightbulb_outline, color: AppColors.purpleNeon, size: 20),
+                  const Icon(Icons.lightbulb_outline,
+                      color: AppColors.purpleNeon, size: 20),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Column(
@@ -421,18 +433,18 @@ class _ImageQuizLessonScreenState extends State<ImageQuizLessonScreen> {
             final isCorrect = optIdx == correctIndex;
             final isSelected = selected == optIdx;
 
-            Color borderColor = AppColors.borderPrimary;
+            Color borderColor = const Color(0x332D363D);
             Color bgColor = AppColors.bgSecondary;
             Color labelColor = AppColors.textSecondary;
 
             if (revealed) {
               if (isCorrect) {
                 borderColor = AppColors.successNeon;
-                bgColor = AppColors.successNeon.withOpacity(0.1);
+                bgColor = AppColors.successNeon.withValues(alpha: 0.1);
                 labelColor = AppColors.successNeon;
               } else if (isSelected && !isCorrect) {
                 borderColor = AppColors.errorNeon;
-                bgColor = AppColors.errorNeon.withOpacity(0.1);
+                bgColor = AppColors.errorNeon.withValues(alpha: 0.1);
                 labelColor = AppColors.errorNeon;
               }
             }
@@ -460,9 +472,10 @@ class _ImageQuizLessonScreenState extends State<ImageQuizLessonScreen> {
                             height: 36,
                             decoration: BoxDecoration(
                               color: revealed && isCorrect
-                                  ? AppColors.successNeon.withOpacity(0.2)
+                                  ? AppColors.successNeon.withValues(alpha: 0.2)
                                   : revealed && isSelected
-                                      ? AppColors.errorNeon.withOpacity(0.2)
+                                      ? AppColors.errorNeon
+                                          .withValues(alpha: 0.2)
                                       : AppColors.bgTertiary,
                               borderRadius: BorderRadius.circular(8),
                             ),
@@ -487,9 +500,11 @@ class _ImageQuizLessonScreenState extends State<ImageQuizLessonScreen> {
                             ),
                           ),
                           if (revealed && isCorrect)
-                            const Icon(Icons.check_circle, color: AppColors.successNeon, size: 22),
+                            const Icon(Icons.check_circle,
+                                color: AppColors.successNeon, size: 22),
                           if (revealed && isSelected && !isCorrect)
-                            const Icon(Icons.cancel, color: AppColors.errorNeon, size: 22),
+                            const Icon(Icons.cancel,
+                                color: AppColors.errorNeon, size: 22),
                         ],
                       ),
                     ),
@@ -501,14 +516,13 @@ class _ImageQuizLessonScreenState extends State<ImageQuizLessonScreen> {
                       duration: const Duration(milliseconds: 400),
                       curve: Curves.easeInOut,
                       margin: const EdgeInsets.only(top: 4),
-                      padding: revealed
-                          ? const EdgeInsets.all(10)
-                          : EdgeInsets.zero,
+                      padding:
+                          revealed ? const EdgeInsets.all(10) : EdgeInsets.zero,
                       constraints: BoxConstraints(
                         maxHeight: revealed ? 200 : 0,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.bgTertiary.withOpacity(0.5),
+                        color: AppColors.bgTertiary.withValues(alpha: 0.5),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(

@@ -36,7 +36,8 @@ class _AnalysisCompleteScreenState extends State<AnalysisCompleteScreen>
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    _confettiController = ConfettiController(duration: const Duration(seconds: 5));
+    _confettiController =
+        ConfettiController(duration: const Duration(seconds: 5));
     _loadAnalysis();
   }
 
@@ -51,7 +52,7 @@ class _AnalysisCompleteScreenState extends State<AnalysisCompleteScreen>
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
       final data = await apiService.getTestAnalysis(widget.testId);
-      
+
       setState(() {
         _analysisData = data;
         _isLoading = false;
@@ -75,8 +76,11 @@ class _AnalysisCompleteScreenState extends State<AnalysisCompleteScreen>
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text('Kết quả phân tích', style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
-        leading: const AppBarLeadingBackAndHome(),
+        title: Text('Kết quả phân tích',
+            style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
+        leading: const AppBarLeadingBackAndHome(
+          iconColor: AppColors.textSecondary,
+        ),
         leadingWidth: 112,
         automaticallyImplyLeading: false,
       ),
@@ -127,17 +131,19 @@ class _AnalysisCompleteScreenState extends State<AnalysisCompleteScreen>
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.purpleNeon.withOpacity(0.4),
+                  color: AppColors.purpleNeon.withValues(alpha: 0.4),
                   blurRadius: 20,
                 ),
               ],
             ),
-            child: const CircularProgressIndicator(color: Colors.white),
+            child:
+                const CircularProgressIndicator(color: AppColors.primaryLight),
           ),
           const SizedBox(height: 24),
           Text(
             'Đang phân tích kết quả...',
-            style: AppTextStyles.bodyLarge.copyWith(color: AppColors.textSecondary),
+            style: AppTextStyles.bodyLarge
+                .copyWith(color: AppColors.textSecondary),
           ),
         ],
       ),
@@ -154,21 +160,27 @@ class _AnalysisCompleteScreenState extends State<AnalysisCompleteScreen>
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: AppColors.errorNeon.withOpacity(0.15),
+                color: AppColors.errorNeon.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.error_outline_rounded, size: 48, color: AppColors.errorNeon),
+              child: const Icon(Icons.error_outline_rounded,
+                  size: 48, color: AppColors.errorNeon),
             ),
             const SizedBox(height: 24),
-            Text('Có lỗi xảy ra', style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary)),
+            Text('Có lỗi xảy ra',
+                style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary)),
             const SizedBox(height: 8),
             Text(
               _error ?? '',
-              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+              style: AppTextStyles.bodyMedium
+                  .copyWith(color: AppColors.textSecondary),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
-            GamingButton(text: 'Thử lại', onPressed: _loadAnalysis, icon: Icons.refresh_rounded),
+            GamingButton(
+                text: 'Thử lại',
+                onPressed: _loadAnalysis,
+                icon: Icons.refresh_rounded),
           ],
         ),
       ),
@@ -204,17 +216,21 @@ class _AnalysisCompleteScreenState extends State<AnalysisCompleteScreen>
 
             // Strengths
             if (strengths.isNotEmpty) ...[
-              _buildSectionTitle('Điểm mạnh', Icons.check_circle_rounded, AppColors.successNeon),
+              _buildSectionTitle('Điểm mạnh', Icons.check_circle_rounded,
+                  AppColors.successNeon),
               const SizedBox(height: 12),
-              ...strengths.map((s) => _buildItemCard(s.toString(), AppColors.successNeon, Icons.check_rounded)),
+              ...strengths.map((s) => _buildItemCard(
+                  s.toString(), AppColors.successNeon, Icons.check_rounded)),
               const SizedBox(height: 24),
             ],
 
             // Weaknesses
             if (weaknesses.isNotEmpty) ...[
-              _buildSectionTitle('Cần cải thiện', Icons.warning_rounded, AppColors.warningNeon),
+              _buildSectionTitle('Cần cải thiện', Icons.warning_rounded,
+                  AppColors.warningNeon),
               const SizedBox(height: 12),
-              ...weaknesses.map((w) => _buildItemCard(w.toString(), AppColors.warningNeon, Icons.priority_high_rounded)),
+              ...weaknesses.map((w) => _buildItemCard(w.toString(),
+                  AppColors.warningNeon, Icons.priority_high_rounded)),
               const SizedBox(height: 24),
             ],
 
@@ -235,10 +251,13 @@ class _AnalysisCompleteScreenState extends State<AnalysisCompleteScreen>
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [AppColors.purpleNeon.withOpacity(0.2), AppColors.pinkNeon.withOpacity(0.15)],
+          colors: [
+            AppColors.purpleNeon.withValues(alpha: 0.2),
+            AppColors.pinkNeon.withValues(alpha: 0.15)
+          ],
         ),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.purpleNeon.withOpacity(0.3)),
+        border: Border.all(color: const Color(0x332D363D)),
       ),
       child: Column(
         children: [
@@ -250,22 +269,26 @@ class _AnalysisCompleteScreenState extends State<AnalysisCompleteScreen>
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.purpleNeon.withOpacity(0.5),
+                  color: AppColors.purpleNeon.withValues(alpha: 0.5),
                   blurRadius: 20,
                   spreadRadius: 2,
                 ),
               ],
             ),
-            child: const Icon(Icons.emoji_events_rounded, color: Colors.white, size: 40),
+            child: const Icon(Icons.emoji_events_rounded,
+                color: Colors.white, size: 40),
           ),
           const SizedBox(height: 20),
 
-          Text('Điểm của bạn', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+          Text('Điểm của bạn',
+              style: AppTextStyles.bodyMedium
+                  .copyWith(color: AppColors.textSecondary)),
           const SizedBox(height: 8),
 
           // Score
           ShaderMask(
-            shaderCallback: (bounds) => AppGradients.primary.createShader(bounds),
+            shaderCallback: (bounds) =>
+                AppGradients.primary.createShader(bounds),
             child: Text(
               '$score%',
               style: AppTextStyles.numberXLarge.copyWith(
@@ -284,7 +307,7 @@ class _AnalysisCompleteScreenState extends State<AnalysisCompleteScreen>
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.successNeon.withOpacity(0.4),
+                  color: AppColors.successNeon.withValues(alpha: 0.4),
                   blurRadius: 12,
                 ),
               ],
@@ -305,13 +328,14 @@ class _AnalysisCompleteScreenState extends State<AnalysisCompleteScreen>
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.15),
+            color: color.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(icon, color: color, size: 20),
         ),
         const SizedBox(width: 12),
-        Text(title, style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
+        Text(title,
+            style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
       ],
     );
   }
@@ -321,16 +345,16 @@ class _AnalysisCompleteScreenState extends State<AnalysisCompleteScreen>
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.2),
+              color: color.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
             child: Icon(icon, color: color, size: 16),
@@ -339,7 +363,8 @@ class _AnalysisCompleteScreenState extends State<AnalysisCompleteScreen>
           Expanded(
             child: Text(
               text,
-              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary),
+              style: AppTextStyles.bodyMedium
+                  .copyWith(color: AppColors.textPrimary),
             ),
           ),
         ],
@@ -353,7 +378,9 @@ class _AnalysisCompleteScreenState extends State<AnalysisCompleteScreen>
         SizedBox(
           width: double.infinity,
           child: GamingButton(
-            text: subjectId != null && subjectId.isNotEmpty ? 'Tạo lộ trình học tập' : 'Chọn môn học',
+            text: subjectId != null && subjectId.isNotEmpty
+                ? 'Tạo lộ trình học tập'
+                : 'Chọn môn học',
             onPressed: () {
               if (subjectId != null && subjectId.isNotEmpty) {
                 context.go('/subjects/$subjectId/learning-path-choice');

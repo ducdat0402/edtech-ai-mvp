@@ -266,7 +266,7 @@ class _LessonTypeHistoryScreenState extends State<LessonTypeHistoryScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.history,
-              size: 64, color: AppColors.textTertiary.withOpacity(0.5)),
+              size: 64, color: AppColors.textTertiary.withValues(alpha: 0.5)),
           const SizedBox(height: 16),
           const Text(
             'Chưa có lịch sử chỉnh sửa',
@@ -345,8 +345,8 @@ class _LessonTypeHistoryScreenState extends State<LessonTypeHistoryScreen> {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isNewest
-              ? AppColors.purpleNeon.withOpacity(0.3)
-              : AppColors.borderPrimary,
+              ? AppColors.purpleNeon.withValues(alpha: 0.3)
+              : const Color(0x332D363D),
         ),
       ),
       child: Column(
@@ -363,7 +363,7 @@ class _LessonTypeHistoryScreenState extends State<LessonTypeHistoryScreen> {
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: isNewest
-                        ? AppColors.purpleNeon.withOpacity(0.15)
+                        ? AppColors.purpleNeon.withValues(alpha: 0.15)
                         : AppColors.bgTertiary,
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -384,7 +384,7 @@ class _LessonTypeHistoryScreenState extends State<LessonTypeHistoryScreen> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
-                      color: AppColors.successNeon.withOpacity(0.15),
+                      color: AppColors.successNeon.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: const Text(
@@ -439,7 +439,7 @@ class _LessonTypeHistoryScreenState extends State<LessonTypeHistoryScreen> {
           ),
           const SizedBox(height: 12),
           // Action buttons
-          const Divider(height: 1, color: AppColors.borderPrimary),
+          const Divider(height: 1, color: Color(0x332D363D)),
           Row(
             children: [
               Expanded(
@@ -448,12 +448,12 @@ class _LessonTypeHistoryScreenState extends State<LessonTypeHistoryScreen> {
                   icon: const Icon(Icons.visibility_outlined, size: 16),
                   label: const Text('Xem', style: TextStyle(fontSize: 13)),
                   style: TextButton.styleFrom(
-                    foregroundColor: AppColors.cyanNeon,
+                    foregroundColor: AppColors.primaryLight,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                 ),
               ),
-              Container(width: 1, height: 24, color: AppColors.borderPrimary),
+              Container(width: 1, height: 24, color: const Color(0x332D363D)),
               Expanded(
                 child: TextButton.icon(
                   onPressed: () => _editFromVersion(version),

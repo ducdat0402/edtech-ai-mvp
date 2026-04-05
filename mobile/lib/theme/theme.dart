@@ -1,6 +1,4 @@
-// Gamified Learning App - Design System
-// Cyberpunk Edgy with Gaming Typography
-// Dark Mode with Neon Accents
+// Gamistu — design tokens & theme (`DESIGN.md`).
 
 export 'colors.dart';
 export 'gradients.dart';

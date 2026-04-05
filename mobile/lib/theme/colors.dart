@@ -1,122 +1,96 @@
 import 'package:flutter/material.dart';
 
-/// Gamified Learning App - Cyberpunk Color System
+/// Gamistu — "Luminal Scholar" palette (`mobile/DESIGN.md`).
+/// Giữ tên biến cũ (`bgPrimary`, `purpleNeon`, …) để tránh phá widget hiện có.
 class AppColors {
   AppColors._();
 
-  // ═══════════════════════════════════════════════════════════════════
-  // BACKGROUNDS
-  // ═══════════════════════════════════════════════════════════════════
-  static const Color bgPrimary = Color(0xFF0A0A0A); // Main background
-  static const Color bgSecondary =
-      Color(0xFF1A1A1A); // Cards, elevated surfaces
-  static const Color bgTertiary =
-      Color(0xFF252525); // Hover states, active elements
-  static const Color bgOverlay = Color(0xFF0F0F0F); // Modals, dialogs
+  // ═══ Surfaces (graphite / obsidian — không dùng #000) ═══
+  static const Color bgPrimary = Color(0xFF0B141B); // surface
+  static const Color bgSecondary = Color(0xFF182127); // surface_container
+  static const Color bgTertiary = Color(0xFF222B32); // surface_container_high
+  static const Color bgOverlay = Color(0xFF060F16); // surface_container_lowest
+  /// Khối nội dung lồng nhẹ (lesson card / vùng đệm)
+  static const Color surfaceContainerLow = Color(0xFF101920);
 
-  // ═══════════════════════════════════════════════════════════════════
-  // BORDERS & DIVIDERS
-  // ═══════════════════════════════════════════════════════════════════
-  static const Color borderPrimary = Color(0xFF2A2A2A);
-  static const Color borderGlow = Color(0xFF3A3A3A); // With glow effect
+  // ═══ Viền — ưu tiên tonal; dùng ghost khi cần ranh giới ═══
+  static const Color borderPrimary =
+      Color(0xFF2D363D); // surface_container_highest (lift)
+  static const Color outlineVariant = Color(0xFF474554);
+  static const Color borderGlow = Color(0xFF3A3A5A);
 
-  // ═══════════════════════════════════════════════════════════════════
-  // NEON COLORS (Primary Gradient)
-  // ═══════════════════════════════════════════════════════════════════
-  static const Color purpleNeon = Color(0xFF8B5CF6);
-  static const Color pinkNeon = Color(0xFFEC4899);
-  static const Color orangeNeon = Color(0xFFF59E0B);
+  // ═══ Brand — violet lạnh (gradient CTA: #7354f5 → #cabeff) ═══
+  static const Color purpleNeon =
+      Color(0xFF7354F5); // primary_container / solid CTA
+  static const Color primaryLight = Color(0xFFCABEFF); // primary (gradient end)
+  static const Color pinkNeon =
+      Color(0xFF9F8CFF); // accent phụ (giữ slot gradient)
+  static const Color orangeNeon = Color(0xFFFFD647); // gần secondary gold
 
-  // ═══════════════════════════════════════════════════════════════════
-  // ACCENT COLORS
-  // ═══════════════════════════════════════════════════════════════════
-  static const Color cyanNeon = Color(0xFF06B6D4);
-  static const Color cyanGlow = Color(0xFF22D3EE);
+  // ═══ Accent chức năng ═══
+  static const Color cyanNeon =
+      Color(0xFF8B9CFF); // link / outline thay cyan neon cũ
+  static const Color cyanGlow = Color(0xFFCABEFF);
 
-  // ═══════════════════════════════════════════════════════════════════
-  // FUNCTIONAL COLORS
-  // ═══════════════════════════════════════════════════════════════════
-  // Success (correct answers, achievements)
-  static const Color successNeon = Color(0xFF00FF88);
-  static const Color successGlow = Color(0xFF10B981);
+  // Success / XP (tertiary trong DESIGN)
+  static const Color successNeon = Color(0xFF41E184);
+  static const Color successGlow = Color(0xFF34D399);
 
-  // Error (wrong answers)
-  static const Color errorNeon = Color(0xFFFF3366);
+  static const Color errorNeon = Color(0xFFFF4D6A);
   static const Color errorGlow = Color(0xFFEF4444);
 
-  // Warning (energy low, alerts)
-  static const Color warningNeon = Color(0xFFFFE31A);
+  static const Color warningNeon = Color(0xFFFFD647);
   static const Color warningGlow = Color(0xFFFBBF24);
 
-  // Info
-  static const Color infoNeon = Color(0xFF3B82F6);
+  static const Color infoNeon = Color(0xFF7354F5);
 
-  // ═══════════════════════════════════════════════════════════════════
-  // TEXT COLORS
-  // ═══════════════════════════════════════════════════════════════════
-  static const Color textPrimary = Color(0xFFFAFAFA); // Main text
+  // ═══ Text ═══
+  static const Color textPrimary = Color(0xFFF4F4F5);
   static const Color textSecondary =
-      Color(0xFFA3A3A3); // Subtitles, descriptions
-  static const Color textTertiary = Color(0xFF737373); // Placeholders, disabled
-  static const Color textDisabled = Color(0xFF525252);
+      Color(0xFFC8C4D7); // on_surface_variant — body dài
+  static const Color textTertiary = Color(0xFF8E8A9A);
+  static const Color textDisabled = Color(0xFF5C5866);
 
-  // ═══════════════════════════════════════════════════════════════════
-  // ROLE/MODE COLORS
-  // ═══════════════════════════════════════════════════════════════════
-  static const Color contributorBlue = Color(0xFF2563EB); // Contributor primary
-  static const Color contributorBlueDark =
-      Color(0xFF1E40AF); // Contributor dark
-  static const Color contributorBlueLight =
-      Color(0xFF3B82F6); // Contributor light
-  static const Color contributorBgPrimary =
-      Color(0xFF0A0F1A); // Contributor background
-  static const Color contributorBgSecondary =
-      Color(0xFF111827); // Contributor cards
-  static const Color contributorBorder =
-      Color(0xFF1E3A5F); // Contributor borders
+  // ═══ Contributor mode (giữ tông tối, hài hòa graphite) ═══
+  static const Color contributorBlue = Color(0xFF2563EB);
+  static const Color contributorBlueDark = Color(0xFF1E40AF);
+  static const Color contributorBlueLight = Color(0xFF3B82F6);
+  static const Color contributorBgPrimary = Color(0xFF0A1218);
+  static const Color contributorBgSecondary = Color(0xFF152028);
+  static const Color contributorBorder = Color(0xFF1E3A5F);
 
-  // ═══════════════════════════════════════════════════════════════════
-  // GAMIFICATION COLORS
-  // ═══════════════════════════════════════════════════════════════════
-  // XP & Level System
-  static const Color xpGold = Color(0xFFFFD700);
-  static const Color xpOrange = Color(0xFFFF6B00);
-  static const Color levelUpGlow = Color(0xFFFFE31A);
+  // ═══ Gamification ═══
+  static const Color xpGold =
+      Color(0xFFFFD647); // secondary gold (coin / highlight)
+  static const Color xpOrange = Color(0xFFF59E0B);
+  static const Color levelUpGlow = Color(0xFFFFD647);
 
-  // Streak Fire 🔥
-  static const Color streakOrange = Color(0xFFFF4500);
-  static const Color streakYellow = Color(0xFFFFD700);
+  static const Color streakOrange = Color(0xFFFF6B35);
+  static const Color streakYellow = Color(0xFFFFD647);
 
-  // Coins
-  static const Color coinGold = Color(0xFFFFD700);
-  static const Color coinShadow = Color(0xFFB8860B);
+  static const Color coinGold = Color(0xFFFFD647);
+  static const Color coinShadow = Color(0xFFB45309);
 
-  // Leaderboard Ranks
-  static const Color rankGold = Color(0xFFFFD700); // #1
-  static const Color rankSilver = Color(0xFFC0C0C0); // #2
-  static const Color rankBronze = Color(0xFFCD7F32); // #3
+  static const Color rankGold = Color(0xFFFFD647);
+  static const Color rankSilver = Color(0xFFC0C0C0);
+  static const Color rankBronze = Color(0xFFCD7F32);
 
-  // Achievement Rainbow
   static const List<Color> achievementRainbow = [
-    Color(0xFFFF00FF), // Magenta
-    Color(0xFF8B5CF6), // Purple
-    Color(0xFF06B6D4), // Cyan
-    Color(0xFF00FF88), // Green
-    Color(0xFFFFE31A), // Yellow
+    Color(0xFFEC4899),
+    Color(0xFF7354F5),
+    Color(0xFF41E184),
+    Color(0xFFFFD647),
+    Color(0xFF38BDF8),
   ];
 
-  // ═══════════════════════════════════════════════════════════════════
-  // LEVEL TITLE COLORS (matching danh hiệu system)
-  // ═══════════════════════════════════════════════════════════════════
-  static const Color levelNewbie = Color(0xFF10B981); // Người mới - Green
-  static const Color levelStudent = Color(0xFF06B6D4); // Học viên - Cyan
-  static const Color levelScholar = Color(0xFF6366F1); // Sinh viên - Indigo
-  static const Color levelExpert = Color(0xFF8B5CF6); // Chuyên gia - Purple
-  static const Color levelMaster = Color(0xFFF59E0B); // Bậc thầy - Orange
-  static const Color levelLegend = Color(0xFFEF4444); // Huyền thoại - Red
-  static const Color levelProdigy = Color(0xFFFFD700); // Thần đồng - Gold
+  static const Color levelNewbie = Color(0xFF41E184);
+  static const Color levelStudent = Color(0xFF38BDF8);
+  static const Color levelScholar = Color(0xFF6366F1);
+  static const Color levelExpert = Color(0xFF7354F5);
+  static const Color levelMaster = Color(0xFFF59E0B);
+  static const Color levelLegend = Color(0xFFEF4444);
+  static const Color levelProdigy = Color(0xFFFFD647);
 
-  /// Get level color based on level number
   static Color getLevelColor(int level) {
     if (level <= 5) return levelNewbie;
     if (level <= 10) return levelStudent;
@@ -127,16 +101,15 @@ class AppColors {
     return levelProdigy;
   }
 
-  /// Get level gradient based on level number
   static List<Color> getLevelGradient(int level) {
     if (level <= 5) {
-      return [levelNewbie, const Color(0xFF059669)];
+      return [levelNewbie, const Color(0xFF22C55E)];
     } else if (level <= 10) {
-      return [levelStudent, const Color(0xFF0891B2)];
+      return [levelStudent, const Color(0xFF0EA5E9)];
     } else if (level <= 20) {
       return [levelScholar, const Color(0xFF4F46E5)];
     } else if (level <= 35) {
-      return [levelExpert, const Color(0xFF7C3AED)];
+      return [levelExpert, const Color(0xFF5B21B6)];
     } else if (level <= 50) {
       return [levelMaster, const Color(0xFFD97706)];
     } else if (level <= 75) {

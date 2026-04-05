@@ -328,7 +328,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                 if (_replyTo != null)
                   Container(
                     padding: const EdgeInsets.fromLTRB(12, 8, 8, 4),
-                    color: AppColors.bgTertiary.withOpacity(0.5),
+                    color: AppColors.bgTertiary.withValues(alpha: 0.5),
                     child: Row(
                       children: [
                         const Icon(Icons.reply_rounded,
@@ -433,7 +433,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
               maxWidth: MediaQuery.of(context).size.width * 0.75),
           decoration: BoxDecoration(
             color: isMe
-                ? AppColors.purpleNeon.withOpacity(0.3)
+                ? AppColors.purpleNeon.withValues(alpha: 0.3)
                 : AppColors.bgTertiary,
             borderRadius: BorderRadius.only(
               topLeft: const Radius.circular(16),
@@ -443,8 +443,8 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
             ),
             border: Border.all(
               color: isMe
-                  ? AppColors.purpleNeon.withOpacity(0.5)
-                  : AppColors.borderPrimary,
+                  ? AppColors.purpleNeon.withValues(alpha: 0.5)
+                  : const Color(0x332D363D),
             ),
           ),
           child: Column(
@@ -457,7 +457,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                   decoration: BoxDecoration(
                     border: Border(
                         left: BorderSide(
-                            color: AppColors.purpleNeon.withOpacity(0.6),
+                            color: AppColors.purpleNeon.withValues(alpha: 0.6),
                             width: 3)),
                   ),
                   child: Align(

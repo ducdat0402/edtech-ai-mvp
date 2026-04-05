@@ -21,7 +21,8 @@ class LessonUnlockSheet {
     try {
       final access = await api.checkNodeAccess(nodeId);
       subjectType = (access['subjectType'] ?? 'expert').toString();
-      remainingFree = (access['remainingFreeLessonsToday'] as num?)?.toInt() ?? 0;
+      remainingFree =
+          (access['remainingFreeLessonsToday'] as num?)?.toInt() ?? 0;
       coinCost = (access['coinCost'] as num?)?.toInt() ?? 50;
       diamondCost = (access['diamondCost'] as num?)?.toInt() ?? 50;
       userCoins = (access['userCoins'] as num?)?.toInt() ?? 0;
@@ -48,7 +49,8 @@ class LessonUnlockSheet {
                 const SizedBox(height: 10),
                 Text(
                   title,
-                  style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+                  style:
+                      AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
@@ -56,7 +58,8 @@ class LessonUnlockSheet {
                   subjectType == 'community'
                       ? 'Mỗi ngày bạn có 2 bài miễn phí trên toàn bộ môn. Hết suất: $coinCost xu hoặc $diamondCost 💎.'
                       : 'Mỗi ngày bạn có 2 bài miễn phí trên toàn bộ môn. Hết suất: $diamondCost 💎.',
-                  style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+                  style: AppTextStyles.bodyMedium
+                      .copyWith(color: AppColors.textSecondary),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
@@ -64,23 +67,27 @@ class LessonUnlockSheet {
                   remainingFree > 0
                       ? 'Suất miễn phí hôm nay: còn $remainingFree.'
                       : 'Hôm nay đã dùng hết 2 suất miễn phí.',
-                  style: AppTextStyles.caption.copyWith(color: AppColors.cyanNeon, fontSize: 12),
+                  style: AppTextStyles.caption
+                      .copyWith(color: AppColors.cyanNeon, fontSize: 12),
                 ),
                 if (subjectType == 'community')
                   Text(
                     'Xu hiện có: $userCoins',
-                    style: AppTextStyles.caption.copyWith(color: AppColors.textTertiary, fontSize: 11),
+                    style: AppTextStyles.caption
+                        .copyWith(color: AppColors.textTertiary, fontSize: 11),
                   ),
                 Text(
                   'Kim cương hiện có: $userDiamonds 💎',
-                  style: AppTextStyles.caption.copyWith(color: AppColors.textTertiary, fontSize: 11),
+                  style: AppTextStyles.caption
+                      .copyWith(color: AppColors.textTertiary, fontSize: 11),
                 ),
                 const SizedBox(height: 16),
                 Row(
                   children: [
                     Expanded(
                       child: OutlinedButton(
-                        onPressed: busy ? null : () => Navigator.pop(ctx, false),
+                        onPressed:
+                            busy ? null : () => Navigator.pop(ctx, false),
                         child: const Text('Đóng'),
                       ),
                     ),
@@ -93,19 +100,25 @@ class LessonUnlockSheet {
                               : () async {
                                   setModalState(() => busy = true);
                                   try {
-                                    await api.openLearningNode(nodeId, currencyType: 'coins');
+                                    await api.openLearningNode(nodeId,
+                                        currencyType: 'coins');
                                     if (onOpened != null) await onOpened();
                                     if (ctx.mounted) Navigator.pop(ctx, true);
                                   } catch (e) {
                                     setModalState(() => busy = false);
                                     if (ctx.mounted) {
                                       ScaffoldMessenger.of(ctx).showSnackBar(
-                                        SnackBar(content: Text('$e'), backgroundColor: AppColors.errorNeon),
+                                        SnackBar(
+                                            content: Text('$e'),
+                                            backgroundColor:
+                                                AppColors.errorNeon),
                                       );
                                     }
                                   }
                                 },
-                          child: Text(remainingFree > 0 ? 'Miễn phí / Xu' : '$coinCost xu'),
+                          child: Text(remainingFree > 0
+                              ? 'Miễn phí / Xu'
+                              : '$coinCost xu'),
                         ),
                       ),
                     ],
@@ -119,7 +132,9 @@ class LessonUnlockSheet {
                                 try {
                                   await api.openLearningNode(
                                     nodeId,
-                                    currencyType: subjectType == 'community' ? 'diamonds' : null,
+                                    currencyType: subjectType == 'community'
+                                        ? 'diamonds'
+                                        : null,
                                   );
                                   if (onOpened != null) await onOpened();
                                   if (ctx.mounted) Navigator.pop(ctx, true);
@@ -127,12 +142,16 @@ class LessonUnlockSheet {
                                   setModalState(() => busy = false);
                                   if (ctx.mounted) {
                                     ScaffoldMessenger.of(ctx).showSnackBar(
-                                      SnackBar(content: Text('$e'), backgroundColor: AppColors.errorNeon),
+                                      SnackBar(
+                                          content: Text('$e'),
+                                          backgroundColor: AppColors.errorNeon),
                                     );
                                   }
                                 }
                               },
-                        child: Text(remainingFree > 0 ? 'Miễn phí / 💎' : '$diamondCost 💎'),
+                        child: Text(remainingFree > 0
+                            ? 'Miễn phí / 💎'
+                            : '$diamondCost 💎'),
                       ),
                     ),
                   ],
@@ -167,4 +186,3 @@ class LessonUnlockSheet {
     return opened == true;
   }
 }
-

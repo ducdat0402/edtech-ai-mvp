@@ -42,7 +42,7 @@ class _ContributionUploadScreenState extends State<ContributionUploadScreen> {
   bool get _isVideo => widget.format == 'video';
 
   Color get _accentColor =>
-      _isVideo ? AppColors.purpleNeon : AppColors.cyanNeon;
+      _isVideo ? AppColors.purpleNeon : AppColors.primaryLight;
 
   @override
   void dispose() {
@@ -102,7 +102,7 @@ class _ContributionUploadScreenState extends State<ContributionUploadScreen> {
       decoration: BoxDecoration(
         color: AppColors.bgSecondary,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.borderPrimary),
+        border: Border.all(color: const Color(0x332D363D)),
       ),
       child: Row(
         children: [
@@ -110,7 +110,7 @@ class _ContributionUploadScreenState extends State<ContributionUploadScreen> {
             width: 56,
             height: 56,
             decoration: BoxDecoration(
-              color: _accentColor.withOpacity(0.15),
+              color: _accentColor.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Icon(
@@ -183,7 +183,7 @@ class _ContributionUploadScreenState extends State<ContributionUploadScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppColors.xpGold.withOpacity(0.15),
+                  color: AppColors.xpGold.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(Icons.lightbulb_rounded,
@@ -228,8 +228,10 @@ class _ContributionUploadScreenState extends State<ContributionUploadScreen> {
             children: [
               if (difficulty != null)
                 Expanded(
-                    child: _buildInfoChip(Icons.signal_cellular_alt_rounded,
-                        _getDifficultyText(difficulty), AppColors.cyanNeon)),
+                    child: _buildInfoChip(
+                        Icons.signal_cellular_alt_rounded,
+                        _getDifficultyText(difficulty),
+                        AppColors.primaryLight)),
               if (difficulty != null && estimatedTime != null)
                 const SizedBox(width: 12),
               if (estimatedTime != null)
@@ -247,9 +249,9 @@ class _ContributionUploadScreenState extends State<ContributionUploadScreen> {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -272,7 +274,8 @@ class _ContributionUploadScreenState extends State<ContributionUploadScreen> {
         decoration: BoxDecoration(
           color: AppColors.bgSecondary,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: _accentColor.withOpacity(0.3), width: 2),
+          border:
+              Border.all(color: _accentColor.withValues(alpha: 0.3), width: 2),
         ),
         child: _selectedFile == null
             ? Column(
@@ -282,7 +285,7 @@ class _ContributionUploadScreenState extends State<ContributionUploadScreen> {
                     width: 64,
                     height: 64,
                     decoration: BoxDecoration(
-                      color: _accentColor.withOpacity(0.15),
+                      color: _accentColor.withValues(alpha: 0.15),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -354,9 +357,9 @@ class _ContributionUploadScreenState extends State<ContributionUploadScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.successNeon.withOpacity(0.1),
+        color: AppColors.successNeon.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.successNeon.withOpacity(0.3)),
+        border: Border.all(color: AppColors.successNeon.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -364,7 +367,7 @@ class _ContributionUploadScreenState extends State<ContributionUploadScreen> {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: AppColors.successNeon.withOpacity(0.2),
+              color: AppColors.successNeon.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
@@ -400,7 +403,7 @@ class _ContributionUploadScreenState extends State<ContributionUploadScreen> {
       decoration: BoxDecoration(
         color: AppColors.bgSecondary,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.borderPrimary),
+        border: Border.all(color: const Color(0x332D363D)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -429,20 +432,21 @@ class _ContributionUploadScreenState extends State<ContributionUploadScreen> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.cyanNeon.withOpacity(0.1),
+              color: AppColors.primaryLight.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppColors.cyanNeon.withOpacity(0.2)),
+              border: Border.all(
+                  color: AppColors.primaryLight.withValues(alpha: 0.25)),
             ),
             child: Row(
               children: [
                 const Icon(Icons.info_outline_rounded,
-                    color: AppColors.cyanNeon, size: 20),
+                    color: AppColors.primaryLight, size: 20),
                 const SizedBox(width: 8),
                 Expanded(
                     child: Text(
                         'Đóng góp sẽ được lưu lịch sử và có thể so sánh phiên bản khi admin duyệt.',
                         style: AppTextStyles.caption
-                            .copyWith(color: AppColors.cyanNeon))),
+                            .copyWith(color: AppColors.primaryLight))),
               ],
             ),
           ),
@@ -466,10 +470,10 @@ class _ContributionUploadScreenState extends State<ContributionUploadScreen> {
             AppTextStyles.bodySmall.copyWith(color: AppColors.textTertiary),
         border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: AppColors.borderPrimary)),
+            borderSide: const BorderSide(color: Color(0x332D363D))),
         enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: AppColors.borderPrimary)),
+            borderSide: const BorderSide(color: Color(0x332D363D))),
         focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide(color: _accentColor, width: 2)),
@@ -483,9 +487,9 @@ class _ContributionUploadScreenState extends State<ContributionUploadScreen> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.errorNeon.withOpacity(0.1),
+        color: AppColors.errorNeon.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.errorNeon.withOpacity(0.3)),
+        border: Border.all(color: AppColors.errorNeon.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -515,7 +519,7 @@ class _ContributionUploadScreenState extends State<ContributionUploadScreen> {
         gradient: _isVideo
             ? AppGradients.primary
             : const LinearGradient(
-                colors: [AppColors.cyanNeon, AppColors.successNeon]),
+                colors: [AppColors.primaryLight, AppColors.successNeon]),
         glowColor: _accentColor,
         icon: Icons.cloud_upload_rounded,
       ),
@@ -578,8 +582,6 @@ class _ContributionUploadScreenState extends State<ContributionUploadScreen> {
 
     try {
       final apiService = context.read<ApiService>();
-      final description = _descriptionController.text.trim();
-      final caption = _captionController.text.trim();
 
       setState(() => _uploadProgress = 0.3);
 
@@ -607,7 +609,7 @@ class _ContributionUploadScreenState extends State<ContributionUploadScreen> {
                   width: 80,
                   height: 80,
                   decoration: BoxDecoration(
-                      color: AppColors.successNeon.withOpacity(0.15),
+                      color: AppColors.successNeon.withValues(alpha: 0.15),
                       shape: BoxShape.circle),
                   child: const Icon(Icons.check_circle_rounded,
                       color: AppColors.successNeon, size: 48),

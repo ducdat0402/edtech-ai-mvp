@@ -35,7 +35,8 @@ class _ImageGalleryLessonScreenState extends State<ImageGalleryLessonScreen> {
   int _currentPage = 0;
 
   List<Map<String, dynamic>> get _images {
-    final raw = widget.lessonData['images'] ?? widget.lessonData['gallery'] ?? [];
+    final raw =
+        widget.lessonData['images'] ?? widget.lessonData['gallery'] ?? [];
     return List<Map<String, dynamic>>.from(raw);
   }
 
@@ -65,7 +66,8 @@ class _ImageGalleryLessonScreenState extends State<ImageGalleryLessonScreen> {
     final allUrls = <String>[];
     final allCaptions = <String>[];
     for (final img in _images) {
-      final url = (img['imageUrl'] ?? img['url'] ?? img['image'] ?? '').toString();
+      final url =
+          (img['imageUrl'] ?? img['url'] ?? img['image'] ?? '').toString();
       allUrls.add(url);
       allCaptions.add((img['description'] ?? img['caption'] ?? '').toString());
     }
@@ -116,7 +118,8 @@ class _ImageGalleryLessonScreenState extends State<ImageGalleryLessonScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.photo_library, color: AppColors.purpleNeon, size: 18),
+                    const Icon(Icons.photo_library,
+                        color: AppColors.purpleNeon, size: 18),
                     const SizedBox(width: 8),
                     Text(
                       'Hinh ${_currentPage + 1}/$totalImages',
@@ -130,7 +133,7 @@ class _ImageGalleryLessonScreenState extends State<ImageGalleryLessonScreen> {
                 ),
                 if (totalImages > 1) ...[
                   const SizedBox(height: 6),
-                  Row(
+                  const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
@@ -138,7 +141,7 @@ class _ImageGalleryLessonScreenState extends State<ImageGalleryLessonScreen> {
                         color: AppColors.textTertiary,
                         size: 14,
                       ),
-                      const SizedBox(width: 6),
+                      SizedBox(width: 6),
                       Text(
                         kIsWeb
                             ? 'Dùng nút Trước/Sau để chuyển ảnh'
@@ -157,13 +160,14 @@ class _ImageGalleryLessonScreenState extends State<ImageGalleryLessonScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       OutlinedButton.icon(
-                        onPressed:
-                            _currentPage > 0 ? () => _goToPage(_currentPage - 1) : null,
+                        onPressed: _currentPage > 0
+                            ? () => _goToPage(_currentPage - 1)
+                            : null,
                         icon: const Icon(Icons.chevron_left, size: 16),
                         label: const Text('Trước'),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.textSecondary,
-                          side: const BorderSide(color: AppColors.borderPrimary),
+                          side: const BorderSide(color: Color(0x332D363D)),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -214,7 +218,9 @@ class _ImageGalleryLessonScreenState extends State<ImageGalleryLessonScreen> {
                     width: isActive ? 24 : 8,
                     height: 8,
                     decoration: BoxDecoration(
-                      color: isActive ? AppColors.purpleNeon : AppColors.bgTertiary,
+                      color: isActive
+                          ? AppColors.purpleNeon
+                          : AppColors.bgTertiary,
                       borderRadius: BorderRadius.circular(4),
                     ),
                   );
@@ -236,7 +242,8 @@ class _ImageGalleryLessonScreenState extends State<ImageGalleryLessonScreen> {
                         nodeId: widget.nodeId,
                         title: widget.title,
                         lessonType: widget.lessonType ?? 'image_gallery',
-                        questions: (widget.endQuiz?['questions'] as List?)?.cast<dynamic>(),
+                        questions: (widget.endQuiz?['questions'] as List?)
+                            ?.cast<dynamic>(),
                         contributor: widget.contributor,
                       ),
                     ),
@@ -262,7 +269,8 @@ class _ImageGalleryLessonScreenState extends State<ImageGalleryLessonScreen> {
   }
 
   Widget _buildImagePage(int index, Map<String, dynamic> imageData) {
-    final imageUrl = imageData['imageUrl'] ?? imageData['url'] ?? imageData['image'] ?? '';
+    final imageUrl =
+        imageData['imageUrl'] ?? imageData['url'] ?? imageData['image'] ?? '';
     final description = imageData['description'] ?? imageData['caption'] ?? '';
     final title = imageData['title'] ?? '';
 
@@ -287,13 +295,15 @@ class _ImageGalleryLessonScreenState extends State<ImageGalleryLessonScreen> {
                             height: 350,
                             width: double.infinity,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => _buildImagePlaceholder(),
+                            errorBuilder: (_, __, ___) =>
+                                _buildImagePlaceholder(),
                           )
                         : _buildImagePlaceholder(),
                   ),
 
                   // Gradient overlay at bottom with description
-                  if (description.toString().isNotEmpty || title.toString().isNotEmpty)
+                  if (description.toString().isNotEmpty ||
+                      title.toString().isNotEmpty)
                     Positioned(
                       bottom: 0,
                       left: 0,
@@ -309,7 +319,7 @@ class _ImageGalleryLessonScreenState extends State<ImageGalleryLessonScreen> {
                             end: Alignment.bottomCenter,
                             colors: [
                               Colors.transparent,
-                              Colors.black.withOpacity(0.8),
+                              Colors.black.withValues(alpha: 0.8),
                             ],
                           ),
                         ),
@@ -334,7 +344,7 @@ class _ImageGalleryLessonScreenState extends State<ImageGalleryLessonScreen> {
                               Text(
                                 description.toString(),
                                 style: TextStyle(
-                                  color: Colors.white.withOpacity(0.9),
+                                  color: Colors.white.withValues(alpha: 0.9),
                                   fontSize: 14,
                                 ),
                                 maxLines: 4,
@@ -377,7 +387,7 @@ class _ImageGalleryLessonScreenState extends State<ImageGalleryLessonScreen> {
                 decoration: BoxDecoration(
                   color: AppColors.bgSecondary,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.borderPrimary),
+                  border: Border.all(color: const Color(0x332D363D)),
                 ),
                 child: Text(
                   description.toString(),
@@ -401,7 +411,7 @@ class _ImageGalleryLessonScreenState extends State<ImageGalleryLessonScreen> {
       decoration: BoxDecoration(
         color: AppColors.bgSecondary,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.borderPrimary),
+        border: Border.all(color: const Color(0x332D363D)),
       ),
       child: const Column(
         mainAxisAlignment: MainAxisAlignment.center,

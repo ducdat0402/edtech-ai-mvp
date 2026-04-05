@@ -133,7 +133,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
         leadingWidth: 112,
         automaticallyImplyLeading: false,
         title: Text('Bảng xếp hạng',
-            style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary)),
+            style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: AppColors.purpleNeon,
@@ -190,7 +190,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
 
   Widget _buildLoading() {
     return const Center(
-      child: CircularProgressIndicator(color: AppColors.purpleNeon),
+      child: CircularProgressIndicator(color: AppColors.primaryLight),
     );
   }
 
@@ -200,8 +200,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
       children: [
         if (_myRank != null) _buildMyRankCard(),
         Expanded(
-            child: _buildGlobalList(_globalData,
-                sourceLabel: 'Bảng toàn cầu')),
+            child: _buildGlobalList(_globalData, sourceLabel: 'Bảng toàn cầu')),
       ],
     );
   }
@@ -286,8 +285,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColors.purpleNeon.withOpacity(0.8),
-            AppColors.cyanNeon.withOpacity(0.6)
+            AppColors.purpleNeon.withValues(alpha: 0.8),
+            AppColors.primaryLight.withValues(alpha: 0.6)
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -295,7 +294,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: AppColors.purpleNeon.withOpacity(0.3),
+            color: AppColors.purpleNeon.withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -313,7 +312,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
                       AppTextStyles.labelLarge.copyWith(color: Colors.white)),
               const Spacer(),
               const Icon(Icons.emoji_events_rounded,
-                  color: Colors.amber, size: 24),
+                  color: AppColors.xpGold, size: 24),
             ],
           ),
           const SizedBox(height: 16),
@@ -348,7 +347,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
       decoration: BoxDecoration(
         color: AppColors.bgSecondary,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.borderPrimary),
+        border: Border.all(color: const Color(0x332D363D)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -370,11 +369,12 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
                   color: maxRank <= 3
-                      ? AppColors.purpleNeon.withOpacity(0.1)
+                      ? AppColors.purpleNeon.withValues(alpha: 0.1)
                       : AppColors.bgTertiary,
                   borderRadius: BorderRadius.circular(12),
                   border: maxRank <= 3
-                      ? Border.all(color: AppColors.purpleNeon.withOpacity(0.3))
+                      ? Border.all(
+                          color: AppColors.purpleNeon.withValues(alpha: 0.3))
                       : null,
                 ),
                 child: Row(
@@ -389,15 +389,15 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
                     ),
                     const SizedBox(width: 8),
                     const Icon(Icons.diamond_rounded,
-                        size: 14, color: Colors.lightBlueAccent),
+                        size: 14, color: AppColors.primaryLight),
                     const SizedBox(width: 2),
                     Text('$diamonds',
                         style: AppTextStyles.labelMedium
-                            .copyWith(color: Colors.lightBlueAccent)),
+                            .copyWith(color: AppColors.primaryLight)),
                     if (badge != null) ...[
                       const SizedBox(width: 6),
                       const Icon(Icons.workspace_premium_rounded,
-                          size: 14, color: Colors.amber),
+                          size: 14, color: AppColors.xpGold),
                     ],
                   ],
                 ),
@@ -453,7 +453,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppColors.purpleNeon.withOpacity(0.3),
+            color: AppColors.purpleNeon.withValues(alpha: 0.3),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -465,7 +465,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
             width: 50,
             height: 50,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
             child: Center(
@@ -488,7 +488,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
             ),
           ),
           const Icon(Icons.arrow_upward_rounded,
-              color: Colors.greenAccent, size: 24),
+              color: AppColors.successNeon, size: 24),
         ],
       ),
     );
@@ -507,7 +507,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: AppColors.purpleNeon.withOpacity(0.4),
+            color: AppColors.purpleNeon.withValues(alpha: 0.4),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -519,10 +519,10 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
             width: 70,
             height: 70,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               shape: BoxShape.circle,
-              border:
-                  Border.all(color: Colors.white.withOpacity(0.3), width: 2),
+              border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.3), width: 2),
             ),
             child: Center(
               child: Text('#$rank',
@@ -564,7 +564,7 @@ class _CountdownBlock extends StatelessWidget {
           width: 50,
           height: 50,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.15),
+            color: Colors.white.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Center(
@@ -674,7 +674,10 @@ class _PodiumItem extends StatelessWidget {
           margin: const EdgeInsets.symmetric(horizontal: 6),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [_color.withOpacity(0.8), _color.withOpacity(0.4)],
+              colors: [
+                _color.withValues(alpha: 0.8),
+                _color.withValues(alpha: 0.4)
+              ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
@@ -731,7 +734,7 @@ class _WeeklyEntryCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.bgSecondary,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.borderPrimary),
+        border: Border.all(color: const Color(0x332D363D)),
       ),
       child: Row(
         children: [
@@ -770,7 +773,7 @@ class _WeeklyEntryCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: AppColors.xpGold.withOpacity(0.15),
+              color: AppColors.xpGold.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Row(
@@ -836,12 +839,12 @@ class _LeaderboardEntryCard extends StatelessWidget {
         color: AppColors.bgSecondary,
         borderRadius: BorderRadius.circular(16),
         border: isTopThree
-            ? Border.all(color: rankColor.withOpacity(0.5), width: 2)
-            : Border.all(color: AppColors.borderPrimary),
+            ? Border.all(color: rankColor.withValues(alpha: 0.5), width: 2)
+            : Border.all(color: const Color(0x332D363D)),
         boxShadow: isTopThree
             ? [
                 BoxShadow(
-                    color: rankColor.withOpacity(0.2),
+                    color: rankColor.withValues(alpha: 0.2),
                     blurRadius: 8,
                     offset: const Offset(0, 2))
               ]
@@ -854,11 +857,11 @@ class _LeaderboardEntryCard extends StatelessWidget {
             height: 48,
             decoration: BoxDecoration(
               color: isTopThree
-                  ? rankColor.withOpacity(0.2)
+                  ? rankColor.withValues(alpha: 0.2)
                   : AppColors.bgTertiary,
               borderRadius: BorderRadius.circular(12),
               border: isTopThree
-                  ? Border.all(color: rankColor.withOpacity(0.5))
+                  ? Border.all(color: rankColor.withValues(alpha: 0.5))
                   : null,
             ),
             child: Center(
@@ -882,7 +885,8 @@ class _LeaderboardEntryCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 InkWell(
-                  onTap: userId != null && userId.isNotEmpty ? openProfile : null,
+                  onTap:
+                      userId != null && userId.isNotEmpty ? openProfile : null,
                   borderRadius: BorderRadius.circular(8),
                   child: Text(
                     entry['fullName'] ?? 'Anonymous',
@@ -919,7 +923,7 @@ class _LeaderboardEntryCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: AppColors.xpGold.withOpacity(0.15),
+              color: AppColors.xpGold.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Row(

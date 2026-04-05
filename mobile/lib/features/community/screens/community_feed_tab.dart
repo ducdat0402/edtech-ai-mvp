@@ -70,7 +70,8 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
     setState(() => _loadingMore = true);
     try {
       final api = Provider.of<ApiService>(context, listen: false);
-      final data = await api.listCommunityStatuses(limit: 20, before: _nextCursor);
+      final data =
+          await api.listCommunityStatuses(limit: 20, before: _nextCursor);
       final raw = data['items'] as List? ?? const [];
       if (!mounted) return;
       setState(() {
@@ -89,7 +90,8 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.bgSecondary,
-        title: const Text('Đăng status', style: TextStyle(color: AppColors.textPrimary)),
+        title: const Text('Đăng status',
+            style: TextStyle(color: AppColors.textPrimary)),
         content: TextField(
           controller: controller,
           maxLines: 5,
@@ -97,7 +99,8 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
           style: const TextStyle(color: AppColors.textPrimary),
           decoration: InputDecoration(
             hintText: 'Chia sẻ điều gì đó với cộng đồng…',
-            hintStyle: TextStyle(color: AppColors.textSecondary.withValues(alpha: 0.8)),
+            hintStyle: TextStyle(
+                color: AppColors.textSecondary.withValues(alpha: 0.8)),
             filled: true,
             fillColor: AppColors.bgTertiary,
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -106,11 +109,13 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Hủy', style: TextStyle(color: AppColors.textSecondary)),
+            child: const Text('Hủy',
+                style: TextStyle(color: AppColors.textSecondary)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.purpleNeon),
+            style:
+                ElevatedButton.styleFrom(backgroundColor: AppColors.purpleNeon),
             child: const Text('Đăng'),
           ),
         ],
@@ -126,13 +131,17 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
       setState(() => _items.insert(0, Map<String, dynamic>.from(created)));
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Đã đăng status'), behavior: SnackBarBehavior.floating),
+          const SnackBar(
+              content: Text('Đã đăng status'),
+              behavior: SnackBarBehavior.floating),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Không đăng được: $e'), behavior: SnackBarBehavior.floating),
+          SnackBar(
+              content: Text('Không đăng được: $e'),
+              behavior: SnackBarBehavior.floating),
         );
       }
     }
@@ -170,7 +179,8 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
       context: context,
       isScrollControlled: true,
       backgroundColor: AppColors.bgSecondary,
-      builder: (ctx) => _UserProfileSheet(api: api, userId: userId, myUserId: _myUserId),
+      builder: (ctx) =>
+          _UserProfileSheet(api: api, userId: userId, myUserId: _myUserId),
     );
   }
 
@@ -181,16 +191,20 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.bgSecondary,
-        title: const Text('Xóa status?', style: TextStyle(color: AppColors.textPrimary)),
+        title: const Text('Xóa status?',
+            style: TextStyle(color: AppColors.textPrimary)),
         content: const Text(
           'Status sẽ bị xóa vĩnh viễn.',
           style: TextStyle(color: AppColors.textSecondary),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Hủy')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Hủy')),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Xóa', style: TextStyle(color: AppColors.errorNeon)),
+            child:
+                const Text('Xóa', style: TextStyle(color: AppColors.errorNeon)),
           ),
         ],
       ),
@@ -204,7 +218,8 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi: $e'), behavior: SnackBarBehavior.floating),
+          SnackBar(
+              content: Text('Lỗi: $e'), behavior: SnackBarBehavior.floating),
         );
       }
     }
@@ -223,7 +238,8 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
   @override
   Widget build(BuildContext context) {
     if (_loading) {
-      return const Center(child: CircularProgressIndicator(color: AppColors.purpleNeon));
+      return const Center(
+          child: CircularProgressIndicator(color: AppColors.purpleNeon));
     }
     if (_error != null) {
       return Center(
@@ -232,7 +248,9 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(_error!, textAlign: TextAlign.center, style: const TextStyle(color: AppColors.textSecondary)),
+              Text(_error!,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: AppColors.textSecondary)),
               const SizedBox(height: 12),
               ElevatedButton(onPressed: _refresh, child: const Text('Thử lại')),
             ],
@@ -255,7 +273,8 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
                       child: Text(
                         'Chưa có status nào.\nHãy là người đầu tiên đăng!',
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: AppColors.textSecondary, height: 1.4),
+                        style: TextStyle(
+                            color: AppColors.textSecondary, height: 1.4),
                       ),
                     ),
                   ],
@@ -273,15 +292,18 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
                       return const Padding(
                         padding: EdgeInsets.all(16),
                         child: Center(
-                          child: CircularProgressIndicator(color: AppColors.purpleNeon),
+                          child: CircularProgressIndicator(
+                              color: AppColors.purpleNeon),
                         ),
                       );
                     }
                     final item = _items[index];
-                    final author = item['author'] as Map<String, dynamic>? ?? {};
+                    final author =
+                        item['author'] as Map<String, dynamic>? ?? {};
                     final authorId = author['id']?.toString() ?? '';
                     final name = author['fullName']?.toString() ?? 'User';
-                    final avatarUrl = ApiConfig.absoluteMediaUrl(author['avatarUrl']?.toString());
+                    final avatarUrl = ApiConfig.absoluteMediaUrl(
+                        author['avatarUrl']?.toString());
                     final isMine = _myUserId != null && authorId == _myUserId;
                     final myReaction = item['myReaction'] as String?;
                     final likeCount = item['likeCount'] as int? ?? 0;
@@ -293,7 +315,7 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
                       margin: const EdgeInsets.only(bottom: 10),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
-                        side: const BorderSide(color: AppColors.borderPrimary),
+                        side: const BorderSide(color: Color(0x332D363D)),
                       ),
                       child: Padding(
                         padding: const EdgeInsets.all(12),
@@ -303,17 +325,22 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
                             Row(
                               children: [
                                 InkWell(
-                                  onTap: authorId.isEmpty ? null : () => _openUserProfile(authorId),
+                                  onTap: authorId.isEmpty
+                                      ? null
+                                      : () => _openUserProfile(authorId),
                                   borderRadius: BorderRadius.circular(24),
                                   child: CircleAvatar(
                                     radius: 22,
-                                    backgroundColor: AppColors.purpleNeon.withValues(alpha: 0.2),
+                                    backgroundColor: AppColors.purpleNeon
+                                        .withValues(alpha: 0.2),
                                     backgroundImage: avatarUrl.isNotEmpty
                                         ? CachedNetworkImageProvider(avatarUrl)
                                         : null,
                                     child: avatarUrl.isEmpty
                                         ? Text(
-                                            name.isNotEmpty ? name[0].toUpperCase() : '?',
+                                            name.isNotEmpty
+                                                ? name[0].toUpperCase()
+                                                : '?',
                                             style: const TextStyle(
                                               color: AppColors.purpleNeon,
                                               fontWeight: FontWeight.bold,
@@ -325,10 +352,13 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
                                 const SizedBox(width: 10),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       InkWell(
-                                        onTap: authorId.isEmpty ? null : () => _openUserProfile(authorId),
+                                        onTap: authorId.isEmpty
+                                            ? null
+                                            : () => _openUserProfile(authorId),
                                         child: Text(
                                           name,
                                           style: const TextStyle(
@@ -340,14 +370,17 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
                                       ),
                                       Text(
                                         _timeAgo(item['createdAt']?.toString()),
-                                        style: const TextStyle(color: AppColors.textTertiary, fontSize: 11),
+                                        style: const TextStyle(
+                                            color: AppColors.textTertiary,
+                                            fontSize: 11),
                                       ),
                                     ],
                                   ),
                                 ),
                                 if (isMine)
                                   IconButton(
-                                    icon: const Icon(Icons.delete_outline, color: AppColors.textTertiary),
+                                    icon: const Icon(Icons.delete_outline,
+                                        color: AppColors.textTertiary),
                                     onPressed: () => _deleteOwn(item),
                                   ),
                               ],
@@ -355,7 +388,10 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
                             const SizedBox(height: 10),
                             Text(
                               item['content']?.toString() ?? '',
-                              style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, height: 1.35),
+                              style: const TextStyle(
+                                  color: AppColors.textPrimary,
+                                  fontSize: 14,
+                                  height: 1.35),
                             ),
                             const SizedBox(height: 10),
                             Row(
@@ -383,7 +419,7 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
                                   activeIcon: Icons.chat_bubble_rounded,
                                   label: '$commentCount',
                                   active: false,
-                                  color: AppColors.cyanNeon,
+                                  color: AppColors.primaryLight,
                                   onTap: () => _openComments(item),
                                 ),
                               ],
@@ -439,9 +475,13 @@ class _ReactionChip extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(active ? activeIcon : icon, size: 18, color: active ? color : AppColors.textSecondary),
+              Icon(active ? activeIcon : icon,
+                  size: 18, color: active ? color : AppColors.textSecondary),
               const SizedBox(width: 4),
-              Text(label, style: TextStyle(color: active ? color : AppColors.textSecondary, fontSize: 13)),
+              Text(label,
+                  style: TextStyle(
+                      color: active ? color : AppColors.textSecondary,
+                      fontSize: 13)),
             ],
           ),
         ),
@@ -483,7 +523,8 @@ class _CommentsSheetState extends State<_CommentsSheet> {
       final list = await api.listCommunityComments(widget.statusId);
       if (mounted) {
         setState(() {
-          _comments = list.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+          _comments =
+              list.map((e) => Map<String, dynamic>.from(e as Map)).toList();
           _loading = false;
         });
       }
@@ -508,7 +549,9 @@ class _CommentsSheetState extends State<_CommentsSheet> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Không gửi được: $e'), behavior: SnackBarBehavior.floating),
+          SnackBar(
+              content: Text('Không gửi được: $e'),
+              behavior: SnackBarBehavior.floating),
         );
       }
     }
@@ -529,12 +572,17 @@ class _CommentsSheetState extends State<_CommentsSheet> {
                 padding: EdgeInsets.all(16),
                 child: Text(
                   'Bình luận',
-                  style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 18),
+                  style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18),
                 ),
               ),
               Expanded(
                 child: _loading
-                    ? const Center(child: CircularProgressIndicator(color: AppColors.purpleNeon))
+                    ? const Center(
+                        child: CircularProgressIndicator(
+                            color: AppColors.purpleNeon))
                     : ListView.builder(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         itemCount: _comments.length,
@@ -557,7 +605,9 @@ class _CommentsSheetState extends State<_CommentsSheet> {
                                 ),
                                 Text(
                                   c['content']?.toString() ?? '',
-                                  style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
+                                  style: const TextStyle(
+                                      color: AppColors.textPrimary,
+                                      fontSize: 14),
                                 ),
                               ],
                             ),
@@ -575,10 +625,12 @@ class _CommentsSheetState extends State<_CommentsSheet> {
                         style: const TextStyle(color: AppColors.textPrimary),
                         decoration: InputDecoration(
                           hintText: 'Viết bình luận…',
-                          hintStyle: const TextStyle(color: AppColors.textTertiary),
+                          hintStyle:
+                              const TextStyle(color: AppColors.textTertiary),
                           filled: true,
                           fillColor: AppColors.bgTertiary,
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12)),
                         ),
                         minLines: 1,
                         maxLines: 3,
@@ -588,7 +640,8 @@ class _CommentsSheetState extends State<_CommentsSheet> {
                     ),
                     IconButton(
                       onPressed: _send,
-                      icon: const Icon(Icons.send_rounded, color: AppColors.purpleNeon),
+                      icon: const Icon(Icons.send_rounded,
+                          color: AppColors.purpleNeon),
                     ),
                   ],
                 ),
@@ -658,7 +711,9 @@ class _UserProfileSheetState extends State<_UserProfileSheet> {
       await widget.api.sendFriendRequest(widget.userId);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Đã gửi lời mời kết bạn'), behavior: SnackBarBehavior.floating),
+          const SnackBar(
+              content: Text('Đã gửi lời mời kết bạn'),
+              behavior: SnackBarBehavior.floating),
         );
         await _load();
       }
@@ -678,13 +733,16 @@ class _UserProfileSheetState extends State<_UserProfileSheet> {
       await widget.api.acceptFriendRequest(fid);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Đã chấp nhận'), behavior: SnackBarBehavior.floating),
+          const SnackBar(
+              content: Text('Đã chấp nhận'),
+              behavior: SnackBarBehavior.floating),
         );
         await _load();
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('$e')));
       }
     }
   }
@@ -694,19 +752,22 @@ class _UserProfileSheetState extends State<_UserProfileSheet> {
     if (_loading) {
       return const Padding(
         padding: EdgeInsets.all(32),
-        child: Center(child: CircularProgressIndicator(color: AppColors.purpleNeon)),
+        child: Center(
+            child: CircularProgressIndicator(color: AppColors.purpleNeon)),
       );
     }
     if (_err != null) {
       return Padding(
         padding: const EdgeInsets.all(24),
-        child: Text(_err!, style: const TextStyle(color: AppColors.textSecondary)),
+        child:
+            Text(_err!, style: const TextStyle(color: AppColors.textSecondary)),
       );
     }
     final name = _profile?['fullName']?.toString() ?? 'User';
     final level = _profile?['level'] ?? 1;
     final streak = _profile?['currentStreak'] ?? 0;
-    final avatarUrl = ApiConfig.absoluteMediaUrl(_profile?['avatarUrl']?.toString());
+    final avatarUrl =
+        ApiConfig.absoluteMediaUrl(_profile?['avatarUrl']?.toString());
     final status = _rel?['friendshipStatus']?.toString();
     final isSelf = status == 'self' || widget.myUserId == widget.userId;
 
@@ -718,7 +779,9 @@ class _UserProfileSheetState extends State<_UserProfileSheet> {
           CircleAvatar(
             radius: 40,
             backgroundColor: AppColors.purpleNeon.withValues(alpha: 0.2),
-            backgroundImage: avatarUrl.isNotEmpty ? CachedNetworkImageProvider(avatarUrl) : null,
+            backgroundImage: avatarUrl.isNotEmpty
+                ? CachedNetworkImageProvider(avatarUrl)
+                : null,
             child: avatarUrl.isEmpty
                 ? Text(
                     name.isNotEmpty ? name[0].toUpperCase() : '?',
@@ -733,47 +796,59 @@ class _UserProfileSheetState extends State<_UserProfileSheet> {
           const SizedBox(height: 12),
           Text(
             name,
-            style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 18),
+            style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.bold,
+                fontSize: 18),
           ),
           const SizedBox(height: 4),
           Text(
             'Lv.$level • 🔥 $streak ngày',
-            style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+            style:
+                const TextStyle(color: AppColors.textSecondary, fontSize: 13),
           ),
           const SizedBox(height: 20),
           if (isSelf)
-            const Text('Đây là bạn', style: TextStyle(color: AppColors.textTertiary))
+            const Text('Đây là bạn',
+                style: TextStyle(color: AppColors.textTertiary))
           else if (status == 'blocked')
-            const Text('Không thể tương tác', style: TextStyle(color: AppColors.errorNeon))
+            const Text('Không thể tương tác',
+                style: TextStyle(color: AppColors.errorNeon))
           else if (status == 'accepted')
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.check_circle, color: AppColors.successNeon, size: 18),
+                const Icon(Icons.check_circle,
+                    color: AppColors.successNeon, size: 18),
                 const SizedBox(width: 6),
-                const Text('Đã là bạn bè', style: TextStyle(color: AppColors.successNeon)),
+                const Text('Đã là bạn bè',
+                    style: TextStyle(color: AppColors.successNeon)),
                 const SizedBox(width: 12),
                 TextButton(
                   onPressed: () {
                     Navigator.pop(context);
-                    context.push('/dm/chat/${widget.userId}', extra: {'peerName': name});
+                    context.push('/dm/chat/${widget.userId}',
+                        extra: {'peerName': name});
                   },
                   child: const Text('Nhắn tin'),
                 ),
               ],
             )
           else if (status == 'pending' && _rel?['isRequester'] == true)
-            const Text('Đã gửi lời mời', style: TextStyle(color: AppColors.textSecondary))
+            const Text('Đã gửi lời mời',
+                style: TextStyle(color: AppColors.textSecondary))
           else if (status == 'pending' && _rel?['isRequester'] == false)
             ElevatedButton(
               onPressed: _accept,
-              style: ElevatedButton.styleFrom(backgroundColor: AppColors.successNeon),
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.successNeon),
               child: const Text('Chấp nhận kết bạn'),
             )
           else
             ElevatedButton(
               onPressed: _sendRequest,
-              style: ElevatedButton.styleFrom(backgroundColor: AppColors.purpleNeon),
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.purpleNeon),
               child: const Text('Kết bạn'),
             ),
           SizedBox(height: MediaQuery.of(context).padding.bottom + 8),

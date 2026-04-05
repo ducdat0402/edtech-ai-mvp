@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
+import 'package:edtech_mobile/theme/colors.dart';
 
 class BottomNavBar extends StatefulWidget {
   final int currentIndex;
@@ -53,41 +54,76 @@ class _BottomNavBarState extends State<BottomNavBar> {
 
   @override
   Widget build(BuildContext context) {
-    return BottomNavigationBar(
-      currentIndex: widget.currentIndex,
-      onTap: (index) => _onItemTapped(context, index),
-      type: BottomNavigationBarType.fixed,
-      items: [
-        const BottomNavigationBarItem(
-          icon: Icon(Icons.dashboard),
-          label: 'Tổng quan',
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppColors.bgSecondary,
+        border: Border(
+          top: BorderSide(color: Color(0x332D363D)),
         ),
-        const BottomNavigationBarItem(
-          icon: Icon(Icons.menu_book),
-          label: 'Thư viện',
+      ),
+      child: SafeArea(
+        top: false,
+        child: Theme(
+          data: Theme.of(context).copyWith(
+            splashColor: AppColors.purpleNeon.withValues(alpha: 0.12),
+            highlightColor: Colors.transparent,
+          ),
+          child: BottomNavigationBar(
+            currentIndex: widget.currentIndex,
+            onTap: (index) => _onItemTapped(context, index),
+            type: BottomNavigationBarType.fixed,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            selectedItemColor: AppColors.primaryLight,
+            unselectedItemColor: AppColors.textTertiary,
+            selectedLabelStyle: const TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 12,
+            ),
+            unselectedLabelStyle: const TextStyle(
+              fontWeight: FontWeight.w500,
+              fontSize: 11,
+            ),
+            items: [
+              const BottomNavigationBarItem(
+                icon: Icon(Icons.dashboard_outlined),
+                activeIcon: Icon(Icons.dashboard_rounded),
+                label: 'Tổng quan',
+              ),
+              const BottomNavigationBarItem(
+                icon: Icon(Icons.menu_book_outlined),
+                activeIcon: Icon(Icons.menu_book_rounded),
+                label: 'Thư viện',
+              ),
+              BottomNavigationBarItem(
+                icon: _buildFriendsIcon(selected: false),
+                activeIcon: _buildFriendsIcon(selected: true),
+                label: 'Cộng đồng',
+              ),
+              const BottomNavigationBarItem(
+                icon: Icon(Icons.storefront_outlined),
+                activeIcon: Icon(Icons.storefront_rounded),
+                label: 'Cửa hàng',
+              ),
+            ],
+          ),
         ),
-        BottomNavigationBarItem(
-          icon: _buildFriendsIcon(),
-          label: 'Cộng đồng',
-        ),
-        const BottomNavigationBarItem(
-          icon: Icon(Icons.storefront_rounded),
-          label: 'Cửa hàng',
-        ),
-      ],
+      ),
     );
   }
 
-  Widget _buildFriendsIcon() {
-    if (_pendingCount <= 0) {
-      return const Icon(Icons.groups_rounded);
-    }
+  Widget _buildFriendsIcon({required bool selected}) {
+    final icon = Icon(
+      selected ? Icons.groups_rounded : Icons.groups_outlined,
+    );
+    if (_pendingCount <= 0) return icon;
     return Badge(
+      backgroundColor: AppColors.purpleNeon,
       label: Text(
         _pendingCount > 9 ? '9+' : '$_pendingCount',
         style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
       ),
-      child: const Icon(Icons.groups_rounded),
+      child: icon,
     );
   }
 }

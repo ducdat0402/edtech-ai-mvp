@@ -111,10 +111,10 @@ class _DailyQuestsScreenState extends State<DailyQuestsScreen>
         leadingWidth: 112,
         automaticallyImplyLeading: false,
         title: Text('Nhiệm vụ hằng ngày',
-            style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary)),
+            style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: AppColors.cyanNeon,
+          indicatorColor: AppColors.primaryLight,
           indicatorWeight: 3,
           labelColor: AppColors.textPrimary,
           unselectedLabelColor: AppColors.textTertiary,
@@ -157,7 +157,7 @@ class _DailyQuestsScreenState extends State<DailyQuestsScreen>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const CircularProgressIndicator(color: AppColors.cyanNeon),
+          const CircularProgressIndicator(color: AppColors.primaryLight),
           const SizedBox(height: 16),
           Text('Đang tải nhiệm vụ…',
               style: AppTextStyles.bodyMedium
@@ -174,7 +174,7 @@ class _DailyQuestsScreenState extends State<DailyQuestsScreen>
 
     return RefreshIndicator(
       onRefresh: _loadQuests,
-      color: AppColors.cyanNeon,
+      color: AppColors.primaryLight,
       child: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: _dailyQuests!.length,
@@ -204,7 +204,7 @@ class _DailyQuestsScreenState extends State<DailyQuestsScreen>
 
     return RefreshIndicator(
       onRefresh: _loadQuests,
-      color: AppColors.cyanNeon,
+      color: AppColors.primaryLight,
       child: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: _questHistory!.length,
@@ -251,16 +251,16 @@ class _QuestCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isClaimed
-              ? AppColors.successNeon.withOpacity(0.5)
+              ? AppColors.successNeon.withValues(alpha: 0.5)
               : canClaim
-                  ? color.withOpacity(0.5)
-                  : AppColors.borderPrimary,
+                  ? color.withValues(alpha: 0.5)
+                  : const Color(0x332D363D),
           width: canClaim || isClaimed ? 2 : 1,
         ),
         boxShadow: canClaim
             ? [
                 BoxShadow(
-                  color: color.withOpacity(0.3),
+                  color: color.withValues(alpha: 0.3),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -278,9 +278,9 @@ class _QuestCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.15),
+                    color: color.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: color.withOpacity(0.3)),
+                    border: Border.all(color: color.withValues(alpha: 0.3)),
                   ),
                   child: Icon(icon, color: color, size: 26),
                 ),
@@ -309,7 +309,7 @@ class _QuestCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: AppColors.successNeon.withOpacity(0.2),
+                      color: AppColors.successNeon.withValues(alpha: 0.2),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(Icons.check_rounded,
@@ -355,11 +355,11 @@ class _QuestCard extends StatelessWidget {
                         height: 10,
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
-                              colors: [color, color.withOpacity(0.7)]),
+                              colors: [color, color.withValues(alpha: 0.7)]),
                           borderRadius: BorderRadius.circular(5),
                           boxShadow: [
                             BoxShadow(
-                              color: color.withOpacity(0.5),
+                              color: color.withValues(alpha: 0.5),
                               blurRadius: 8,
                             ),
                           ],
@@ -382,8 +382,8 @@ class _QuestCard extends StatelessWidget {
                 text: 'Nhận phần thưởng',
                 onPressed: isClaiming ? null : onClaim,
                 isLoading: isClaiming,
-                gradient:
-                    LinearGradient(colors: [color, color.withOpacity(0.8)]),
+                gradient: LinearGradient(
+                    colors: [color, color.withValues(alpha: 0.8)]),
                 glowColor: color,
                 icon: Icons.card_giftcard_rounded,
               )
@@ -392,10 +392,10 @@ class _QuestCard extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 decoration: BoxDecoration(
-                  color: AppColors.successNeon.withOpacity(0.1),
+                  color: AppColors.successNeon.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
-                  border:
-                      Border.all(color: AppColors.successNeon.withOpacity(0.3)),
+                  border: Border.all(
+                      color: AppColors.successNeon.withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -421,9 +421,9 @@ class _QuestCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.xpGold.withOpacity(0.1),
+        color: AppColors.xpGold.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.xpGold.withOpacity(0.2)),
+        border: Border.all(color: AppColors.xpGold.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
@@ -438,7 +438,7 @@ class _QuestCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: AppColors.xpGold.withOpacity(0.2),
+                color: AppColors.xpGold.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
@@ -460,7 +460,7 @@ class _QuestCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: AppColors.coinGold.withOpacity(0.2),
+                color: AppColors.coinGold.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
@@ -504,7 +504,7 @@ class _QuestCard extends StatelessWidget {
   Color _getQuestColor(String type) {
     switch (type) {
       case 'complete_items':
-        return AppColors.cyanNeon;
+        return AppColors.primaryLight;
       case 'maintain_streak':
         return AppColors.streakOrange;
       case 'earn_coins':
@@ -545,8 +545,8 @@ class _QuestHistoryCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isClaimed
-              ? AppColors.successNeon.withOpacity(0.3)
-              : AppColors.borderPrimary,
+              ? AppColors.successNeon.withValues(alpha: 0.3)
+              : const Color(0x332D363D),
         ),
       ),
       child: ListTile(
@@ -554,7 +554,7 @@ class _QuestHistoryCard extends StatelessWidget {
         leading: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.15),
+            color: color.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(icon, color: color, size: 22),
@@ -612,7 +612,7 @@ class _QuestHistoryCard extends StatelessWidget {
   Color _getQuestColor(String type) {
     switch (type) {
       case 'complete_items':
-        return AppColors.cyanNeon;
+        return AppColors.primaryLight;
       case 'maintain_streak':
         return AppColors.streakOrange;
       case 'earn_coins':

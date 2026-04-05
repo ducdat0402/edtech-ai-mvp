@@ -104,7 +104,8 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
               children: [
                 Text(
                   'Cam kết tuần',
-                  style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+                  style:
+                      AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -131,8 +132,8 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
                 const SizedBox(height: 12),
                 Text(
                   'Ngày dự kiến học',
-                  style:
-                      AppTextStyles.labelLarge.copyWith(color: AppColors.textPrimary),
+                  style: AppTextStyles.labelLarge
+                      .copyWith(color: AppColors.textPrimary),
                 ),
                 const SizedBox(height: 8),
                 Wrap(
@@ -195,14 +196,16 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
           Expanded(
             child: Text(
               label,
-              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary),
+              style: AppTextStyles.bodyMedium
+                  .copyWith(color: AppColors.textPrimary),
             ),
           ),
           IconButton(
             onPressed: value > min ? () => onChanged(value - 1) : null,
             icon: const Icon(Icons.remove_circle_outline),
           ),
-          Text('$value', style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
+          Text('$value',
+              style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
           IconButton(
             onPressed: value < max ? () => onChanged(value + 1) : null,
             icon: const Icon(Icons.add_circle_outline),
@@ -227,25 +230,28 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
         children: [
           Text(
             'Tổng kết tuần hiện tại',
-            style: AppTextStyles.labelLarge.copyWith(color: AppColors.textPrimary),
+            style:
+                AppTextStyles.labelLarge.copyWith(color: AppColors.textPrimary),
           ),
           const SizedBox(height: 8),
           Text(
             'Phiên học: ${actual['sessionCount'] ?? 0}  |  Bài học: ${actual['lessonCount'] ?? 0}',
-            style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+            style: AppTextStyles.bodySmall
+                .copyWith(color: AppColors.textSecondary),
           ),
           Text(
             'Tỷ lệ bám kế hoạch: $followRate%',
-            style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+            style: AppTextStyles.bodySmall
+                .copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: 6),
           Text(
             (review['note'] ?? '').toString(),
-            style: AppTextStyles.caption.copyWith(color: AppColors.textTertiary),
+            style:
+                AppTextStyles.caption.copyWith(color: AppColors.textTertiary),
           ),
         ],
       ),
     );
   }
 }
-
