@@ -1,5 +1,6 @@
 import 'package:edtech_mobile/core/api/api_client.dart';
 import 'package:edtech_mobile/core/constants/api_constants.dart';
+import 'package:edtech_mobile/core/services/role_preview_service.dart';
 
 class ApiService {
   final ApiClient _apiClient;
@@ -629,7 +630,9 @@ class ApiService {
   // User Profile
   Future<Map<String, dynamic>> getUserProfile() async {
     final response = await _apiClient.get(ApiConstants.me);
-    return response.data;
+    await RolePreviewService.ensureLoaded();
+    final profile = Map<String, dynamic>.from(response.data as Map);
+    return RolePreviewService.applyToProfile(profile);
   }
 
   // Switch Role (user <-> contributor)

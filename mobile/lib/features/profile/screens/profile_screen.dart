@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:edtech_mobile/core/config/api_config.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/services/auth_service.dart';
+import 'package:edtech_mobile/core/services/role_preview_service.dart';
 import 'package:edtech_mobile/core/services/tutorial_service.dart';
 import 'package:edtech_mobile/core/services/theme_mode_service.dart';
 import 'package:edtech_mobile/core/tutorial/tutorial_helper.dart';
@@ -35,6 +36,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _isLoading = true;
   bool _isSwitchingRole = false;
   bool _avatarBusy = false;
+  bool _adminPreviewLearnerEnabled = false;
   String? _error;
   final ImagePicker _imagePicker = ImagePicker();
 
@@ -84,6 +86,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _loadProfile() async {
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
+      await RolePreviewService.ensureLoaded();
 
       final results = await Future.wait<dynamic>([
         apiService.getUserProfile(),
@@ -95,6 +98,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       setState(() {
         _profileData = results[0] as Map<String, dynamic>;
+        _adminPreviewLearnerEnabled =
+            RolePreviewService.adminPreviewLearnerEnabled;
         final badgesData = results[1] as Map<String, dynamic>? ?? {};
         _badgeCollection = badgesData['collection'] as List? ?? [];
         final comp = results[2];
@@ -125,8 +130,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // === Role helpers ===
   String get _currentRole => _profileData?['role'] ?? 'user';
+  String get _actualRole =>
+      _profileData?['actualRole'] as String? ?? _currentRole;
   bool get _isContributor => _currentRole == 'contributor';
-  bool get _isAdmin => _currentRole == 'admin';
+  bool get _isAdmin => _actualRole == 'admin';
+  bool get _isAdminPreviewingLearner =>
+      _isAdmin && _currentRole == 'user' && _adminPreviewLearnerEnabled;
 
   Color get _accentColor =>
       _isContributor ? AppColors.contributorBlue : AppColors.purpleNeon;
@@ -612,9 +621,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Icon(
                     _isContributor
                         ? Icons.edit_note
-                        : _isAdmin
-                            ? Icons.shield
-                            : Icons.school,
+                        : _isAdminPreviewingLearner
+                            ? Icons.visibility
+                            : _isAdmin
+                                ? Icons.shield
+                                : Icons.school,
                     color: Colors.white,
                     size: 16,
                   ),
@@ -622,9 +633,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Text(
                     _isContributor
                         ? 'CONTRIBUTOR'
-                        : _isAdmin
-                            ? 'ADMIN'
-                            : 'LEARNER',
+                        : _isAdminPreviewingLearner
+                            ? 'LEARNER (PREVIEW)'
+                            : _isAdmin
+                                ? 'ADMIN'
+                                : 'LEARNER',
                     style: AppTextStyles.labelMedium.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
@@ -635,6 +648,56 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
           const SizedBox(height: 16),
+
+          if (_isAdmin)
+            Container(
+              margin: const EdgeInsets.only(bottom: 18),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: _bgSecondary,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: _borderColor),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.visibility_rounded,
+                      color: AppColors.primaryLight),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Xem như Learner',
+                            style: AppTextStyles.bodyBold
+                                .copyWith(color: AppColors.textPrimary)),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Chỉ đổi giao diện/luồng trong app. Backend vẫn là Admin.',
+                          style: AppTextStyles.caption
+                              .copyWith(color: AppColors.textTertiary),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Switch(
+                    value: _adminPreviewLearnerEnabled,
+                    activeColor: AppColors.primaryLight,
+                    onChanged: (v) async {
+                      HapticFeedback.lightImpact();
+                      setState(() => _adminPreviewLearnerEnabled = v);
+                      await RolePreviewService.setAdminPreviewLearnerEnabled(v);
+                      try {
+                        final api =
+                            Provider.of<ApiService>(context, listen: false);
+                        final refreshed = await api.getUserProfile();
+                        if (!mounted) return;
+                        setState(() => _profileData = refreshed);
+                      } catch (_) {}
+                    },
+                  ),
+                ],
+              ),
+            ),
 
           // Role switcher removed (no longer needed).
           // _buildRoleSwitcher() intentionally not shown to keep UI simpler.
@@ -661,7 +724,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 24),
           ],
 
-          if (_isAdmin)
+          if (_isAdmin && !_adminPreviewLearnerEnabled)
             _buildMenuCard(
               icon: Icons.admin_panel_settings,
               title: 'Admin Panel',
