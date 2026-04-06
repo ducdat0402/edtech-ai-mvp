@@ -357,6 +357,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _handleSwitchRole() async {
+    if (_isAdmin) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+                'Tài khoản Admin không hỗ trợ chuyển sang Learner/Contributor.'),
+            backgroundColor: AppColors.bgSecondary,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+      return;
+    }
     final targetRole = _isContributor ? 'user' : 'contributor';
     final targetLabel = targetRole == 'contributor' ? 'Contributor' : 'Learner';
 
