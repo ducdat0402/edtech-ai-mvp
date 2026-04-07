@@ -19,6 +19,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
   String? _error;
   Map<String, dynamic>? _profileData;
   bool _isSwitchingRole = false;
+  bool _viewAsContributor = false;
   String _subjectFilter = 'all'; // all | private | community | expert
   List<Map<String, dynamic>> _subjects = [];
   bool _showSearchField = false;
@@ -74,6 +75,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
             .map((e) => Map<String, dynamic>.from(e as Map))
             .toList();
         _profileData = Map<String, dynamic>.from(profile as Map);
+        _viewAsContributor = _hasContributorRole;
         _loading = false;
       });
     } catch (e) {
@@ -86,8 +88,9 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
 
   // === Role helpers ===
   String get _currentRole => _profileData?['role']?.toString() ?? 'user';
-  bool get _isContributor =>
+  bool get _hasContributorRole =>
       _currentRole == 'contributor' || _currentRole == 'admin';
+  bool get _isContributor => _hasContributorRole && _viewAsContributor;
 
   Color get _bgPrimary =>
       _isContributor ? AppColors.contributorBgPrimary : AppColors.bgPrimary;
@@ -98,6 +101,32 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
 
   Future<void> _handleSwitchRole() async {
     if (_isSwitchingRole) return;
+
+    // Admin: backend không cho đổi role qua endpoint switch-role (sẽ trả 400).
+    // Vì vậy ta chỉ toggle "view mode" trong UI.
+    if (_currentRole == 'admin') {
+      setState(() {
+        _isSwitchingRole = true;
+        _viewAsContributor = !_viewAsContributor;
+      });
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              _viewAsContributor
+                  ? 'Đang xem dưới chế độ Contributor (Admin)'
+                  : 'Đang xem dưới chế độ Learner (Admin)',
+            ),
+            backgroundColor: _viewAsContributor
+                ? AppColors.contributorBlue
+                : AppColors.successNeon,
+          ),
+        );
+      }
+      if (mounted) setState(() => _isSwitchingRole = false);
+      return;
+    }
+
     final targetRole = _isContributor ? 'user' : 'contributor';
     setState(() => _isSwitchingRole = true);
     try {
@@ -105,7 +134,10 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
       final raw = await apiService.switchRole(targetRole);
       final updated = Map<String, dynamic>.from(raw as Map);
       if (!mounted) return;
-      setState(() => _profileData = {...?_profileData, ...updated});
+      setState(() {
+        _profileData = {...?_profileData, ...updated};
+        _viewAsContributor = targetRole == 'contributor';
+      });
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
