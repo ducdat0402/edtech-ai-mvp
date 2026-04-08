@@ -134,6 +134,7 @@ class ApiConstants {
   static String generateEndQuiz(String nodeId) =>
       '/nodes/$nodeId/end-quiz/generate';
   static const String generateExample = '/nodes/generate-example';
+  static const String simplifyTextLesson = '/nodes/simplify-text';
   static const String generateQuizExplanations =
       '/nodes/generate-quiz-explanations';
   static String submitEndQuiz(String nodeId) => '/nodes/$nodeId/submit-quiz';

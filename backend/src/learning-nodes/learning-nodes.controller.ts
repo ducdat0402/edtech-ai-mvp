@@ -1,4 +1,16 @@
-import { Controller, Get, Param, Post, Put, Body, UseGuards, NotFoundException, Request, ForbiddenException, BadRequestException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Post,
+  Put,
+  Body,
+  UseGuards,
+  NotFoundException,
+  Request,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 import { instanceToPlain } from 'class-transformer';
 import { LearningNodesService } from './learning-nodes.service';
 import { LessonContentService } from './lesson-content.service';
@@ -8,6 +20,7 @@ import { UsersService } from '../users/users.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
 import { UpdateLessonContentDto } from './dto/lesson-content.dto';
+import { AiUsageService } from './ai-usage.service';
 
 // Diamond costs for AI features
 const AI_COST = {
@@ -23,6 +36,7 @@ export class LearningNodesController {
     private readonly aiService: AiService,
     private readonly userCurrencyService: UserCurrencyService,
     private readonly usersService: UsersService,
+    private readonly aiUsageService: AiUsageService,
   ) {}
 
   /**
@@ -391,6 +405,50 @@ export class LearningNodesController {
       correctAnswer,
       context?.trim() || undefined,
     );
+  }
+
+  @Post('simplify-text')
+  @UseGuards(JwtAuthGuard)
+  async simplifyTextLesson(
+    @Request() req,
+    @Body() body: { nodeId: string; title?: string; content: string },
+  ) {
+    const userId = req.user.id;
+    const nodeId = (body.nodeId || '').toString().trim();
+    const title = (body.title || '').toString().trim();
+    const content = (body.content || '').toString().trim();
+
+    if (!nodeId) {
+      throw new BadRequestException('Thiếu nodeId.');
+    }
+    if (!content) {
+      throw new BadRequestException('Thiếu nội dung bài học.');
+    }
+
+    const wordCount = content.split(/\s+/).filter(Boolean).length;
+    if (wordCount < 50) {
+      throw new BadRequestException(
+        'Bài học quá ngắn, không thể đơn giản hóa hơn được nữa.',
+      );
+    }
+
+    const FREE_LIMIT = 5;
+    const usage = await this.aiUsageService.consumeFreeOrThrow({
+      userId,
+      buttonType: 'simplify_text',
+      freeLimit: FREE_LIMIT,
+    });
+
+    const simplifiedText = await this.aiService.simplifyTextLesson({
+      title: title || `Node ${nodeId}`,
+      content,
+    });
+
+    return {
+      simplifiedText,
+      remainingFreeUsesToday: usage.remainingFreeUsesToday,
+      freeLimit: FREE_LIMIT,
+    };
   }
 }
 

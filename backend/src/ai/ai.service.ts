@@ -140,6 +140,29 @@ CHỈ TRẢ VỀ JSON, KHÔNG CÓ GÌ KHÁC.`;
     }
   }
 
+  async simplifyTextLesson(params: {
+    title: string;
+    content: string;
+  }): Promise<string> {
+    const { title, content } = params;
+    const prompt = `Bạn là một gia sư giỏi. Hãy "đơn giản hóa" bài học sau để người mới học hiểu nhanh hơn.
+
+TIÊU ĐỀ: ${title}
+
+NỘI DUNG:
+${content}
+
+YÊU CẦU:
+- Viết tiếng Việt, dễ hiểu, rõ ràng.
+- Giữ đúng ý nghĩa; không bịa thêm kiến thức mới.
+- Ưu tiên câu ngắn, ví dụ minh hoạ nhỏ nếu cần.
+- Nếu có thuật ngữ, giải thích ngắn gọn trong ngoặc.
+- Trả về CHỈ NỘI DUNG ĐÃ ĐƠN GIẢN HÓA (không thêm tiêu đề, không markdown, không bullet nếu không cần).`;
+
+    const resp = await this.chat([{ role: 'user', content: prompt }]);
+    return (resp || '').trim();
+  }
+
   /**
    * Validate, verify, and generate explanations for quiz answers.
    * - Validates question quality and options

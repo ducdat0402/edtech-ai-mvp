@@ -1,8 +1,11 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
+import 'package:provider/provider.dart';
 import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/core/widgets/ai_generated_notice.dart';
 import 'package:edtech_mobile/core/widgets/contributor_credit_button.dart';
+import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/theme/colors.dart';
 import 'end_quiz_screen.dart';
 
@@ -32,6 +35,10 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
   final Map<int, int?> _quizAnswers = {};
   final Map<int, bool> _quizRevealed = {};
   final Set<int> _checkedObjectives = {};
+
+  bool _isSimplifying = false;
+  String? _simplifiedText;
+  int _selectedView = 0; // 0: original, 1: simplified
 
   List<Map<String, dynamic>> get _sections {
     final raw = widget.lessonData['sections'] ?? widget.lessonData['content'];
@@ -123,6 +130,110 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
     return max(1, minutes);
   }
 
+  String get _fullTextForSimplify {
+    final parts = <String>[];
+    for (final section in _sections) {
+      final sectionTitle = (section['title'] ?? section['heading'] ?? '')
+          .toString()
+          .trim();
+      final content = (section['content'] ??
+              section['text'] ??
+              section['description'] ??
+              section['body'] ??
+              '')
+          .toString()
+          .trim();
+      if (sectionTitle.isNotEmpty) parts.add(sectionTitle);
+      if (content.isNotEmpty) parts.add(content);
+    }
+    if (_summaryText.trim().isNotEmpty) {
+      parts.add('Tổng kết');
+      parts.add(_summaryText.trim());
+    }
+    return parts.join('\n\n').trim();
+  }
+
+  int get _fullTextWordCount =>
+      _fullTextForSimplify.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).length;
+
+  Future<void> _onSimplifyPressed() async {
+    if (_isSimplifying) return;
+
+    if (_fullTextWordCount < 50) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Bài học quá ngắn, không thể đơn giản hóa hơn được nữa.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isSimplifying = true);
+    try {
+      final api = Provider.of<ApiService>(context, listen: false);
+      final res = await api.simplifyTextLesson(
+        nodeId: widget.nodeId,
+        title: widget.title,
+        content: _fullTextForSimplify,
+      );
+      if (!mounted) return;
+      final simplified = (res['simplifiedText'] ?? '').toString().trim();
+      final remaining = int.tryParse('${res['remainingFreeUsesToday'] ?? ''}');
+      setState(() {
+        _simplifiedText = simplified.isEmpty ? _simplifiedText : simplified;
+        _selectedView = 1;
+      });
+      if (remaining != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Còn $remaining lượt miễn phí hôm nay')),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      String msg = 'Có lỗi xảy ra. Vui lòng thử lại.';
+      bool requiresPaywall = false;
+
+      if (e is DioException) {
+        final data = e.response?.data;
+        if (data is Map) {
+          final m = data['message'];
+          if (m is String && m.trim().isNotEmpty) msg = m.trim();
+          requiresPaywall = data['requiresPaywall'] == true;
+        } else if (data is String && data.trim().isNotEmpty) {
+          msg = data.trim();
+        }
+      } else {
+        final raw = e.toString();
+        if (raw.trim().isNotEmpty) msg = raw;
+      }
+
+      if (requiresPaywall) {
+        showDialog<void>(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: const Text('Đã hết lượt miễn phí'),
+            content: Text(msg),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Đóng'),
+              ),
+            ],
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(msg)),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSimplifying = false);
+    }
+  }
+
   void _selectQuizAnswer(int quizIndex, int optionIndex) {
     if (_quizRevealed[quizIndex] == true) return;
     setState(() {
@@ -169,14 +280,20 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
                   AiGeneratedNotice(visible: widget.contributor == null),
                   if (widget.contributor == null) const SizedBox(height: 10),
                   // Estimated reading time
-                  _buildReadingTimeChip(),
+                  Row(
+                    children: [
+                      _buildReadingTimeChip(),
+                      const Spacer(),
+                      _buildSimplifyButton(),
+                    ],
+                  ),
                   const SizedBox(height: 16),
 
                   // Sections with inline quizzes
-                  ..._buildSectionsWithQuizzes(),
+                  ..._buildContentByView(),
 
                   // Summary card
-                  if (_summaryText.isNotEmpty) ...[
+                  if (_summaryText.isNotEmpty && _selectedView == 0) ...[
                     const SizedBox(height: 20),
                     _buildSummaryCard(),
                   ],
@@ -259,12 +376,103 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
     );
   }
 
-  List<Widget> _buildSectionsWithQuizzes() {
+  Widget _buildSimplifyButton() {
+    final canShowTabs = _simplifiedText != null && _simplifiedText!.isNotEmpty;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (canShowTabs)
+          Container(
+            padding: const EdgeInsets.all(3),
+            decoration: BoxDecoration(
+              color: AppColors.bgSecondary,
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(color: AppColors.purpleNeon.withValues(alpha: 0.25)),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildViewChip(label: 'Gốc', value: 0),
+                _buildViewChip(label: 'Bản đơn giản', value: 1),
+              ],
+            ),
+          ),
+        const SizedBox(width: 10),
+        SizedBox(
+          height: 34,
+          child: ElevatedButton.icon(
+            onPressed: _isSimplifying ? null : _onSimplifyPressed,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.purpleNeon,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(999),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+            ),
+            icon: _isSimplifying
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Icon(Icons.auto_fix_high, size: 18),
+            label: const Text(
+              'Đơn giản hóa',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildViewChip({required String label, required int value}) {
+    final selected = _selectedView == value;
+    return InkWell(
+      borderRadius: BorderRadius.circular(999),
+      onTap: () => setState(() => _selectedView = value),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: selected
+              ? AppColors.purpleNeon.withValues(alpha: 0.18)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            color: selected ? AppColors.purpleNeon : AppColors.textTertiary,
+          ),
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _buildContentByView() {
+    if (_selectedView == 1 && (_simplifiedText?.trim().isNotEmpty ?? false)) {
+      return [
+        _buildSimplifiedCard(_simplifiedText!.trim()),
+        ..._buildSectionsWithQuizzes(includeSections: false),
+      ];
+    }
+    return _buildSectionsWithQuizzes(includeSections: true);
+  }
+
+  List<Widget> _buildSectionsWithQuizzes({required bool includeSections}) {
     final widgets = <Widget>[];
 
-    for (int i = 0; i < _sections.length; i++) {
-      final section = _sections[i];
-      widgets.add(_buildSectionCard(section));
+    if (includeSections) {
+      for (int i = 0; i < _sections.length; i++) {
+        final section = _sections[i];
+        widgets.add(_buildSectionCard(section));
+      }
     }
 
     // Always place quiz part after reading content to avoid "all questions" feeling.
@@ -288,6 +496,71 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
 
     return widgets;
   }
+
+  Widget _buildSimplifiedCard(String simplified) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppColors.bgSecondary,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.purpleNeon.withValues(alpha: 0.25)),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              AppColors.bgSecondary,
+              AppColors.purpleNeon.withValues(alpha: 0.05),
+            ],
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.purpleNeon.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.auto_fix_high,
+                    color: AppColors.purpleNeon,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                const Expanded(
+                  child: Text(
+                    'Bản đơn giản',
+                    style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              simplified,
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 15,
+                height: 1.7,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
 
   Widget _buildSectionCard(Map<String, dynamic> section) {
     final rawSectionTitle =

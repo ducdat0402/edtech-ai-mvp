@@ -37,6 +37,7 @@ import { UserBadge } from '../weekly-rewards/entities/user-badge.entity';
 import { WeeklyRewardHistory } from '../weekly-rewards/entities/weekly-reward-history.entity';
 import { LearningQuizAttempt } from '../learning-nodes/entities/learning-quiz-attempt.entity';
 import { LearningCommunicationAttempt } from '../learning-nodes/entities/learning-communication-attempt.entity';
+import { AiUsageLog } from '../learning-nodes/entities/ai-usage-log.entity';
 import { UserWeeklyPlan } from '../self-leadership/entities/user-weekly-plan.entity';
 import { SelfLeadershipCheckin } from '../self-leadership/entities/self-leadership-checkin.entity';
 import { CommunityStatus } from '../community/entities/community-status.entity';
@@ -107,6 +108,7 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
         WeeklyRewardHistory,
         LearningQuizAttempt,
         LearningCommunicationAttempt,
+        AiUsageLog,
         UserWeeklyPlan,
         SelfLeadershipCheckin,
         CommunityStatus,

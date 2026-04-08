@@ -6,6 +6,7 @@ import { LearningNodesController } from './learning-nodes.controller';
 import { LearningNode } from './entities/learning-node.entity';
 import { LearningQuizAttempt } from './entities/learning-quiz-attempt.entity';
 import { LearningCommunicationAttempt } from './entities/learning-communication-attempt.entity';
+import { AiUsageLog } from './entities/ai-usage-log.entity';
 import { AiModule } from '../ai/ai.module';
 import { DomainsModule } from '../domains/domains.module';
 import { GenerationProgressService } from './generation-progress.service';
@@ -13,6 +14,7 @@ import { LessonTypeContentsModule } from '../lesson-type-contents/lesson-type-co
 import { UserCurrencyModule } from '../user-currency/user-currency.module';
 import { UnlockTransactionsModule } from '../unlock-transactions/unlock-transactions.module';
 import { UsersModule } from '../users/users.module';
+import { AiUsageService } from './ai-usage.service';
 
 @Module({
   imports: [
@@ -20,6 +22,7 @@ import { UsersModule } from '../users/users.module';
       LearningNode,
       LearningQuizAttempt,
       LearningCommunicationAttempt,
+      AiUsageLog,
     ]),
     AiModule,
     forwardRef(() => DomainsModule),
@@ -29,7 +32,12 @@ import { UsersModule } from '../users/users.module';
     UsersModule,
   ],
   controllers: [LearningNodesController],
-  providers: [LearningNodesService, LessonContentService, GenerationProgressService],
+  providers: [
+    LearningNodesService,
+    LessonContentService,
+    GenerationProgressService,
+    AiUsageService,
+  ],
   exports: [LearningNodesService, LessonContentService, GenerationProgressService],
 })
 export class LearningNodesModule {}

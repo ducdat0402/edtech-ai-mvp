@@ -154,6 +154,22 @@ class ApiService {
     return Map<String, dynamic>.from(response.data);
   }
 
+  Future<Map<String, dynamic>> simplifyTextLesson({
+    required String nodeId,
+    required String title,
+    required String content,
+  }) async {
+    final response = await _apiClient.post(
+      ApiConstants.simplifyTextLesson,
+      data: {
+        'nodeId': nodeId,
+        'title': title,
+        'content': content,
+      },
+    );
+    return Map<String, dynamic>.from(response.data);
+  }
+
   Future<Map<String, dynamic>> generateQuizExplanations({
     required String question,
     required List<Map<String, String>> options,
