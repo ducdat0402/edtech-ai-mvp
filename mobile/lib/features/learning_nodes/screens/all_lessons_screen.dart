@@ -892,6 +892,16 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
 
   Future<void> _showLockedLessonDialog(String title, String nodeId) async {
     final api = Provider.of<ApiService>(context, listen: false);
+    // Defensive: list lock status can be stale; trust backend access-check.
+    try {
+      final access = await api.checkNodeAccess(nodeId);
+      if (access['canAccess'] == true) {
+        if (!mounted) return;
+        await context.push('/lessons/$nodeId/types', extra: {'title': title});
+        if (mounted) _loadData();
+        return;
+      }
+    } catch (_) {}
     final opened = await LessonUnlockSheet.show(
       context: context,
       api: api,

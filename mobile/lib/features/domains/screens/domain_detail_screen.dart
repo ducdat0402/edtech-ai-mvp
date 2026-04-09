@@ -323,14 +323,30 @@ class _DomainDetailScreenState extends State<DomainDetailScreen> {
         side: const BorderSide(color: Color(0x332D363D)),
       ),
       child: InkWell(
-        onTap: () {
+        onTap: () async {
           if (isLocked) {
+            // Defensive: if backend says already accessible, navigate directly.
+            // This prevents "locked icon but canAccess=true" mismatch from stale lists.
+            try {
+              final api = Provider.of<ApiService>(context, listen: false);
+              final access = await api.checkNodeAccess(nodeId);
+              if (access['canAccess'] == true) {
+                if (!mounted) return;
+                await context.push(
+                  '/lessons/$nodeId/types',
+                  extra: {'title': title},
+                );
+                if (mounted) _loadDomain();
+                return;
+              }
+            } catch (_) {}
             _showLockedDialog(title);
           } else {
-            context.push(
+            await context.push(
               '/lessons/$nodeId/types',
               extra: {'title': title},
-            ).then((_) => _loadDomain());
+            );
+            if (mounted) _loadDomain();
           }
         },
         borderRadius: BorderRadius.circular(12),
