@@ -65,8 +65,20 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
           }
         }
       } catch (_) {
-        // If access-check fails, fall through: the unlock sheet itself handles open flow,
-        // and the content APIs might still be reachable (best-effort).
+        // If access-check fails, DO NOT fall through (would allow bypass).
+        // Force the unlock sheet; it already has user-friendly error states.
+        final opened = await LessonUnlockSheet.show(
+          context: context,
+          api: apiService,
+          nodeId: widget.nodeId,
+          title: widget.title,
+        );
+        if (!opened) {
+          if (mounted) {
+            context.pop();
+          }
+          return;
+        }
       }
 
       // Fetch lesson type contents and progress in parallel
