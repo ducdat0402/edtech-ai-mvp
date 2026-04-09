@@ -41,8 +41,9 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
 
   bool get _isContributor => _userRole == 'contributor' || _userRole == 'admin';
 
-  /// Opens the first available lesson (first domain -> first topic -> first node) for onboarding flow.
-  void _openFirstLessonIfPossible() {
+  /// Opens the first available lesson for onboarding flow.
+  /// Calls openLearningNode with onboardingTrial=true so it doesn't consume daily free slots.
+  Future<void> _openFirstLessonIfPossible() async {
     if (_hasOpenedFirstLesson || _domains.isEmpty) return;
     _hasOpenedFirstLesson = true;
     final domain = _domains.first;
@@ -57,6 +58,13 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
     final nodeId = lesson['id'] as String?;
     final title = lesson['title'] as String? ?? 'Bài học';
     if (nodeId == null) return;
+
+    try {
+      final api = Provider.of<ApiService>(context, listen: false);
+      await api.openLearningNode(nodeId, onboardingTrial: true);
+    } catch (_) {}
+
+    if (!mounted) return;
     context.push('/lessons/$nodeId/types', extra: {'title': title}).then((_) {
       if (mounted) _loadData();
     });

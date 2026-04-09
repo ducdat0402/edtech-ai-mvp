@@ -28,6 +28,10 @@ export class UserOpenedNode {
   @Column({ type: 'int', default: 0 })
   coinsPaid: number;
 
+  /** Nguồn mở bài: free_daily | paid | onboarding_trial. Trial không đếm vào quota miễn phí. */
+  @Column({ type: 'varchar', length: 30, default: 'free_daily' })
+  source: string;
+
   @CreateDateColumn()
   openedAt: Date;
 }

@@ -427,7 +427,7 @@ export class UnlockTransactionsService {
 
   /**
    * Số suất miễn phí (2 bài/ngày) đã dùng — chỉ đếm bài community/expert mở bằng suất ngày.
-   * Không đếm: môn private (cũng ghi diamondsPaid=0), mở bằng xu (diamondsPaid=0 nhưng coinsPaid>0).
+   * Không đếm: môn private, mở bằng xu/kim cương, hoặc onboarding trial.
    */
   private async countDailyFreeSlotsUsed(
     userId: string,
@@ -441,6 +441,7 @@ export class UnlockTransactionsService {
       .where('o.userId = :userId', { userId })
       .andWhere('o.diamondsPaid = 0')
       .andWhere('o.coinsPaid = 0')
+      .andWhere('o.source != :trial', { trial: 'onboarding_trial' })
       .andWhere('s.subjectType != :priv', { priv: 'private' })
       .andWhere(
         `to_char(timezone('Asia/Ho_Chi_Minh', o.openedAt), 'YYYY-MM-DD') = :d`,
@@ -487,11 +488,13 @@ export class UnlockTransactionsService {
   /**
    * Mở một bài học: tối đa 2 bài/ngày (toàn hệ thống) miễn phí, sau đó 50 💎/bài.
    * Không kiểm tra prerequisites — học tự do: user có thể mở bất kỳ bài nào (miễn còn suất / đủ 💎).
+   * onboardingTrial = true → mở miễn phí + KHÔNG trừ quota ngày.
    */
   async openLearningNode(
     userId: string,
     nodeId: string,
     preferredCurrency?: 'coins' | 'diamonds',
+    onboardingTrial?: boolean,
   ) {
     const node = await this.nodeRepository.findOne({
       where: { id: nodeId },
@@ -545,6 +548,28 @@ export class UnlockTransactionsService {
       };
     }
 
+    if (onboardingTrial) {
+      await this.openedNodeRepository
+        .createQueryBuilder()
+        .insert()
+        .values({
+          userId,
+          nodeId,
+          diamondsPaid: 0,
+          coinsPaid: 0,
+          source: 'onboarding_trial',
+        })
+        .orIgnore()
+        .execute();
+      return {
+        success: true,
+        onboardingTrial: true,
+        usedFreeDailySlot: false,
+        diamondsPaid: 0,
+        message: 'Bài học thử trong onboarding — không trừ suất miễn phí',
+      };
+    }
+
     await this.currencyService.getOrCreate(userId);
 
     return this.dataSource.transaction(async (manager) => {
@@ -571,6 +596,7 @@ export class UnlockTransactionsService {
           nodeId,
           diamondsPaid: 0,
           coinsPaid: 0,
+          source: 'free_daily',
         });
         return {
           success: true,
@@ -616,6 +642,7 @@ export class UnlockTransactionsService {
         nodeId,
         diamondsPaid: shouldUseCoins ? 0 : DIAMOND_PER_LESSON_OPEN,
         coinsPaid: shouldUseCoins ? DIAMOND_PER_LESSON_OPEN : 0,
+        source: 'paid',
       });
 
       return {

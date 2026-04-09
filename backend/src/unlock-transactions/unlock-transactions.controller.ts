@@ -72,12 +72,18 @@ export class UnlockTransactionsController {
 
   /**
    * POST /unlock/node — mở một bài học (2 suất miễn phí/ngày toàn hệ thống, sau đó 50 💎).
+   * onboardingTrial=true → mở miễn phí, không trừ quota ngày.
    */
   @Post('node')
   @UseGuards(JwtAuthGuard)
   async openLearningNode(
     @Request() req,
-    @Body() body: { nodeId: string; currencyType?: 'coins' | 'diamonds' },
+    @Body()
+    body: {
+      nodeId: string;
+      currencyType?: 'coins' | 'diamonds';
+      onboardingTrial?: boolean;
+    },
   ) {
     if (!body?.nodeId) {
       throw new BadRequestException('nodeId là bắt buộc');
@@ -86,6 +92,7 @@ export class UnlockTransactionsController {
       req.user.id,
       body.nodeId,
       body.currencyType,
+      body.onboardingTrial,
     );
   }
 

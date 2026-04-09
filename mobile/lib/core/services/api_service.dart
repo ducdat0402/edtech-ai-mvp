@@ -1046,15 +1046,18 @@ class ApiService {
   }
 
   /// Mở một bài học (2 suất miễn phí/ngày, sau đó trả phí theo loại môn).
+  /// [onboardingTrial] = true → mở miễn phí, không trừ quota ngày.
   Future<Map<String, dynamic>> openLearningNode(
     String nodeId, {
     String? currencyType,
+    bool onboardingTrial = false,
   }) async {
     final response = await _apiClient.post(
       ApiConstants.unlockLearningNode,
       data: {
         'nodeId': nodeId,
         if (currencyType != null) 'currencyType': currencyType,
+        if (onboardingTrial) 'onboardingTrial': true,
       },
     );
     return response.data;
