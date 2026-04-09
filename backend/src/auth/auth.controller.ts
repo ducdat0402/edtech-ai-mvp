@@ -1,8 +1,18 @@
-import { Controller, Post, Body, Get, Headers, UseGuards, Request } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  Headers,
+  UseGuards,
+  Request,
+  Res,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import type { Response } from 'express';
 
 @Controller('auth')
 export class AuthController {
@@ -44,7 +54,10 @@ export class AuthController {
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
-  async getMe(@Request() req) {
+  async getMe(@Request() req, @Res({ passthrough: true }) res: Response) {
+    // Prevent intermediary/proxy caching of per-user auth responses.
+    res.setHeader('Cache-Control', 'no-store');
+    res.setHeader('Pragma', 'no-cache');
     return req.user;
   }
 }
