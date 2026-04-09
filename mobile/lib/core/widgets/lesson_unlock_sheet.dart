@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/features/dashboard/screens/dashboard_screen.dart';
 import 'package:edtech_mobile/theme/theme.dart';
@@ -232,11 +233,22 @@ class LessonUnlockSheet {
       if (ctx.mounted) Navigator.pop(ctx, true);
     } catch (e) {
       setBusy(false);
-      if (ctx.mounted) {
-        ScaffoldMessenger.of(ctx).showSnackBar(
-          SnackBar(content: Text('$e'), backgroundColor: AppColors.errorNeon),
-        );
-      }
+      if (!ctx.mounted) return;
+      final msg = _extractErrorMessage(e);
+      ScaffoldMessenger.of(ctx).showSnackBar(
+        SnackBar(content: Text(msg), backgroundColor: AppColors.errorNeon),
+      );
     }
+  }
+
+  static String _extractErrorMessage(Object e) {
+    if (e is DioException) {
+      final data = e.response?.data;
+      if (data is Map) {
+        return (data['message'] as String?) ?? 'Lỗi không xác định (${e.response?.statusCode})';
+      }
+      return e.message ?? 'Lỗi kết nối';
+    }
+    return e.toString();
   }
 }

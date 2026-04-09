@@ -6,6 +6,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:edtech_mobile/core/api/api_client.dart';
 import 'package:edtech_mobile/core/auth/auth_session_controller.dart';
 import 'package:edtech_mobile/core/constants/api_constants.dart';
+import 'package:edtech_mobile/features/dashboard/screens/dashboard_screen.dart';
 
 class AuthService {
   final ApiClient _apiClient;
@@ -14,6 +15,7 @@ class AuthService {
   AuthService(this._apiClient, [this._session]);
 
   void _onAuthSuccess() {
+    DashboardScreen.clearMemoryCache();
     _session?.setLoggedIn(true);
   }
 
@@ -354,6 +356,7 @@ class AuthService {
 
   Future<void> logout() async {
     await _apiClient.clearToken();
+    DashboardScreen.clearMemoryCache();
     _session?.setLoggedIn(false);
 
     // Đăng xuất khỏi Google trên thiết bị → lần sau bấm “Đăng nhập Google” sẽ chọn tài khoản.
