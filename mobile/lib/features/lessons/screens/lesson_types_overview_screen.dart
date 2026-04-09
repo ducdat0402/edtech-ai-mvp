@@ -5,6 +5,7 @@ import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/services/competency_growth_notifier.dart';
 import 'package:edtech_mobile/core/widgets/ai_generated_notice.dart';
 import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
+import 'package:edtech_mobile/core/widgets/lesson_unlock_sheet.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 
 /// Screen showing all available lesson types for a learning node.
@@ -41,6 +42,32 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
   Future<void> _loadData() async {
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
+
+      // Guard: never allow entering locked lessons via direct navigation / stale UI.
+      try {
+        final access = await apiService.checkNodeAccess(widget.nodeId);
+        if (access['canAccess'] != true) {
+          final subjectId =
+              (access['nodeInfo'] as Map?)?.cast<String, dynamic>()['subjectId']
+                  as String?;
+          final opened = await LessonUnlockSheet.show(
+            context: context,
+            api: apiService,
+            nodeId: widget.nodeId,
+            title: widget.title,
+            subjectId: subjectId,
+          );
+          if (!opened) {
+            if (mounted) {
+              context.pop();
+            }
+            return;
+          }
+        }
+      } catch (_) {
+        // If access-check fails, fall through: the unlock sheet itself handles open flow,
+        // and the content APIs might still be reachable (best-effort).
+      }
 
       // Fetch lesson type contents and progress in parallel
       final results = await Future.wait([
