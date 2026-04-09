@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { LessonTypeContent } from './entities/lesson-type-content.entity';
 import { LessonTypeContentVersion } from './entities/lesson-type-content-version.entity';
@@ -9,7 +9,7 @@ import { UnlockTransactionsModule } from '../unlock-transactions/unlock-transact
 @Module({
   imports: [
     TypeOrmModule.forFeature([LessonTypeContent, LessonTypeContentVersion]),
-    UnlockTransactionsModule,
+    forwardRef(() => UnlockTransactionsModule),
   ],
   controllers: [LessonTypeContentsController],
   providers: [LessonTypeContentsService],

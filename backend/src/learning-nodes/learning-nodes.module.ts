@@ -26,7 +26,7 @@ import { AiUsageService } from './ai-usage.service';
     ]),
     AiModule,
     forwardRef(() => DomainsModule),
-    LessonTypeContentsModule,
+    forwardRef(() => LessonTypeContentsModule),
     UserCurrencyModule,
     forwardRef(() => UnlockTransactionsModule),
     UsersModule,
