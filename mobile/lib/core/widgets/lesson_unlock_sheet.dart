@@ -12,7 +12,9 @@ class LessonUnlockSheet {
     String? subjectId,
     Future<void> Function()? onOpened,
   }) async {
-    int remainingFree = 0;
+    /// null = không tải được API (không được coi như "hết suất").
+    int? remainingFree;
+    var accessLoadFailed = false;
     String subjectType = 'expert';
     int coinCost = 50;
     int diamondCost = 50;
@@ -27,7 +29,20 @@ class LessonUnlockSheet {
       diamondCost = (access['diamondCost'] as num?)?.toInt() ?? 50;
       userCoins = (access['userCoins'] as num?)?.toInt() ?? 0;
       userDiamonds = (access['userDiamonds'] as num?)?.toInt() ?? 0;
-    } catch (_) {}
+    } catch (e) {
+      accessLoadFailed = true;
+      remainingFree = null;
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Không tải được trạng thái mở bài: $e',
+            ),
+            backgroundColor: AppColors.errorNeon,
+          ),
+        );
+      }
+    }
 
     if (!context.mounted) return false;
 
@@ -64,9 +79,11 @@ class LessonUnlockSheet {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  remainingFree > 0
-                      ? 'Suất miễn phí hôm nay: còn $remainingFree.'
-                      : 'Hôm nay đã dùng hết 2 suất miễn phí.',
+                  accessLoadFailed
+                      ? 'Không xác định số suất còn lại. Bấm "Mở bài" — nếu còn suất, hệ thống sẽ mở miễn phí.'
+                      : (remainingFree != null && remainingFree > 0)
+                          ? 'Suất miễn phí hôm nay: còn $remainingFree.'
+                          : 'Hôm nay đã dùng hết 2 suất miễn phí.',
                   style: AppTextStyles.caption
                       .copyWith(color: AppColors.cyanNeon, fontSize: 12),
                 ),
@@ -116,9 +133,13 @@ class LessonUnlockSheet {
                                     }
                                   }
                                 },
-                          child: Text(remainingFree > 0
-                              ? 'Miễn phí / Xu'
-                              : '$coinCost xu'),
+                          child: Text(
+                            remainingFree == null
+                                ? 'Mở bài (xu)'
+                                : (remainingFree > 0
+                                    ? 'Mở miễn phí (xu)'
+                                    : '$coinCost xu'),
+                          ),
                         ),
                       ),
                     ],
@@ -149,9 +170,13 @@ class LessonUnlockSheet {
                                   }
                                 }
                               },
-                        child: Text(remainingFree > 0
-                            ? 'Miễn phí / 💎'
-                            : '$diamondCost 💎'),
+                        child: Text(
+                          remainingFree == null
+                              ? 'Mở bài'
+                              : (remainingFree > 0
+                                  ? 'Mở miễn phí'
+                                  : '$diamondCost 💎'),
+                        ),
                       ),
                     ),
                   ],

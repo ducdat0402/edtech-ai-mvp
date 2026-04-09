@@ -425,18 +425,38 @@ export class UnlockTransactionsService {
     return d.toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' });
   }
 
-  /** Số bài đã mở bằng suất miễn phí trong ngày (VN). */
-  async countFreeLessonOpensToday(userId: string): Promise<number> {
-    const today = this.calendarDateVN();
-    return this.openedNodeRepository
+  /**
+   * Số suất miễn phí (2 bài/ngày) đã dùng — chỉ đếm bài community/expert mở bằng suất ngày.
+   * Không đếm: môn private (cũng ghi diamondsPaid=0), mở bằng xu (diamondsPaid=0 nhưng coinsPaid>0).
+   */
+  private async countDailyFreeSlotsUsed(
+    userId: string,
+    today: string,
+    openedRepo: Repository<UserOpenedNode>,
+  ): Promise<number> {
+    return openedRepo
       .createQueryBuilder('o')
+      .innerJoin(LearningNode, 'n', 'n.id = o.nodeId')
+      .innerJoin(Subject, 's', 's.id = n.subjectId')
       .where('o.userId = :userId', { userId })
       .andWhere('o.diamondsPaid = 0')
+      .andWhere('o.coinsPaid = 0')
+      .andWhere('s.subjectType != :priv', { priv: 'private' })
       .andWhere(
         `to_char(timezone('Asia/Ho_Chi_Minh', o.openedAt), 'YYYY-MM-DD') = :d`,
         { d: today },
       )
       .getCount();
+  }
+
+  /** Số bài đã mở bằng suất miễn phí trong ngày (VN). */
+  async countFreeLessonOpensToday(userId: string): Promise<number> {
+    const today = this.calendarDateVN();
+    return this.countDailyFreeSlotsUsed(
+      userId,
+      today,
+      this.openedNodeRepository,
+    );
   }
 
   private async hasTierUnlockForNode(
@@ -466,6 +486,7 @@ export class UnlockTransactionsService {
 
   /**
    * Mở một bài học: tối đa 2 bài/ngày (toàn hệ thống) miễn phí, sau đó 50 💎/bài.
+   * Không kiểm tra prerequisites — học tự do: user có thể mở bất kỳ bài nào (miễn còn suất / đủ 💎).
    */
   async openLearningNode(
     userId: string,
@@ -538,15 +559,11 @@ export class UnlockTransactionsService {
       }
 
       const today = this.calendarDateVN();
-      const freeUsed = await openedRepo
-        .createQueryBuilder('o')
-        .where('o.userId = :userId', { userId })
-        .andWhere('o.diamondsPaid = 0')
-        .andWhere(
-          `to_char(timezone('Asia/Ho_Chi_Minh', o.openedAt), 'YYYY-MM-DD') = :d`,
-          { d: today },
-        )
-        .getCount();
+      const freeUsed = await this.countDailyFreeSlotsUsed(
+        userId,
+        today,
+        openedRepo,
+      );
 
       if (freeUsed < FREE_LESSONS_PER_DAY) {
         await openedRepo.insert({
