@@ -1,4 +1,5 @@
 import 'package:edtech_mobile/core/services/api_service.dart';
+import 'package:edtech_mobile/features/dashboard/screens/dashboard_screen.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -12,7 +13,6 @@ class LessonUnlockSheet {
     String? subjectId,
     Future<void> Function()? onOpened,
   }) async {
-    /// null = không tải được API (không được coi như "hết suất").
     int? remainingFree;
     var accessLoadFailed = false;
     String subjectType = 'expert';
@@ -22,9 +22,10 @@ class LessonUnlockSheet {
     int userDiamonds = 0;
     try {
       final access = await api.checkNodeAccess(nodeId);
+      if (access['canAccess'] == true) return true;
       subjectType = (access['subjectType'] ?? 'expert').toString();
       remainingFree =
-          (access['remainingFreeLessonsToday'] as num?)?.toInt() ?? 0;
+          (access['remainingFreeLessonsToday'] as num?)?.toInt();
       coinCost = (access['coinCost'] as num?)?.toInt() ?? 50;
       diamondCost = (access['diamondCost'] as num?)?.toInt() ?? 50;
       userCoins = (access['userCoins'] as num?)?.toInt() ?? 0;
@@ -35,9 +36,7 @@ class LessonUnlockSheet {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              'Không tải được trạng thái mở bài: $e',
-            ),
+            content: Text('Không tải được trạng thái mở bài: $e'),
             backgroundColor: AppColors.errorNeon,
           ),
         );
@@ -45,6 +44,8 @@ class LessonUnlockSheet {
     }
 
     if (!context.mounted) return false;
+
+    final hasFreeSlot = remainingFree != null && remainingFree > 0;
 
     final opened = await showModalBottomSheet<bool>(
       context: context,
@@ -54,6 +55,7 @@ class LessonUnlockSheet {
       ),
       builder: (ctx) {
         var busy = false;
+        String? resultMsg;
         return StatefulBuilder(
           builder: (context, setModalState) => Padding(
             padding: const EdgeInsets.all(24),
@@ -70,9 +72,7 @@ class LessonUnlockSheet {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  subjectType == 'community'
-                      ? 'Mỗi ngày bạn có 2 bài miễn phí trên toàn bộ môn. Hết suất: $coinCost xu hoặc $diamondCost 💎.'
-                      : 'Mỗi ngày bạn có 2 bài miễn phí trên toàn bộ môn. Hết suất: $diamondCost 💎.',
+                  'Mỗi ngày bạn có 2 bài miễn phí trên toàn bộ môn.',
                   style: AppTextStyles.bodyMedium
                       .copyWith(color: AppColors.textSecondary),
                   textAlign: TextAlign.center,
@@ -80,24 +80,35 @@ class LessonUnlockSheet {
                 const SizedBox(height: 8),
                 Text(
                   accessLoadFailed
-                      ? 'Không xác định số suất còn lại. Bấm "Mở bài" — nếu còn suất, hệ thống sẽ mở miễn phí.'
-                      : (remainingFree != null && remainingFree > 0)
+                      ? 'Không xác định số suất còn lại.'
+                      : hasFreeSlot
                           ? 'Suất miễn phí hôm nay: còn $remainingFree.'
                           : 'Hôm nay đã dùng hết 2 suất miễn phí.',
                   style: AppTextStyles.caption
                       .copyWith(color: AppColors.cyanNeon, fontSize: 12),
                 ),
-                if (subjectType == 'community')
+                if (!hasFreeSlot && !accessLoadFailed) ...[
+                  if (subjectType == 'community')
+                    Text(
+                      'Xu hiện có: $userCoins',
+                      style: AppTextStyles.caption.copyWith(
+                          color: AppColors.textTertiary, fontSize: 11),
+                    ),
                   Text(
-                    'Xu hiện có: $userCoins',
-                    style: AppTextStyles.caption
-                        .copyWith(color: AppColors.textTertiary, fontSize: 11),
+                    'Kim cương hiện có: $userDiamonds 💎',
+                    style: AppTextStyles.caption.copyWith(
+                        color: AppColors.textTertiary, fontSize: 11),
                   ),
-                Text(
-                  'Kim cương hiện có: $userDiamonds 💎',
-                  style: AppTextStyles.caption
-                      .copyWith(color: AppColors.textTertiary, fontSize: 11),
-                ),
+                ],
+                if (resultMsg != null) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    resultMsg!,
+                    style: AppTextStyles.caption
+                        .copyWith(color: AppColors.successNeon, fontSize: 12),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
                 const SizedBox(height: 16),
                 Row(
                   children: [
@@ -108,77 +119,68 @@ class LessonUnlockSheet {
                         child: const Text('Đóng'),
                       ),
                     ),
-                    if (subjectType == 'community') ...[
-                      const SizedBox(width: 8),
+                    const SizedBox(width: 8),
+                    if (hasFreeSlot || accessLoadFailed)
                       Expanded(
                         child: ElevatedButton(
                           onPressed: busy
                               ? null
-                              : () async {
-                                  setModalState(() => busy = true);
-                                  try {
-                                    await api.openLearningNode(nodeId,
-                                        currencyType: 'coins');
-                                    if (onOpened != null) await onOpened();
-                                    if (ctx.mounted) Navigator.pop(ctx, true);
-                                  } catch (e) {
-                                    setModalState(() => busy = false);
-                                    if (ctx.mounted) {
-                                      ScaffoldMessenger.of(ctx).showSnackBar(
-                                        SnackBar(
-                                            content: Text('$e'),
-                                            backgroundColor:
-                                                AppColors.errorNeon),
-                                      );
-                                    }
-                                  }
-                                },
-                          child: Text(
-                            remainingFree == null
-                                ? 'Mở bài (xu)'
-                                : (remainingFree > 0
-                                    ? 'Mở miễn phí (xu)'
-                                    : '$coinCost xu'),
-                          ),
+                              : () => _doOpen(
+                                    ctx: ctx,
+                                    api: api,
+                                    nodeId: nodeId,
+                                    onOpened: onOpened,
+                                    setBusy: (b) =>
+                                        setModalState(() => busy = b),
+                                    setMsg: (m) =>
+                                        setModalState(() => resultMsg = m),
+                                  ),
+                          child: const Text('Mở miễn phí'),
                         ),
                       ),
-                    ],
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: busy
-                            ? null
-                            : () async {
-                                setModalState(() => busy = true);
-                                try {
-                                  await api.openLearningNode(
-                                    nodeId,
+                    if (!hasFreeSlot && !accessLoadFailed) ...[
+                      if (subjectType == 'community') ...[
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: busy
+                                ? null
+                                : () => _doOpen(
+                                      ctx: ctx,
+                                      api: api,
+                                      nodeId: nodeId,
+                                      currencyType: 'coins',
+                                      onOpened: onOpened,
+                                      setBusy: (b) =>
+                                          setModalState(() => busy = b),
+                                      setMsg: (m) =>
+                                          setModalState(() => resultMsg = m),
+                                    ),
+                            child: Text('$coinCost xu'),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                      ],
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: busy
+                              ? null
+                              : () => _doOpen(
+                                    ctx: ctx,
+                                    api: api,
+                                    nodeId: nodeId,
                                     currencyType: subjectType == 'community'
                                         ? 'diamonds'
                                         : null,
-                                  );
-                                  if (onOpened != null) await onOpened();
-                                  if (ctx.mounted) Navigator.pop(ctx, true);
-                                } catch (e) {
-                                  setModalState(() => busy = false);
-                                  if (ctx.mounted) {
-                                    ScaffoldMessenger.of(ctx).showSnackBar(
-                                      SnackBar(
-                                          content: Text('$e'),
-                                          backgroundColor: AppColors.errorNeon),
-                                    );
-                                  }
-                                }
-                              },
-                        child: Text(
-                          remainingFree == null
-                              ? 'Mở bài'
-                              : (remainingFree > 0
-                                  ? 'Mở miễn phí'
-                                  : '$diamondCost 💎'),
+                                    onOpened: onOpened,
+                                    setBusy: (b) =>
+                                        setModalState(() => busy = b),
+                                    setMsg: (m) =>
+                                        setModalState(() => resultMsg = m),
+                                  ),
+                          child: Text('$diamondCost 💎'),
                         ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
                 if (subjectId != null && subjectId.isNotEmpty) ...[
@@ -209,5 +211,32 @@ class LessonUnlockSheet {
       },
     );
     return opened == true;
+  }
+
+  static Future<void> _doOpen({
+    required BuildContext ctx,
+    required ApiService api,
+    required String nodeId,
+    String? currencyType,
+    Future<void> Function()? onOpened,
+    required void Function(bool) setBusy,
+    required void Function(String?) setMsg,
+  }) async {
+    setBusy(true);
+    try {
+      final res = await api.openLearningNode(nodeId, currencyType: currencyType);
+      DashboardScreen.clearMemoryCache();
+      final msg = res['message'] as String?;
+      if (msg != null) setMsg(msg);
+      if (onOpened != null) await onOpened();
+      if (ctx.mounted) Navigator.pop(ctx, true);
+    } catch (e) {
+      setBusy(false);
+      if (ctx.mounted) {
+        ScaffoldMessenger.of(ctx).showSnackBar(
+          SnackBar(content: Text('$e'), backgroundColor: AppColors.errorNeon),
+        );
+      }
+    }
   }
 }

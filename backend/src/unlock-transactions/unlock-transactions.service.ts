@@ -517,7 +517,7 @@ export class UnlockTransactionsService {
       await this.openedNodeRepository
         .createQueryBuilder()
         .insert()
-        .values({ userId, nodeId, diamondsPaid: 0, coinsPaid: 0 })
+        .values({ userId, nodeId, diamondsPaid: 0, coinsPaid: 0, source: 'free_daily' })
         .orIgnore()
         .execute();
       return {
@@ -590,6 +590,10 @@ export class UnlockTransactionsService {
         openedRepo,
       );
 
+      console.log(
+        `[openLearningNode] userId=${userId} nodeId=${nodeId} today=${today} freeUsed=${freeUsed} limit=${FREE_LESSONS_PER_DAY}`,
+      );
+
       if (freeUsed < FREE_LESSONS_PER_DAY) {
         await openedRepo.insert({
           userId,
@@ -603,7 +607,7 @@ export class UnlockTransactionsService {
           usedFreeDailySlot: true,
           diamondsPaid: 0,
           remainingFreeLessonsToday: FREE_LESSONS_PER_DAY - freeUsed - 1,
-          message: 'Đã mở bài bằng suất miễn phí trong ngày',
+          message: `Đã mở bài bằng suất miễn phí (còn ${FREE_LESSONS_PER_DAY - freeUsed - 1} suất)`,
         };
       }
 
@@ -709,6 +713,10 @@ export class UnlockTransactionsService {
     const currency = await this.currencyService.getCurrency(userId);
     const usedFree = await this.countFreeLessonOpensToday(userId);
     const remaining = Math.max(0, FREE_LESSONS_PER_DAY - usedFree);
+
+    console.log(
+      `[canAccessNode] userId=${userId} nodeId=${nodeId} usedFree=${usedFree} remaining=${remaining}`,
+    );
 
     return {
       canAccess: false,
