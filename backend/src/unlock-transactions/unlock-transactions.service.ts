@@ -744,6 +744,13 @@ export class UnlockTransactionsService {
     userId: string,
     subjectId: string,
   ): Promise<Set<string>> {
+    // Always include per-node opens (user_opened_nodes), even if user has no bulk unlocks yet.
+    const openedRows = await this.openedNodeRepository.find({
+      where: { userId },
+      select: ['nodeId'],
+    });
+    const openedSet = new Set(openedRows.map((r) => r.nodeId));
+
     const unlocks = await this.unlockRepository.find({
       where: { userId, subjectId },
       select: ['unlockLevel', 'subjectId', 'domainId', 'topicId'],
@@ -760,7 +767,7 @@ export class UnlockTransactionsService {
         where: { subjectId },
         select: ['id'],
       });
-      return new Set(nodes.map((n) => n.id));
+      return new Set([...nodes.map((n) => n.id), ...openedSet]);
     }
 
     // Collect unlocked domain IDs and topic IDs
@@ -776,7 +783,7 @@ export class UnlockTransactionsService {
     );
 
     if (unlockedDomainIds.size === 0 && unlockedTopicIds.size === 0) {
-      return new Set();
+      return openedSet;
     }
 
     // Get all nodes in subject
@@ -794,12 +801,6 @@ export class UnlockTransactionsService {
         unlockedNodeIds.add(node.id);
       }
     }
-
-    const openedRows = await this.openedNodeRepository.find({
-      where: { userId },
-      select: ['nodeId'],
-    });
-    const openedSet = new Set(openedRows.map((r) => r.nodeId));
     for (const node of allNodes) {
       if (openedSet.has(node.id)) {
         unlockedNodeIds.add(node.id);

@@ -36,7 +36,6 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
   final _courseOutlineKey = GlobalKey();
   final _mindMapButtonsKey = GlobalKey();
   final _knowledgeGraphKey = GlobalKey();
-  final _domainsListKey = GlobalKey();
 
   @override
   void initState() {
@@ -75,18 +74,6 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
       stepLabel: 'Bước 3/4',
       align: ContentAlign.top,
     ));
-
-    final domains = _introData?['subject']?['domains'] as List<dynamic>?;
-    if (domains != null && domains.isNotEmpty) {
-      targets.add(TutorialHelper.buildTarget(
-        key: _domainsListKey,
-        title: 'Các chương học',
-        description: 'Nhấn vào từng chương để xem chi tiết bài học bên trong.',
-        icon: Icons.library_books,
-        stepLabel: 'Bước 4/4',
-        align: ContentAlign.top,
-      ));
-    }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -323,11 +310,7 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
                             child: _buildKnowledgeGraphContent(),
                           ),
                           const SizedBox(height: 24),
-                          KeyedSubtree(
-                            key: _domainsListKey,
-                            child: _buildDomainsList(),
-                          ),
-                          const SizedBox(height: 24),
+                          // Hidden for now: avoid clutter; users can browse chapters in Learning Path.
                           if (_isContributor) _buildContributorQuickAccess(),
                         ],
                       ),
@@ -1065,138 +1048,13 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
     );
   }
 
+  // ignore: unused_element
   Widget _buildDomainsList() {
-    // Check if subject has domains
-    final domains = _introData?['subject']?['domains'] as List<dynamic>?;
-    final hasDomains = domains != null && domains.isNotEmpty;
-
-    if (!hasDomains) {
-      return const SizedBox.shrink();
-    }
-
-    final colors = [
-      [AppColors.purpleNeon, AppColors.primaryLight],
-      [AppColors.primaryLight, AppColors.successNeon],
-      [AppColors.coinGold, AppColors.orangeNeon],
-      [AppColors.primaryLight, AppColors.purpleNeon],
-    ];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Các chương học',
-            style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
-        const SizedBox(height: 16),
-        ...domains.asMap().entries.map((entry) {
-          final index = entry.key;
-          final domainData = entry.value as Map<String, dynamic>;
-          final domainId = domainData['id'] as String?;
-          final name = domainData['name'] as String? ?? 'Chương học';
-          final description = domainData['description'] as String?;
-          final order = domainData['order'] as int? ?? 0;
-          final metadata = domainData['metadata'] as Map<String, dynamic>?;
-          final icon = metadata?['icon'] as String? ?? '📚';
-          final nodesCount =
-              (domainData['nodes'] as List<dynamic>?)?.length ?? 0;
-          final colorPair = colors[index % colors.length];
-
-          return Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            decoration: BoxDecoration(
-              color: AppColors.bgSecondary,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0x332D363D)),
-            ),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: () {
-                  if (domainId != null) {
-                    context.push('/domains/$domainId');
-                  }
-                },
-                borderRadius: BorderRadius.circular(16),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      // Order badge
-                      Container(
-                        width: 44,
-                        height: 44,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(colors: colorPair),
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                                color: colorPair[0].withValues(alpha: 0.3),
-                                blurRadius: 8)
-                          ],
-                        ),
-                        child: Center(
-                          child: Text('${order + 1}',
-                              style: AppTextStyles.labelLarge
-                                  .copyWith(color: Colors.white)),
-                        ),
-                      ),
-                      const SizedBox(width: 14),
-                      // Icon
-                      Text(icon, style: const TextStyle(fontSize: 28)),
-                      const SizedBox(width: 14),
-                      // Content
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(name,
-                                style: AppTextStyles.labelLarge
-                                    .copyWith(color: AppColors.textPrimary)),
-                            if (description != null &&
-                                description.isNotEmpty) ...[
-                              const SizedBox(height: 4),
-                              Text(
-                                description,
-                                style: AppTextStyles.bodySmall
-                                    .copyWith(color: AppColors.textSecondary),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                            if (nodesCount > 0) ...[
-                              const SizedBox(height: 8),
-                              Row(
-                                children: [
-                                  const Icon(Icons.book_rounded,
-                                      size: 14, color: AppColors.textTertiary),
-                                  const SizedBox(width: 4),
-                                  Text('$nodesCount bài học',
-                                      style: AppTextStyles.caption.copyWith(
-                                          color: AppColors.textTertiary)),
-                                ],
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: AppColors.bgTertiary,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Icon(Icons.chevron_right_rounded,
-                            color: AppColors.textSecondary, size: 20),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          );
-        }),
-      ],
-    );
+    // UX decision: hide chapter list here; users can browse chapters in Learning Path.
+    return const SizedBox.shrink();
   }
+
+ 
 }
 
 class _OutlineItem extends StatelessWidget {

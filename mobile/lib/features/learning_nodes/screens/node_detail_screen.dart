@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
+import 'package:edtech_mobile/core/widgets/lesson_unlock_sheet.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 
 class NodeDetailScreen extends StatefulWidget {
@@ -137,6 +138,23 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
       final lessonType = nodeData['lessonType'] as String?;
       if (lessonType != null && mounted) {
         final title = nodeData['title'] as String? ?? 'Bài học';
+        final subjectId = nodeData['subjectId'] as String? ??
+            (nodeData['subject'] as Map<String, dynamic>?)?['id'] as String?;
+
+        Future<bool> ensureUnlocked() async {
+          try {
+            final access = await apiService.checkNodeAccess(widget.nodeId);
+            if (access['canAccess'] == true) return true;
+          } catch (_) {}
+          if (!mounted) return false;
+          return await LessonUnlockSheet.show(
+            context: context,
+            api: apiService,
+            nodeId: widget.nodeId,
+            title: title,
+            subjectId: subjectId,
+          );
+        }
 
         // Try to fetch lesson type contents from the new table
         try {
@@ -148,8 +166,11 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
             // Multiple types -> show types overview screen
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted) {
-                context.push('/lessons/${widget.nodeId}/types', extra: {
-                  'title': title,
+                ensureUnlocked().then((ok) {
+                  if (!ok || !mounted) return;
+                  context.push('/lessons/${widget.nodeId}/types', extra: {
+                    'title': title,
+                  });
                 });
               }
             });
@@ -159,14 +180,17 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
             final singleContent = contents[0] as Map<String, dynamic>;
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted) {
-                context.push('/lessons/${widget.nodeId}/view', extra: {
-                  'lessonType': singleContent['lessonType'] as String,
-                  'lessonData':
-                      singleContent['lessonData'] as Map<String, dynamic>? ??
-                          {},
-                  'title': title,
-                  'endQuiz': singleContent['endQuiz'] as Map<String, dynamic>?,
-                  'contributor': nodeData['contributor'],
+                ensureUnlocked().then((ok) {
+                  if (!ok || !mounted) return;
+                  context.push('/lessons/${widget.nodeId}/view', extra: {
+                    'lessonType': singleContent['lessonType'] as String,
+                    'lessonData':
+                        singleContent['lessonData'] as Map<String, dynamic>? ??
+                            {},
+                    'title': title,
+                    'endQuiz': singleContent['endQuiz'] as Map<String, dynamic>?,
+                    'contributor': nodeData['contributor'],
+                  });
                 });
               }
             });
@@ -194,12 +218,15 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
         }
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
-            context.push('/lessons/${widget.nodeId}/view', extra: {
-              'lessonType': lessonType,
-              'lessonData': lessonData,
-              'title': title,
-              'endQuiz': endQuiz,
-              'contributor': contributor,
+            ensureUnlocked().then((ok) {
+              if (!ok || !mounted) return;
+              context.push('/lessons/${widget.nodeId}/view', extra: {
+                'lessonType': lessonType,
+                'lessonData': lessonData,
+                'title': title,
+                'endQuiz': endQuiz,
+                'contributor': contributor,
+              });
             });
           }
         });
