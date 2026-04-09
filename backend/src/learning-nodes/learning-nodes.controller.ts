@@ -21,6 +21,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
 import { UpdateLessonContentDto } from './dto/lesson-content.dto';
 import { AiUsageService } from './ai-usage.service';
+import { UnlockTransactionsService } from '../unlock-transactions/unlock-transactions.service';
 
 // Diamond costs for AI features
 const AI_COST = {
@@ -37,6 +38,7 @@ export class LearningNodesController {
     private readonly userCurrencyService: UserCurrencyService,
     private readonly usersService: UsersService,
     private readonly aiUsageService: AiUsageService,
+    private readonly unlockService: UnlockTransactionsService,
   ) {}
 
   /**
@@ -176,8 +178,15 @@ export class LearningNodesController {
    * Get full lesson data (viewer)
    */
   @Get(':id/lesson')
-  @UseGuards(OptionalJwtAuthGuard)
-  async getLessonData(@Param('id') id: string) {
+  @UseGuards(JwtAuthGuard)
+  async getLessonData(@Request() req, @Param('id') id: string) {
+    const access = await this.unlockService.canAccessNode(req.user.id, id);
+    if (!access.canAccess) {
+      throw new ForbiddenException({
+        message: 'Bài học đang bị khóa. Vui lòng mở khóa để xem nội dung.',
+        ...access,
+      });
+    }
     return this.lessonContentService.getLessonData(id);
   }
 
@@ -278,11 +287,19 @@ export class LearningNodesController {
    * Get lesson data for a specific type (from lesson_type_contents)
    */
   @Get(':id/lesson/:lessonType')
-  @UseGuards(OptionalJwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   async getLessonDataByType(
+    @Request() req,
     @Param('id') id: string,
     @Param('lessonType') lessonType: string,
   ) {
+    const access = await this.unlockService.canAccessNode(req.user.id, id);
+    if (!access.canAccess) {
+      throw new ForbiddenException({
+        message: 'Bài học đang bị khóa. Vui lòng mở khóa để xem nội dung.',
+        ...access,
+      });
+    }
     return this.lessonContentService.getLessonDataByType(id, lessonType);
   }
 
