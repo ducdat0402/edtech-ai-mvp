@@ -38,6 +38,17 @@ export async function createApp() {
     credentials: true,
   });
 
+  // Prevent stale per-user API responses from being reused across sessions/users.
+  // This is critical for access-control endpoints (e.g. unlock/check-access).
+  app.use((req, res, next) => {
+    if (req.headers.authorization) {
+      res.setHeader('Cache-Control', 'no-store');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Vary', 'Authorization');
+    }
+    next();
+  });
+
   app.setGlobalPrefix('api/v1');
 
   const config = new DocumentBuilder()

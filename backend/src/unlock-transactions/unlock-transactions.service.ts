@@ -464,20 +464,22 @@ export class UnlockTransactionsService {
     userId: string,
     node: Pick<LearningNode, 'subjectId' | 'domainId' | 'topicId'>,
   ): Promise<boolean> {
+    const domainId = node.domainId || '';
+    const topicId = node.topicId || '';
     const unlock = await this.unlockRepository
       .createQueryBuilder('u')
       .where('u.userId = :userId', { userId })
       .andWhere(
         '(u.unlockLevel = :subject AND u.subjectId = :subjectId) OR ' +
-          '(u.unlockLevel = :domain AND u.domainId = :domainId) OR ' +
-          '(u.unlockLevel = :topic AND u.topicId = :topicId)',
+          '(u.unlockLevel = :domain AND u.subjectId = :subjectId AND :domainId <> \'\' AND u.domainId = :domainId) OR ' +
+          '(u.unlockLevel = :topic AND u.subjectId = :subjectId AND :topicId <> \'\' AND u.topicId = :topicId)',
         {
           subject: 'subject',
           domain: 'domain',
           topic: 'topic',
           subjectId: node.subjectId || '',
-          domainId: node.domainId || '',
-          topicId: node.topicId || '',
+          domainId,
+          topicId,
         },
       )
       .limit(1)
@@ -674,6 +676,7 @@ export class UnlockTransactionsService {
     nodeId: string,
   ): Promise<{
     canAccess: boolean;
+    reason?: string;
     nodeInfo?: any;
     remainingFreeLessonsToday?: number;
     subjectType?: 'private' | 'community' | 'expert';
@@ -682,32 +685,34 @@ export class UnlockTransactionsService {
     userCoins?: number;
     userDiamonds?: number;
   }> {
-    if (!userId) return { canAccess: false };
+    if (!userId) return { canAccess: false, reason: 'missing_user' };
 
     const opened = await this.openedNodeRepository.findOne({
       where: { userId, nodeId },
     });
-    if (opened) return { canAccess: true };
+    if (opened) return { canAccess: true, reason: 'opened_node' };
 
     const node = await this.nodeRepository.findOne({
       where: { id: nodeId },
       select: ['id', 'subjectId', 'domainId', 'topicId'],
     });
-    if (!node) return { canAccess: false };
+    if (!node) return { canAccess: false, reason: 'node_not_found' };
     const subject = await this.dataSource.getRepository(Subject).findOne({
       where: { id: node.subjectId },
       select: ['id', 'subjectType', 'ownerUserId'],
     });
-    if (!subject) return { canAccess: false };
+    if (!subject) return { canAccess: false, reason: 'subject_not_found' };
     if (subject.subjectType === 'private') {
       return {
         canAccess: subject.ownerUserId === userId,
+        reason:
+          subject.ownerUserId === userId ? 'private_owner' : 'private_forbidden',
         subjectType: 'private',
       };
     }
 
     if (await this.hasTierUnlockForNode(userId, node)) {
-      return { canAccess: true };
+      return { canAccess: true, reason: 'tier_unlock' };
     }
 
     const currency = await this.currencyService.getCurrency(userId);
@@ -720,6 +725,7 @@ export class UnlockTransactionsService {
 
     return {
       canAccess: false,
+      reason: 'locked_need_open_or_pay',
       subjectType: subject.subjectType,
       remainingFreeLessonsToday: remaining,
       coinCost: subject.subjectType === 'community' ? DIAMOND_PER_LESSON_OPEN : undefined,
@@ -745,10 +751,13 @@ export class UnlockTransactionsService {
     subjectId: string,
   ): Promise<Set<string>> {
     // Always include per-node opens (user_opened_nodes), even if user has no bulk unlocks yet.
-    const openedRows = await this.openedNodeRepository.find({
-      where: { userId },
-      select: ['nodeId'],
-    });
+    const openedRows = await this.openedNodeRepository
+      .createQueryBuilder('o')
+      .innerJoin(LearningNode, 'n', 'n.id = o.nodeId')
+      .where('o.userId = :userId', { userId })
+      .andWhere('n.subjectId = :subjectId', { subjectId })
+      .select('o.nodeId', 'nodeId')
+      .getRawMany<{ nodeId: string }>();
     const openedSet = new Set(openedRows.map((r) => r.nodeId));
 
     const unlocks = await this.unlockRepository.find({
