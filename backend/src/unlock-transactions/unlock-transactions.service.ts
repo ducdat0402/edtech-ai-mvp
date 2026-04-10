@@ -464,24 +464,37 @@ export class UnlockTransactionsService {
     userId: string,
     node: Pick<LearningNode, 'subjectId' | 'domainId' | 'topicId'>,
   ): Promise<boolean> {
-    const domainId = node.domainId || '';
-    const topicId = node.topicId || '';
-    const unlock = await this.unlockRepository
+    const subjectId = node.subjectId || '';
+    const qb = this.unlockRepository
       .createQueryBuilder('u')
-      .where('u.userId = :userId', { userId })
-      .andWhere(
-        '(u.unlockLevel = :subject AND u.subjectId = :subjectId) OR ' +
-          '(u.unlockLevel = :domain AND u.subjectId = :subjectId AND :domainId <> \'\' AND u.domainId = :domainId) OR ' +
-          '(u.unlockLevel = :topic AND u.subjectId = :subjectId AND :topicId <> \'\' AND u.topicId = :topicId)',
-        {
-          subject: 'subject',
-          domain: 'domain',
-          topic: 'topic',
-          subjectId: node.subjectId || '',
-          domainId,
-          topicId,
-        },
-      )
+      .where('u.userId = :userId', { userId });
+
+    const clauses: string[] = [
+      '(u.unlockLevel = :subject AND u.subjectId = :subjectId)',
+    ];
+    const params: Record<string, string> = {
+      subject: 'subject',
+      domain: 'domain',
+      topic: 'topic',
+      subjectId,
+    };
+
+    if (node.domainId) {
+      clauses.push(
+        '(u.unlockLevel = :domain AND u.subjectId = :subjectId AND u.domainId = :domainId)',
+      );
+      params.domainId = node.domainId;
+    }
+
+    if (node.topicId) {
+      clauses.push(
+        '(u.unlockLevel = :topic AND u.subjectId = :subjectId AND u.topicId = :topicId)',
+      );
+      params.topicId = node.topicId;
+    }
+
+    const unlock = await qb
+      .andWhere(`(${clauses.join(' OR ')})`, params)
       .limit(1)
       .getOne();
     return !!unlock;
