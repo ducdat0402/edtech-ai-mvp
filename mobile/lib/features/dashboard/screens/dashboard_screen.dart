@@ -30,6 +30,13 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
+  static const double _kSectionGap = 24;
+  static const double _kSectionInnerPadding = 16;
+
+  final ScrollController _dashboardScrollController = ScrollController();
+  /// 0 = header mở, 1 = thu gọn khi cuộn (A1).
+  double _headerCollapseT = 0;
+
   static void clearMemoryCache() {
     _cachedDashboardData = null;
     _cachedMotivation = null;
@@ -73,6 +80,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
       _error = null;
     }
     _loadDashboard();
+    _dashboardScrollController.addListener(_onDashboardScroll);
+  }
+
+  @override
+  void dispose() {
+    _dashboardScrollController.removeListener(_onDashboardScroll);
+    _dashboardScrollController.dispose();
+    super.dispose();
+  }
+
+  void _onDashboardScroll() {
+    if (!_dashboardScrollController.hasClients) return;
+    final t = (_dashboardScrollController.offset / 56.0).clamp(0.0, 1.0);
+    if ((_headerCollapseT - t).abs() > 0.02) {
+      setState(() => _headerCollapseT = t);
+    }
   }
 
   void _showDashboardTutorial() {
@@ -313,6 +336,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           if (hasData)
             _buildPinnedLevelHeader(
               (_dashboardData!['stats'] as Map<String, dynamic>?) ?? {},
+              _headerCollapseT,
             ),
           if (_isRefreshing && hasData)
             const SizedBox(
@@ -339,23 +363,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   RefreshIndicator(
                     onRefresh: _loadDashboard,
                     child: SingleChildScrollView(
+                      controller: _dashboardScrollController,
                       physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                      padding: const EdgeInsets.fromLTRB(
+                        _kSectionInnerPadding,
+                        12,
+                        _kSectionInnerPadding,
+                        24,
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           if (_motivation != null &&
                               _motivation!['quote'] != null) ...[
                             _buildMotivationCard(_motivation!),
-                            const SizedBox(height: 24),
+                            const SizedBox(height: _kSectionGap),
                           ],
                           _buildOnboardingBanner(),
-                          const SizedBox(height: 24),
+                          const SizedBox(height: _kSectionGap),
                           _buildContinueLearningSection(
                             _dashboardData!['continueLearning']
                                 as Map<String, dynamic>?,
                           ),
-                          const SizedBox(height: 24),
+                          const SizedBox(height: _kSectionGap),
                           _buildDailyQuestsSection(
                             _dashboardData!['dailyQuests'] as List<dynamic>?,
                           ),
@@ -383,7 +413,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   /// Thanh cố định trên cùng: level + avatar + refresh/menu (thay cho AppBar).
-  Widget _buildPinnedLevelHeader(Map<String, dynamic> stats) {
+  Widget _buildPinnedLevelHeader(
+    Map<String, dynamic> stats,
+    double headerCollapseT,
+  ) {
     final level = stats['level'] as int? ?? 1;
     final levelInfo = stats['levelInfo'] as Map<String, dynamic>?;
     final currentXP = levelInfo?['currentXP'] as int? ?? 0;
@@ -416,9 +449,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
         child: SafeArea(
           bottom: false,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(6, 2, 8, 6),
+            padding: EdgeInsets.lerp(
+                  const EdgeInsets.fromLTRB(6, 2, 8, 6),
+                  const EdgeInsets.fromLTRB(4, 0, 6, 4),
+                  headerCollapseT,
+                ) ??
+                const EdgeInsets.fromLTRB(6, 2, 8, 6),
             child: LevelCard(
               topBarStrip: true,
+              stripCollapseT: headerCollapseT,
               level: level,
               title: _getLevelTitle(level),
               currentXP: currentXP,
@@ -793,6 +832,50 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return const SizedBox.shrink();
   }
 
+  /// Nhãn nút hành động nhiệm vụ (D1) — theo `QuestType` backend.
+  String _questPrimaryCtaLabel(
+    String questType,
+    bool canClaim,
+    bool isClaimed,
+  ) {
+    if (canClaim) return 'Nhận';
+    if (isClaimed) return 'Đã nhận';
+    switch (questType) {
+      case 'earn_coins':
+        return 'Vào cửa hàng';
+      case 'earn_xp':
+        return 'Đi học';
+      case 'complete_items':
+      case 'complete_daily_lesson':
+        return 'Mở bài học';
+      case 'maintain_streak':
+        return 'Xem chuỗi ngày';
+      case 'complete_node':
+        return 'Mở thư viện';
+      default:
+        return 'Chi tiết';
+    }
+  }
+
+  void _navigateForQuestType(String questType) {
+    switch (questType) {
+      case 'earn_coins':
+        context.push('/shop');
+        return;
+      case 'earn_xp':
+      case 'complete_items':
+      case 'complete_daily_lesson':
+      case 'complete_node':
+        context.push('/library');
+        return;
+      case 'maintain_streak':
+        context.push('/currency');
+        return;
+      default:
+        context.push('/quests');
+    }
+  }
+
   Future<void> _handleContinueLessonTap(Map<String, dynamic> lesson) async {
     final nodeId = lesson['id'] as String?;
     final title = lesson['title'] as String? ?? 'Bài học';
@@ -848,7 +931,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(14, 14, 14, 10),
+            padding: const EdgeInsets.fromLTRB(
+              _kSectionInnerPadding,
+              _kSectionInnerPadding,
+              _kSectionInnerPadding,
+              12,
+            ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -881,7 +969,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             )
           else
             Padding(
-              padding: const EdgeInsets.fromLTRB(10, 6, 10, 8),
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
               child: Column(
                 children: lessons.asMap().entries.map((entry) {
                   final index = entry.key;
@@ -905,7 +993,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     borderRadius: BorderRadius.circular(14),
                     child: Container(
                       margin: EdgeInsets.only(
-                        bottom: index == lessons.length - 1 ? 0 : 10,
+                        bottom: index == lessons.length - 1 ? 0 : 12,
                       ),
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
@@ -922,72 +1010,88 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ),
                         borderRadius: BorderRadius.circular(14),
                       ),
-                      child: Row(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Container(
-                            width: 44,
-                            height: 44,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: isLocked
-                                  ? Colors.transparent
-                                  : AppColors.successNeon
-                                      .withValues(alpha: 0.18),
-                              border: Border.all(
-                                color: isLocked
-                                    ? const Color(0x442D363D)
-                                    : AppColors.successNeon
-                                        .withValues(alpha: 0.5),
-                              ),
-                            ),
-                            child: Center(
-                              child: Icon(
-                                isLocked
-                                    ? Icons.lock_rounded
-                                    : Icons.play_arrow_rounded,
-                                size: 22,
-                                color: isLocked
-                                    ? AppColors.textTertiary
-                                    : AppColors.successNeon,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  title,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: AppTextStyles.bodyBold.copyWith(
-                                    color: AppColors.textPrimary,
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                width: 44,
+                                height: 44,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: isLocked
+                                      ? Colors.transparent
+                                      : AppColors.successNeon
+                                          .withValues(alpha: 0.18),
+                                  border: Border.all(
+                                    color: isLocked
+                                        ? const Color(0x442D363D)
+                                        : AppColors.successNeon
+                                            .withValues(alpha: 0.5),
                                   ),
                                 ),
-                                if (subtitle != null &&
-                                    subtitle.isNotEmpty) ...[
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    subtitle,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: AppTextStyles.bodySmall.copyWith(
-                                      color: isLocked
-                                          ? AppColors.textTertiary
-                                          : AppColors.textSecondary,
-                                    ),
+                                child: Center(
+                                  child: Icon(
+                                    isLocked
+                                        ? Icons.lock_rounded
+                                        : Icons.play_arrow_rounded,
+                                    size: 22,
+                                    color: isLocked
+                                        ? AppColors.textTertiary
+                                        : AppColors.successNeon,
                                   ),
-                                ],
-                              ],
-                            ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      title,
+                                      maxLines: 3,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: AppTextStyles.bodyBold.copyWith(
+                                        color: AppColors.textPrimary,
+                                        height: 1.35,
+                                      ),
+                                    ),
+                                    if (subtitle != null &&
+                                        subtitle.isNotEmpty) ...[
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        subtitle,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: AppTextStyles.bodySmall.copyWith(
+                                          color: isLocked
+                                              ? AppColors.textTertiary
+                                              : AppColors.textSecondary,
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 10),
-                          Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.end,
+                          const SizedBox(height: 10),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
                             children: [
+                              if (isLocked && diamondCost != null) ...[
+                                Text(
+                                  '$diamondCost 💎',
+                                  style: AppTextStyles.caption.copyWith(
+                                    color: AppColors.textTertiary,
+                                    fontSize: 10,
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                              ],
                               Text(
                                 '+$expReward XP',
                                 style: AppTextStyles.caption.copyWith(
@@ -998,16 +1102,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
-                              if (isLocked && diamondCost != null) ...[
-                                const SizedBox(height: 6),
-                                Text(
-                                  '$diamondCost 💎',
-                                  style: AppTextStyles.caption.copyWith(
-                                    color: AppColors.textTertiary,
-                                    fontSize: 10,
-                                  ),
-                                ),
-                              ],
                             ],
                           ),
                         ],
@@ -1050,41 +1144,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
         border: Border.all(color: const Color(0x332D363D)),
       ),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
+        padding: const EdgeInsets.fromLTRB(
+          _kSectionInnerPadding,
+          _kSectionInnerPadding,
+          _kSectionInnerPadding,
+          14,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: Text(
-                    'Nhiệm vụ hôm nay',
-                    style: AppTextStyles.h3,
-                  ),
-                ),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: AppColors.purpleNeon.withValues(alpha: 0.16),
-                    borderRadius: BorderRadius.circular(999),
-                    border: Border.all(
-                      color: AppColors.purpleNeon.withValues(alpha: 0.35),
-                    ),
-                  ),
-                  child: Text(
-                    'Đặc biệt',
-                    style: AppTextStyles.caption.copyWith(
-                      color: AppColors.purpleNeon,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ],
+            Text(
+              'Nhiệm vụ hôm nay',
+              style: AppTextStyles.h3,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 6),
+            Text(
+              'Hoàn thành để nhận thêm xu và XP.',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 14),
             if (quests.isEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
@@ -1109,6 +1189,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       quest['rewards'] as Map<String, dynamic>? ?? const {};
 
                   final title = quest['title'] as String? ?? 'Nhiệm vụ';
+                  final questType = quest['type'] as String? ?? '';
                   final status = questWrapper['status'] as String? ?? 'active';
                   final progressNum = (questWrapper['progress'] as num?) ?? 0;
                   final targetNum = (questWrapper['target'] as num?) ??
@@ -1129,8 +1210,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                   return Container(
                     margin: EdgeInsets.only(
-                        bottom: index == quests.length - 1 ? 0 : 10),
-                    padding: const EdgeInsets.symmetric(vertical: 6),
+                        bottom: index == quests.length - 1 ? 0 : 12),
+                    padding: const EdgeInsets.symmetric(vertical: 10),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -1179,7 +1260,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                           ? AppColors.textPrimary
                                           : AppColors.textSecondary,
                                     ),
-                                    maxLines: 1,
+                                    maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                   if (xpReward != null ||
@@ -1218,11 +1299,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             ),
                             const SizedBox(width: 10),
                             SizedBox(
-                              height: 30,
+                              height: 34,
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 12),
+                                    horizontal: 10,
+                                  ),
+                                  minimumSize: const Size(0, 34),
+                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                                   backgroundColor: canClaim
                                       ? AppColors.successNeon
                                       : AppColors.bgTertiary,
@@ -1230,62 +1314,77 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       ? Colors.black
                                       : AppColors.textSecondary,
                                   elevation: canClaim ? 4 : 0,
+                                  disabledBackgroundColor: AppColors.bgTertiary,
+                                  disabledForegroundColor:
+                                      AppColors.textTertiary,
                                   textStyle: AppTextStyles.labelSmall.copyWith(
                                     fontWeight: FontWeight.w700,
+                                    fontSize: 11,
                                   ),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(999),
                                   ),
                                 ),
-                                onPressed: () async {
-                                  if (canClaim) {
-                                    // Nhận thưởng: dùng cùng API với màn Nhiệm vụ để đồng bộ trạng thái.
-                                    try {
-                                      final api = Provider.of<ApiService>(
-                                        context,
-                                        listen: false,
-                                      );
-                                      await api.claimQuest(
-                                        questWrapper['id'] as String,
-                                      );
-                                      if (!mounted) return;
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        const SnackBar(
-                                          content: Row(
-                                            children: [
-                                              Icon(Icons.celebration,
-                                                  color: Colors.white),
-                                              SizedBox(width: 8),
-                                              Text('Đã nhận phần thưởng!'),
-                                            ],
-                                          ),
-                                          backgroundColor:
-                                              AppColors.successNeon,
-                                        ),
-                                      );
-                                      await _loadDashboard();
-                                    } catch (e) {
-                                      if (!mounted) return;
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        SnackBar(
-                                          content: Text('Lỗi: $e'),
-                                          backgroundColor: AppColors.errorNeon,
-                                        ),
-                                      );
-                                    }
-                                  } else {
-                                    // Chưa hoàn thành: dẫn tới màn Nhiệm vụ để user xem chi tiết.
-                                    if (!mounted) return;
-                                    HapticFeedback.lightImpact();
-                                    context.push('/quests');
-                                  }
-                                },
-                                child: Text(
-                                  canClaim
-                                      ? 'Nhận'
-                                      : (isClaimed ? 'Đã nhận' : 'Đến'),
+                                onPressed: isClaimed
+                                    ? null
+                                    : () async {
+                                        if (canClaim) {
+                                          try {
+                                            final api =
+                                                Provider.of<ApiService>(
+                                              context,
+                                              listen: false,
+                                            );
+                                            await api.claimQuest(
+                                              questWrapper['id'] as String,
+                                            );
+                                            if (!mounted) return;
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              const SnackBar(
+                                                content: Row(
+                                                  children: [
+                                                    Icon(Icons.celebration,
+                                                        color: Colors.white),
+                                                    SizedBox(width: 8),
+                                                    Text(
+                                                        'Đã nhận phần thưởng!'),
+                                                  ],
+                                                ),
+                                                backgroundColor:
+                                                    AppColors.successNeon,
+                                              ),
+                                            );
+                                            await _loadDashboard();
+                                          } catch (e) {
+                                            if (!mounted) return;
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              SnackBar(
+                                                content: Text('Lỗi: $e'),
+                                                backgroundColor:
+                                                    AppColors.errorNeon,
+                                              ),
+                                            );
+                                          }
+                                        } else {
+                                          if (!mounted) return;
+                                          HapticFeedback.lightImpact();
+                                          _navigateForQuestType(questType);
+                                        }
+                                      },
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    _questPrimaryCtaLabel(
+                                      questType,
+                                      canClaim,
+                                      isClaimed,
+                                    ),
+                                    maxLines: 1,
+                                    textAlign: TextAlign.center,
+                                  ),
                                 ),
                               ),
                             ),

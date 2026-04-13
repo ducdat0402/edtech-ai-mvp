@@ -1,3 +1,5 @@
+import 'dart:ui' show lerpDouble;
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:edtech_mobile/core/config/api_config.dart';
@@ -88,6 +90,9 @@ class LevelCard extends StatelessWidget {
   final VoidCallback? onStripStreakTap;
   final Key? stripResourcesKey;
 
+  /// 0 = strip mở rộng, 1 = thu gọn khi cuộn dashboard (giảm chiều cao header).
+  final double stripCollapseT;
+
   const LevelCard({
     super.key,
     required this.level,
@@ -107,6 +112,7 @@ class LevelCard extends StatelessWidget {
     this.onStripDiamondsTap,
     this.onStripStreakTap,
     this.stripResourcesKey,
+    this.stripCollapseT = 0,
   });
 
   double get progress =>
@@ -123,11 +129,20 @@ class LevelCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final strip = topBarStrip;
+    final tStrip = strip ? stripCollapseT.clamp(0.0, 1.0) : 0.0;
     final resolvedAvatar = ApiConfig.absoluteMediaUrl(avatarUrl);
     final hasPhoto = resolvedAvatar.isNotEmpty;
-    final outer = strip ? 44.0 : 52.0;
-    final inner = strip ? 40.0 : 48.0;
-    final borderW = strip ? 1.5 : 2.0;
+    final outer = strip ? lerpDouble(44, 36, tStrip)! : 52.0;
+    final inner = strip ? lerpDouble(40, 32, tStrip)! : 48.0;
+    final borderW = strip ? lerpDouble(1.5, 1.2, tStrip)! : 2.0;
+    final stripNameSize = strip ? lerpDouble(13.5, 12, tStrip)! : 15.0;
+    final stripGapTitleToBar = strip ? lerpDouble(6, 3, tStrip)! : 8.0;
+    final stripProgressH =
+        strip ? lerpDouble(_showStripResources ? 3 : 4, 2, tStrip)! : 6.0;
+    final stripInfoIcon = strip ? lerpDouble(16, 14, tStrip)! : 20.0;
+    final stripChipIcon = lerpDouble(13, 11, tStrip)!;
+    final stripChipFont = lerpDouble(10, 9, tStrip)!;
+    final stripDividerH = lerpDouble(14, 11, tStrip)!;
 
     Widget avatar = SizedBox(
       width: outer,
@@ -229,7 +244,7 @@ class LevelCard extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: AppTextStyles.bodyBold.copyWith(
                   color: Colors.white,
-                  fontSize: strip ? 13.5 : 15,
+                  fontSize: stripNameSize,
                 ),
               ),
               if (!strip) ...[
@@ -243,7 +258,7 @@ class LevelCard extends StatelessWidget {
                   ),
                 ),
               ],
-              SizedBox(height: strip ? 6 : 8),
+              SizedBox(height: stripGapTitleToBar),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -257,8 +272,7 @@ class LevelCard extends StatelessWidget {
                             borderRadius: BorderRadius.circular(4),
                             child: LinearProgressIndicator(
                               value: progress,
-                              minHeight:
-                                  strip ? (_showStripResources ? 3 : 4) : 6,
+                              minHeight: stripProgressH,
                               backgroundColor:
                                   Colors.white.withValues(alpha: 0.22),
                               valueColor: const AlwaysStoppedAnimation<Color>(
@@ -283,13 +297,14 @@ class LevelCard extends StatelessWidget {
                             tooltip: strip ? 'Chi tiết XP' : 'Danh hiệu',
                             icon: Icon(
                               Icons.info_outline_rounded,
-                              size: strip ? 16 : 20,
+                              size: stripInfoIcon,
                               color: Colors.white.withValues(alpha: 0.92),
                             ),
                             padding: EdgeInsets.zero,
                             constraints: BoxConstraints(
-                              minWidth: strip ? 26 : 32,
-                              minHeight: strip ? 26 : 32,
+                              minWidth: strip ? lerpDouble(26, 22, tStrip)! : 32,
+                              minHeight:
+                                  strip ? lerpDouble(26, 22, tStrip)! : 32,
                             ),
                             visualDensity: VisualDensity.compact,
                           ),
@@ -315,21 +330,27 @@ class LevelCard extends StatelessWidget {
                                   color: AppColors.cyanNeon,
                                   value: stripDiamonds!,
                                   onTap: onStripDiamondsTap,
+                                  iconSize: stripChipIcon,
+                                  fontSize: stripChipFont,
                                 ),
-                                _stripResourceDivider(),
+                                _stripResourceDivider(height: stripDividerH),
                                 _stripResourceChip(
                                   icon: Icons.monetization_on_rounded,
                                   color: AppColors.coinGold,
                                   value: stripCoins!,
                                   onTap: onStripCoinsTap,
+                                  iconSize: stripChipIcon,
+                                  fontSize: stripChipFont,
                                 ),
-                                _stripResourceDivider(),
+                                _stripResourceDivider(height: stripDividerH),
                                 _stripResourceChip(
                                   icon: Icons.local_fire_department_rounded,
                                   color: AppColors.streakOrange,
                                   value: stripStreak!,
                                   suffix: '🔥',
                                   onTap: onStripStreakTap,
+                                  iconSize: stripChipIcon,
+                                  fontSize: stripChipFont,
                                 ),
                               ],
                             ),
@@ -393,10 +414,10 @@ class LevelCard extends StatelessWidget {
     );
   }
 
-  Widget _stripResourceDivider() {
+  Widget _stripResourceDivider({double height = 14}) {
     return Container(
       width: 1,
-      height: 14,
+      height: height,
       margin: const EdgeInsets.symmetric(horizontal: 5),
       color: Colors.white.withValues(alpha: 0.35),
     );
@@ -408,17 +429,19 @@ class LevelCard extends StatelessWidget {
     required int value,
     String suffix = '',
     VoidCallback? onTap,
+    double iconSize = 13,
+    double fontSize = 10,
   }) {
     final row = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 13, color: color),
+        Icon(icon, size: iconSize, color: color),
         const SizedBox(width: 3),
         Text(
           '$value$suffix',
           style: TextStyle(
             color: Colors.white.withValues(alpha: 0.95),
-            fontSize: 10,
+            fontSize: fontSize,
             fontWeight: FontWeight.w700,
           ),
         ),
