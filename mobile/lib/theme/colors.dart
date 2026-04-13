@@ -118,4 +118,15 @@ class AppColors {
       return [levelProdigy, const Color(0xFFF59E0B)];
     }
   }
+
+  /// Hạ bão hòa màu bậc so với nền graphite (dialog danh hiệu — phương án A).
+  static Color tierAccentMuted(Color tier) =>
+      Color.lerp(tier, bgSecondary, 0.45)!;
+
+  /// Icon theo bậc: hàng hiện tại rõ hơn; hàng khóa gợn tier nhưng không chói.
+  static Color tierIconTint(Color tier, {required bool isCurrent}) {
+    final m = tierAccentMuted(tier);
+    if (isCurrent) return m;
+    return Color.lerp(m, textTertiary, 0.42)!;
+  }
 }

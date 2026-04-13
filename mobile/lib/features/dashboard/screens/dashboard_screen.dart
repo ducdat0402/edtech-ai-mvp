@@ -589,27 +589,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
                 const SizedBox(height: 16),
                 _buildLevelTitleRow('Người mới', '1 - 5', Icons.emoji_people,
-                    Colors.green, currentLevel >= 1 && currentLevel <= 5),
+                    AppColors.levelNewbie, currentLevel >= 1 && currentLevel <= 5),
                 _buildLevelTitleRow('Học viên', '6 - 10', Icons.school,
-                    Colors.blue, currentLevel >= 6 && currentLevel <= 10),
+                    AppColors.levelStudent, currentLevel >= 6 && currentLevel <= 10),
                 _buildLevelTitleRow('Sinh viên', '11 - 20', Icons.menu_book,
-                    Colors.indigo, currentLevel >= 11 && currentLevel <= 20),
+                    AppColors.levelScholar, currentLevel >= 11 && currentLevel <= 20),
                 _buildLevelTitleRow('Chuyên gia', '21 - 35', Icons.psychology,
-                    Colors.purple, currentLevel >= 21 && currentLevel <= 35),
+                    AppColors.levelExpert, currentLevel >= 21 && currentLevel <= 35),
                 _buildLevelTitleRow(
                     'Bậc thầy',
                     '36 - 50',
                     Icons.workspace_premium,
-                    Colors.orange,
+                    AppColors.levelMaster,
                     currentLevel >= 36 && currentLevel <= 50),
                 _buildLevelTitleRow(
                     'Huyền thoại',
                     '51 - 75',
                     Icons.auto_awesome,
-                    Colors.red,
+                    AppColors.levelLegend,
                     currentLevel >= 51 && currentLevel <= 75),
                 _buildLevelTitleRow('Thần đồng', '76+', Icons.diamond,
-                    Colors.amber, currentLevel >= 76),
+                    AppColors.levelProdigy, currentLevel >= 76),
                 const SizedBox(height: 12),
                 Align(
                   alignment: Alignment.centerRight,
@@ -630,74 +630,93 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildLevelTitleRow(String title, String levelRange, IconData icon,
-      Color color, bool isCurrent) {
+      Color tierColor, bool isCurrent) {
+    final muted = AppColors.tierAccentMuted(tierColor);
+    final leftBar =
+        isCurrent ? muted : muted.withValues(alpha: 0.42);
+    final iconTint = AppColors.tierIconTint(tierColor, isCurrent: isCurrent);
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 6),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: isCurrent
-              ? [color.withValues(alpha: 0.2), color.withValues(alpha: 0.1)]
-              : [color.withValues(alpha: 0.08), color.withValues(alpha: 0.03)],
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-        ),
+        color: isCurrent ? AppColors.bgTertiary : AppColors.surfaceContainerLow,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: isCurrent ? color : color.withValues(alpha: 0.3),
-          width: isCurrent ? 2 : 1,
-        ),
+        border: Border.all(color: const Color(0x332D363D)),
       ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: isCurrent ? 0.3 : 0.15),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Icon(icon, color: color, size: 20),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: isCurrent ? FontWeight.bold : FontWeight.w500,
-                    color: color.withValues(alpha: isCurrent ? 1 : 0.8),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Container(width: 4, color: leftBar),
+              Expanded(
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: muted.withValues(
+                              alpha: isCurrent ? 0.14 : 0.08),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Icon(icon, color: iconTint, size: 20),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              title,
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: isCurrent
+                                    ? FontWeight.w600
+                                    : FontWeight.w500,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Cấp $levelRange',
+                              style: AppTextStyles.labelSmall.copyWith(
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (isCurrent)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryLight.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: AppColors.primaryLight.withValues(alpha: 0.35),
+                            ),
+                          ),
+                          child: Text(
+                            'Hiện tại',
+                            style: AppTextStyles.labelSmall.copyWith(
+                              color: AppColors.primaryLight,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
-                Text(
-                  'Cấp $levelRange',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: color.withValues(alpha: 0.6),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-          if (isCurrent)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Text(
-                'Hiện tại',
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-        ],
+        ),
       ),
     );
   }
