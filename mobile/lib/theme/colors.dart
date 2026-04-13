@@ -119,6 +119,11 @@ class AppColors {
     }
   }
 
+  /// Gradient bậc đã hạ bão hòa — dùng thanh profile / LevelCard (khớp dialog danh hiệu).
+  static List<Color> getLevelGradientMuted(int level) {
+    return getLevelGradient(level).map(tierAccentMuted).toList();
+  }
+
   /// Hạ bão hòa màu bậc so với nền graphite (dialog danh hiệu — phương án A).
   static Color tierAccentMuted(Color tier) =>
       Color.lerp(tier, bgSecondary, 0.45)!;

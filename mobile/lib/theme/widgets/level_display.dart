@@ -28,12 +28,13 @@ class LevelBadge extends StatelessWidget {
           height: size,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            gradient: AppGradients.forLevel(level),
+            gradient: AppGradients.forLevelMuted(level),
             boxShadow: [
               BoxShadow(
-                color: AppColors.getLevelColor(level).withValues(alpha: 0.5),
-                blurRadius: 12,
-                spreadRadius: 2,
+                color: AppColors.tierAccentMuted(AppColors.getLevelColor(level))
+                    .withValues(alpha: 0.35),
+                blurRadius: 10,
+                spreadRadius: 1,
               ),
             ],
           ),
@@ -54,7 +55,7 @@ class LevelBadge extends StatelessWidget {
           Text(
             'LEVEL',
             style: AppTextStyles.labelSmall.copyWith(
-              color: AppColors.getLevelColor(level),
+              color: AppColors.tierAccentMuted(AppColors.getLevelColor(level)),
             ),
           ),
         ],
@@ -110,7 +111,8 @@ class LevelCard extends StatelessWidget {
 
   double get progress =>
       xpForNextLevel > 0 ? (currentXP / xpForNextLevel).clamp(0.0, 1.0) : 0.0;
-  Color get levelColor => AppColors.getLevelColor(level);
+  Color get levelColor =>
+      AppColors.tierAccentMuted(AppColors.getLevelColor(level));
 
   bool get _showStripResources =>
       topBarStrip &&
@@ -483,7 +485,7 @@ class LevelTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = AppColors.getLevelColor(level);
+    final color = AppColors.tierAccentMuted(AppColors.getLevelColor(level));
 
     return Row(
       mainAxisSize: MainAxisSize.min,

@@ -393,7 +393,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final displayName = (rawName != null && rawName.trim().isNotEmpty)
         ? rawName.trim()
         : 'Bạn học';
-    final levelColor = AppColors.getLevelColor(level);
+    final levelColor = AppColors.tierAccentMuted(AppColors.getLevelColor(level));
     final coins = stats['totalCoins'] ?? stats['coins'] ?? 0;
     final diamonds = stats['totalDiamonds'] ?? stats['diamonds'] ?? 0;
     final streak = stats['currentStreak'] ?? stats['streak'] ?? 0;
@@ -402,14 +402,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
       key: _levelCardKey,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          gradient: AppGradients.forLevel(level),
+          gradient: AppGradients.forLevelMuted(level),
           borderRadius:
               const BorderRadius.vertical(bottom: Radius.circular(18)),
           boxShadow: [
             BoxShadow(
-              color: levelColor.withValues(alpha: 0.28),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+              color: levelColor.withValues(alpha: 0.18),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
             ),
           ],
         ),

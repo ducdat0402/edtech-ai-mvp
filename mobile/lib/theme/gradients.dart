@@ -198,4 +198,14 @@ class AppGradients {
       colors: colors,
     );
   }
+
+  /// Gradient bậc đã hạ bão hòa — thanh profile dashboard, tránh xanh/neon chói trên nền tối.
+  static LinearGradient forLevelMuted(int level) {
+    final colors = AppColors.getLevelGradientMuted(level);
+    return LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: colors,
+    );
+  }
 }
