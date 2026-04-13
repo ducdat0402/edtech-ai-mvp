@@ -535,6 +535,7 @@ export class FriendsService {
       const u = userMap.get(id)!;
       const curr = currencyMap.get(id);
       const mc = mutualCounts.get(id) || 0;
+      const sharedNodes = sharedNodeCounts.get(id) || 0;
       return {
         id: u.id,
         fullName: u.fullName,
@@ -542,6 +543,7 @@ export class FriendsService {
         level: curr?.level || 1,
         totalXP: curr?.xp || 0,
         mutualFriends: mc,
+        sharedCompletedNodes: sharedNodes,
       };
     });
   }

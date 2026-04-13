@@ -244,12 +244,15 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                     ),
                   ),
                 )
-              : RefreshIndicator(
-                  onRefresh: _loadData,
-                  color: AppColors.purpleNeon,
-                  child: CustomScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    slivers: [
+              : Stack(
+                  alignment: Alignment.bottomCenter,
+                  children: [
+                    RefreshIndicator(
+                      onRefresh: _loadData,
+                      color: AppColors.purpleNeon,
+                      child: CustomScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        slivers: [
                       SliverPadding(
                         padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
                         sliver: SliverList(
@@ -299,14 +302,15 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                         )
                       else
                         SliverPadding(
-                          padding: const EdgeInsets.fromLTRB(14, 0, 14, 20),
+                          padding: const EdgeInsets.fromLTRB(14, 0, 14, 48),
                           sliver: SliverList(
                             delegate: SliverChildListDelegate([
                               if (_isContributor) ...[
                                 _buildTypeSection(
                                   title: 'Môn học cá nhân',
-                                  type: 'private',
-                                  tooltip:
+                                  summary:
+                                      'Môn riêng — chỉ bạn thấy; bài học private miễn phí cho bạn.',
+                                  detail:
                                       'Chỉ bạn nhìn thấy môn học này. Bài học private miễn phí cho chính bạn. Muốn nâng lên cộng đồng/chuyên gia cần admin phê duyệt.',
                                   items: _subjectsByType('private'),
                                   onCreate: _showCreatePrivateDialog,
@@ -314,8 +318,9 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                                 const SizedBox(height: 12),
                                 _buildTypeSection(
                                   title: 'Môn học cộng đồng',
-                                  type: 'community',
-                                  tooltip:
+                                  summary:
+                                      'Đóng góp bài được duyệt có thể mang lại thưởng hàng tháng.',
+                                  detail:
                                       'Mở khóa bằng 50 xu hoặc 50 kim cương mỗi bài. Môn có đóng góp của bạn sẽ được chia lợi nhuận theo tháng tùy số lượng và dạng bài đã đóng góp thành công.',
                                   items: _subjectsByType('community'),
                                   onCreate: _showCreateCommunityDialog,
@@ -323,8 +328,9 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                                 const SizedBox(height: 12),
                                 _buildTypeSection(
                                   title: 'Môn học chuyên gia',
-                                  type: 'expert',
-                                  tooltip:
+                                  summary:
+                                      'Nội dung chuyên sâu — mỗi bài mở bằng 50 kim cương; cần admin duyệt.',
+                                  detail:
                                       'Mỗi bài học mở khóa bằng 50 kim cương. Nội dung ở mức chuyên sâu, cần phê duyệt admin.',
                                   items: _subjectsByType('expert'),
                                   onCreate: _showCreateExpertDialog,
@@ -335,8 +341,26 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                             ]),
                           ),
                         ),
-                    ],
-                  ),
+                        ],
+                      ),
+                    ),
+                    IgnorePointer(
+                      child: Container(
+                        height: 56,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              _bgPrimary.withValues(alpha: 0),
+                              _bgPrimary.withValues(alpha: 0.94),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
       bottomNavigationBar: const BottomNavBar(currentIndex: 1),
     );
@@ -912,6 +936,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
   Widget _buildSubjectTile(Map<String, dynamic> subject) {
     final id = (subject['id'] ?? '').toString();
     final name = (subject['name'] ?? 'Môn học').toString();
+    final totalNodes = (subject['totalNodesCount'] as num?)?.toInt();
     final coverUrl = _customCoverUrl(subject);
     final accent = _accentFromSubject(subject, name);
 
@@ -1021,6 +1046,25 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                       ],
                     ),
                   ),
+                  if (totalNodes != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      '$totalNodes bài học',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.78),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 11,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black.withValues(alpha: 0.85),
+                            blurRadius: 6,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -1082,10 +1126,53 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
     }
   }
 
+  void _showContributorSectionDetail(String title, String detail) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.bgSecondary,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        final maxH = MediaQuery.sizeOf(ctx).height * 0.45;
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(title, style: AppTextStyles.h4),
+                const SizedBox(height: 12),
+                ConstrainedBox(
+                  constraints: BoxConstraints(maxHeight: maxH),
+                  child: SingleChildScrollView(
+                    child: Text(
+                      detail,
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                FilledButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  child: const Text('Đóng'),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildTypeSection({
     required String title,
-    required String type,
-    required String tooltip,
+    required String summary,
+    required String detail,
     required List<Map<String, dynamic>> items,
     required Future<void> Function() onCreate,
   }) {
@@ -1111,12 +1198,17 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                   ),
                 ),
               ),
-              Tooltip(
-                message: tooltip,
-                child: const Icon(Icons.info_outline,
-                    color: AppColors.textSecondary, size: 18),
+              IconButton(
+                tooltip: 'Chi tiết loại môn',
+                onPressed: () =>
+                    _showContributorSectionDetail(title, detail),
+                icon: const Icon(Icons.info_outline,
+                    color: AppColors.textSecondary, size: 20),
+                visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 4),
               TextButton.icon(
                 onPressed: onCreate,
                 icon: const Icon(Icons.add, size: 18),
@@ -1126,9 +1218,12 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
           ),
           const SizedBox(height: 6),
           Text(
-            tooltip,
-            style:
-                const TextStyle(color: AppColors.textSecondary, fontSize: 12.5),
+            summary,
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 12.5,
+              height: 1.35,
+            ),
           ),
           const SizedBox(height: 10),
           if (items.isEmpty)
@@ -1143,12 +1238,11 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
             GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount:
-                    _gridCrossAxisCount(MediaQuery.sizeOf(context).width - 28),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
                 mainAxisSpacing: 10,
                 crossAxisSpacing: 10,
-                childAspectRatio: 0.92,
+                childAspectRatio: 0.84,
               ),
               itemCount: items.length,
               itemBuilder: (context, index) => _buildSubjectTile(items[index]),

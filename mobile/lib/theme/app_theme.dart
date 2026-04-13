@@ -303,7 +303,7 @@ class AppTheme {
         thickness: 1,
       ),
 
-      // Tooltip
+      // Tooltip (prefer below controls; longer wait avoids accidental flashes on AppBar)
       tooltipTheme: TooltipThemeData(
         decoration: BoxDecoration(
           color: AppColors.bgTertiary,
@@ -313,6 +313,10 @@ class AppTheme {
           fontSize: 12,
           color: AppColors.textPrimary,
         ),
+        preferBelow: true,
+        verticalOffset: 10,
+        waitDuration: const Duration(milliseconds: 900),
+        showDuration: const Duration(seconds: 4),
       ),
     );
   }

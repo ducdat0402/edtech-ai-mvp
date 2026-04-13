@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
@@ -342,6 +343,12 @@ class _ShopScreenState extends State<ShopScreen>
         leadingWidth: 112,
         automaticallyImplyLeading: false,
         actions: [
+          IconButton(
+            tooltip: 'Mua kim cương',
+            icon: const Icon(Icons.diamond_rounded,
+                color: AppColors.primaryLight, size: 26),
+            onPressed: () => context.push('/payment'),
+          ),
           Container(
             margin: const EdgeInsets.only(right: 12),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -444,16 +451,39 @@ class _ShopScreenState extends State<ShopScreen>
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.coinGold.withValues(alpha: 0.25)),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Icon(Icons.info_outline_rounded,
-              color: AppColors.coinGold, size: 20),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              'Xu kiếm được qua học tập. Hoàn thành bài học, nhiệm vụ và thành tựu để nhận thêm!',
-              style: AppTextStyles.caption
-                  .copyWith(color: AppColors.textSecondary),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(Icons.info_outline_rounded,
+                  color: AppColors.coinGold, size: 20),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Xu kiếm được qua học tập. Hoàn thành bài học, nhiệm vụ và thành tựu để nhận thêm!',
+                  style: AppTextStyles.caption
+                      .copyWith(color: AppColors.textSecondary),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          FilledButton.icon(
+            onPressed: () => context.push('/payment'),
+            icon: const Icon(Icons.diamond_rounded, size: 20),
+            label: const Text('Mua kim cương'),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.primaryLight.withValues(alpha: 0.22),
+              foregroundColor: AppColors.primaryLight,
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(
+                  color: AppColors.primaryLight.withValues(alpha: 0.45),
+                ),
+              ),
             ),
           ),
         ],

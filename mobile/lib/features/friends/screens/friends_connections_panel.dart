@@ -114,35 +114,115 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(4, 0, 4, 4),
+          padding: const EdgeInsets.fromLTRB(4, 0, 8, 4),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              IconButton(
-                icon: const Icon(Icons.block_rounded,
-                    color: AppColors.textPrimary),
-                tooltip: 'Đã chặn',
-                onPressed: () => context.push('/friends/blocked'),
-              ),
-              IconButton(
-                icon: const Icon(Icons.chat_rounded,
-                    color: AppColors.textPrimary),
-                onPressed: () => context.push('/dm/conversations'),
-              ),
-              IconButton(
-                icon: const Icon(Icons.search_rounded,
-                    color: AppColors.textPrimary),
-                onPressed: _showSearchDialog,
-              ),
-              IconButton(
-                icon: const Icon(Icons.timeline_rounded,
-                    color: AppColors.textPrimary),
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (_) => const _FriendActivityPage()),
+              PopupMenuButton<String>(
+                  tooltip: 'Thêm',
+                  icon: const Icon(Icons.more_horiz_rounded,
+                      color: AppColors.textPrimary),
+                  color: AppColors.bgSecondary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: const BorderSide(color: Color(0x332D363D)),
+                  ),
+                  offset: const Offset(0, 8),
+                  onSelected: (value) {
+                    switch (value) {
+                      case 'blocked':
+                        context.push('/friends/blocked');
+                        break;
+                      case 'dm':
+                        context.push('/dm/conversations');
+                        break;
+                      case 'search':
+                        _showSearchDialog();
+                        break;
+                      case 'activity':
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const _FriendActivityPage()),
+                        );
+                        break;
+                    }
+                  },
+                  itemBuilder: (ctx) => [
+                    PopupMenuItem(
+                      value: 'blocked',
+                      child: Semantics(
+                        label: 'Đã chặn',
+                        button: true,
+                        child: Row(
+                          children: [
+                            Icon(Icons.block_rounded,
+                                size: 22, color: AppColors.textPrimary),
+                            const SizedBox(width: 12),
+                            const Text('Đã chặn',
+                                style: TextStyle(
+                                    color: AppColors.textPrimary,
+                                    fontWeight: FontWeight.w500)),
+                          ],
+                        ),
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: 'dm',
+                      child: Semantics(
+                        label: 'Tin nhắn',
+                        button: true,
+                        child: Row(
+                          children: [
+                            Icon(Icons.chat_rounded,
+                                size: 22, color: AppColors.textPrimary),
+                            const SizedBox(width: 12),
+                            const Text('Tin nhắn',
+                                style: TextStyle(
+                                    color: AppColors.textPrimary,
+                                    fontWeight: FontWeight.w500)),
+                          ],
+                        ),
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: 'search',
+                      child: Semantics(
+                        label: 'Tìm kiếm người dùng',
+                        button: true,
+                        child: Row(
+                          children: [
+                            Icon(Icons.search_rounded,
+                                size: 22, color: AppColors.textPrimary),
+                            const SizedBox(width: 12),
+                            const Text('Tìm kiếm',
+                                style: TextStyle(
+                                    color: AppColors.textPrimary,
+                                    fontWeight: FontWeight.w500)),
+                          ],
+                        ),
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: 'activity',
+                      child: Semantics(
+                        label: 'Hoạt động bạn bè',
+                        button: true,
+                        child: Row(
+                          children: [
+                            Icon(Icons.timeline_rounded,
+                                size: 22, color: AppColors.textPrimary),
+                            const SizedBox(width: 12),
+                            const Text('Hoạt động',
+                                style: TextStyle(
+                                    color: AppColors.textPrimary,
+                                    fontWeight: FontWeight.w500)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
             ],
           ),
         ),
@@ -277,6 +357,7 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
             IconButton(
               icon: const Icon(Icons.chat_bubble_outline_rounded,
                   color: AppColors.primaryLight),
+              tooltip: 'Nhắn tin',
               onPressed: () {
                 final id = friend['id'] as String?;
                 if (id != null) {
@@ -286,6 +367,7 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
             ),
             PopupMenuButton<String>(
               icon: const Icon(Icons.more_vert, color: AppColors.textSecondary),
+              tooltip: 'Thao tác',
               color: AppColors.bgTertiary,
               onSelected: (value) => _handleFriendAction(value, friend),
               itemBuilder: (_) => [
@@ -547,31 +629,126 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
 
   Widget _buildSuggestionsTab() {
     if (_suggestions.isEmpty) {
-      return const EmptyStateWidget(
+      return EmptyStateWidget(
         icon: Icons.person_search_rounded,
         title: 'Không có gợi ý',
-        message: 'Hãy học thêm để hệ thống gợi ý bạn bè phù hợp!',
+        message:
+            'Hãy học thêm hoặc tìm bạn theo tên — hệ thống sẽ gợi ý khi có tín hiệu phù hợp.',
+        action: OutlinedButton.icon(
+          onPressed: _showSearchDialog,
+          style: OutlinedButton.styleFrom(
+            foregroundColor: AppColors.purpleNeon,
+            side: const BorderSide(color: AppColors.purpleNeon, width: 1.2),
+          ),
+          icon: const Icon(Icons.search_rounded, size: 20),
+          label: const Text('Tìm kiếm bạn bè'),
+        ),
       );
     }
+
+    final weakOnly = _suggestions.every((raw) {
+      final s = raw as Map<String, dynamic>;
+      final m = s['mutualFriends'] as int? ?? 0;
+      final n = s['sharedCompletedNodes'] as int? ?? 0;
+      return m == 0 && n == 0;
+    });
 
     return RefreshIndicator(
       onRefresh: () => _loadDataForTab(2),
       color: AppColors.purpleNeon,
       child: ListView.builder(
         padding: const EdgeInsets.all(16),
-        itemCount: _suggestions.length,
+        itemCount: _suggestions.length + (weakOnly ? 1 : 0),
         itemBuilder: (context, index) {
-          final s = _suggestions[index] as Map<String, dynamic>;
+          if (weakOnly && index == 0) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Material(
+                color: AppColors.bgSecondary,
+                borderRadius: BorderRadius.circular(12),
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.info_outline_rounded,
+                          color: AppColors.primaryLight.withValues(alpha: 0.9),
+                          size: 22),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Ít tín hiệu cá nhân hóa',
+                              style: TextStyle(
+                                color: AppColors.textPrimary,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Danh sách dưới đây gợi ý theo mức độ tương đồng chung. Bạn có thể tìm theo tên để kết nối trực tiếp.',
+                              style: TextStyle(
+                                color: AppColors.textSecondary.withValues(
+                                    alpha: 0.95),
+                                fontSize: 13,
+                                height: 1.35,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            TextButton.icon(
+                              onPressed: _showSearchDialog,
+                              icon: const Icon(Icons.search_rounded, size: 18),
+                              label: const Text('Tìm kiếm'),
+                              style: TextButton.styleFrom(
+                                foregroundColor: AppColors.purpleNeon,
+                                padding: EdgeInsets.zero,
+                                minimumSize: Size.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }
+          final s = _suggestions[weakOnly ? index - 1 : index]
+              as Map<String, dynamic>;
           return _buildSuggestionCard(s);
         },
       ),
     );
   }
 
+  /// Một dòng giải thích vì sao người này được gợi ý (dữ liệu từ API).
+  String _suggestionReasonLine(Map<String, dynamic> s) {
+    final m = s['mutualFriends'] as int? ?? 0;
+    final n = s['sharedCompletedNodes'] as int? ?? 0;
+    if (m > 0 && n > 0) {
+      return '$m bạn chung • Đã học chung $n bài';
+    }
+    if (m > 0) {
+      return m == 1
+          ? '1 bạn chung trên nền tảng'
+          : '$m bạn chung trên nền tảng';
+    }
+    if (n > 0) {
+      return n == 1
+          ? 'Đã hoàn thành chung 1 bài học'
+          : 'Đã hoàn thành chung $n bài học';
+    }
+    return 'Gợi ý theo trình độ và hoạt động tương đồng';
+  }
+
   Widget _buildSuggestionCard(Map<String, dynamic> s) {
     final name = s['fullName'] ?? s['email'] ?? 'User';
     final level = s['level'] ?? 1;
-    final mutual = s['mutualFriends'] ?? 0;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -601,22 +778,22 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
                       style: const TextStyle(
                           color: AppColors.textPrimary,
                           fontWeight: FontWeight.w600)),
-                  Row(
-                    children: [
-                      Text('Lv.$level',
-                          style: TextStyle(
-                              color: AppColors.getLevelColor(level),
-                              fontSize: 12)),
-                      if (mutual > 0) ...[
-                        const SizedBox(width: 8),
-                        const Icon(Icons.people_rounded,
-                            size: 12, color: AppColors.textSecondary),
-                        const SizedBox(width: 2),
-                        Text('$mutual bạn chung',
-                            style: const TextStyle(
-                                color: AppColors.textSecondary, fontSize: 12)),
-                      ],
-                    ],
+                  const SizedBox(height: 2),
+                  Text(
+                    _suggestionReasonLine(s),
+                    style: TextStyle(
+                      color: AppColors.textSecondary.withValues(alpha: 0.95),
+                      fontSize: 12,
+                      height: 1.3,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Lv.$level',
+                    style: TextStyle(
+                      color: AppColors.getLevelColor(level),
+                      fontSize: 12,
+                    ),
                   ),
                 ],
               ),

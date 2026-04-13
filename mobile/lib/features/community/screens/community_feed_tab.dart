@@ -16,16 +16,37 @@ class CommunityFeedTab extends StatefulWidget {
 
 class _CommunityFeedTabState extends State<CommunityFeedTab> {
   final List<Map<String, dynamic>> _items = [];
+  final TextEditingController _searchController = TextEditingController();
   String? _nextCursor;
   bool _loading = true;
   bool _loadingMore = false;
   String? _error;
   String? _myUserId;
 
+  static const double _listBottomInset =
+      112; // FAB + margin so last cards stay above compose button
+
   @override
   void initState() {
     super.initState();
     _bootstrap();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  List<Map<String, dynamic>> _filteredItems() {
+    final q = _searchController.text.trim().toLowerCase();
+    if (q.isEmpty) return _items;
+    return _items.where((e) {
+      final author = e['author'] as Map<String, dynamic>? ?? {};
+      final name = author['fullName']?.toString().toLowerCase() ?? '';
+      final content = e['content']?.toString().toLowerCase() ?? '';
+      return name.contains(q) || content.contains(q);
+    }).toList();
   }
 
   Future<void> _bootstrap() async {
@@ -235,6 +256,12 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
     return '${diff.inDays} ngày trước';
   }
 
+  String _searchSnippet() {
+    final t = _searchController.text.trim();
+    if (t.length <= 32) return t;
+    return '${t.substring(0, 32)}…';
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_loading) {
@@ -259,45 +286,138 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
       );
     }
 
-    return Stack(
+    final filtered = _filteredItems();
+    final searching = _searchController.text.trim().isNotEmpty;
+    final showLoadMoreTile =
+        !searching && _nextCursor != null && filtered.length == _items.length;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        RefreshIndicator(
-          onRefresh: _refresh,
-          color: AppColors.purpleNeon,
-          child: _items.isEmpty
-              ? ListView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  children: const [
-                    SizedBox(height: 120),
-                    Center(
-                      child: Text(
-                        'Chưa có status nào.\nHãy là người đầu tiên đăng!',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            color: AppColors.textSecondary, height: 1.4),
-                      ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(12, 4, 12, 0),
+          child: TextField(
+            controller: _searchController,
+            onChanged: (_) => setState(() {}),
+            style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
+            decoration: InputDecoration(
+              hintText: 'Tìm theo tên hoặc nội dung…',
+              hintStyle: TextStyle(
+                color: AppColors.textSecondary.withValues(alpha: 0.85),
+                fontSize: 14,
+              ),
+              isDense: true,
+              filled: true,
+              fillColor: AppColors.bgSecondary,
+              prefixIcon: const Icon(Icons.search_rounded,
+                  color: AppColors.textSecondary, size: 22),
+              suffixIcon: _searchController.text.isEmpty
+                  ? null
+                  : IconButton(
+                      tooltip: 'Xóa tìm kiếm',
+                      icon: const Icon(Icons.close_rounded,
+                          color: AppColors.textTertiary, size: 20),
+                      onPressed: () {
+                        _searchController.clear();
+                        setState(() {});
+                      },
                     ),
-                  ],
-                )
-              : ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(12, 8, 12, 88),
-                  itemCount: _items.length + (_nextCursor != null ? 1 : 0),
-                  itemBuilder: (context, index) {
-                    if (index == _items.length && _nextCursor != null) {
-                      if (!_loadingMore) {
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          if (mounted) _loadMore();
-                        });
-                      }
-                      return const Padding(
-                        padding: EdgeInsets.all(16),
-                        child: Center(
-                          child: CircularProgressIndicator(
-                              color: AppColors.purpleNeon),
-                        ),
-                      );
-                    }
-                    final item = _items[index];
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0x332D363D)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0x332D363D)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(
+                    color: AppColors.purpleNeon, width: 1.2),
+              ),
+            ),
+          ),
+        ),
+        Expanded(
+          child: Stack(
+            children: [
+              RefreshIndicator(
+                onRefresh: _refresh,
+                color: AppColors.purpleNeon,
+                child: _items.isEmpty
+                    ? ListView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding:
+                            const EdgeInsets.only(bottom: _listBottomInset),
+                        children: const [
+                          SizedBox(height: 120),
+                          Center(
+                            child: Text(
+                              'Chưa có status nào.\nHãy là người đầu tiên đăng!',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  color: AppColors.textSecondary, height: 1.4),
+                            ),
+                          ),
+                        ],
+                      )
+                    : searching && filtered.isEmpty
+                        ? ListView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            padding: const EdgeInsets.fromLTRB(
+                                24, 48, 24, _listBottomInset),
+                            children: [
+                              Icon(
+                                Icons.search_off_rounded,
+                                size: 56,
+                                color: AppColors.textTertiary
+                                    .withValues(alpha: 0.7),
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Không có bài viết khớp “${_searchSnippet()}”.',
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  color: AppColors.textPrimary,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 16,
+                                  height: 1.35,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              const Text(
+                                'Thử từ khóa khác hoặc xóa ô tìm kiếm để xem toàn bộ bảng tin.',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                    color: AppColors.textSecondary,
+                                    fontSize: 14,
+                                    height: 1.4),
+                              ),
+                            ],
+                          )
+                        : ListView.builder(
+                            padding: const EdgeInsets.fromLTRB(
+                                12, 8, 12, _listBottomInset),
+                            itemCount: filtered.length +
+                                (showLoadMoreTile ? 1 : 0),
+                            itemBuilder: (context, index) {
+                              if (index == filtered.length &&
+                                  showLoadMoreTile) {
+                                if (!_loadingMore) {
+                                  WidgetsBinding.instance
+                                      .addPostFrameCallback((_) {
+                                    if (mounted) _loadMore();
+                                  });
+                                }
+                                return const Padding(
+                                  padding: EdgeInsets.all(16),
+                                  child: Center(
+                                    child: CircularProgressIndicator(
+                                        color: AppColors.purpleNeon),
+                                  ),
+                                );
+                              }
+                              final item = filtered[index];
                     final author =
                         item['author'] as Map<String, dynamic>? ?? {};
                     final authorId = author['id']?.toString() ?? '';
@@ -386,12 +506,8 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
                               ],
                             ),
                             const SizedBox(height: 10),
-                            Text(
-                              item['content']?.toString() ?? '',
-                              style: const TextStyle(
-                                  color: AppColors.textPrimary,
-                                  fontSize: 14,
-                                  height: 1.35),
+                            _CollapsiblePostText(
+                              text: item['content']?.toString() ?? '',
                             ),
                             const SizedBox(height: 10),
                             Row(
@@ -430,17 +546,118 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
                     );
                   },
                 ),
-        ),
-        Positioned(
-          right: 16,
-          bottom: 16,
-          child: FloatingActionButton(
-            onPressed: _composeStatus,
-            backgroundColor: AppColors.purpleNeon,
-            child: const Icon(Icons.edit_rounded),
+              ),
+              Positioned(
+                right: 16,
+                bottom: 16,
+                child: FloatingActionButton(
+                  onPressed: _composeStatus,
+                  tooltip: 'Đăng status',
+                  backgroundColor: AppColors.purpleNeon,
+                  child: const Icon(Icons.edit_rounded),
+                ),
+              ),
+            ],
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Nội dung bài ~4 dòng, có "Xem thêm" / "Thu gọn" khi tràn.
+class _CollapsiblePostText extends StatefulWidget {
+  const _CollapsiblePostText({required this.text});
+
+  final String text;
+
+  @override
+  State<_CollapsiblePostText> createState() => _CollapsiblePostTextState();
+}
+
+class _CollapsiblePostTextState extends State<_CollapsiblePostText> {
+  static const TextStyle _style = TextStyle(
+    color: AppColors.textPrimary,
+    fontSize: 14,
+    height: 1.35,
+  );
+  static const int _maxLines = 4;
+
+  bool _expanded = false;
+  bool _overflows = false;
+  double? _lastLayoutWidth;
+  String? _lastMeasuredText;
+
+  @override
+  void didUpdateWidget(covariant _CollapsiblePostText oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.text != widget.text) {
+      _expanded = false;
+      _overflows = false;
+      _lastLayoutWidth = null;
+      _lastMeasuredText = null;
+    }
+  }
+
+  void _measureIfNeeded(double maxWidth) {
+    if (maxWidth <= 0) return;
+    if (_lastLayoutWidth == maxWidth && _lastMeasuredText == widget.text) {
+      return;
+    }
+    final painter = TextPainter(
+      text: TextSpan(text: widget.text, style: _style),
+      maxLines: _maxLines,
+      textDirection: Directionality.of(context),
+    )..layout(maxWidth: maxWidth);
+    final exceeds = painter.didExceedMaxLines;
+    _lastLayoutWidth = maxWidth;
+    _lastMeasuredText = widget.text;
+    if (_overflows != exceeds) {
+      setState(() => _overflows = exceeds);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          _measureIfNeeded(constraints.maxWidth);
+        });
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              widget.text,
+              style: _style,
+              maxLines: _expanded ? null : _maxLines,
+              overflow: _expanded
+                  ? TextOverflow.visible
+                  : (_overflows
+                      ? TextOverflow.ellipsis
+                      : TextOverflow.visible),
+            ),
+            if (_overflows)
+              TextButton(
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                onPressed: () => setState(() => _expanded = !_expanded),
+                child: Text(
+                  _expanded ? 'Thu gọn' : 'Xem thêm',
+                  style: const TextStyle(
+                    color: AppColors.purpleNeon,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 }
