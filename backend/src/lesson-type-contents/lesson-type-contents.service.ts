@@ -17,10 +17,11 @@ export class LessonTypeContentsService {
    * Get all lesson type contents for a learning node
    */
   async getByNodeId(nodeId: string): Promise<LessonTypeContent[]> {
-    return this.lessonTypeContentRepo.find({
+    const contents = await this.lessonTypeContentRepo.find({
       where: { nodeId },
       order: { createdAt: 'ASC' },
     });
+    return contents.filter((c) => this.hasRenderableContent(c));
   }
 
   /**
@@ -30,27 +31,56 @@ export class LessonTypeContentsService {
     nodeId: string,
     lessonType: string,
   ): Promise<LessonTypeContent | null> {
-    return this.lessonTypeContentRepo.findOne({
+    const content = await this.lessonTypeContentRepo.findOne({
       where: { nodeId, lessonType: lessonType as any },
     });
+    if (!content) return null;
+    return this.hasRenderableContent(content) ? content : null;
   }
 
   /**
    * Get count of available lesson types for a node
    */
   async getTypeCountByNodeId(nodeId: string): Promise<number> {
-    return this.lessonTypeContentRepo.count({ where: { nodeId } });
+    const contents = await this.getByNodeId(nodeId);
+    return contents.length;
   }
 
   /**
    * Get available lesson type keys for a node
    */
   async getAvailableTypes(nodeId: string): Promise<string[]> {
-    const contents = await this.lessonTypeContentRepo.find({
-      where: { nodeId },
-      select: ['lessonType'],
-    });
+    const contents = await this.getByNodeId(nodeId);
     return contents.map((c) => c.lessonType);
+  }
+
+  private hasRenderableContent(content: LessonTypeContent): boolean {
+    const data = content.lessonData as Record<string, any> | null | undefined;
+    if (!data || typeof data !== 'object') return false;
+    switch (content.lessonType) {
+      case 'image_quiz':
+        return Array.isArray(data.slides) && data.slides.length > 0;
+      case 'image_gallery':
+        return Array.isArray(data.images) && data.images.length > 0;
+      case 'video': {
+        const hasUrl =
+          typeof data.videoUrl === 'string' && data.videoUrl.trim().length > 0;
+        const hasKeyPoints =
+          Array.isArray(data.keyPoints) && data.keyPoints.length > 0;
+        const hasSummary =
+          typeof data.summary === 'string' && data.summary.trim().length > 0;
+        return hasUrl || hasKeyPoints || hasSummary;
+      }
+      case 'text': {
+        const hasSections =
+          Array.isArray(data.sections) && data.sections.length > 0;
+        const hasSummary =
+          typeof data.summary === 'string' && data.summary.trim().length > 0;
+        return hasSections || hasSummary;
+      }
+      default:
+        return Object.keys(data).length > 0;
+    }
   }
 
   /**
