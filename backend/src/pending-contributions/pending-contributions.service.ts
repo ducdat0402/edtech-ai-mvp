@@ -97,7 +97,11 @@ export class PendingContributionsService {
         coinReward: data.coinReward || 0,
       },
     });
-    return this.pendingRepo.save(contribution);
+    return this.autoApproveForPrivateOwnerIfEligible(
+      contribution,
+      contributorId,
+      subject.id,
+    );
   }
 
   async createTopicContribution(
@@ -115,6 +119,15 @@ export class PendingContributionsService {
   ): Promise<PendingContribution> {
     const subject = await this.subjectsService.findById(data.subjectId);
     const domain = await this.domainsService.findById(data.domainId);
+    if (!subject) {
+      throw new NotFoundException('Subject not found');
+    }
+    if (!domain) {
+      throw new NotFoundException('Domain not found');
+    }
+    if (domain.subjectId !== subject.id) {
+      throw new BadRequestException('Domain không thuộc subject đã chọn');
+    }
 
     const contribution = this.pendingRepo.create({
       type: ContributionType.TOPIC,
@@ -139,7 +152,11 @@ export class PendingContributionsService {
         coinReward: data.coinReward || 0,
       },
     });
-    return this.pendingRepo.save(contribution);
+    return this.autoApproveForPrivateOwnerIfEligible(
+      contribution,
+      contributorId,
+      subject.id,
+    );
   }
 
   // =====================
@@ -366,6 +383,11 @@ export class PendingContributionsService {
       coinReward?: number;
     },
   ): Promise<PendingContribution> {
+    const subject = await this.subjectsService.findById(data.subjectId);
+    if (!subject) {
+      throw new NotFoundException('Subject not found');
+    }
+
     // Resolve topic name for context description
     let topicLabel = data.topicName || '';
     if (!topicLabel && data.topicId) {
@@ -408,6 +430,38 @@ export class PendingContributionsService {
         coinReward: data.coinReward || 0,
       },
     });
+    return this.autoApproveForPrivateOwnerIfEligible(
+      contribution,
+      contributorId,
+      subject.id,
+    );
+  }
+
+  private async autoApproveForPrivateOwnerIfEligible(
+    contribution: PendingContribution,
+    contributorId: string,
+    subjectId: string | null | undefined,
+  ): Promise<PendingContribution> {
+    if (!subjectId) {
+      return this.pendingRepo.save(contribution);
+    }
+    const subject = await this.subjectsService.findById(subjectId);
+    if (!subject) {
+      throw new NotFoundException('Subject not found');
+    }
+    if (subject.subjectType === 'private') {
+      if (subject.ownerUserId !== contributorId) {
+        throw new ForbiddenException(
+          'Bạn không có quyền đóng góp vào môn học private của người khác',
+        );
+      }
+      contribution.status = ContributionStatus.APPROVED;
+      contribution.reviewedBy = contributorId;
+      contribution.reviewNote = 'Auto-approved for owner private subject';
+      contribution.reviewedAt = new Date();
+      await this.executeCreateAction(contribution);
+      return this.pendingRepo.save(contribution);
+    }
     return this.pendingRepo.save(contribution);
   }
 
