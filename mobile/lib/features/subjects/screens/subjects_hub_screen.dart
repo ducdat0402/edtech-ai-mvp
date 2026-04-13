@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/core/widgets/bottom_nav_bar.dart';
@@ -15,6 +16,9 @@ class SubjectsHubScreen extends StatefulWidget {
 }
 
 class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
+  static const String _kPrefSubjectTypesExplained =
+      'library_subject_types_explained_v1';
+
   bool _loading = true;
   String? _error;
   Map<String, dynamic>? _profileData;
@@ -78,6 +82,11 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
         _viewAsContributor = _hasContributorRole;
         _loading = false;
       });
+      if (mounted) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _maybeShowSubjectTypesIntroSheet();
+        });
+      }
     } catch (e) {
       setState(() {
         _error = e.toString();
@@ -251,8 +260,6 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                             ],
                             _buildRoleSwitcher(),
                             const SizedBox(height: 12),
-                            _buildHeroCard(),
-                            const SizedBox(height: 14),
                             if (_isContributor) ...[
                               _buildContributorBanner(),
                               const SizedBox(height: 14),
@@ -430,12 +437,9 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
   }
 
   Widget _buildLearnerFilterChips() {
-    const pad = EdgeInsets.only(top: 0);
-    return Padding(
-      padding: pad,
-      child: Wrap(
-        spacing: 10,
-        runSpacing: 8,
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
         children: [
           ChoiceChip(
             label: const Text('Tất cả'),
@@ -444,6 +448,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
             selectedColor: AppColors.purpleNeon.withValues(alpha: 0.18),
             backgroundColor: _bgSecondary,
           ),
+          const SizedBox(width: 10),
           ChoiceChip(
             label: const Text('Cá nhân'),
             selected: _subjectFilter == 'private',
@@ -451,6 +456,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
             selectedColor: AppColors.primaryLight.withValues(alpha: 0.16),
             backgroundColor: _bgSecondary,
           ),
+          const SizedBox(width: 10),
           ChoiceChip(
             label: const Text('Cộng đồng'),
             selected: _subjectFilter == 'community',
@@ -458,6 +464,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
             selectedColor: AppColors.orangeNeon.withValues(alpha: 0.18),
             backgroundColor: _bgSecondary,
           ),
+          const SizedBox(width: 10),
           ChoiceChip(
             label: const Text('Chuyên gia'),
             selected: _subjectFilter == 'expert',
@@ -491,12 +498,12 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
                   color: !_isContributor
-                      ? AppColors.purpleNeon.withValues(alpha: 0.2)
+                      ? AppColors.purpleNeon.withValues(alpha: 0.32)
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(12),
                   border: !_isContributor
                       ? Border.all(
-                          color: AppColors.purpleNeon.withValues(alpha: 0.5),
+                          color: AppColors.purpleNeon.withValues(alpha: 0.55),
                         )
                       : null,
                 ),
@@ -611,7 +618,20 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: AppTextStyles.h3.copyWith(fontSize: 18)),
+        Text(
+          title,
+          style: AppTextStyles.h4.copyWith(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          '${items.length} môn học',
+          style: AppTextStyles.bodySmall.copyWith(
+            color: AppColors.textSecondary,
+          ),
+        ),
         const SizedBox(height: 10),
         if (items.isEmpty)
           const Padding(
@@ -630,7 +650,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                   _gridCrossAxisCount(MediaQuery.sizeOf(context).width - 28),
               mainAxisSpacing: 10,
               crossAxisSpacing: 10,
-              childAspectRatio: 0.92,
+              childAspectRatio: 0.84,
             ),
             itemCount: items.length,
             itemBuilder: (context, index) => _buildSubjectTile(items[index]),
@@ -639,7 +659,8 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
     );
   }
 
-  Widget _buildHeroCard() {
+  /// Nội dung giải thích 3 loại môn — dùng trong bottom sheet lần đầu (5A).
+  Widget _buildSubjectTypesExplainerBody() {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
@@ -695,6 +716,62 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _maybeShowSubjectTypesIntroSheet() async {
+    if (!mounted) return;
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getBool(_kPrefSubjectTypesExplained) == true) return;
+    if (!mounted) return;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        final bottomInset = MediaQuery.of(ctx).viewInsets.bottom;
+        return Padding(
+          padding: EdgeInsets.only(bottom: bottomInset),
+          child: Container(
+            decoration: const BoxDecoration(
+              color: AppColors.bgSecondary,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: AppColors.textTertiary,
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildSubjectTypesExplainerBody(),
+                    const SizedBox(height: 16),
+                    FilledButton(
+                      onPressed: () => Navigator.of(ctx).pop(),
+                      child: const Text('Đã hiểu'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+
+    if (!mounted) return;
+    await prefs.setBool(_kPrefSubjectTypesExplained, true);
   }
 
   int _subjectColor(String name) {
@@ -929,13 +1006,13 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                   const SizedBox(height: 10),
                   Text(
                     name,
-                    maxLines: 1,
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.92),
                       fontWeight: FontWeight.w800,
                       fontSize: 12.5,
-                      height: 1.1,
+                      height: 1.3,
                       shadows: [
                         Shadow(
                           color: Colors.black.withValues(alpha: 0.9),
