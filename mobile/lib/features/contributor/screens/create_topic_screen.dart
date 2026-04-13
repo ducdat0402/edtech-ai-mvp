@@ -30,6 +30,7 @@ class _CreateTopicScreenState extends State<CreateTopicScreen> {
   final _coinController = TextEditingController(text: '25');
   bool _isSubmitting = false;
   bool _isLoading = true;
+  bool _isPrivateSubject = false;
 
   // New fields
   String _difficulty = 'medium';
@@ -45,9 +46,16 @@ class _CreateTopicScreenState extends State<CreateTopicScreen> {
   Future<void> _loadExistingTopics() async {
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
-      final topics = await apiService.getTopicsByDomain(widget.domainId);
+      final results = await Future.wait([
+        apiService.getTopicsByDomain(widget.domainId),
+        apiService.getSubjectIntro(widget.subjectId),
+      ]);
+      final topics = results[0] as List<dynamic>;
+      final intro = results[1] as Map<String, dynamic>;
+      final subject = intro['subject'] as Map<String, dynamic>? ?? const {};
       setState(() {
         _existingTopics = topics.cast<Map<String, dynamic>>();
+        _isPrivateSubject = subject['subjectType'] == 'private';
         _isLoading = false;
       });
     } catch (e) {
@@ -114,11 +122,13 @@ class _CreateTopicScreenState extends State<CreateTopicScreen> {
                   color: AppColors.purpleNeon, size: 48),
             ),
             const SizedBox(height: 16),
-            Text('Đã gửi yêu cầu!',
+            Text(_isPrivateSubject ? 'Đã tạo topic!' : 'Đã gửi yêu cầu!',
                 style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
             const SizedBox(height: 8),
             Text(
-              'Topic "${_nameController.text.trim()}" đang chờ Admin duyệt.',
+              _isPrivateSubject
+                  ? 'Topic "${_nameController.text.trim()}" đã được tạo thành công.'
+                  : 'Topic "${_nameController.text.trim()}" đang chờ Admin duyệt.',
               textAlign: TextAlign.center,
               style: AppTextStyles.bodyMedium
                   .copyWith(color: AppColors.textSecondary),
@@ -299,9 +309,15 @@ class _CreateTopicScreenState extends State<CreateTopicScreen> {
                             : Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Icon(Icons.send, size: 20),
+                                  Icon(
+                                    _isPrivateSubject ? Icons.check : Icons.send,
+                                    size: 20,
+                                  ),
                                   const SizedBox(width: 8),
-                                  Text('Gửi yêu cầu duyệt',
+                                  Text(
+                                      _isPrivateSubject
+                                          ? 'Tạo topic'
+                                          : 'Gửi yêu cầu duyệt',
                                       style: AppTextStyles.labelLarge.copyWith(
                                           color: Colors.white,
                                           fontWeight: FontWeight.bold)),

@@ -34,6 +34,7 @@ class _CreateLessonScreenState extends State<CreateLessonScreen> {
   final _coinController = TextEditingController(text: '15');
   bool _isSubmitting = false;
   bool _isLoading = true;
+  bool _isPrivateSubject = false;
 
   String _difficulty = 'medium';
   String? _afterEntityId;
@@ -48,9 +49,16 @@ class _CreateLessonScreenState extends State<CreateLessonScreen> {
   Future<void> _loadExistingLessons() async {
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
-      final lessons = await apiService.getNodesByTopic(widget.topicId);
+      final results = await Future.wait([
+        apiService.getNodesByTopic(widget.topicId),
+        apiService.getSubjectIntro(widget.subjectId),
+      ]);
+      final lessons = results[0] as List<dynamic>;
+      final intro = results[1] as Map<String, dynamic>;
+      final subject = intro['subject'] as Map<String, dynamic>? ?? const {};
       setState(() {
         _existingLessons = List<Map<String, dynamic>>.from(lessons);
+        _isPrivateSubject = subject['subjectType'] == 'private';
         _isLoading = false;
       });
     } catch (e) {
@@ -120,11 +128,13 @@ class _CreateLessonScreenState extends State<CreateLessonScreen> {
                   color: AppColors.orangeNeon, size: 48),
             ),
             const SizedBox(height: 16),
-            Text('Đã gửi yêu cầu!',
+            Text(_isPrivateSubject ? 'Đã tạo bài học!' : 'Đã gửi yêu cầu!',
                 style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
             const SizedBox(height: 8),
             Text(
-              'Bài học "${_nameController.text.trim()}" đang chờ Admin duyệt.\n\nSau khi được duyệt, bạn có thể thêm các dạng bài học (hình ảnh, video, văn bản...).',
+              _isPrivateSubject
+                  ? 'Bài học "${_nameController.text.trim()}" đã được tạo.\n\nBạn có thể thêm các dạng bài học (hình ảnh, video, văn bản) ngay bây giờ.'
+                  : 'Bài học "${_nameController.text.trim()}" đang chờ Admin duyệt.\n\nSau khi được duyệt, bạn có thể thêm các dạng bài học (hình ảnh, video, văn bản...).',
               textAlign: TextAlign.center,
               style: AppTextStyles.bodyMedium
                   .copyWith(color: AppColors.textSecondary),
@@ -193,7 +203,9 @@ class _CreateLessonScreenState extends State<CreateLessonScreen> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  'Tạo bài học trước, sau khi được duyệt bạn có thể thêm các dạng nội dung (hình ảnh, video, văn bản...).',
+                                  _isPrivateSubject
+                                      ? 'Bạn có thể tạo bài học và thêm các dạng nội dung (hình ảnh, video, văn bản) ngay sau khi bấm tạo.'
+                                      : 'Tạo bài học trước, sau khi được duyệt bạn có thể thêm các dạng nội dung (hình ảnh, video, văn bản...).',
                                   style: AppTextStyles.bodySmall
                                       .copyWith(color: AppColors.textSecondary),
                                 ),
@@ -300,9 +312,15 @@ class _CreateLessonScreenState extends State<CreateLessonScreen> {
                             : Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Icon(Icons.send, size: 20),
+                                  Icon(
+                                    _isPrivateSubject ? Icons.check : Icons.send,
+                                    size: 20,
+                                  ),
                                   const SizedBox(width: 8),
-                                  Text('Gửi yêu cầu duyệt',
+                                  Text(
+                                      _isPrivateSubject
+                                          ? 'Tạo bài học'
+                                          : 'Gửi yêu cầu duyệt',
                                       style: AppTextStyles.labelLarge.copyWith(
                                           color: Colors.white,
                                           fontWeight: FontWeight.bold)),
