@@ -32,6 +32,8 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   static const double _kSectionGap = 24;
   static const double _kSectionInnerPadding = 16;
+  /// Khoảng cách thẻ chào/động lực → block tiếp (banner thường trống → tránh 24+24).
+  static const double _kGapMotivationToNext = 10;
 
   final ScrollController _dashboardScrollController = ScrollController();
   /// 0 = header mở, 1 = thu gọn khi cuộn (A1).
@@ -377,10 +379,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           if (_motivation != null &&
                               _motivation!['quote'] != null) ...[
                             _buildMotivationCard(_motivation!),
-                            const SizedBox(height: _kSectionGap),
+                            const SizedBox(height: _kGapMotivationToNext),
                           ],
                           _buildOnboardingBanner(),
-                          const SizedBox(height: _kSectionGap),
+                          SizedBox(
+                            height: (_motivation != null &&
+                                    _motivation!['quote'] != null)
+                                ? _kGapMotivationToNext
+                                : _kSectionGap,
+                          ),
                           _buildContinueLearningSection(
                             _dashboardData!['continueLearning']
                                 as Map<String, dynamic>?,
