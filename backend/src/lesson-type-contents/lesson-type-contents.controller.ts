@@ -19,17 +19,28 @@ export class LessonTypeContentsController {
   ) {}
 
   /**
+   * Admin/Contributor cần xem dữ liệu đóng góp không bị phụ thuộc cơ chế unlock.
+   * Learner vẫn đi qua unlock check như cũ.
+   */
+  private canBypassUnlock(req: any): boolean {
+    const role = req?.user?.role;
+    return role == 'admin' || role == 'contributor';
+  }
+
+  /**
    * Get all lesson type contents for a learning node
    */
   @Get('node/:nodeId')
   async getByNodeId(@Param('nodeId') nodeId: string, @Request() req) {
-    const userId = req.user?.id;
-    const access = await this.unlockService.canAccessNode(userId, nodeId);
-    if (!access.canAccess) {
-      throw new ForbiddenException({
-        message: 'Bài học đang bị khóa. Vui lòng mở khóa để xem nội dung.',
-        ...access,
-      });
+    if (!this.canBypassUnlock(req)) {
+      const userId = req.user?.id;
+      const access = await this.unlockService.canAccessNode(userId, nodeId);
+      if (!access.canAccess) {
+        throw new ForbiddenException({
+          message: 'Bài học đang bị khóa. Vui lòng mở khóa để xem nội dung.',
+          ...access,
+        });
+      }
     }
     const contents = await this.lessonTypeContentsService.getByNodeId(nodeId);
     const availableTypes = contents.map((c) => c.lessonType);
@@ -50,13 +61,15 @@ export class LessonTypeContentsController {
     @Param('lessonType') lessonType: string,
     @Request() req,
   ) {
-    const userId = req.user?.id;
-    const access = await this.unlockService.canAccessNode(userId, nodeId);
-    if (!access.canAccess) {
-      throw new ForbiddenException({
-        message: 'Bài học đang bị khóa. Vui lòng mở khóa để xem nội dung.',
-        ...access,
-      });
+    if (!this.canBypassUnlock(req)) {
+      const userId = req.user?.id;
+      const access = await this.unlockService.canAccessNode(userId, nodeId);
+      if (!access.canAccess) {
+        throw new ForbiddenException({
+          message: 'Bài học đang bị khóa. Vui lòng mở khóa để xem nội dung.',
+          ...access,
+        });
+      }
     }
     const content = await this.lessonTypeContentsService.getByNodeIdAndType(
       nodeId,
