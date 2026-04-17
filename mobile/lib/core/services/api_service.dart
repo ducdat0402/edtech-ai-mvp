@@ -937,6 +937,20 @@ class ApiService {
     return List<Map<String, dynamic>>.from(response.data);
   }
 
+  Future<List<dynamic>> getAdminContributions({
+    String? type,
+    String? status,
+  }) async {
+    final response = await _apiClient.get(
+      ApiConstants.adminContributions,
+      queryParameters: {
+        if (type != null && type.isNotEmpty) 'type': type,
+        if (status != null && status.isNotEmpty) 'status': status,
+      },
+    );
+    return List<Map<String, dynamic>>.from(response.data);
+  }
+
   Future<Map<String, dynamic>> approvePendingContribution(
     String id, {
     String? note,

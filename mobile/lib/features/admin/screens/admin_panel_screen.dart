@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:go_router/go_router.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/core/config/api_config.dart';
@@ -8,8 +7,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:video_player/video_player.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:edtech_mobile/features/content/widgets/web_video_player.dart';
-import 'package:edtech_mobile/features/content/widgets/content_format_badge.dart';
-import 'package:edtech_mobile/features/content/widgets/difficulty_badge.dart';
 import 'package:edtech_mobile/features/admin/widgets/comparison_dialog.dart';
 import 'package:edtech_mobile/features/lessons/screens/image_quiz_lesson_screen.dart';
 import 'package:edtech_mobile/features/lessons/screens/image_gallery_lesson_screen.dart';
@@ -87,7 +84,18 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
     });
 
     try {
-      final List<dynamic> items = []; // Old content items system removed
+      final apiService = Provider.of<ApiService>(context, listen: false);
+      final List<dynamic> items =
+          await apiService.getAdminContributions(type: 'lesson');
+      items.sort((a, b) {
+        final aDate = DateTime.tryParse(
+                (a as Map<String, dynamic>)['updatedAt']?.toString() ?? '') ??
+            DateTime.fromMillisecondsSinceEpoch(0);
+        final bDate = DateTime.tryParse(
+                (b as Map<String, dynamic>)['updatedAt']?.toString() ?? '') ??
+            DateTime.fromMillisecondsSinceEpoch(0);
+        return bDate.compareTo(aDate);
+      });
       setState(() {
         _allContentItems =
             items.map((e) => Map<String, dynamic>.from(e)).toList();
@@ -106,10 +114,26 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
     });
 
     try {
-      final List<dynamic> history = []; // Old edit history system removed
+      final apiService = Provider.of<ApiService>(context, listen: false);
+      final approved = await apiService.getAdminContributions(status: 'approved');
+      final rejected = await apiService.getAdminContributions(status: 'rejected');
+      final history = <Map<String, dynamic>>[
+        ...approved.map((e) => Map<String, dynamic>.from(e as Map)),
+        ...rejected.map((e) => Map<String, dynamic>.from(e as Map)),
+      ];
+      history.sort((a, b) {
+        final aDate = DateTime.tryParse(
+                (a['reviewedAt'] ?? a['updatedAt'] ?? a['createdAt'] ?? '')
+                    .toString()) ??
+            DateTime.fromMillisecondsSinceEpoch(0);
+        final bDate = DateTime.tryParse(
+                (b['reviewedAt'] ?? b['updatedAt'] ?? b['createdAt'] ?? '')
+                    .toString()) ??
+            DateTime.fromMillisecondsSinceEpoch(0);
+        return bDate.compareTo(aDate);
+      });
       setState(() {
-        _editHistory =
-            history.map((e) => Map<String, dynamic>.from(e)).toList();
+        _editHistory = history;
         _isLoadingHistory = false;
       });
     } catch (e) {
@@ -1200,80 +1224,106 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                     itemCount: _allContentItems.length,
                     itemBuilder: (context, index) {
                       final item = _allContentItems[index];
-                      return _buildContentItemCard(item);
+                      return _buildLessonContributionSummaryCard(item);
                     },
                   ),
           );
   }
 
-  Widget _buildContentItemCard(Map<String, dynamic> item) {
-    final title = item['title'] as String? ?? 'N/A';
-    final nodeTitle = item['nodeTitle'] as String? ?? 'N/A';
-    final editsCount = item['editsCount'] as int? ?? 0;
+  Widget _buildLessonContributionSummaryCard(Map<String, dynamic> item) {
+    final data = item['data'] as Map<String, dynamic>? ?? <String, dynamic>{};
+    final title = item['title'] as String? ?? 'Bài học';
+    final action = item['action'] as String? ?? 'create';
+    final status = item['status'] as String? ?? 'pending';
+    final lessonType = data['lessonType'] as String?;
+    final contributor = item['contributor'] as Map<String, dynamic>? ?? <String, dynamic>{};
+    final contributorName = contributor['fullName']?.toString().isNotEmpty == true
+        ? contributor['fullName'].toString()
+        : (contributor['email']?.toString() ?? 'Người đóng góp');
+    final createdAt = item['createdAt']?.toString();
+    final contributionId = item['id']?.toString() ?? '';
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
-      elevation: 2,
-      child: ExpansionTile(
-        leading: CircleAvatar(
-          backgroundColor:
-              editsCount > 0 ? AppColors.successNeon : AppColors.textTertiary,
-          child:
-              Text('$editsCount', style: const TextStyle(color: Colors.white)),
-        ),
-        title: Text(
-          title,
-          style:
-              AppTextStyles.labelLarge.copyWith(color: AppColors.textPrimary),
-        ),
-        subtitle: Column(
+      color: AppColors.bgSecondary,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Node: $nodeTitle'),
-            const SizedBox(height: 4),
-            Wrap(
-              spacing: 4,
-              runSpacing: 4,
+            Row(
               children: [
-                ContentFormatBadge(
-                  format: (item['format'] as String?) ?? 'text',
+                Expanded(
+                  child: Text(
+                    title,
+                    style: AppTextStyles.labelLarge.copyWith(
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
                 ),
-                DifficultyBadge(
-                  difficulty: (item['difficulty'] as String?) ?? 'medium',
-                ),
+                _buildStatusChip(status),
               ],
             ),
-          ],
-        ),
-        trailing: editsCount > 0
-            ? Chip(
-                label: Text('$editsCount đóng góp'),
-                backgroundColor: AppColors.successNeon.withValues(alpha: 0.2),
-              )
-            : const Chip(
-                label: Text('Chưa có đóng góp'),
-                backgroundColor: AppColors.bgTertiary,
-              ),
-        children: [
-          // Nút xem lịch sử phiên bản
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: ElevatedButton.icon(
-              onPressed: () {
-                final contentId = item['id'] as String?;
-                if (contentId != null) {
-                  context.push('/content/$contentId/versions?admin=true');
-                }
-              },
-              icon: const Icon(Icons.history),
-              label: const Text('Xem lịch sử phiên bản'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.purpleNeon,
-                foregroundColor: Colors.white,
+            const SizedBox(height: 8),
+            Text(
+              'Người gửi: $contributorName',
+              style: AppTextStyles.caption.copyWith(
+                color: AppColors.textSecondary,
               ),
             ),
-          ),
-        ],
+            if (createdAt != null && createdAt.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Text(
+                'Tạo lúc: ${_formatDate(createdAt)}',
+                style: AppTextStyles.caption.copyWith(
+                  color: AppColors.textTertiary,
+                ),
+              ),
+            ],
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: [
+                _buildMetaChip('Hành động: ${_actionLabel(action)}'),
+                if (lessonType != null && lessonType.isNotEmpty)
+                  _buildMetaChip('Dạng bài: ${_getLessonTypeLabel(lessonType)}'),
+              ],
+            ),
+            if (status == 'pending' && contributionId.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => _rejectContribution(contributionId),
+                      icon: const Icon(Icons.close, size: 18),
+                      label: const Text('Từ chối'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.errorNeon,
+                        side: BorderSide(
+                          color: AppColors.errorNeon.withValues(alpha: 0.5),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () => _approveContribution(contributionId),
+                      icon: const Icon(Icons.check, size: 18),
+                      label: const Text('Duyệt'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.successNeon,
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
@@ -1510,6 +1560,54 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
     }
   }
 
+  Widget _buildStatusChip(String status) {
+    final normalized = status.toLowerCase();
+    String label;
+    Color color;
+    if (normalized == 'approved') {
+      label = 'Đã duyệt';
+      color = AppColors.successNeon;
+    } else if (normalized == 'rejected') {
+      label = 'Đã từ chối';
+      color = AppColors.errorNeon;
+    } else {
+      label = 'Chờ duyệt';
+      color = AppColors.orangeNeon;
+    }
+    return Chip(
+      label: Text(label),
+      backgroundColor: color.withValues(alpha: 0.18),
+      side: BorderSide(color: color.withValues(alpha: 0.35)),
+      labelStyle: AppTextStyles.labelSmall.copyWith(
+        color: color,
+        fontWeight: FontWeight.w700,
+      ),
+    );
+  }
+
+  Widget _buildMetaChip(String text) {
+    return Chip(
+      label: Text(text),
+      backgroundColor: AppColors.bgTertiary,
+      labelStyle:
+          AppTextStyles.labelSmall.copyWith(color: AppColors.textSecondary),
+      side: const BorderSide(color: Color(0x332D363D)),
+    );
+  }
+
+  String _actionLabel(String action) {
+    switch (action.toLowerCase()) {
+      case 'create':
+        return 'Tạo mới';
+      case 'edit':
+        return 'Chỉnh sửa';
+      case 'delete':
+        return 'Xóa';
+      default:
+        return action;
+    }
+  }
+
   Widget _buildHistoryTab() {
     return _isLoadingHistory
         ? const Center(
@@ -1540,16 +1638,82 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                     itemCount: _editHistory.length,
                     itemBuilder: (context, index) {
                       final history = _editHistory[index];
-                      return StaggeredListItem(
-                        index: index,
-                        child: _buildHistoryCard(
-                            history, index == _editHistory.length - 1),
-                      );
+                      return _buildContributionHistoryCard(history);
                     },
                   ),
           );
   }
 
+  Widget _buildContributionHistoryCard(Map<String, dynamic> item) {
+    final title = item['title']?.toString() ?? 'Đóng góp';
+    final type = item['type']?.toString() ?? 'unknown';
+    final action = item['action']?.toString() ?? 'create';
+    final status = item['status']?.toString() ?? 'pending';
+    final reviewNote = item['reviewNote']?.toString();
+    final reviewedAt = item['reviewedAt']?.toString();
+    final contributor = item['contributor'] as Map<String, dynamic>? ?? {};
+    final contributorName = contributor['fullName']?.toString().isNotEmpty == true
+        ? contributor['fullName'].toString()
+        : (contributor['email']?.toString() ?? 'Người đóng góp');
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      color: AppColors.bgSecondary,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    title,
+                    style: AppTextStyles.labelLarge
+                        .copyWith(color: AppColors.textPrimary),
+                  ),
+                ),
+                _buildStatusChip(status),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Người gửi: $contributorName',
+              style:
+                  AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+            ),
+            if (reviewedAt != null && reviewedAt.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Text(
+                'Duyệt lúc: ${_formatDate(reviewedAt)}',
+                style:
+                    AppTextStyles.caption.copyWith(color: AppColors.textTertiary),
+              ),
+            ],
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: [
+                _buildMetaChip('Loại: ${type.toUpperCase()}'),
+                _buildMetaChip('Hành động: ${_actionLabel(action)}'),
+              ],
+            ),
+            if (reviewNote != null && reviewNote.trim().isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(
+                'Ghi chú: $reviewNote',
+                style: AppTextStyles.caption
+                    .copyWith(color: AppColors.textSecondary),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ignore: unused_element
   Widget _buildHistoryCard(Map<String, dynamic> history, bool isLast) {
     final action = history['action'] as String? ?? '';
     final description = history['description'] as String? ?? '';

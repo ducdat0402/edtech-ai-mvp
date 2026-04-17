@@ -207,6 +207,7 @@ class ApiConstants {
   static const String myPendingContributions = '/pending-contributions/my';
   static const String adminPendingContributions =
       '/pending-contributions/admin/pending';
+  static const String adminContributions = '/pending-contributions';
   static const String createSubjectContribution =
       '/pending-contributions/subject';
   static const String createSubjectPromotion =
