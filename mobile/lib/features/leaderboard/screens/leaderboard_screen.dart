@@ -908,8 +908,7 @@ class _LeaderboardEntryCard extends StatelessWidget {
                       const SizedBox(width: 12),
                     ],
                     if (entry['coins'] != null) ...[
-                      const Icon(Icons.monetization_on_rounded,
-                          size: 14, color: AppColors.coinGold),
+                      const GtuCoinIcon(size: 14),
                       const SizedBox(width: 4),
                       Text('${entry['coins']}',
                           style: AppTextStyles.caption

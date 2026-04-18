@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:confetti/confetti.dart';
+import 'package:edtech_mobile/core/constants/currency_labels.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 
 /// Confetti celebration widget for level ups, achievements, etc.
@@ -514,9 +515,9 @@ class _AchievementUnlockedCelebrationState
                                 const SizedBox(width: 16),
                               if (widget.coinReward > 0)
                                 _RewardChip(
-                                    icon: Icons.monetization_on_rounded,
+                                    iconWidget: const GtuCoinIcon(size: 20),
                                     value: '+${widget.coinReward}',
-                                    label: 'Xu',
+                                    label: CurrencyLabels.gtuCoin,
                                     color: AppColors.coinGold),
                             ],
                           ),
@@ -570,17 +571,19 @@ class _AchievementUnlockedCelebrationState
 }
 
 class _RewardChip extends StatelessWidget {
-  final IconData icon;
+  final IconData? icon;
+  final Widget? iconWidget;
   final String value;
   final String label;
   final Color color;
 
   const _RewardChip({
-    required this.icon,
+    this.icon,
+    this.iconWidget,
     required this.value,
     required this.label,
     required this.color,
-  });
+  }) : assert(icon != null || iconWidget != null);
 
   @override
   Widget build(BuildContext context) {
@@ -594,7 +597,8 @@ class _RewardChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: color, size: 20),
+          iconWidget ??
+              Icon(icon!, color: color, size: 20),
           const SizedBox(width: 6),
           Text(value, style: AppTextStyles.labelMedium.copyWith(color: color)),
         ],

@@ -8,6 +8,7 @@ import 'package:edtech_mobile/core/widgets/empty_state.dart';
 import 'package:edtech_mobile/features/currency/screens/rewards_history_screen.dart';
 import 'package:edtech_mobile/features/achievements/screens/achievements_screen.dart';
 import 'package:edtech_mobile/features/chat/widgets/chat_bubble.dart';
+import 'package:edtech_mobile/core/constants/currency_labels.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 
 class CurrencyScreen extends StatefulWidget {
@@ -116,11 +117,11 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
           const SizedBox(height: 24),
 
           _buildCurrencyCard(
-            title: 'Xu',
+            title: CurrencyLabels.gtuCoin,
             value: coins.toString(),
-            icon: Icons.monetization_on,
             color: AppColors.orangeNeon,
             description: 'Kiếm qua học tập, dùng trong Cửa hàng',
+            leading: const GtuCoinIcon(size: 32),
           ),
 
           const SizedBox(height: 16),
@@ -231,10 +232,10 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _buildStatItem(
-                icon: Icons.monetization_on,
                 value: coins.toString(),
-                label: 'Xu',
+                label: CurrencyLabels.gtuCoin,
                 color: Colors.amber,
+                iconWidget: const GtuCoinIcon(size: 32),
               ),
               _buildStatItem(
                 icon: Icons.diamond,
@@ -262,14 +263,17 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
   }
 
   Widget _buildStatItem({
-    required IconData icon,
+    IconData? icon,
+    Widget? iconWidget,
     required String value,
     required String label,
     required Color color,
   }) {
+    assert(icon != null || iconWidget != null);
     return Column(
       children: [
-        Icon(icon, color: color, size: 32),
+        iconWidget ??
+            Icon(icon!, color: color, size: 32),
         const SizedBox(height: 8),
         Text(
           value,
@@ -293,10 +297,12 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
   Widget _buildCurrencyCard({
     required String title,
     required String value,
-    required IconData icon,
+    IconData? icon,
     required Color color,
     required String description,
+    Widget? leading,
   }) {
+    assert(icon != null || leading != null);
     return Card(
       color: AppColors.bgSecondary,
       elevation: 0,
@@ -314,7 +320,8 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
                 color: color.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(icon, color: color, size: 32),
+              child: leading ??
+                  Icon(icon!, color: color, size: 32),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -498,8 +505,8 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '• Hoàn thành bài học để nhận XP và xu\n'
-                    '• Xu dùng để mua vật phẩm trong cửa hàng\n'
+                    '• Hoàn thành bài học để nhận XP và ${CurrencyLabels.gtuCoin}\n'
+                    '• ${CurrencyLabels.gtuCoin} dùng để mua vật phẩm trong cửa hàng\n'
                     '• Kim cương dùng để mở khóa nội dung & AI\n'
                     '• Học đều đặn để tăng chuỗi ngày',
                     style: AppTextStyles.caption

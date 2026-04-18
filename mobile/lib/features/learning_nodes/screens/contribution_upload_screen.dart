@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:edtech_mobile/core/constants/currency_labels.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/theme/theme.dart';
@@ -143,7 +144,7 @@ class _ContributionUploadScreenState extends State<ContributionUploadScreen> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    'Phần thưởng: +50 XP, +30 xu',
+                    'Phần thưởng: +50 XP, +30 ${CurrencyLabels.gtuShort}',
                     style: AppTextStyles.caption.copyWith(
                         color: Colors.white, fontWeight: FontWeight.w600),
                   ),

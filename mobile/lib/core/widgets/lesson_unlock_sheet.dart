@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:edtech_mobile/core/constants/currency_labels.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/features/dashboard/screens/dashboard_screen.dart';
 import 'package:edtech_mobile/theme/theme.dart';
@@ -91,7 +92,7 @@ class LessonUnlockSheet {
                 if (!hasFreeSlot && !accessLoadFailed) ...[
                   if (subjectType == 'community')
                     Text(
-                      'Xu hiện có: $userCoins',
+                      '${CurrencyLabels.gtuCoin} hiện có: $userCoins',
                       style: AppTextStyles.caption.copyWith(
                           color: AppColors.textTertiary, fontSize: 11),
                     ),
@@ -156,7 +157,8 @@ class LessonUnlockSheet {
                                       setMsg: (m) =>
                                           setModalState(() => resultMsg = m),
                                     ),
-                            child: Text('$coinCost xu'),
+                            child: Text(
+                                CurrencyLabels.balanceVerbose(coinCost)),
                           ),
                         ),
                         const SizedBox(width: 8),

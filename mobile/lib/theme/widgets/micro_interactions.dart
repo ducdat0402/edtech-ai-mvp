@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:edtech_mobile/core/constants/currency_labels.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 
 /// Animated scale button with haptic feedback
@@ -560,11 +561,10 @@ class _CoinGainAnimationState extends State<CoinGainAnimation>
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.monetization_on_rounded,
-                        color: Colors.white, size: 20),
+                    const GtuCoinIcon(size: 20),
                     const SizedBox(width: 6),
                     Text(
-                      '+${widget.amount}',
+                      CurrencyLabels.rewardShort(widget.amount),
                       style: AppTextStyles.labelMedium.copyWith(
                           color: Colors.white, fontWeight: FontWeight.bold),
                     ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:edtech_mobile/core/constants/currency_labels.dart';
 import 'package:edtech_mobile/core/config/api_config.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/theme/theme.dart';
@@ -282,8 +283,8 @@ class _StatGrid extends StatelessWidget {
           runSpacing: 10,
           children: [
             _chip(Icons.star_rounded, AppColors.xpGold, 'Tổng XP', '$totalXP'),
-            _chip(Icons.monetization_on_rounded, AppColors.coinGold, 'Xu',
-                '$coins'),
+            _chip(null, AppColors.coinGold, CurrencyLabels.gtuCoin, '$coins',
+                iconWidget: const GtuCoinIcon(size: 18)),
             _chip(Icons.diamond_rounded, AppColors.primaryLight, 'Kim cương',
                 '$diamonds'),
             _chip(Icons.trending_up_rounded, AppColors.primaryLight, 'Cấp',
@@ -324,7 +325,9 @@ class _StatGrid extends StatelessWidget {
     return int.tryParse(v?.toString() ?? '') ?? fallback;
   }
 
-  Widget _chip(IconData icon, Color color, String label, String value) {
+  Widget _chip(IconData? icon, Color color, String label, String value,
+      {Widget? iconWidget}) {
+    assert(icon != null || iconWidget != null);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
@@ -335,7 +338,7 @@ class _StatGrid extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 18, color: color),
+          iconWidget ?? Icon(icon!, size: 18, color: color),
           const SizedBox(width: 8),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,

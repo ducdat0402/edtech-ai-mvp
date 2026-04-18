@@ -5,6 +5,7 @@ export 'xp_bar.dart';
 export 'streak_counter.dart';
 export 'streak_week_card.dart';
 export 'coin_display.dart';
+export 'gtu_coin_icon.dart';
 export 'achievement_badge.dart';
 export 'level_display.dart';
 export 'confetti_celebration.dart';

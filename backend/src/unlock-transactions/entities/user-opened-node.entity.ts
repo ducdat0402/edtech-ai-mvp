@@ -24,7 +24,7 @@ export class UserOpenedNode {
   @Column({ type: 'int', default: 0 })
   diamondsPaid: number;
 
-  /** 0 = không dùng xu; >0 = đã trừ xu (community có thể mở bằng xu). */
+  /** 0 = không dùng GTU coin; >0 = đã trừ GTU coin (community có thể mở bằng GTU coin). */
   @Column({ type: 'int', default: 0 })
   coinsPaid: number;
 

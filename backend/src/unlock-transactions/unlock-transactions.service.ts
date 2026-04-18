@@ -427,7 +427,7 @@ export class UnlockTransactionsService {
 
   /**
    * Số suất miễn phí (2 bài/ngày) đã dùng — chỉ đếm bài community/expert mở bằng suất ngày.
-   * Không đếm: môn private, mở bằng xu/kim cương, hoặc onboarding trial.
+   * Không đếm: môn private, mở bằng GTU coin/kim cương, hoặc onboarding trial.
    */
   private async countDailyFreeSlotsUsed(
     userId: string,
@@ -638,7 +638,7 @@ export class UnlockTransactionsService {
         } catch {
           const currency = await this.currencyService.getCurrency(userId);
           throw new BadRequestException(
-            `Không đủ xu. Cần ${DIAMOND_PER_LESSON_OPEN} xu để mở bài, bạn có ${currency.coins ?? 0} xu.`,
+            `Không đủ GTU coin. Cần ${DIAMOND_PER_LESSON_OPEN} GTU coin để mở bài; bạn có ${currency.coins ?? 0} GTU coin.`,
           );
         }
       } else {
@@ -671,7 +671,7 @@ export class UnlockTransactionsService {
         coinsPaid: shouldUseCoins ? DIAMOND_PER_LESSON_OPEN : 0,
         remainingFreeLessonsToday: 0,
         message: shouldUseCoins
-          ? `Đã mở bài (${DIAMOND_PER_LESSON_OPEN} xu)`
+          ? `Đã mở bài (${DIAMOND_PER_LESSON_OPEN} GTU coin)`
           : `Đã mở bài (${DIAMOND_PER_LESSON_OPEN} 💎)`,
       };
     });

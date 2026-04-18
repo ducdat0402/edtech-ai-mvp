@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:edtech_mobile/core/constants/currency_labels.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/widgets/error_widget.dart';
 import 'package:edtech_mobile/core/widgets/empty_state.dart';
@@ -244,9 +245,9 @@ class _RewardsHistoryScreenState extends State<RewardsHistoryScreen> {
                     ),
                   if (coins > 0)
                     _buildRewardChip(
-                      icon: Icons.monetization_on,
-                      label: '$coins xu',
+                      label: CurrencyLabels.balanceVerbose(coins),
                       color: AppColors.orangeNeon,
+                      iconWidget: const GtuCoinIcon(size: 16),
                     ),
                   ...shards.entries.map(
                     (entry) => _buildRewardChip(
@@ -265,10 +266,12 @@ class _RewardsHistoryScreenState extends State<RewardsHistoryScreen> {
   }
 
   Widget _buildRewardChip({
-    required IconData icon,
+    IconData? icon,
+    Widget? iconWidget,
     required String label,
     required Color color,
   }) {
+    assert(icon != null || iconWidget != null);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
@@ -279,7 +282,7 @@ class _RewardsHistoryScreenState extends State<RewardsHistoryScreen> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: color),
+          iconWidget ?? Icon(icon!, size: 16, color: color),
           const SizedBox(width: 6),
           Text(
             label,

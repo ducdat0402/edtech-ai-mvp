@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:edtech_mobile/core/constants/currency_labels.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/core/widgets/bottom_nav_bar.dart';
@@ -465,11 +466,11 @@ class _QuestCard extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.monetization_on_rounded,
-                      size: 14, color: AppColors.coinGold),
+                  const GtuCoinIcon(size: 14),
                   const SizedBox(width: 4),
                   Text(
-                    '+${rewards['coin']}',
+                    CurrencyLabels.rewardShort(
+                        (rewards['coin'] as num).toInt()),
                     style: AppTextStyles.labelSmall.copyWith(
                         color: AppColors.coinGold, fontWeight: FontWeight.bold),
                   ),

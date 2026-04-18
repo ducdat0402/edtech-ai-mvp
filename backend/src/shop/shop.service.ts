@@ -55,7 +55,7 @@ export class ShopService {
     {
       id: 'mystery_box',
       name: 'Hộp quà may mắn',
-      description: 'Nhận ngẫu nhiên XP, Coins hoặc vật phẩm',
+      description: 'Nhận ngẫu nhiên XP, GTU coin hoặc vật phẩm',
       price: 150,
       icon: 'card_giftcard',
       category: 'mystery',
@@ -107,7 +107,7 @@ export class ShopService {
     if (!hasEnough) {
       const currency = await this.currencyService.getCurrency(userId);
       throw new BadRequestException(
-        `Không đủ Coins. Cần ${totalCost} 🪙, bạn có ${currency.coins} 🪙.`,
+        `Không đủ GTU coin. Cần ${totalCost} GTU coin; bạn có ${currency.coins} GTU coin.`,
       );
     }
 
@@ -305,15 +305,25 @@ export class ShopService {
     }
     if (roll < 0.65) {
       const coins = Math.floor(Math.random() * 80) + 30;
-      return { xp: 0, coins, item: null, description: `${coins} Coins` };
+      return { xp: 0, coins, item: null, description: `${coins} GTU` };
     }
     if (roll < 0.85) {
       const xp = Math.floor(Math.random() * 30) + 10;
       const coins = Math.floor(Math.random() * 40) + 15;
-      return { xp, coins, item: null, description: `${xp} XP + ${coins} Coins` };
+      return {
+        xp,
+        coins,
+        item: null,
+        description: `${xp} XP + ${coins} GTU`,
+      };
     }
     const xp = Math.floor(Math.random() * 100) + 50;
     const coins = Math.floor(Math.random() * 100) + 50;
-    return { xp, coins, item: null, description: `🎉 Jackpot! ${xp} XP + ${coins} Coins` };
+    return {
+      xp,
+      coins,
+      item: null,
+      description: `🎉 Jackpot! ${xp} XP + ${coins} GTU`,
+    };
   }
 }

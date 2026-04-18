@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:edtech_mobile/core/constants/currency_labels.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/widgets/ai_generated_notice.dart';
 import 'package:edtech_mobile/theme/theme.dart';
@@ -1662,11 +1663,11 @@ class _EndQuizScreenState extends State<EndQuizScreen>
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.monetization_on_rounded,
-                          size: 16, color: AppColors.orangeNeon),
+                      const GtuCoinIcon(size: 16),
                       const SizedBox(width: 4),
                       Text(
-                        '+$totalCoins Xu',
+                        CurrencyLabels.rewardShort(
+                            (totalCoins as num).toInt()),
                         style: AppTextStyles.labelMedium.copyWith(
                           color: AppColors.orangeNeon,
                           fontWeight: FontWeight.bold,
@@ -1710,7 +1711,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
               return Padding(
                 padding: const EdgeInsets.only(top: 4),
                 child: Text(
-                  '${_getLevelLabel(level)}: $name (+$xp XP, +$coins Xu)',
+                  '${_getLevelLabel(level)}: $name (+$xp XP, ${CurrencyLabels.rewardShort((coins as num).toInt())})',
                   style: AppTextStyles.bodySmall.copyWith(
                     color: AppColors.textSecondary,
                     fontSize: 12,

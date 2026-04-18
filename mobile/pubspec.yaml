@@ -78,3 +78,4 @@ flutter:
   assets:
     - assets/mascot/
     - assets/onboarding/noto/
+    - assets/currency/

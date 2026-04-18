@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:edtech_mobile/core/constants/currency_labels.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/widgets/lesson_unlock_sheet.dart';
 import 'package:edtech_mobile/theme/theme.dart';
@@ -372,10 +373,10 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                     padding: const EdgeInsets.only(bottom: 4),
                     child: Row(
                       children: [
-                        const Icon(Icons.monetization_on,
-                            color: AppColors.xpGold, size: 20),
+                        const GtuCoinIcon(size: 20),
                         const SizedBox(width: 8),
-                        Text('Xu: +${rewards['coin']}'),
+                        Text(
+                            '${CurrencyLabels.gtuCoin}: +${rewards['coin']}'),
                       ],
                     ),
                   ),
@@ -501,17 +502,16 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                           color: AppColors.xpGold.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Icon(Icons.monetization_on,
-                            color: AppColors.xpGold, size: 24),
+                        child: const GtuCoinIcon(size: 24),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Xu',
-                              style: TextStyle(
+                            Text(
+                              CurrencyLabels.gtuCoin,
+                              style: const TextStyle(
                                 fontSize: 12,
                                 color: AppColors.textTertiary,
                               ),
@@ -1469,16 +1469,16 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                 border:
                     Border.all(color: AppColors.xpGold.withValues(alpha: 0.35)),
               ),
-              child: const Row(
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.emoji_events,
+                  const Icon(Icons.emoji_events,
                       color: AppColors.coinShadow, size: 24),
-                  SizedBox(width: 12),
+                  const SizedBox(width: 12),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      const Text(
                         'Phần thưởng đóng góp',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
@@ -1486,20 +1486,24 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                           fontSize: 13,
                         ),
                       ),
-                      SizedBox(height: 2),
+                      const SizedBox(height: 2),
                       Row(
                         children: [
-                          Icon(Icons.star, size: 14, color: AppColors.xpOrange),
-                          Text(' +50 XP  ',
-                              style: TextStyle(
-                                  fontSize: 12,
-                                  color: AppColors.textSecondary)),
-                          Icon(Icons.monetization_on,
-                              size: 14, color: AppColors.xpGold),
-                          Text(' +30 xu',
-                              style: TextStyle(
-                                  fontSize: 12,
-                                  color: AppColors.textSecondary)),
+                          const Icon(Icons.star,
+                              size: 14, color: AppColors.xpOrange),
+                          const Text(
+                            ' +50 XP  ',
+                            style: TextStyle(
+                                fontSize: 12,
+                                color: AppColors.textSecondary),
+                          ),
+                          const GtuCoinIcon(size: 14),
+                          Text(
+                            ' ${CurrencyLabels.rewardShort(30)}',
+                            style: const TextStyle(
+                                fontSize: 12,
+                                color: AppColors.textSecondary),
+                          ),
                         ],
                       ),
                     ],
@@ -1670,31 +1674,31 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                       ),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Row(
+                    child: Row(
                       children: [
-                        Icon(Icons.emoji_events,
+                        const Icon(Icons.emoji_events,
                             color: AppColors.xpGold, size: 32),
-                        SizedBox(width: 12),
+                        const SizedBox(width: 12),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
+                              const Text(
                                 'Phần thưởng khi được duyệt',
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 14,
                                 ),
                               ),
-                              SizedBox(height: 4),
+                              const SizedBox(height: 4),
                               Row(
                                 children: [
-                                  Icon(Icons.star,
+                                  const Icon(Icons.star,
                                       color: AppColors.xpOrange, size: 16),
-                                  Text(' +50 XP  '),
-                                  Icon(Icons.monetization_on,
-                                      color: AppColors.xpGold, size: 16),
-                                  Text(' +30 xu'),
+                                  const Text(' +50 XP  '),
+                                  const GtuCoinIcon(size: 16),
+                                  Text(
+                                      ' ${CurrencyLabels.rewardShort(30)}'),
                                 ],
                               ),
                             ],
@@ -2444,10 +2448,13 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                                       const SizedBox(width: 12),
                                     ],
                                     if (rewards['coin'] != null) ...[
-                                      const Icon(Icons.monetization_on,
-                                          color: AppColors.xpGold, size: 16),
+                                      const GtuCoinIcon(size: 16),
                                       const SizedBox(width: 4),
-                                      Text('+${rewards['coin']} xu'),
+                                      Text(
+                                        CurrencyLabels.rewardShort(
+                                          (rewards['coin'] as num).toInt(),
+                                        ),
+                                      ),
                                     ],
                                   ],
                                 ),

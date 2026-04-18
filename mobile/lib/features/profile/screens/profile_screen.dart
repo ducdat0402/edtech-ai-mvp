@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:edtech_mobile/core/constants/currency_labels.dart';
 import 'package:edtech_mobile/core/config/api_config.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/services/auth_service.dart';
@@ -961,7 +962,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  /// XP / Xu / chuỗi — đồng bộ với [getDashboardSummary] + [getCurrency]; chạm mở màn chi tiết.
+  /// XP / GTU coin / chuỗi — đồng bộ với [getDashboardSummary] + [getCurrency]; chạm mở màn chi tiết.
   Widget _buildSyncedStatsStrip() {
     final stats = _dashboardStats;
     final currency = _currencyData;
@@ -1006,8 +1007,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 Expanded(
                   child: _statStripCell(
-                    icon: Icons.monetization_on_rounded,
-                    label: 'Xu',
+                    iconWidget: const GtuCoinIcon(size: 20),
+                    label: CurrencyLabels.gtuCoin,
                     value: coins,
                     color: AppColors.coinGold,
                   ),
@@ -1040,15 +1041,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _statStripCell({
-    required IconData icon,
+    IconData? icon,
+    Widget? iconWidget,
     required String label,
     required String value,
     required Color color,
   }) {
+    assert(icon != null || iconWidget != null);
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(icon, color: color, size: 20),
+        iconWidget ?? Icon(icon!, color: color, size: 20),
         const SizedBox(width: 6),
         Flexible(
           child: Column(

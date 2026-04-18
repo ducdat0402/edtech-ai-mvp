@@ -3,6 +3,7 @@ import 'dart:ui' show lerpDouble;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:edtech_mobile/core/config/api_config.dart';
+import 'package:edtech_mobile/theme/widgets/gtu_coin_icon.dart';
 import '../colors.dart';
 import '../gradients.dart';
 import '../text_styles.dart';
@@ -81,7 +82,7 @@ class LevelCard extends StatelessWidget {
   /// Khi true: không vẽ nền/bóng (dùng trong thanh top cố định — gradient do cha bọc).
   final bool topBarStrip;
 
-  /// Hiển thị xu / kim cương / chuỗi ngày bên phải thanh strip (thu nhỏ thanh EXP).
+  /// Hiển thị GTU coin / kim cương / chuỗi ngày bên phải thanh strip (thu nhỏ thanh EXP).
   final int? stripCoins;
   final int? stripDiamonds;
   final int? stripStreak;
@@ -335,7 +336,7 @@ class LevelCard extends StatelessWidget {
                                 ),
                                 _stripResourceDivider(height: stripDividerH),
                                 _stripResourceChip(
-                                  icon: Icons.monetization_on_rounded,
+                                  iconWidget: GtuCoinIcon(size: stripChipIcon),
                                   color: AppColors.coinGold,
                                   value: stripCoins!,
                                   onTap: onStripCoinsTap,
@@ -424,7 +425,8 @@ class LevelCard extends StatelessWidget {
   }
 
   Widget _stripResourceChip({
-    required IconData icon,
+    IconData? icon,
+    Widget? iconWidget,
     required Color color,
     required int value,
     String suffix = '',
@@ -432,10 +434,12 @@ class LevelCard extends StatelessWidget {
     double iconSize = 13,
     double fontSize = 10,
   }) {
+    assert(icon != null || iconWidget != null);
     final row = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: iconSize, color: color),
+        iconWidget ??
+            Icon(icon!, size: iconSize, color: color),
         const SizedBox(width: 3),
         Text(
           '$value$suffix',

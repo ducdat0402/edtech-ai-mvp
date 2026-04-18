@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:edtech_mobile/core/constants/currency_labels.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/theme/theme.dart';
@@ -119,8 +120,7 @@ class _ShopScreenState extends State<ShopScreen>
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.monetization_on_rounded,
-                    color: AppColors.coinGold, size: 22),
+                const GtuCoinIcon(size: 22),
                 const SizedBox(width: 6),
                 Text('$price',
                     style:
@@ -148,7 +148,8 @@ class _ShopScreenState extends State<ShopScreen>
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
             ),
-            child: Text(_coins >= price ? 'Mua ngay' : 'Không đủ xu'),
+            child: Text(
+                _coins >= price ? 'Mua ngay' : 'Không đủ ${CurrencyLabels.gtuCoin}'),
           ),
         ],
       ),
@@ -290,10 +291,11 @@ class _ShopScreenState extends State<ShopScreen>
                       const SizedBox(width: 16),
                     ],
                     if ((reward['coins'] as int? ?? 0) > 0) ...[
-                      const Icon(Icons.monetization_on_rounded,
-                          color: AppColors.coinGold, size: 20),
+                      const GtuCoinIcon(size: 20),
                       const SizedBox(width: 4),
-                      Text('+${reward['coins']} xu',
+                      Text(
+                          CurrencyLabels.rewardShort(
+                              reward['coins'] as int? ?? 0),
                           style: const TextStyle(
                               color: AppColors.coinGold,
                               fontWeight: FontWeight.bold)),
@@ -361,8 +363,7 @@ class _ShopScreenState extends State<ShopScreen>
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.monetization_on_rounded,
-                    color: AppColors.coinGold, size: 18),
+                const GtuCoinIcon(size: 18),
                 const SizedBox(width: 6),
                 Text(
                   '$_coins',
@@ -462,7 +463,7 @@ class _ShopScreenState extends State<ShopScreen>
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  'Xu kiếm được qua học tập. Hoàn thành bài học, nhiệm vụ và thành tựu để nhận thêm!',
+                  '${CurrencyLabels.gtuShort} kiếm được qua học tập. Hoàn thành bài học, nhiệm vụ và thành tựu để nhận thêm!',
                   style: AppTextStyles.caption
                       .copyWith(color: AppColors.textSecondary),
                 ),
@@ -557,12 +558,9 @@ class _ShopScreenState extends State<ShopScreen>
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(
-                          Icons.monetization_on_rounded,
-                          color: canAfford
-                              ? Colors.black87
-                              : AppColors.textTertiary,
-                          size: 16,
+                        Opacity(
+                          opacity: canAfford ? 1 : 0.45,
+                          child: const GtuCoinIcon(size: 16),
                         ),
                         const SizedBox(width: 4),
                         Text(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:edtech_mobile/core/constants/currency_labels.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/core/config/api_config.dart';
@@ -2291,7 +2292,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
 
     final labels = <String, String>{
       'free': 'Miễn phí',
-      'coins': 'Xu',
+      'coins': CurrencyLabels.gtuCoin,
       'diamonds': 'Kim cương',
     };
     final colors = <String, Color>{

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:edtech_mobile/core/constants/currency_labels.dart';
 import '../colors.dart';
-import '../gradients.dart';
 import '../text_styles.dart';
+import 'gtu_coin_icon.dart';
 
 /// Coin display with animated number
 class CoinDisplay extends StatelessWidget {
@@ -34,31 +35,7 @@ class CoinDisplay extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Coin icon with glow
-          Container(
-            width: compact ? 20 : 28,
-            height: compact ? 20 : 28,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: AppGradients.coin,
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.coinGold.withValues(alpha: 0.5),
-                  blurRadius: compact ? 4 : 8,
-                ),
-              ],
-            ),
-            child: Center(
-              child: Text(
-                '₵',
-                style: TextStyle(
-                  fontSize: compact ? 10 : 14,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.bgPrimary,
-                ),
-              ),
-            ),
-          ),
+          GtuCoinIcon(size: compact ? 20 : 28),
           const SizedBox(width: 8),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -73,7 +50,7 @@ class CoinDisplay extends StatelessWidget {
               ),
               if (showLabel && !compact)
                 Text(
-                  'Xu',
+                  CurrencyLabels.gtuCoin,
                   style: AppTextStyles.labelSmall,
                 ),
             ],
@@ -110,32 +87,7 @@ class CoinDisplayLarge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Large coin icon
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: AppGradients.coin,
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.coinGold.withValues(alpha: 0.5),
-                  blurRadius: 12,
-                  spreadRadius: 2,
-                ),
-              ],
-            ),
-            child: const Center(
-              child: Text(
-                '₵',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.bgPrimary,
-                ),
-              ),
-            ),
-          ),
+          const GtuCoinIcon(size: 48),
           const SizedBox(width: 16),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -225,7 +177,7 @@ class _CoinGainIndicatorState extends State<CoinGainIndicator>
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('🪙', style: TextStyle(fontSize: 16)),
+            const GtuCoinIcon(size: 16),
             const SizedBox(width: 4),
             Text(
               '+${widget.amount}',

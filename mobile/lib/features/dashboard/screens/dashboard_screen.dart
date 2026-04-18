@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:edtech_mobile/core/constants/currency_labels.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/services/competency_growth_notifier.dart';
 import 'package:edtech_mobile/core/services/tutorial_service.dart';
@@ -116,7 +117,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         key: _statsRowKey,
         title: 'Tài nguyên của bạn',
         description:
-            'Kim cương, xu và chuỗi ngày nằm bên phải thanh trên. Chạm để nạp tiền, cửa hàng hoặc ví.',
+            'Kim cương, ${CurrencyLabels.gtuCoin} và chuỗi ngày nằm bên phải thanh trên. Chạm để nạp tiền, cửa hàng hoặc ví.',
         icon: Icons.account_balance_wallet,
         stepLabel: 'Bước 2/4',
       ),
@@ -1166,7 +1167,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             const SizedBox(height: 6),
             Text(
-              'Hoàn thành để nhận thêm xu và XP.',
+              'Hoàn thành để nhận thêm ${CurrencyLabels.gtuCoin} và XP.',
               style: AppTextStyles.bodySmall.copyWith(
                 color: AppColors.textSecondary,
               ),
@@ -1277,7 +1278,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       children: [
                                         if (coinReward != null) ...[
                                           Text(
-                                            '+${coinReward.toInt()} xu',
+                                            CurrencyLabels.rewardShort(
+                                                coinReward.toInt()),
                                             style:
                                                 AppTextStyles.caption.copyWith(
                                               color: AppColors.coinGold,
@@ -1439,7 +1441,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     text: TextSpan(
                       children: [
                         TextSpan(
-                          text: '+${sumCoins.toInt()} xu ',
+                          text:
+                              '${CurrencyLabels.rewardShort(sumCoins.toInt())} ',
                           style: AppTextStyles.bodySmall.copyWith(
                             color: AppColors.coinGold,
                             fontWeight: FontWeight.w700,

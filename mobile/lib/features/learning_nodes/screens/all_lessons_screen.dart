@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:edtech_mobile/core/constants/currency_labels.dart';
 import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/core/widgets/lesson_unlock_sheet.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/theme/colors.dart';
 import 'package:edtech_mobile/theme/text_styles.dart';
+import 'package:edtech_mobile/theme/widgets/gtu_coin_icon.dart';
 
 class AllLessonsScreen extends StatefulWidget {
   final String subjectId;
@@ -385,7 +387,7 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
                         .copyWith(color: AppColors.warningNeon)),
                 const SizedBox(height: 4),
                 Text(
-                  'Muốn nhận phần thưởng XP và xu, hãy chuyển sang chế độ học viên để học và làm bài kiểm tra nhé!',
+                  'Muốn nhận phần thưởng XP và ${CurrencyLabels.gtuCoin}, hãy chuyển sang chế độ học viên để học và làm bài kiểm tra nhé!',
                   style: AppTextStyles.bodySmall
                       .copyWith(color: AppColors.textSecondary, height: 1.4),
                 ),
@@ -663,8 +665,7 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
                                 const SizedBox(width: 4),
                               ],
                               if (totalCoins > 0) ...[
-                                const Icon(Icons.monetization_on,
-                                    size: 11, color: AppColors.orangeNeon),
+                                const GtuCoinIcon(size: 11),
                                 const SizedBox(width: 2),
                                 Text('+$totalCoins',
                                     style: const TextStyle(
@@ -852,10 +853,9 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
                             const SizedBox(width: 6),
                           ],
                           if (coins > 0) ...[
-                            const Icon(Icons.monetization_on,
-                                size: 12, color: AppColors.orangeNeon),
+                            const GtuCoinIcon(size: 12),
                             const SizedBox(width: 2),
-                            Text('+$coins Xu',
+                            Text(CurrencyLabels.rewardShort(coins),
                                 style: const TextStyle(
                                     fontSize: 10,
                                     color: AppColors.orangeNeon,

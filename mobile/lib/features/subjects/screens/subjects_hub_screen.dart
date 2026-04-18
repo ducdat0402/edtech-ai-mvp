@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:edtech_mobile/core/constants/currency_labels.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/core/widgets/bottom_nav_bar.dart';
@@ -321,7 +322,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                                   summary:
                                       'Đóng góp bài được duyệt có thể mang lại thưởng hàng tháng.',
                                   detail:
-                                      'Mở khóa bằng 50 xu hoặc 50 kim cương mỗi bài. Môn có đóng góp của bạn sẽ được chia lợi nhuận theo tháng tùy số lượng và dạng bài đã đóng góp thành công.',
+                                      'Mở khóa bằng 50 ${CurrencyLabels.gtuCoin} hoặc 50 kim cương mỗi bài. Môn có đóng góp của bạn sẽ được chia lợi nhuận theo tháng tùy số lượng và dạng bài đã đóng góp thành công.',
                                   items: _subjectsByType('community'),
                                   onCreate: _showCreateCommunityDialog,
                                 ),
@@ -729,9 +730,9 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
             ],
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Private: chỉ bạn thấy. Community: mở bằng 50 xu hoặc 50 kim cương mỗi bài. Expert: mở bằng 50 kim cương mỗi bài.',
-            style: TextStyle(
+          Text(
+            'Private: chỉ bạn thấy. Community: mở bằng 50 ${CurrencyLabels.gtuCoin} hoặc 50 kim cương mỗi bài. Expert: mở bằng 50 kim cương mỗi bài.',
+            style: const TextStyle(
               color: AppColors.textSecondary,
               fontSize: 13,
               height: 1.4,

@@ -185,6 +185,7 @@ export class PendingContributionsService {
         const subject = await this.subjectsService.findById(data.entityId);
         if (!subject) throw new NotFoundException('Subject not found');
         oldName = subject.name;
+        parentSubjectId = subject.id;
         title = `Sửa tên: "${oldName}" → "${data.newName}"`;
         contextDesc = `Đề xuất đổi tên môn học "${oldName}" thành "${data.newName}"`;
         extra.subjectName = oldName;
@@ -258,7 +259,11 @@ export class PendingContributionsService {
         ...extra,
       },
     });
-    return this.pendingRepo.save(contribution);
+    return this.autoApproveForPrivateOwnerIfEligible(
+      contribution,
+      contributorId,
+      parentSubjectId,
+    );
   }
 
   // =====================
@@ -286,6 +291,7 @@ export class PendingContributionsService {
         const subject = await this.subjectsService.findById(data.entityId);
         if (!subject) throw new NotFoundException('Subject not found');
         entityName = subject.name;
+        parentSubjectId = subject.id;
         title = `Xóa môn học: "${entityName}"`;
         contextDesc = `Đề xuất xóa môn học "${entityName}"`;
         extra.subjectName = entityName;
@@ -357,7 +363,11 @@ export class PendingContributionsService {
         ...extra,
       },
     });
-    return this.pendingRepo.save(contribution);
+    return this.autoApproveForPrivateOwnerIfEligible(
+      contribution,
+      contributorId,
+      parentSubjectId,
+    );
   }
 
   async createLessonContribution(
@@ -459,7 +469,13 @@ export class PendingContributionsService {
       contribution.reviewedBy = contributorId;
       contribution.reviewNote = 'Auto-approved for owner private subject';
       contribution.reviewedAt = new Date();
-      await this.executeCreateAction(contribution);
+      if (contribution.action === ContributionAction.CREATE) {
+        await this.executeCreateAction(contribution);
+      } else if (contribution.action === ContributionAction.EDIT) {
+        await this.executeEditAction(contribution);
+      } else if (contribution.action === ContributionAction.DELETE) {
+        await this.executeDeleteAction(contribution);
+      }
       return this.pendingRepo.save(contribution);
     }
     return this.pendingRepo.save(contribution);
@@ -574,7 +590,11 @@ export class PendingContributionsService {
         lessonTitle: node.title,
       },
     });
-    return this.pendingRepo.save(contribution);
+    return this.autoApproveForPrivateOwnerIfEligible(
+      contribution,
+      contributorId,
+      node.subjectId,
+    );
   }
 
   // =====================

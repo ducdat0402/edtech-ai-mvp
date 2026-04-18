@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:edtech_mobile/core/constants/currency_labels.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/theme/theme.dart';
@@ -273,12 +274,16 @@ class _CreateTopicScreenState extends State<CreateTopicScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              _buildLabel('Xu nhận được'),
+                              _buildLabel('${CurrencyLabels.gtuCoin} nhận được'),
                               const SizedBox(height: 8),
                               _buildNumberField(
                                   controller: _coinController,
-                                  icon: Icons.monetization_on,
-                                  iconColor: Colors.orangeAccent),
+                                  prefixIcon: const SizedBox(
+                                    width: 48,
+                                    height: 48,
+                                    child: Center(
+                                        child: GtuCoinIcon(size: 22)),
+                                  )),
                             ],
                           ),
                         ),
@@ -527,16 +532,19 @@ class _CreateTopicScreenState extends State<CreateTopicScreen> {
 
   Widget _buildNumberField({
     required TextEditingController controller,
-    required IconData icon,
-    required Color iconColor,
+    IconData? icon,
+    Widget? prefixIcon,
+    Color? iconColor,
   }) {
+    assert(icon != null || prefixIcon != null);
     return TextFormField(
       controller: controller,
       keyboardType: TextInputType.number,
       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
       style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary),
       decoration: InputDecoration(
-        prefixIcon: Icon(icon, color: iconColor, size: 20),
+        prefixIcon: prefixIcon ??
+            Icon(icon!, color: iconColor ?? AppColors.textPrimary, size: 20),
         filled: true,
         fillColor: AppColors.contributorBgSecondary,
         border: OutlineInputBorder(
