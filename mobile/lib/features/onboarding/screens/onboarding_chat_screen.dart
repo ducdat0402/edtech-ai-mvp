@@ -23,8 +23,6 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
   int _currentPage = 0;
   bool _isSaving = false;
 
-  final TextEditingController _nicknameController = TextEditingController();
-
   final List<Map<String, String>> _featureIntroSlides = const [
     {
       'title': 'Tạo lộ trình cá nhân',
@@ -250,7 +248,6 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
   @override
   void dispose() {
     _pageController.dispose();
-    _nicknameController.dispose();
     _fadeController.dispose();
     super.dispose();
   }
@@ -259,7 +256,7 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
     if (_currentPage >= 1 && _currentPage <= 5) return true;
     switch (_currentPage) {
       case 0:
-        return _nicknameController.text.trim().isNotEmpty;
+        return true;
       case 6:
         return _selectedAcquisition != null;
       case 7:
@@ -304,7 +301,6 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
       final data = {
-        'nickname': _nicknameController.text.trim(),
         'acquisition': _selectedAcquisition,
         'userSegment': _selectedSegment,
         'goals': _selectedGoals,
@@ -656,7 +652,7 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
                       onPageChanged: (page) =>
                           setState(() => _currentPage = page),
                       children: [
-                        _buildNicknameSlide(),
+                        _buildWelcomeSlide(),
                         ..._featureIntroSlides.map(_buildFeatureIntroSlide),
                         _buildAcquisitionSlide(),
                         _buildSegmentSlide(),
@@ -858,140 +854,246 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
     );
   }
 
-  // ─── Slide 1: Nickname ───
-
-  Widget _buildNicknameSlide() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
-      child: Column(
-        children: [
-          _buildEyebrow('BẮT ĐẦU'),
-          const SizedBox(height: 20),
-          SizedBox(
-            height: 132,
-            child: Stack(
-              alignment: Alignment.center,
-              clipBehavior: Clip.none,
+  /// Slide đầu: chào mừng — không thu thập tên, chỉ giới thiệu thương hiệu.
+  Widget _buildWelcomeSlide() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(24, 4, 24, 24),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Container(
-                  width: 108,
-                  height: 108,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        AppColors.purpleNeon.withValues(alpha: 0.35),
-                        AppColors.primaryLight.withValues(alpha: 0.12),
-                      ],
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.purpleNeon.withValues(alpha: 0.28),
-                        blurRadius: 32,
-                        spreadRadius: 2,
-                        offset: const Offset(0, 14),
+                _buildEyebrow('CHÀO MỪNG'),
+                const SizedBox(height: 20),
+                SizedBox(
+                  height: 200,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    clipBehavior: Clip.none,
+                    children: [
+                      Positioned(
+                        top: 8,
+                        child: Container(
+                          width: 160,
+                          height: 160,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: RadialGradient(
+                              colors: [
+                                AppColors.purpleNeon.withValues(alpha: 0.45),
+                                AppColors.primaryLight.withValues(alpha: 0.08),
+                                Colors.transparent,
+                              ],
+                              stops: const [0.0, 0.45, 1.0],
+                            ),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        right: 12,
+                        top: 24,
+                        child: Container(
+                          width: 56,
+                          height: 56,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppColors.primaryLight.withValues(alpha: 0.12),
+                            border: Border.all(
+                              color: AppColors.primaryLight.withValues(alpha: 0.35),
+                            ),
+                          ),
+                          child: const Center(
+                            child: Text('✨', style: TextStyle(fontSize: 26)),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        left: 8,
+                        bottom: 36,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: AppColors.bgSecondary,
+                            borderRadius: BorderRadius.circular(999),
+                            border: Border.all(color: _ghostBorder),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.25),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.auto_awesome_rounded,
+                                  size: 16,
+                                  color: AppColors.primaryLight.withValues(
+                                      alpha: 0.95)),
+                              const SizedBox(width: 6),
+                              Text(
+                                'Học thông minh hơn',
+                                style: AppTextStyles.labelSmall.copyWith(
+                                  color: AppColors.textPrimary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Container(
+                        width: 132,
+                        height: 132,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              AppColors.purpleNeon.withValues(alpha: 0.5),
+                              AppColors.primaryLight.withValues(alpha: 0.15),
+                            ],
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.purpleNeon.withValues(alpha: 0.35),
+                              blurRadius: 32,
+                              spreadRadius: 2,
+                              offset: const Offset(0, 12),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        width: 120,
+                        height: 120,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            width: 2,
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        bottom: -6,
+                        child: SvgPicture.asset(
+                          'assets/mascot/idle.svg',
+                          width: 140,
+                          height: 140,
+                          fit: BoxFit.contain,
+                        ),
                       ),
                     ],
                   ),
                 ),
-                Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: AppColors.primaryLight.withValues(alpha: 0.35),
-                      width: 2,
-                    ),
+                const SizedBox(height: 28),
+                Text(
+                  'Chào mừng bạn đến với',
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.bodyLarge.copyWith(
+                    color: AppColors.textSecondary,
+                    height: 1.4,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
-                Positioned(
-                  bottom: -10,
-                  child: SvgPicture.asset(
-                    'assets/mascot/idle.svg',
-                    width: 124,
-                    height: 124,
-                    fit: BoxFit.contain,
+                const SizedBox(height: 8),
+                AppTextStyles.gradientText(
+                  'Gamistu',
+                  AppTextStyles.h1.copyWith(
+                    fontSize: 36,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.5,
+                  ),
+                  AppGradients.primary,
+                ),
+                const SizedBox(height: 20),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        AppColors.bgSecondary,
+                        AppColors.bgSecondary.withValues(alpha: 0.92),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: AppColors.primaryLight.withValues(alpha: 0.22),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.purpleNeon.withValues(alpha: 0.12),
+                        blurRadius: 24,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        'Nền tảng học tập được thiết kế để bạn tiến bộ mỗi ngày — '
+                        'lộ trình rõ ràng, cộng đồng đồng hành, và tiến độ bạn nhìn thấy được.',
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: AppColors.textSecondary,
+                          height: 1.55,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        alignment: WrapAlignment.center,
+                        children: [
+                          _welcomeChip(Icons.route_rounded, 'Lộ trình'),
+                          _welcomeChip(Icons.groups_rounded, 'Cộng đồng'),
+                          _welcomeChip(Icons.insights_rounded, 'Tiến độ'),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 28),
-          Wrap(
-            alignment: WrapAlignment.center,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              Text(
-                'Chào mừng đến ',
-                style: AppTextStyles.h2.copyWith(color: AppColors.textPrimary),
-              ),
-              AppTextStyles.gradientText(
-                'Gamistu',
-                AppTextStyles.h2,
-                AppGradients.primary,
-              ),
-              Text(
-                '!',
-                style: AppTextStyles.h2.copyWith(color: AppColors.textPrimary),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
+        );
+      },
+    );
+  }
+
+  Widget _welcomeChip(IconData icon, String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.bgPrimary,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: _ghostBorder),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: AppColors.primaryLight),
+          const SizedBox(width: 6),
           Text(
-            'Mình sẽ giúp bạn cá nhân hóa trải nghiệm học tập.\nHãy cho mình biết tên bạn nhé!',
-            textAlign: TextAlign.center,
-            style: AppTextStyles.bodyMedium
-                .copyWith(color: AppColors.textSecondary, height: 1.45),
-          ),
-          const SizedBox(height: 36),
-          TextField(
-            controller: _nicknameController,
-            style:
-                AppTextStyles.bodyLarge.copyWith(color: AppColors.textPrimary),
-            textAlign: TextAlign.center,
-            textCapitalization: TextCapitalization.words,
-            onChanged: (_) => setState(() {}),
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: AppColors.bgSecondary,
-              hintText: 'Nhập tên của bạn',
-              hintStyle: AppTextStyles.bodyLarge
-                  .copyWith(color: AppColors.textTertiary),
-              prefixIcon: const Padding(
-                padding: EdgeInsets.only(left: 16, right: 8),
-                child: Icon(Icons.person_outline_rounded,
-                    color: AppColors.textTertiary, size: 22),
-              ),
-              prefixIconConstraints:
-                  const BoxConstraints(minWidth: 48, minHeight: 0),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(18),
-                borderSide: const BorderSide(color: _ghostBorder),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(18),
-                borderSide: const BorderSide(color: _ghostBorder),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(18),
-                borderSide: BorderSide(
-                  color: AppColors.primaryLight.withValues(alpha: 0.65),
-                  width: 1.5,
-                ),
-              ),
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 18),
+            label,
+            style: AppTextStyles.labelSmall.copyWith(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
       ),
     );
   }
-
-  // ─── Slide 2: Acquisition ───
 
   Widget _buildFeatureIntroSlide(Map<String, String> slide) {
     return SingleChildScrollView(
