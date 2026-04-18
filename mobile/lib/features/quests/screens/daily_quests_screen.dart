@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:edtech_mobile/core/constants/currency_labels.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
@@ -21,6 +22,8 @@ class _DailyQuestsScreenState extends State<DailyQuestsScreen>
     with SingleTickerProviderStateMixin {
   List<dynamic>? _dailyQuests;
   List<dynamic>? _questHistory;
+  /// Cùng nguồn dashboard — dùng `recentSubject` cho nhiệm vụ `complete_daily_lesson`.
+  Map<String, dynamic>? _continueLearning;
   bool _isLoading = true;
   String? _error;
   late TabController _tabController;
@@ -43,11 +46,16 @@ class _DailyQuestsScreenState extends State<DailyQuestsScreen>
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
 
-      final dailyQuests = await apiService.getDailyQuests();
-      final questHistory = await apiService.getQuestHistory();
+      final results = await Future.wait([
+        apiService.getDashboard(),
+        apiService.getQuestHistory(),
+      ]);
+      final dash = results[0] as Map<String, dynamic>;
+      final questHistory = results[1] as List<dynamic>;
 
       setState(() {
-        _dailyQuests = dailyQuests;
+        _dailyQuests = dash['dailyQuests'] as List<dynamic>?;
+        _continueLearning = dash['continueLearning'] as Map<String, dynamic>?;
         _questHistory = questHistory;
         _isLoading = false;
       });
@@ -98,6 +106,25 @@ class _DailyQuestsScreenState extends State<DailyQuestsScreen>
       if (mounted) {
         setState(() => _isClaiming = false);
       }
+    }
+  }
+
+  void _navigateForQuestType(String questType) {
+    switch (questType) {
+      case 'earn_coins':
+        context.push('/shop');
+        return;
+      case 'earn_xp':
+      case 'complete_items':
+      case 'complete_daily_lesson':
+      case 'complete_node':
+        context.push('/library');
+        return;
+      case 'maintain_streak':
+        context.push('/currency');
+        return;
+      default:
+        context.push('/library');
     }
   }
 
@@ -181,12 +208,23 @@ class _DailyQuestsScreenState extends State<DailyQuestsScreen>
         itemCount: _dailyQuests!.length,
         itemBuilder: (context, index) {
           final questData = _dailyQuests![index] as Map<String, dynamic>;
+          final quest =
+              questData['quest'] as Map<String, dynamic>? ?? const {};
+          final questType = quest['type'] as String? ?? '';
+          final recentSubject =
+              _continueLearning?['recentSubject'] as Map<String, dynamic>?;
+          final recentSubjectName = recentSubject?['name'] as String?;
           return StaggeredListItem(
             index: index,
             child: _QuestCard(
               questData: questData,
               onClaim: () => _claimQuest(questData['id'] as String),
               isClaiming: _isClaiming,
+              recentSubjectName: recentSubjectName,
+              onGo: () {
+                HapticFeedback.lightImpact();
+                _navigateForQuestType(questType);
+              },
             ),
           );
         },
@@ -222,11 +260,15 @@ class _QuestCard extends StatelessWidget {
   final Map<String, dynamic> questData;
   final VoidCallback onClaim;
   final bool isClaiming;
+  final String? recentSubjectName;
+  final VoidCallback onGo;
 
   const _QuestCard({
     required this.questData,
     required this.onClaim,
     required this.isClaiming,
+    required this.onGo,
+    this.recentSubjectName,
   });
 
   @override
@@ -241,6 +283,10 @@ class _QuestCard extends StatelessWidget {
     final isClaimed = status == 'claimed';
 
     final questType = quest['type'] as String? ?? '';
+    final subjectHint = (questType == 'complete_daily_lesson' &&
+            (recentSubjectName?.isNotEmpty ?? false))
+        ? recentSubjectName
+        : null;
     final icon = _getQuestIcon(questType);
     final color = _getQuestColor(questType);
     final progressPercent = (progress / target).clamp(0.0, 1.0);
@@ -290,6 +336,19 @@ class _QuestCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      if (subjectHint != null) ...[
+                        Text(
+                          subjectHint,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.caption.copyWith(
+                            color: AppColors.primaryLight,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 12,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                      ],
                       Text(
                         quest['title'] ?? 'Nhiệm vụ',
                         style: AppTextStyles.labelLarge
@@ -377,7 +436,7 @@ class _QuestCard extends StatelessWidget {
               _buildRewards(quest['rewards'] as Map<String, dynamic>),
               const SizedBox(height: 16),
             ],
-            // Claim button
+            // Nhận thưởng / ĐẾN / đã nhận — đồng bộ dashboard
             if (canClaim)
               GamingButton(
                 text: 'Nhận phần thưởng',
@@ -410,6 +469,36 @@ class _QuestCard extends StatelessWidget {
                           .copyWith(color: AppColors.successNeon),
                     ),
                   ],
+                ),
+              )
+            else
+              Align(
+                alignment: Alignment.centerRight,
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: onGo,
+                    borderRadius: BorderRadius.circular(999),
+                    child: Container(
+                      height: 40,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: AppColors.bgTertiary,
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(color: const Color(0x442D363D)),
+                      ),
+                      child: Text(
+                        'ĐẾN',
+                        style: AppTextStyles.labelSmall.copyWith(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
           ],

@@ -396,6 +396,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           const SizedBox(height: _kSectionGap),
                           _buildDailyQuestsSection(
                             _dashboardData!['dailyQuests'] as List<dynamic>?,
+                            _dashboardData!['continueLearning']
+                                as Map<String, dynamic>?,
                           ),
                         ],
                       ),
@@ -840,29 +842,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return const SizedBox.shrink();
   }
 
-  /// Nhãn nút hành động nhiệm vụ (D1) — theo `QuestType` backend.
-  String _questPrimaryCtaLabel(
-    String questType,
-    bool canClaim,
-    bool isClaimed,
-  ) {
+  /// Nhãn nút nhiệm vụ: **ĐẾN** khi điều hướng; giữ Nhận / Đã nhận khi có thưởng.
+  String _questPrimaryCtaLabel(bool canClaim, bool isClaimed) {
     if (canClaim) return 'Nhận';
     if (isClaimed) return 'Đã nhận';
-    switch (questType) {
-      case 'earn_coins':
-        return 'Vào cửa hàng';
-      case 'earn_xp':
-        return 'Đi học';
-      case 'complete_items':
-      case 'complete_daily_lesson':
-        return 'Mở bài học';
-      case 'maintain_streak':
-        return 'Xem chuỗi ngày';
-      case 'complete_node':
-        return 'Mở thư viện';
-      default:
-        return 'Chi tiết';
-    }
+    return 'ĐẾN';
   }
 
   void _navigateForQuestType(String questType) {
@@ -984,6 +968,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   final lesson = entry.value;
 
                   final title = (lesson['title'] as String?) ?? 'Bài học';
+                  final subjectName = lesson['subjectName'] as String?;
                   final isLocked = (lesson['isLocked'] as bool?) ?? false;
                   final diamondCost = (lesson['diamondCost'] as num?)?.toInt();
 
@@ -1024,40 +1009,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container(
-                                width: 44,
-                                height: 44,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: isLocked
-                                      ? Colors.transparent
-                                      : AppColors.successNeon
-                                          .withValues(alpha: 0.18),
-                                  border: Border.all(
-                                    color: isLocked
-                                        ? const Color(0x442D363D)
-                                        : AppColors.successNeon
-                                            .withValues(alpha: 0.5),
-                                  ),
-                                ),
-                                child: Center(
-                                  child: Icon(
-                                    isLocked
-                                        ? Icons.lock_rounded
-                                        : Icons.play_arrow_rounded,
-                                    size: 22,
-                                    color: isLocked
-                                        ? AppColors.textTertiary
-                                        : AppColors.successNeon,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
+                                    if (subjectName != null &&
+                                        subjectName.isNotEmpty) ...[
+                                      Text(
+                                        subjectName,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: AppTextStyles.caption.copyWith(
+                                          color: AppColors.primaryLight,
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 11,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                    ],
                                     Text(
                                       title,
                                       maxLines: 3,
@@ -1083,6 +1053,45 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     ],
                                   ],
                                 ),
+                              ),
+                              const SizedBox(width: 8),
+                              Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (isLocked)
+                                    const Padding(
+                                      padding: EdgeInsets.only(bottom: 4),
+                                      child: Icon(
+                                        Icons.lock_rounded,
+                                        size: 16,
+                                        color: AppColors.textTertiary,
+                                      ),
+                                    ),
+                                  Container(
+                                    height: 34,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                    ),
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.bgTertiary,
+                                      borderRadius: BorderRadius.circular(999),
+                                      border: Border.all(
+                                        color: const Color(0x442D363D),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      'ĐẾN',
+                                      style:
+                                          AppTextStyles.labelSmall.copyWith(
+                                        fontWeight: FontWeight.w800,
+                                        fontSize: 11,
+                                        color: AppColors.textSecondary,
+                                        letterSpacing: 0.3,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
@@ -1124,7 +1133,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildDailyQuestsSection(List<dynamic>? dailyQuests) {
+  Widget _buildDailyQuestsSection(
+    List<dynamic>? dailyQuests,
+    Map<String, dynamic>? continueLearning,
+  ) {
     final quests = (dailyQuests ?? const [])
         .whereType<Map>()
         .map((e) => Map<String, dynamic>.from(e))
@@ -1134,6 +1146,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       final status = q['status'] as String? ?? 'active';
       return status == 'completed';
     }).toList();
+
+    final recentSubject =
+        continueLearning?['recentSubject'] as Map<String, dynamic>?;
+    final recentSubjectName = recentSubject?['name'] as String?;
 
     num sumCoins = 0;
     num sumXP = 0;
@@ -1198,6 +1214,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                   final title = quest['title'] as String? ?? 'Nhiệm vụ';
                   final questType = quest['type'] as String? ?? '';
+                  final subjectHint = (questType == 'complete_daily_lesson' &&
+                          recentSubjectName != null &&
+                          recentSubjectName.isNotEmpty)
+                      ? recentSubjectName
+                      : null;
                   final status = questWrapper['status'] as String? ?? 'active';
                   final progressNum = (questWrapper['progress'] as num?) ?? 0;
                   final targetNum = (questWrapper['target'] as num?) ??
@@ -1261,6 +1282,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
+                                  if (subjectHint != null) ...[
+                                    Text(
+                                      subjectHint,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: AppTextStyles.caption.copyWith(
+                                        color: AppColors.primaryLight,
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 11,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                  ],
                                   Text(
                                     title,
                                     style: AppTextStyles.bodyMedium.copyWith(
@@ -1387,7 +1421,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   alignment: Alignment.center,
                                   child: Text(
                                     _questPrimaryCtaLabel(
-                                      questType,
                                       canClaim,
                                       isClaimed,
                                     ),
