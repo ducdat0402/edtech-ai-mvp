@@ -912,12 +912,41 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ? 'Chưa rõ miễn phí còn lại'
         : '$remaining/$freeTotal miễn phí còn lại';
 
+    final recentSubject = data?['recentSubject'] as Map<String, dynamic>?;
+    var sectionSubjectName = recentSubject?['name'] as String?;
+    if (sectionSubjectName == null || sectionSubjectName.trim().isEmpty) {
+      if (lessons.isNotEmpty) {
+        sectionSubjectName = lessons.first['subjectName'] as String?;
+      }
+    }
+    final subjectHeader =
+        sectionSubjectName != null && sectionSubjectName.trim().isNotEmpty
+            ? sectionSubjectName.trim()
+            : null;
+
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0x332D363D)),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: AppColors.purpleNeon.withValues(alpha: 0.18),
+        ),
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            AppColors.bgSecondary,
+            AppColors.bgSecondary.withValues(alpha: 0.92),
+            AppColors.surfaceContainerLow.withValues(alpha: 0.85),
+          ],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.purpleNeon.withValues(alpha: 0.06),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -927,32 +956,113 @@ class _DashboardScreenState extends State<DashboardScreen> {
               _kSectionInnerPadding,
               _kSectionInnerPadding,
               _kSectionInnerPadding,
-              12,
+              10,
             ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Text(
-                    'Bài học hôm nay',
-                    style: AppTextStyles.h3,
-                  ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        gradient: AppGradients.primary,
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.purpleNeon.withValues(alpha: 0.35),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.auto_stories_rounded,
+                        color: Colors.white,
+                        size: 22,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Bài học hôm nay',
+                        style: AppTextStyles.h3.copyWith(
+                          letterSpacing: 0.15,
+                        ),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.xpGold.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: AppColors.xpGold.withValues(alpha: 0.28),
+                        ),
+                      ),
+                      child: Text(
+                        remainingText,
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.xpGold,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                Text(
-                  remainingText,
-                  style: AppTextStyles.caption.copyWith(
-                    color: AppColors.xpGold,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
+                if (subjectHeader != null) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceContainerLow,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: AppColors.primaryLight.withValues(alpha: 0.12),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.menu_book_rounded,
+                          size: 16,
+                          color: AppColors.primaryLight.withValues(alpha: 0.95),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            subjectHeader,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTextStyles.labelSmall.copyWith(
+                              color: AppColors.textSecondary,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13,
+                              height: 1.25,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
           ),
-          const SizedBox(height: 4),
           if (lessons.isEmpty)
             Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
               child: Text(
                 'Bạn chưa có bài phù hợp để tiếp tục ngay.',
                 style: AppTextStyles.bodySmall
@@ -961,232 +1071,253 @@ class _DashboardScreenState extends State<DashboardScreen> {
             )
           else
             Padding(
-              padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 14),
               child: Column(
                 children: lessons.asMap().entries.map((entry) {
                   final index = entry.key;
                   final lesson = entry.value;
-
-                  final title = (lesson['title'] as String?) ?? 'Bài học';
-                  final subjectName = lesson['subjectName'] as String?;
-                  final domainName = lesson['domainName'] as String?;
-                  final topicName = lesson['topicName'] as String?;
-                  final isLocked = (lesson['isLocked'] as bool?) ?? false;
-                  final diamondCost = (lesson['diamondCost'] as num?)?.toInt();
-
-                  final expReward =
-                      (lesson['expReward'] as num?)?.toInt() ?? 50;
-
-                  final subtitle = lesson['subtitle'] as String?;
-                  final subjectLineLabel =
-                      (subjectName != null && subjectName.trim().isNotEmpty)
-                          ? subjectName.trim()
-                          : '—';
-
-                  final isFirst = index == 0;
-
-                  return InkWell(
+                  final isLast = index == lessons.length - 1;
+                  return _buildTodayLessonTile(
+                    lesson: lesson,
+                    index: index,
+                    isLast: isLast,
                     onTap: () => _handleContinueLessonTap(lesson),
-                    borderRadius: BorderRadius.circular(14),
-                    child: Container(
-                      margin: EdgeInsets.only(
-                        bottom: index == lessons.length - 1 ? 0 : 12,
-                      ),
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: isLocked
-                            ? AppColors.bgTertiary
-                            : (isFirst
-                                ? const Color(0xFF1F9D55)
-                                    .withValues(alpha: 0.22)
-                                : AppColors.bgTertiary),
-                        border: Border.all(
-                          color: isLocked
-                              ? const Color(0x442D363D)
-                              : AppColors.successNeon.withValues(alpha: 0.35),
-                        ),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Container(
-                                      width: double.infinity,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 10,
-                                        vertical: 6,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.purpleNeon
-                                            .withValues(alpha: 0.12),
-                                        borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(
-                                          color: AppColors.primaryLight
-                                              .withValues(alpha: 0.35),
-                                        ),
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          const Icon(
-                                            Icons.menu_book_rounded,
-                                            size: 16,
-                                            color: AppColors.primaryLight,
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Expanded(
-                                            child: Text(
-                                              'Môn: $subjectLineLabel',
-                                              maxLines: 2,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: AppTextStyles.labelSmall
-                                                  .copyWith(
-                                                color: AppColors.primaryLight,
-                                                fontWeight: FontWeight.w800,
-                                                fontSize: 12,
-                                                height: 1.25,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    if (domainName != null &&
-                                        domainName.isNotEmpty) ...[
-                                      Text(
-                                        'Chương: $domainName',
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: AppTextStyles.caption.copyWith(
-                                          color: AppColors.textSecondary,
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 11,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                    ],
-                                    if (topicName != null &&
-                                        topicName.isNotEmpty) ...[
-                                      Text(
-                                        'Chủ đề: $topicName',
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: AppTextStyles.caption.copyWith(
-                                          color: AppColors.textTertiary,
-                                          fontSize: 11,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 6),
-                                    ],
-                                    Text(
-                                      title,
-                                      maxLines: 3,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: AppTextStyles.bodyBold.copyWith(
-                                        color: AppColors.textPrimary,
-                                        height: 1.35,
-                                      ),
-                                    ),
-                                    if (subtitle != null &&
-                                        subtitle.isNotEmpty) ...[
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        subtitle,
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: AppTextStyles.bodySmall.copyWith(
-                                          color: isLocked
-                                              ? AppColors.textTertiary
-                                              : AppColors.textSecondary,
-                                        ),
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  if (isLocked)
-                                    const Padding(
-                                      padding: EdgeInsets.only(bottom: 4),
-                                      child: Icon(
-                                        Icons.lock_rounded,
-                                        size: 16,
-                                        color: AppColors.textTertiary,
-                                      ),
-                                    ),
-                                  Container(
-                                    height: 34,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                    ),
-                                    alignment: Alignment.center,
-                                    decoration: BoxDecoration(
-                                      color: AppColors.bgTertiary,
-                                      borderRadius: BorderRadius.circular(999),
-                                      border: Border.all(
-                                        color: const Color(0x442D363D),
-                                      ),
-                                    ),
-                                    child: Text(
-                                      'ĐẾN',
-                                      style:
-                                          AppTextStyles.labelSmall.copyWith(
-                                        fontWeight: FontWeight.w800,
-                                        fontSize: 11,
-                                        color: AppColors.textSecondary,
-                                        letterSpacing: 0.3,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              if (isLocked && diamondCost != null) ...[
-                                Text(
-                                  '$diamondCost 💎',
-                                  style: AppTextStyles.caption.copyWith(
-                                    color: AppColors.textTertiary,
-                                    fontSize: 10,
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                              ],
-                              Text(
-                                '+$expReward XP',
-                                style: AppTextStyles.caption.copyWith(
-                                  color: isLocked
-                                      ? AppColors.textTertiary
-                                      : AppColors.xpGold,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
                   );
                 }).toList(),
               ),
             ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildTodayLessonTile({
+    required Map<String, dynamic> lesson,
+    required int index,
+    required bool isLast,
+    required VoidCallback onTap,
+  }) {
+    final title = (lesson['title'] as String?) ?? 'Bài học';
+    final isLocked = (lesson['isLocked'] as bool?) ?? false;
+    final diamondCost = (lesson['diamondCost'] as num?)?.toInt();
+    final expReward = (lesson['expReward'] as num?)?.toInt() ?? 50;
+    final isFirst = index == 0;
+
+    final accentGradient = isLocked
+        ? null
+        : (isFirst
+            ? LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  AppColors.successNeon.withValues(alpha: 0.18),
+                  AppColors.bgTertiary,
+                  AppColors.surfaceContainerLow.withValues(alpha: 0.9),
+                ],
+                stops: const [0.0, 0.45, 1.0],
+              )
+            : LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  AppColors.purpleNeon.withValues(alpha: 0.22),
+                  AppColors.bgTertiary,
+                  AppColors.surfaceContainerLow.withValues(alpha: 0.95),
+                ],
+                stops: const [0.0, 0.5, 1.0],
+              ));
+
+    final borderColor = isLocked
+        ? const Color(0x442D363D)
+        : (isFirst
+            ? AppColors.successNeon.withValues(alpha: 0.45)
+            : AppColors.purpleNeon.withValues(alpha: 0.4));
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: isLast ? 0 : 12),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Ink(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              gradient: accentGradient,
+              color: accentGradient == null ? AppColors.bgTertiary : null,
+              border: Border.all(color: borderColor),
+              boxShadow: isLocked
+                  ? null
+                  : [
+                      BoxShadow(
+                        color: (isFirst
+                                ? AppColors.successNeon
+                                : AppColors.purpleNeon)
+                            .withValues(alpha: 0.12),
+                        blurRadius: 16,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+            ),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(14, 14, 12, 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (!isLocked)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 2, right: 10),
+                          child: Container(
+                            width: 4,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(4),
+                              gradient: isFirst
+                                  ? LinearGradient(
+                                      begin: Alignment.topCenter,
+                                      end: Alignment.bottomCenter,
+                                      colors: [
+                                        AppColors.successNeon,
+                                        AppColors.successNeon
+                                            .withValues(alpha: 0.45),
+                                      ],
+                                    )
+                                  : AppGradients.primary,
+                            ),
+                          ),
+                        ),
+                      Expanded(
+                        child: Text(
+                          title,
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.bodyBold.copyWith(
+                            color: AppColors.textPrimary,
+                            height: 1.35,
+                            fontSize: 15,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (isLocked)
+                            const Padding(
+                              padding: EdgeInsets.only(bottom: 4),
+                              child: Icon(
+                                Icons.lock_rounded,
+                                size: 16,
+                                color: AppColors.textTertiary,
+                              ),
+                            ),
+                          Container(
+                            height: 34,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                            ),
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(999),
+                              gradient: isLocked ? null : AppGradients.primary,
+                              color: isLocked
+                                  ? AppColors.bgSecondary
+                                  : null,
+                              border: Border.all(
+                                color: isLocked
+                                    ? const Color(0x552D363D)
+                                    : Colors.transparent,
+                              ),
+                              boxShadow: isLocked
+                                  ? null
+                                  : [
+                                      BoxShadow(
+                                        color: AppColors.purpleNeon
+                                            .withValues(alpha: 0.35),
+                                        blurRadius: 10,
+                                        offset: const Offset(0, 3),
+                                      ),
+                                    ],
+                            ),
+                            child: Text(
+                              'ĐẾN',
+                              style: AppTextStyles.labelSmall.copyWith(
+                                fontWeight: FontWeight.w800,
+                                fontSize: 11,
+                                color: isLocked
+                                    ? AppColors.textTertiary
+                                    : Colors.white,
+                                letterSpacing: 0.45,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 9,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isLocked
+                              ? AppColors.bgSecondary.withValues(alpha: 0.6)
+                              : AppColors.xpGold.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: isLocked
+                                ? const Color(0x332D363D)
+                                : AppColors.xpGold.withValues(alpha: 0.28),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.bolt_rounded,
+                              size: 15,
+                              color: isLocked
+                                  ? AppColors.textTertiary
+                                  : AppColors.xpGold,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              '+$expReward XP',
+                              style: AppTextStyles.caption.copyWith(
+                                color: isLocked
+                                    ? AppColors.textTertiary
+                                    : AppColors.xpGold,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Spacer(),
+                      if (isLocked && diamondCost != null)
+                        Text(
+                          '$diamondCost 💎',
+                          style: AppTextStyles.caption.copyWith(
+                            color: AppColors.textTertiary,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
