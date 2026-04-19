@@ -899,6 +899,49 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
+  Future<void> _handleDailyQuestCta({
+    required bool canClaim,
+    required bool isClaimed,
+    required String? questParticipationId,
+    required String questType,
+  }) async {
+    if (isClaimed || questParticipationId == null || questParticipationId.isEmpty) {
+      return;
+    }
+    if (canClaim) {
+      try {
+        final api = Provider.of<ApiService>(context, listen: false);
+        await api.claimQuest(questParticipationId);
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Row(
+              children: [
+                Icon(Icons.celebration, color: Colors.white),
+                SizedBox(width: 8),
+                Text('Đã nhận phần thưởng!'),
+              ],
+            ),
+            backgroundColor: AppColors.successNeon,
+          ),
+        );
+        await _loadDashboard();
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi: $e'),
+            backgroundColor: AppColors.errorNeon,
+          ),
+        );
+      }
+    } else {
+      if (!mounted) return;
+      HapticFeedback.lightImpact();
+      _navigateForQuestType(questType);
+    }
+  }
+
   Widget _buildContinueLearningSection(Map<String, dynamic>? data) {
     final lessons = (data?['nextFreeLessons'] as List<dynamic>? ?? const [])
         .whereType<Map>()
@@ -1349,46 +1392,136 @@ class _DashboardScreenState extends State<DashboardScreen> {
       sumCoins += (rewards['coin'] as num?) ?? 0;
     }
 
+    final activeQuestCount = quests.where((q) {
+      final s = q['status'] as String? ?? 'active';
+      return s == 'active';
+    }).length;
+
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0x332D363D)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(
-          _kSectionInnerPadding,
-          _kSectionInnerPadding,
-          _kSectionInnerPadding,
-          14,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: AppColors.purpleNeon.withValues(alpha: 0.18),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Nhiệm vụ hôm nay',
-              style: AppTextStyles.h3,
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            AppColors.bgSecondary,
+            AppColors.bgSecondary.withValues(alpha: 0.92),
+            AppColors.surfaceContainerLow.withValues(alpha: 0.85),
+          ],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.purpleNeon.withValues(alpha: 0.06),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              _kSectionInnerPadding,
+              _kSectionInnerPadding,
+              _kSectionInnerPadding,
+              10,
             ),
-            const SizedBox(height: 6),
-            Text(
-              'Hoàn thành để nhận thêm ${CurrencyLabels.gtuCoin} và XP.',
-              style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textSecondary,
-              ),
-            ),
-            const SizedBox(height: 14),
-            if (quests.isEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Text(
-                  'Không có nhiệm vụ hôm nay.',
-                  style: AppTextStyles.bodySmall
-                      .copyWith(color: AppColors.textSecondary),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            AppColors.successNeon.withValues(alpha: 0.95),
+                            AppColors.purpleNeon.withValues(alpha: 0.9),
+                          ],
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.successNeon.withValues(alpha: 0.25),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.emoji_events_rounded,
+                        color: Colors.white,
+                        size: 22,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Nhiệm vụ hôm nay',
+                        style: AppTextStyles.h3.copyWith(
+                          letterSpacing: 0.15,
+                        ),
+                      ),
+                    ),
+                    if (quests.isNotEmpty && activeQuestCount > 0)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.cyanNeon.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: AppColors.primaryLight.withValues(alpha: 0.22),
+                          ),
+                        ),
+                        child: Text(
+                          '$activeQuestCount đang làm',
+                          style: AppTextStyles.caption.copyWith(
+                            color: AppColors.primaryLight,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.15,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
-              )
-            else
-              Column(
+                const SizedBox(height: 10),
+                Text(
+                  'Hoàn thành để nhận thêm ${CurrencyLabels.gtuCoin} và XP.',
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.textSecondary,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (quests.isEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: Text(
+                'Không có nhiệm vụ hôm nay.',
+                style: AppTextStyles.bodySmall
+                    .copyWith(color: AppColors.textSecondary),
+              ),
+            )
+          else
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 14),
+              child: Column(
                 children: quests.asMap().entries.map((entry) {
                   final index = entry.key;
                   final questWrapper = entry.value;
@@ -1426,264 +1559,533 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                   final canClaim = isCompleted && !isClaimed;
 
-                  return Container(
-                    margin: EdgeInsets.only(
-                        bottom: index == quests.length - 1 ? 0 : 12),
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  return _buildDailyQuestTile(
+                    questWrapper: questWrapper,
+                    title: title,
+                    questType: questType,
+                    subjectHint: subjectHint,
+                    isCompleted: isCompleted,
+                    isClaimed: isClaimed,
+                    canClaim: canClaim,
+                    percent: percent,
+                    progressNum: progressNum,
+                    targetNum: targetNum,
+                    xpReward: xpReward,
+                    coinReward: coinReward,
+                    isLast: index == quests.length - 1,
+                  );
+                }).toList(),
+              ),
+            ),
+          if (completedUnclaimed.isNotEmpty) ...[
+            if (quests.isNotEmpty) const SizedBox(height: 2),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 14),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceContainerLow.withValues(alpha: 0.9),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppColors.xpGold.withValues(alpha: 0.2),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.redeem_rounded,
+                      size: 20,
+                      color: AppColors.xpGold.withValues(alpha: 0.95),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Phần thưởng khi xong',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    Wrap(
+                      spacing: 8,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        Row(
-                          children: [
-                            Container(
-                              width: 22,
-                              height: 22,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: isCompleted || isClaimed
-                                    ? AppColors.successNeon
-                                        .withValues(alpha: 0.16)
-                                    : Colors.transparent,
-                                border: Border.all(
-                                  color: isCompleted || isClaimed
-                                      ? AppColors.successNeon
-                                          .withValues(alpha: 0.6)
-                                      : const Color(0x442D363D),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.coinGold.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: AppColors.coinGold.withValues(alpha: 0.28),
+                            ),
+                          ),
+                          child: Text(
+                            CurrencyLabels.rewardShort(sumCoins.toInt()),
+                            style: AppTextStyles.caption.copyWith(
+                              color: AppColors.coinGold,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.xpGold.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: AppColors.xpGold.withValues(alpha: 0.28),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.bolt_rounded,
+                                size: 14,
+                                color: AppColors.xpGold,
+                              ),
+                              const SizedBox(width: 2),
+                              Text(
+                                '+${sumXP.toInt()} XP',
+                                style: AppTextStyles.caption.copyWith(
+                                  color: AppColors.xpGold,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 12,
                                 ),
                               ),
-                              child: Center(
-                                child: Icon(
-                                  isCompleted
-                                      ? Icons.check_rounded
-                                      : isClaimed
-                                          ? Icons.check_rounded
-                                          : Icons.circle_outlined,
-                                  size: 14,
-                                  color: isCompleted || isClaimed
-                                      ? AppColors.successNeon
-                                      : AppColors.textTertiary,
-                                ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDailyQuestTile({
+    required Map<String, dynamic> questWrapper,
+    required String title,
+    required String questType,
+    required String? subjectHint,
+    required bool isCompleted,
+    required bool isClaimed,
+    required bool canClaim,
+    required double percent,
+    required num progressNum,
+    required num targetNum,
+    required int? xpReward,
+    required int? coinReward,
+    required bool isLast,
+  }) {
+    final participationId = questWrapper['id'] as String?;
+
+    final Gradient? cardGradient;
+    final Color borderColor;
+    final List<BoxShadow>? cardShadow;
+    final Color? cardColor;
+
+    if (isClaimed) {
+      cardGradient = null;
+      cardColor = AppColors.bgTertiary;
+      borderColor = const Color(0x442D363D);
+      cardShadow = null;
+    } else if (canClaim) {
+      cardGradient = LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          AppColors.successNeon.withValues(alpha: 0.26),
+          AppColors.bgTertiary,
+          AppColors.surfaceContainerLow.withValues(alpha: 0.95),
+        ],
+        stops: const [0.0, 0.55, 1.0],
+      );
+      cardColor = null;
+      borderColor = AppColors.successNeon.withValues(alpha: 0.55);
+      cardShadow = [
+        BoxShadow(
+          color: AppColors.successNeon.withValues(alpha: 0.18),
+          blurRadius: 16,
+          offset: const Offset(0, 6),
+        ),
+      ];
+    } else {
+      cardGradient = LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          AppColors.cyanNeon.withValues(alpha: 0.1),
+          AppColors.bgTertiary,
+          AppColors.surfaceContainerLow.withValues(alpha: 0.95),
+        ],
+        stops: const [0.0, 0.45, 1.0],
+      );
+      cardColor = null;
+      borderColor = AppColors.purpleNeon.withValues(alpha: 0.38);
+      cardShadow = [
+        BoxShadow(
+          color: AppColors.purpleNeon.withValues(alpha: 0.1),
+          blurRadius: 14,
+          offset: const Offset(0, 5),
+        ),
+      ];
+    }
+
+    void onCardTap() {
+      unawaited(
+        _handleDailyQuestCta(
+          canClaim: canClaim,
+          isClaimed: isClaimed,
+          questParticipationId: participationId,
+          questType: questType,
+        ),
+      );
+    }
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: isLast ? 0 : 12),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: isClaimed ? null : onCardTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Ink(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              gradient: cardGradient,
+              color: cardColor,
+              border: Border.all(color: borderColor),
+              boxShadow: cardShadow,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(12, 14, 12, 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (!isClaimed && !canClaim)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 2, right: 8),
+                          child: Container(
+                            width: 4,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(4),
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  AppColors.successNeon,
+                                  AppColors.purpleNeon.withValues(alpha: 0.85),
+                                ],
                               ),
                             ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisSize: MainAxisSize.min,
+                          ),
+                        ),
+                      Container(
+                        width: 26,
+                        height: 26,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: isCompleted || isClaimed
+                              ? AppColors.successNeon.withValues(alpha: 0.18)
+                              : AppColors.bgSecondary.withValues(alpha: 0.8),
+                          border: Border.all(
+                            color: isCompleted || isClaimed
+                                ? AppColors.successNeon.withValues(alpha: 0.65)
+                                : const Color(0x552D363D),
+                          ),
+                        ),
+                        child: Center(
+                          child: Icon(
+                            isClaimed
+                                ? Icons.verified_rounded
+                                : isCompleted
+                                    ? Icons.check_rounded
+                                    : Icons.radio_button_unchecked_rounded,
+                            size: 15,
+                            color: isCompleted || isClaimed
+                                ? AppColors.successNeon
+                                : AppColors.textTertiary,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (subjectHint != null) ...[
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 3,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primaryLight
+                                      .withValues(alpha: 0.08),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                    color: AppColors.primaryLight
+                                        .withValues(alpha: 0.2),
+                                  ),
+                                ),
+                                child: Text(
+                                  subjectHint,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: AppTextStyles.caption.copyWith(
+                                    color: AppColors.primaryLight,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 10,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                            ],
+                            Text(
+                              title,
+                              style: AppTextStyles.bodyBold.copyWith(
+                                fontSize: 14,
+                                height: 1.35,
+                                color: isClaimed
+                                    ? AppColors.textTertiary
+                                    : (isCompleted || canClaim
+                                        ? AppColors.textPrimary
+                                        : AppColors.textSecondary),
+                              ),
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            if (xpReward != null || coinReward != null) ...[
+                              const SizedBox(height: 8),
+                              Wrap(
+                                spacing: 6,
+                                runSpacing: 4,
                                 children: [
-                                  if (subjectHint != null) ...[
-                                    Text(
-                                      subjectHint,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: AppTextStyles.caption.copyWith(
-                                        color: AppColors.primaryLight,
-                                        fontWeight: FontWeight.w700,
-                                        fontSize: 11,
+                                  if (coinReward != null)
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.coinGold
+                                            .withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(
+                                          color: AppColors.coinGold
+                                              .withValues(alpha: 0.28),
+                                        ),
+                                      ),
+                                      child: Text(
+                                        CurrencyLabels.rewardShort(
+                                          coinReward.toInt(),
+                                        ),
+                                        style: AppTextStyles.caption.copyWith(
+                                          color: AppColors.coinGold,
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w700,
+                                        ),
                                       ),
                                     ),
-                                    const SizedBox(height: 2),
-                                  ],
-                                  Text(
-                                    title,
-                                    style: AppTextStyles.bodyMedium.copyWith(
-                                      color: isCompleted || isClaimed
-                                          ? AppColors.textPrimary
-                                          : AppColors.textSecondary,
-                                    ),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  if (xpReward != null ||
-                                      coinReward != null) ...[
-                                    const SizedBox(height: 2),
-                                    Row(
-                                      children: [
-                                        if (coinReward != null) ...[
-                                          Text(
-                                            CurrencyLabels.rewardShort(
-                                                coinReward.toInt()),
-                                            style:
-                                                AppTextStyles.caption.copyWith(
-                                              color: AppColors.coinGold,
-                                              fontSize: 11,
-                                              fontWeight: FontWeight.w600,
-                                            ),
+                                  if (xpReward != null)
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.xpGold
+                                            .withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(
+                                          color: AppColors.xpGold
+                                              .withValues(alpha: 0.28),
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Icon(
+                                            Icons.bolt_rounded,
+                                            size: 13,
+                                            color: AppColors.xpGold,
                                           ),
-                                          if (xpReward != null)
-                                            const SizedBox(width: 8),
-                                        ],
-                                        if (xpReward != null)
+                                          const SizedBox(width: 2),
                                           Text(
                                             '+${xpReward.toInt()} XP',
                                             style:
                                                 AppTextStyles.caption.copyWith(
                                               color: AppColors.xpGold,
                                               fontSize: 11,
-                                              fontWeight: FontWeight.w600,
+                                              fontWeight: FontWeight.w700,
                                             ),
                                           ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
-                                  ],
                                 ],
                               ),
-                            ),
-                            const SizedBox(width: 10),
-                            SizedBox(
-                              height: 34,
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                  ),
-                                  minimumSize: const Size(0, 34),
-                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                  backgroundColor: canClaim
-                                      ? AppColors.successNeon
-                                      : AppColors.bgTertiary,
-                                  foregroundColor: canClaim
-                                      ? Colors.black
-                                      : AppColors.textSecondary,
-                                  elevation: canClaim ? 4 : 0,
-                                  disabledBackgroundColor: AppColors.bgTertiary,
-                                  disabledForegroundColor:
-                                      AppColors.textTertiary,
-                                  textStyle: AppTextStyles.labelSmall.copyWith(
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 11,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(999),
-                                  ),
-                                ),
-                                onPressed: isClaimed
-                                    ? null
-                                    : () async {
-                                        if (canClaim) {
-                                          try {
-                                            final api =
-                                                Provider.of<ApiService>(
-                                              context,
-                                              listen: false,
-                                            );
-                                            await api.claimQuest(
-                                              questWrapper['id'] as String,
-                                            );
-                                            if (!mounted) return;
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(
-                                              const SnackBar(
-                                                content: Row(
-                                                  children: [
-                                                    Icon(Icons.celebration,
-                                                        color: Colors.white),
-                                                    SizedBox(width: 8),
-                                                    Text(
-                                                        'Đã nhận phần thưởng!'),
-                                                  ],
-                                                ),
-                                                backgroundColor:
-                                                    AppColors.successNeon,
-                                              ),
-                                            );
-                                            await _loadDashboard();
-                                          } catch (e) {
-                                            if (!mounted) return;
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(
-                                              SnackBar(
-                                                content: Text('Lỗi: $e'),
-                                                backgroundColor:
-                                                    AppColors.errorNeon,
-                                              ),
-                                            );
-                                          }
-                                        } else {
-                                          if (!mounted) return;
-                                          HapticFeedback.lightImpact();
-                                          _navigateForQuestType(questType);
-                                        }
-                                      },
-                                child: FittedBox(
-                                  fit: BoxFit.scaleDown,
-                                  alignment: Alignment.center,
-                                  child: Text(
-                                    _questPrimaryCtaLabel(
-                                      canClaim,
-                                      isClaimed,
-                                    ),
-                                    maxLines: 1,
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                              ),
-                            ),
+                            ],
                           ],
                         ),
-                        if (!isCompleted && !isClaimed) ...[
-                          const SizedBox(height: 10),
-                          LinearProgressIndicator(
-                            value: percent,
-                            minHeight: 8,
-                            backgroundColor: AppColors.bgTertiary,
-                            valueColor: const AlwaysStoppedAnimation<Color>(
-                              AppColors.successNeon,
-                            ),
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            '${progressNum.toInt()} / ${targetNum.toInt()} hoàn thành',
-                            style: AppTextStyles.caption.copyWith(
-                              color: AppColors.textTertiary,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  );
-                }).toList(),
-              ),
-            if (completedUnclaimed.isNotEmpty) ...[
-              const SizedBox(height: 14),
-              const Divider(color: Color(0x222D363D)),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Text(
-                    'Phần thưởng khi xong',
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
+                      ),
+                      const SizedBox(width: 8),
+                      _buildDailyQuestCtaPill(
+                        canClaim: canClaim,
+                        isClaimed: isClaimed,
+                      ),
+                    ],
                   ),
-                  const Spacer(),
-                  RichText(
-                    text: TextSpan(
-                      children: [
-                        TextSpan(
-                          text:
-                              '${CurrencyLabels.rewardShort(sumCoins.toInt())} ',
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: AppColors.coinGold,
-                            fontWeight: FontWeight.w700,
+                  if (!isCompleted && !isClaimed) ...[
+                    const SizedBox(height: 12),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(999),
+                      child: Container(
+                        height: 10,
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: const Color(0x332D363D),
+                          ),
+                          color: AppColors.bgSecondary,
+                        ),
+                        alignment: Alignment.centerLeft,
+                        child: LinearProgressIndicator(
+                          value: percent,
+                          minHeight: 10,
+                          backgroundColor: Colors.transparent,
+                          valueColor: const AlwaysStoppedAnimation<Color>(
+                            AppColors.successNeon,
                           ),
                         ),
-                        TextSpan(
-                          text: '+${sumXP.toInt()} XP',
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: AppColors.xpGold,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 6),
+                    Text(
+                      '${progressNum.toInt()} / ${targetNum.toInt()} hoàn thành',
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.textTertiary,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
                 ],
               ),
-            ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDailyQuestCtaPill({
+    required bool canClaim,
+    required bool isClaimed,
+  }) {
+    final label = _questPrimaryCtaLabel(canClaim, isClaimed);
+    if (isClaimed) {
+      return Container(
+        height: 34,
+        constraints: const BoxConstraints(minWidth: 72),
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: AppColors.bgSecondary,
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: const Color(0x552D363D)),
+        ),
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            label,
+            style: AppTextStyles.labelSmall.copyWith(
+              fontWeight: FontWeight.w700,
+              fontSize: 11,
+              color: AppColors.textTertiary,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+    }
+    if (canClaim) {
+      return Container(
+        height: 34,
+        constraints: const BoxConstraints(minWidth: 72),
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: AppColors.successNeon,
+          borderRadius: BorderRadius.circular(999),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.successNeon.withValues(alpha: 0.42),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
           ],
+        ),
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            label,
+            style: AppTextStyles.labelSmall.copyWith(
+              fontWeight: FontWeight.w800,
+              fontSize: 11,
+              color: Colors.black87,
+              letterSpacing: 0.2,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+    }
+    return Container(
+      height: 34,
+      constraints: const BoxConstraints(minWidth: 72),
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(999),
+        gradient: AppGradients.primary,
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.purpleNeon.withValues(alpha: 0.35),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Text(
+          label,
+          style: AppTextStyles.labelSmall.copyWith(
+            fontWeight: FontWeight.w800,
+            fontSize: 11,
+            color: Colors.white,
+            letterSpacing: 0.45,
+          ),
+          textAlign: TextAlign.center,
         ),
       ),
     );
