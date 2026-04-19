@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../colors.dart';
 
 /// Tier 1–20 từ id `af_01` … `af_20` (đồng bộ backend catalog).
@@ -11,20 +12,40 @@ int? avatarFrameTier(String? frameId) {
   return n;
 }
 
-/// Đường kính vùng chứa avatar + khung (để căn layout header).
+/// Tùy chỉnh tỉ lệ “tràn viền” khi có file PNG (ảnh vuông, lỗ trong suốt ở giữa).
+/// Ví dụ cánh / tai nhô ra: tăng scale cho khớp art.
+const Map<String, double> kAvatarFramePngScale = {
+  // 'af_20': 1.72,
+};
+
+/// Kích thước ô layout (avatar + khung), dùng khi căn header / list.
 double avatarFrameOuterDiameter(double innerDiameter, String? frameId) {
   final tier = avatarFrameTier(frameId);
   if (tier == null) return innerDiameter;
-  final t = tier.clamp(1, 20);
+  final id = frameId!;
+  final g = _gradientFrameOuterDiameter(innerDiameter, id);
+  final p = _pngSlotDiameter(innerDiameter, tier.clamp(1, 20), id);
+  return math.max(g, p);
+}
+
+double _gradientFrameOuterDiameter(double inner, String frameId) {
+  final t = avatarFrameTier(frameId)!.clamp(1, 20);
   final ring = 1.4 + (t / 20) * 3.2;
-  return innerDiameter +
+  return inner +
       ring * 2 +
       (t >= 12 ? 4.0 : 0) +
       (t >= 17 ? 4.0 : 0);
 }
 
-/// Viền / glow quanh avatar — tier cao = nhiều lớp & glow hơn.
-class AvatarFrameRing extends StatelessWidget {
+/// Ô dành cho PNG tràn viền (lớn hơn avatar — tier cao thường chi tiết nhiều hơn).
+double _pngSlotDiameter(double inner, int tier, String frameId) {
+  final scale = kAvatarFramePngScale[frameId] ?? (1.38 + tier * 0.017);
+  return inner * scale.clamp(1.32, 1.88);
+}
+
+/// Viền avatar: ưu tiên **PNG** `assets/avatar_frames/{frameId}.png` (trong suốt giữa, chi tiết tràn viền);
+/// nếu chưa có file thì dùng vẽ gradient (fallback).
+class AvatarFrameRing extends StatefulWidget {
   final String? frameId;
   final double diameter;
   final Widget child;
@@ -37,18 +58,139 @@ class AvatarFrameRing extends StatelessWidget {
   });
 
   @override
+  State<AvatarFrameRing> createState() => _AvatarFrameRingState();
+}
+
+class _AvatarFrameRingState extends State<AvatarFrameRing> {
+  static final Map<String, bool> _pngExists = {};
+
+  bool? _usePng;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkPng();
+  }
+
+  @override
+  void didUpdateWidget(covariant AvatarFrameRing oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.frameId != widget.frameId) {
+      _usePng = null;
+      _checkPng();
+    }
+  }
+
+  void _checkPng() {
+    final id = widget.frameId;
+    final tier = avatarFrameTier(id);
+    if (id == null || tier == null) {
+      _usePng = false;
+      return;
+    }
+    if (_pngExists.containsKey(id)) {
+      _usePng = _pngExists[id];
+      return;
+    }
+    final path = 'assets/avatar_frames/$id.png';
+    rootBundle.load(path).then((_) {
+      _pngExists[id] = true;
+      if (mounted) setState(() => _usePng = true);
+    }).catchError((_) {
+      _pngExists[id] = false;
+      if (mounted) setState(() => _usePng = false);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final tier = avatarFrameTier(frameId);
+    final id = widget.frameId;
+    final tier = avatarFrameTier(id);
     if (tier == null) {
-      return child;
+      return widget.child;
     }
 
-    final t = tier.clamp(1, 20);
-    final ring = 1.4 + (t / 20) * 3.2;
-    final glow = 3.0 + (t / 20) * 14.0;
+    final inner = widget.diameter;
+    final outer = avatarFrameOuterDiameter(inner, id);
 
-    final colors = _tierColors(t);
-    final outer = avatarFrameOuterDiameter(diameter, frameId);
+    if (_usePng == null) {
+      return SizedBox(
+        width: outer,
+        height: outer,
+        child: Center(
+          child: _GradientFrameBody(
+            frameId: id!,
+            diameter: inner,
+            child: widget.child,
+          ),
+        ),
+      );
+    }
+
+    if (_usePng == true) {
+      return SizedBox(
+        width: outer,
+        height: outer,
+        child: Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.center,
+          children: [
+            Center(
+              child: SizedBox(
+                width: inner,
+                height: inner,
+                child: widget.child,
+              ),
+            ),
+            Positioned.fill(
+              child: IgnorePointer(
+                child: Image.asset(
+                  'assets/avatar_frames/$id.png',
+                  fit: BoxFit.contain,
+                  filterQuality: FilterQuality.high,
+                  alignment: Alignment.center,
+                  gaplessPlayback: true,
+                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return SizedBox(
+      width: outer,
+      height: outer,
+      child: Center(
+        child: _GradientFrameBody(
+          frameId: id!,
+          diameter: inner,
+          child: widget.child,
+        ),
+      ),
+    );
+  }
+}
+
+class _GradientFrameBody extends StatelessWidget {
+  final String frameId;
+  final double diameter;
+  final Widget child;
+
+  const _GradientFrameBody({
+    required this.frameId,
+    required this.diameter,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final tier = avatarFrameTier(frameId)!.clamp(1, 20);
+    final ring = 1.4 + (tier / 20) * 3.2;
+    final glow = 3.0 + (tier / 20) * 14.0;
+    final colors = _tierColors(tier);
+    final outer = _gradientFrameOuterDiameter(diameter, frameId);
 
     return SizedBox(
       width: outer,
@@ -57,12 +199,12 @@ class AvatarFrameRing extends StatelessWidget {
         clipBehavior: Clip.none,
         alignment: Alignment.center,
         children: [
-          if (t >= 15)
+          if (tier >= 15)
             Positioned.fill(
               child: CustomPaint(
                 painter: _SparklePainter(
-                  color: colors.accent.withValues(alpha: 0.35 + (t / 80)),
-                  count: 5 + t ~/ 3,
+                  color: colors.accent.withValues(alpha: 0.35 + (tier / 80)),
+                  count: 5 + tier ~/ 3,
                 ),
               ),
             ),
@@ -80,9 +222,9 @@ class AvatarFrameRing extends StatelessWidget {
                 BoxShadow(
                   color: colors.glow.withValues(alpha: 0.45),
                   blurRadius: glow,
-                  spreadRadius: t >= 10 ? 0.5 : 0,
+                  spreadRadius: tier >= 10 ? 0.5 : 0,
                 ),
-                if (t >= 8)
+                if (tier >= 8)
                   BoxShadow(
                     color: colors.accent.withValues(alpha: 0.25),
                     blurRadius: glow * 0.6,
@@ -106,8 +248,8 @@ class AvatarFrameRing extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: colors.accent.withValues(alpha: 0.55 + (t / 60)),
-                    width: t >= 14 ? 1.8 : 1.0,
+                    color: colors.accent.withValues(alpha: 0.55 + (tier / 60)),
+                    width: tier >= 14 ? 1.8 : 1.0,
                   ),
                 ),
                 clipBehavior: Clip.antiAlias,
