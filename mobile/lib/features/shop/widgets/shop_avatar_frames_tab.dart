@@ -69,11 +69,12 @@ class ShopAvatarFramesTab extends StatelessWidget {
                     crossAxisCount: cols,
                     crossAxisSpacing: 10,
                     mainAxisSpacing: 10,
+                    // width/height — tăng số này để ô thấp hơn (ít khoảng trống dọc).
                     childAspectRatio: cols >= 4
-                        ? 0.52
+                        ? 0.68
                         : cols >= 3
-                            ? 0.56
-                            : 0.62,
+                            ? 0.74
+                            : 0.82,
                   ),
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
@@ -234,34 +235,37 @@ class _FrameCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.bgSecondary,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isEquipped
               ? AppColors.successNeon.withValues(alpha: 0.45)
               : const Color(0x332D363D),
         ),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
+      child: Align(
+        alignment: Alignment.topCenter,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(8, 8, 8, 6),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
             Stack(
               clipBehavior: Clip.none,
               alignment: Alignment.center,
               children: [
                 SizedBox(
-                  height: 72,
+                  height: 56,
                   child: Center(
                     child: AvatarFrameRing(
                       frameId: id,
-                      diameter: 44,
+                      diameter: 36,
                       child: ClipOval(
                         child: Container(
                           color: AppColors.bgTertiary,
                           child: Icon(
                             Icons.person_rounded,
-                            size: 24,
+                            size: 20,
                             color: AppColors.textTertiary,
                           ),
                         ),
@@ -274,16 +278,16 @@ class _FrameCard extends StatelessWidget {
                   right: 0,
                   child: Container(
                     padding:
-                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                     decoration: BoxDecoration(
                       color: AppColors.bgTertiary,
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: BorderRadius.circular(5),
                     ),
                     child: Text(
                       'T$tier',
                       style: AppTextStyles.caption.copyWith(
                         color: AppColors.textTertiary,
-                        fontSize: 10,
+                        fontSize: 9,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -291,19 +295,19 @@ class _FrameCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 4),
             Text(
               name,
-              maxLines: 2,
+              maxLines: 1,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
-              style: AppTextStyles.labelMedium.copyWith(
+              style: AppTextStyles.labelSmall.copyWith(
                 color: AppColors.textPrimary,
                 fontWeight: FontWeight.w800,
-                height: 1.2,
+                height: 1.15,
               ),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 3),
             _PriceRow(
               mode: mode,
               priceCoins: priceCoins,
@@ -311,7 +315,7 @@ class _FrameCard extends StatelessWidget {
               compact: true,
             ),
             if (minLevel > 1) ...[
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
               Text(
                 'Cấp $minLevel',
                 textAlign: TextAlign.center,
@@ -319,11 +323,11 @@ class _FrameCard extends StatelessWidget {
                   color: lockedByLevel
                       ? AppColors.warningNeon
                       : AppColors.textTertiary,
-                  fontSize: 10,
+                  fontSize: 9,
+                  height: 1,
                 ),
               ),
             ],
-            const Spacer(),
             const SizedBox(height: 6),
             if (owned && !isEquipped)
               SizedBox(
@@ -334,22 +338,24 @@ class _FrameCard extends StatelessWidget {
                     await onEquip(id);
                   },
                   style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    minimumSize: const Size(0, 32),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     foregroundColor: AppColors.primaryLight,
                     side: BorderSide(
                       color: AppColors.primaryLight.withValues(alpha: 0.5),
                     ),
                   ),
-                  child: const Text('Đeo'),
+                  child: const Text('Đeo', style: TextStyle(fontSize: 13)),
                 ),
               ),
             if (isEquipped)
               Container(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                    const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
                 decoration: BoxDecoration(
                   color: AppColors.successNeon.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
                   'Đang đeo',
@@ -357,6 +363,7 @@ class _FrameCard extends StatelessWidget {
                   style: AppTextStyles.caption.copyWith(
                     color: AppColors.successNeon,
                     fontWeight: FontWeight.w800,
+                    fontSize: 12,
                   ),
                 ),
               ),
@@ -378,7 +385,9 @@ class _FrameCard extends StatelessWidget {
                             priceDiamonds,
                           ),
                   style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    minimumSize: const Size(0, 32),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     backgroundColor: canPurchase && !lockedByLevel
                         ? AppColors.purpleNeon
                         : AppColors.bgTertiary,
@@ -386,21 +395,31 @@ class _FrameCard extends StatelessWidget {
                   ),
                   child: Text(
                     lockedByLevel ? 'Khóa cấp' : 'Mua',
+                    style: const TextStyle(fontSize: 13),
                   ),
                 ),
               ),
             if (owned && isEquipped)
               TextButton(
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 0),
+                  minimumSize: const Size(0, 28),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
                 onPressed: () async {
                   HapticFeedback.lightImpact();
                   await onEquip(null);
                 },
                 child: const Text(
                   'Gỡ khung',
-                  style: TextStyle(color: AppColors.textTertiary),
+                  style: TextStyle(
+                    color: AppColors.textTertiary,
+                    fontSize: 11,
+                  ),
                 ),
               ),
           ],
+        ),
         ),
       ),
     );
