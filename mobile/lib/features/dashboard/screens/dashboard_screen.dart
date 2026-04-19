@@ -777,59 +777,140 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(18),
         gradient: LinearGradient(
-          colors: [
-            AppColors.purpleNeon.withValues(alpha: 0.15),
-            AppColors.primaryLight.withValues(alpha: 0.08),
-          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.purpleNeon.withValues(alpha: 0.2)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (body.isNotEmpty) ...[
-            Text(
-              body,
-              style: AppTextStyles.bodySmall
-                  .copyWith(color: AppColors.textSecondary),
-            ),
-            const SizedBox(height: 10),
+          colors: [
+            AppColors.purpleNeon.withValues(alpha: 0.12),
+            AppColors.bgSecondary,
+            AppColors.surfaceContainerLow.withValues(alpha: 0.92),
           ],
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('💬', style: TextStyle(fontSize: 18)),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '"$quote"',
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.textPrimary,
-                        fontStyle: FontStyle.italic,
-                      ),
-                    ),
-                    if (author.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Text(
-                          '— $author',
-                          style: AppTextStyles.caption
-                              .copyWith(color: AppColors.textTertiary),
+          stops: const [0.0, 0.42, 1.0],
+        ),
+        border: Border.all(
+          color: AppColors.primaryLight.withValues(alpha: 0.22),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.purpleNeon.withValues(alpha: 0.1),
+            blurRadius: 22,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            right: -6,
+            bottom: -4,
+            child: Icon(
+              Icons.format_quote_rounded,
+              size: 96,
+              color: AppColors.purpleNeon.withValues(alpha: 0.07),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (body.isNotEmpty) ...[
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 42,
+                        height: 42,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(14),
+                          gradient: AppGradients.primary,
+                          boxShadow: [
+                            BoxShadow(
+                              color:
+                                  AppColors.purpleNeon.withValues(alpha: 0.35),
+                              blurRadius: 14,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.auto_awesome_rounded,
+                          color: Colors.white,
+                          size: 23,
                         ),
                       ),
-                  ],
-                ),
-              ),
-            ],
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          body,
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            color: AppColors.textPrimary,
+                            height: 1.5,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (quote.isNotEmpty) const SizedBox(height: 18),
+                ],
+                if (quote.isNotEmpty)
+                  IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Container(
+                          width: 4,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(4),
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                AppColors.successNeon.withValues(alpha: 0.95),
+                                AppColors.purpleNeon.withValues(alpha: 0.88),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '"$quote"',
+                                style: AppTextStyles.bodyLarge.copyWith(
+                                  color: AppColors.textPrimary,
+                                  fontStyle: FontStyle.italic,
+                                  height: 1.5,
+                                  fontWeight: FontWeight.w500,
+                                  letterSpacing: 0.2,
+                                ),
+                              ),
+                              if (author.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 10),
+                                  child: Text(
+                                    '— $author',
+                                    style: AppTextStyles.caption.copyWith(
+                                      color: AppColors.textTertiary,
+                                      fontWeight: FontWeight.w600,
+                                      letterSpacing: 0.2,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
           ),
         ],
       ),
