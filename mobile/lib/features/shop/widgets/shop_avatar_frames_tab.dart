@@ -67,14 +67,14 @@ class ShopAvatarFramesTab extends StatelessWidget {
                 return SliverGrid(
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: cols,
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10,
-                    // width/height — tăng số này để ô thấp hơn (ít khoảng trống dọc).
+                    crossAxisSpacing: 8,
+                    mainAxisSpacing: 8,
+                    // width/height — càng lớn ô càng thấp (ít trống dọc).
                     childAspectRatio: cols >= 4
-                        ? 0.68
+                        ? 0.78
                         : cols >= 3
-                            ? 0.74
-                            : 0.82,
+                            ? 0.88
+                            : 0.98,
                   ),
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
@@ -222,7 +222,6 @@ class _FrameCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final id = frame['id'] as String? ?? '';
     final name = frame['name'] as String? ?? id;
-    final tier = (frame['tier'] as num?)?.toInt() ?? 1;
     final minLevel = (frame['minLevel'] as num?)?.toInt() ?? 1;
     final mode = frame['paymentMode'] as String? ?? 'coins';
     final priceCoins = (frame['priceCoins'] as num?)?.toInt();
@@ -235,7 +234,7 @@ class _FrameCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.bgSecondary,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(
           color: isEquipped
               ? AppColors.successNeon.withValues(alpha: 0.45)
@@ -245,57 +244,31 @@ class _FrameCard extends StatelessWidget {
       child: Align(
         alignment: Alignment.topCenter,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(8, 8, 8, 6),
+          padding: const EdgeInsets.fromLTRB(6, 6, 6, 4),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-            Stack(
-              clipBehavior: Clip.none,
-              alignment: Alignment.center,
-              children: [
-                SizedBox(
-                  height: 56,
-                  child: Center(
-                    child: AvatarFrameRing(
-                      frameId: id,
-                      diameter: 36,
-                      child: ClipOval(
-                        child: Container(
-                          color: AppColors.bgTertiary,
-                          child: Icon(
-                            Icons.person_rounded,
-                            size: 20,
-                            color: AppColors.textTertiary,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  top: 0,
-                  right: 0,
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                    decoration: BoxDecoration(
+            SizedBox(
+              height: 48,
+              child: Center(
+                child: AvatarFrameRing(
+                  frameId: id,
+                  diameter: 32,
+                  child: ClipOval(
+                    child: Container(
                       color: AppColors.bgTertiary,
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    child: Text(
-                      'T$tier',
-                      style: AppTextStyles.caption.copyWith(
+                      child: Icon(
+                        Icons.person_rounded,
+                        size: 18,
                         color: AppColors.textTertiary,
-                        fontSize: 9,
-                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
                 ),
-              ],
+              ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 2),
             Text(
               name,
               maxLines: 1,
@@ -304,10 +277,11 @@ class _FrameCard extends StatelessWidget {
               style: AppTextStyles.labelSmall.copyWith(
                 color: AppColors.textPrimary,
                 fontWeight: FontWeight.w800,
-                height: 1.15,
+                height: 1.1,
+                fontSize: 11,
               ),
             ),
-            const SizedBox(height: 3),
+            const SizedBox(height: 2),
             _PriceRow(
               mode: mode,
               priceCoins: priceCoins,
@@ -315,7 +289,7 @@ class _FrameCard extends StatelessWidget {
               compact: true,
             ),
             if (minLevel > 1) ...[
-              const SizedBox(height: 2),
+              const SizedBox(height: 1),
               Text(
                 'Cấp $minLevel',
                 textAlign: TextAlign.center,
@@ -323,12 +297,12 @@ class _FrameCard extends StatelessWidget {
                   color: lockedByLevel
                       ? AppColors.warningNeon
                       : AppColors.textTertiary,
-                  fontSize: 9,
+                  fontSize: 8,
                   height: 1,
                 ),
               ),
             ],
-            const SizedBox(height: 6),
+            const SizedBox(height: 4),
             if (owned && !isEquipped)
               SizedBox(
                 width: double.infinity,
@@ -338,24 +312,24 @@ class _FrameCard extends StatelessWidget {
                     await onEquip(id);
                   },
                   style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    minimumSize: const Size(0, 32),
+                    padding: const EdgeInsets.symmetric(vertical: 2),
+                    minimumSize: const Size(0, 28),
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     foregroundColor: AppColors.primaryLight,
                     side: BorderSide(
                       color: AppColors.primaryLight.withValues(alpha: 0.5),
                     ),
                   ),
-                  child: const Text('Đeo', style: TextStyle(fontSize: 13)),
+                  child: const Text('Đeo', style: TextStyle(fontSize: 12)),
                 ),
               ),
             if (isEquipped)
               Container(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                    const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
                 decoration: BoxDecoration(
                   color: AppColors.successNeon.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(5),
                 ),
                 child: Text(
                   'Đang đeo',
@@ -363,7 +337,7 @@ class _FrameCard extends StatelessWidget {
                   style: AppTextStyles.caption.copyWith(
                     color: AppColors.successNeon,
                     fontWeight: FontWeight.w800,
-                    fontSize: 12,
+                    fontSize: 11,
                   ),
                 ),
               ),
@@ -385,8 +359,8 @@ class _FrameCard extends StatelessWidget {
                             priceDiamonds,
                           ),
                   style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    minimumSize: const Size(0, 32),
+                    padding: const EdgeInsets.symmetric(vertical: 2),
+                    minimumSize: const Size(0, 28),
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     backgroundColor: canPurchase && !lockedByLevel
                         ? AppColors.purpleNeon
@@ -395,15 +369,15 @@ class _FrameCard extends StatelessWidget {
                   ),
                   child: Text(
                     lockedByLevel ? 'Khóa cấp' : 'Mua',
-                    style: const TextStyle(fontSize: 13),
+                    style: const TextStyle(fontSize: 12),
                   ),
                 ),
               ),
             if (owned && isEquipped)
               TextButton(
                 style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 0),
-                  minimumSize: const Size(0, 28),
+                  padding: EdgeInsets.zero,
+                  minimumSize: const Size(0, 22),
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
                 onPressed: () async {
@@ -414,7 +388,7 @@ class _FrameCard extends StatelessWidget {
                   'Gỡ khung',
                   style: TextStyle(
                     color: AppColors.textTertiary,
-                    fontSize: 11,
+                    fontSize: 10,
                   ),
                 ),
               ),
@@ -560,7 +534,7 @@ class _PriceRow extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
         children: [
-          const GtuCoinIcon(size: 16),
+          GtuCoinIcon(size: compact ? 14 : 16),
           const SizedBox(width: 4),
           Text(
             '$priceCoins ${CurrencyLabels.gtuShort}',
@@ -569,6 +543,7 @@ class _PriceRow extends StatelessWidget {
             style: AppTextStyles.caption.copyWith(
               color: AppColors.coinGold,
               fontWeight: FontWeight.w700,
+              fontSize: compact ? 10 : 12,
             ),
           ),
         ],
@@ -583,8 +558,8 @@ class _PriceRow extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.diamond_rounded,
-              color: AppColors.primaryLight, size: 16),
+          Icon(Icons.diamond_rounded,
+              color: AppColors.primaryLight, size: compact ? 14 : 16),
           const SizedBox(width: 4),
           Text(
             compact ? '$priceDiamonds 💎' : '$priceDiamonds kim cương',
@@ -593,6 +568,7 @@ class _PriceRow extends StatelessWidget {
             style: AppTextStyles.caption.copyWith(
               color: AppColors.primaryLight,
               fontWeight: FontWeight.w700,
+              fontSize: compact ? 10 : 12,
             ),
           ),
         ],
@@ -616,37 +592,37 @@ class _PriceRow extends StatelessWidget {
                   : MainAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                const GtuCoinIcon(size: 14),
-                const SizedBox(width: 4),
+                GtuCoinIcon(size: compact ? 12 : 14),
+                const SizedBox(width: 3),
                 Text(
                   '$priceCoins ${CurrencyLabels.gtuShort}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.caption.copyWith(
                     color: AppColors.coinGold,
-                    fontSize: 11,
+                    fontSize: compact ? 10 : 11,
                   ),
                 ),
               ],
             ),
           if (priceDiamonds != null) ...[
-            const SizedBox(height: 2),
+            SizedBox(height: compact ? 1 : 2),
             Row(
               mainAxisAlignment: compact
                   ? MainAxisAlignment.center
                   : MainAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.diamond_rounded,
-                    color: AppColors.primaryLight, size: 14),
-                const SizedBox(width: 4),
+                Icon(Icons.diamond_rounded,
+                    color: AppColors.primaryLight, size: compact ? 12 : 14),
+                const SizedBox(width: 3),
                 Text(
                   '$priceDiamonds 💎',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.caption.copyWith(
                     color: AppColors.primaryLight,
-                    fontSize: 11,
+                    fontSize: compact ? 10 : 11,
                   ),
                 ),
               ],
