@@ -12,7 +12,8 @@ import 'dotenv/config';
 import * as fs from 'fs';
 import * as path from 'path';
 import OpenAI from 'openai';
-import sharp from 'sharp';
+/** CommonJS callable export — tránh `import default` khi tsconfig không bật esModuleInterop. */
+import sharp = require('sharp');
 import { AVATAR_FRAMES_CATALOG } from '../src/avatar-frames/avatar-frames.catalog';
 
 const SIZE = 1024;
