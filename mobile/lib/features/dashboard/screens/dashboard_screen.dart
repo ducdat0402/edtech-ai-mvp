@@ -969,15 +969,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                   final title = (lesson['title'] as String?) ?? 'Bài học';
                   final subjectName = lesson['subjectName'] as String?;
+                  final domainName = lesson['domainName'] as String?;
+                  final topicName = lesson['topicName'] as String?;
                   final isLocked = (lesson['isLocked'] as bool?) ?? false;
                   final diamondCost = (lesson['diamondCost'] as num?)?.toInt();
 
-                  // Dashboard hiện chỉ trả `title/icon/isLocked/diamondCost`.
-                  // Nếu backend sau này thêm expReward thì UI sẽ tự dùng giá trị đó.
                   final expReward =
                       (lesson['expReward'] as num?)?.toInt() ?? 50;
 
                   final subtitle = lesson['subtitle'] as String?;
+                  final subjectLineLabel =
+                      (subjectName != null && subjectName.trim().isNotEmpty)
+                          ? subjectName.trim()
+                          : '—';
 
                   final isFirst = index == 0;
 
@@ -1014,19 +1018,73 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    if (subjectName != null &&
-                                        subjectName.isNotEmpty) ...[
+                                    Container(
+                                      width: double.infinity,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 6,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.purpleNeon
+                                            .withValues(alpha: 0.12),
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(
+                                          color: AppColors.primaryLight
+                                              .withValues(alpha: 0.35),
+                                        ),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          const Icon(
+                                            Icons.menu_book_rounded,
+                                            size: 16,
+                                            color: AppColors.primaryLight,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: Text(
+                                              'Môn: $subjectLineLabel',
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: AppTextStyles.labelSmall
+                                                  .copyWith(
+                                                color: AppColors.primaryLight,
+                                                fontWeight: FontWeight.w800,
+                                                fontSize: 12,
+                                                height: 1.25,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    if (domainName != null &&
+                                        domainName.isNotEmpty) ...[
                                       Text(
-                                        subjectName,
-                                        maxLines: 1,
+                                        'Chương: $domainName',
+                                        maxLines: 2,
                                         overflow: TextOverflow.ellipsis,
                                         style: AppTextStyles.caption.copyWith(
-                                          color: AppColors.primaryLight,
-                                          fontWeight: FontWeight.w700,
+                                          color: AppColors.textSecondary,
+                                          fontWeight: FontWeight.w600,
                                           fontSize: 11,
                                         ),
                                       ),
                                       const SizedBox(height: 4),
+                                    ],
+                                    if (topicName != null &&
+                                        topicName.isNotEmpty) ...[
+                                      Text(
+                                        'Chủ đề: $topicName',
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: AppTextStyles.caption.copyWith(
+                                          color: AppColors.textTertiary,
+                                          fontSize: 11,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
                                     ],
                                     Text(
                                       title,

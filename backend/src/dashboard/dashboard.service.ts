@@ -9,6 +9,8 @@ import { LearningNodesService } from '../learning-nodes/learning-nodes.service';
 import { QuestsService } from '../quests/quests.service';
 import { LearningNode } from '../learning-nodes/entities/learning-node.entity';
 import { UserProgress } from '../user-progress/entities/user-progress.entity';
+import { Domain } from '../domains/entities/domain.entity';
+import { Topic } from '../topics/entities/topic.entity';
 import { UnlockTransactionsService } from '../unlock-transactions/unlock-transactions.service';
 import { FREE_LESSONS_PER_DAY } from '../unlock-transactions/lesson-access.constants';
 
@@ -26,6 +28,10 @@ export class DashboardService {
     private nodeRepository: Repository<LearningNode>,
     @InjectRepository(UserProgress)
     private progressRepository: Repository<UserProgress>,
+    @InjectRepository(Domain)
+    private domainRepository: Repository<Domain>,
+    @InjectRepository(Topic)
+    private topicRepository: Repository<Topic>,
   ) {}
 
   /**
@@ -209,15 +215,51 @@ export class DashboardService {
           .filter((n) => !completedNodeIds.includes(n.id))
           .slice(0, 2);
 
+        const domainIds = [
+          ...new Set(
+            candidates.map((n) => n.domainId).filter((id): id is string => !!id),
+          ),
+        ];
+        const topicIds = [
+          ...new Set(
+            candidates.map((n) => n.topicId).filter((id): id is string => !!id),
+          ),
+        ];
+
+        const [domainRows, topicRows] = await Promise.all([
+          domainIds.length
+            ? this.domainRepository.find({
+                where: { id: In(domainIds) },
+                select: ['id', 'name'],
+              })
+            : Promise.resolve([] as Domain[]),
+          topicIds.length
+            ? this.topicRepository.find({
+                where: { id: In(topicIds) },
+                select: ['id', 'name'],
+              })
+            : Promise.resolve([] as Topic[]),
+        ]);
+
+        const domainNameById = new Map(domainRows.map((d) => [d.id, d.name] as const));
+        const topicNameById = new Map(topicRows.map((t) => [t.id, t.name] as const));
+
         const nextFreeLessons = await Promise.all(
           candidates.map(async (n) => {
             const access = await this.unlockService.canAccessNode(userId, n.id);
+            const desc = n.description?.trim();
             return {
               id: n.id,
               title: n.title,
+              subtitle: desc && desc.length > 0 ? desc : undefined,
               icon: n.metadata?.icon || '📖',
               subjectId: recentSubject.id,
               subjectName: recentSubject.name,
+              domainName: n.domainId
+                ? domainNameById.get(n.domainId)
+                : undefined,
+              topicName: n.topicId ? topicNameById.get(n.topicId) : undefined,
+              expReward: n.expReward ?? 0,
               isLocked: !access.canAccess,
               diamondCost: access.diamondCost ?? 50,
             };
