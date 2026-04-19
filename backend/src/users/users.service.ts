@@ -1459,7 +1459,15 @@ export class UsersService {
     const user = await this.usersRepository.findOne({
       where: { id: userId },
       // NOTE: must include avatarUrl, otherwise TypeORM returns it as undefined/null
-      select: ['id', 'fullName', 'avatarUrl', 'totalXP', 'role', 'createdAt'],
+      select: [
+        'id',
+        'fullName',
+        'avatarUrl',
+        'equippedAvatarFrameId',
+        'totalXP',
+        'role',
+        'createdAt',
+      ],
     });
     if (!user) {
       throw new NotFoundException('User not found');
@@ -1479,6 +1487,7 @@ export class UsersService {
       id: user.id,
       fullName: user.fullName || 'Anonymous',
       avatarUrl: user.avatarUrl ?? null,
+      avatarFrameId: user.equippedAvatarFrameId ?? null,
       totalXP: user.totalXP ?? 0,
       role: user.role,
       memberSince: user.createdAt?.toISOString?.() ?? null,

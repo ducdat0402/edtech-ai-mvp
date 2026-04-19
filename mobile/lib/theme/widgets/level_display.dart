@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:edtech_mobile/core/config/api_config.dart';
 import 'package:edtech_mobile/theme/widgets/gtu_coin_icon.dart';
+import 'package:edtech_mobile/theme/widgets/avatar_frame_ring.dart';
 import '../colors.dart';
 import '../gradients.dart';
 import '../text_styles.dart';
@@ -76,6 +77,8 @@ class LevelCard extends StatelessWidget {
   final int totalXP;
   final String displayName;
   final String? avatarUrl;
+  /// Khung shop (`af_01` …) — null = không viền.
+  final String? avatarFrameId;
   final VoidCallback? onAvatarTap;
   final VoidCallback? onShowTitles;
 
@@ -103,6 +106,7 @@ class LevelCard extends StatelessWidget {
     required this.totalXP,
     this.displayName = 'Bạn học',
     this.avatarUrl,
+    this.avatarFrameId,
     this.onAvatarTap,
     this.onShowTitles,
     this.topBarStrip = false,
@@ -145,55 +149,78 @@ class LevelCard extends StatelessWidget {
     final stripChipFont = lerpDouble(10, 9, tStrip)!;
     final stripDividerH = lerpDouble(14, 11, tStrip)!;
 
+    final hasFrame = avatarFrameTier(avatarFrameId) != null;
+    final slot = hasFrame
+        ? avatarFrameOuterDiameter(inner, avatarFrameId)
+        : outer;
+
+    final photo = ClipOval(
+      child: SizedBox(
+        width: inner,
+        height: inner,
+        child: hasPhoto
+            ? CachedNetworkImage(
+                imageUrl: resolvedAvatar,
+                fit: BoxFit.cover,
+                placeholder: (_, __) => Container(
+                  color: Colors.white.withValues(alpha: 0.15),
+                  child: Center(
+                    child: SizedBox(
+                      width: strip ? 14 : 18,
+                      height: strip ? 14 : 18,
+                      child: const CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  ),
+                ),
+                errorWidget: (_, __, ___) =>
+                    _levelNumberFallback(strip ? 14 : 18),
+              )
+            : _levelNumberFallback(strip ? 14 : 18),
+      ),
+    );
+
+    final Widget coreAvatar;
+    if (hasFrame) {
+      coreAvatar = AvatarFrameRing(
+        frameId: avatarFrameId,
+        diameter: inner,
+        child: photo,
+      );
+    } else {
+      coreAvatar = Container(
+        width: inner,
+        height: inner,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.95),
+            width: borderW,
+          ),
+          boxShadow: strip
+              ? []
+              : [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.25),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+        ),
+        child: photo,
+      );
+    }
+
     Widget avatar = SizedBox(
-      width: outer,
-      height: outer,
+      width: slot,
+      height: slot,
       child: Stack(
         clipBehavior: Clip.none,
         alignment: Alignment.center,
         children: [
-          Container(
-            width: inner,
-            height: inner,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.95), width: borderW),
-              boxShadow: strip
-                  ? []
-                  : [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.25),
-                        blurRadius: 6,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-            ),
-            child: ClipOval(
-              child: hasPhoto
-                  ? CachedNetworkImage(
-                      imageUrl: resolvedAvatar,
-                      fit: BoxFit.cover,
-                      placeholder: (_, __) => Container(
-                        color: Colors.white.withValues(alpha: 0.15),
-                        child: Center(
-                          child: SizedBox(
-                            width: strip ? 14 : 18,
-                            height: strip ? 14 : 18,
-                            child:
-                                const CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                        ),
-                      ),
-                      errorWidget: (_, __, ___) =>
-                          _levelNumberFallback(strip ? 14 : 18),
-                    )
-                  : _levelNumberFallback(strip ? 14 : 18),
-            ),
-          ),
+          Center(child: coreAvatar),
           Positioned(
-            left: strip ? -1.5 : -2,
-            bottom: strip ? -1.5 : -2,
+            left: hasFrame ? 0 : (strip ? -1.5 : -2),
+            bottom: hasFrame ? 0 : (strip ? -1.5 : -2),
             child: Container(
               padding: EdgeInsets.symmetric(
                 horizontal: strip ? 4 : 5,

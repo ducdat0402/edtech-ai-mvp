@@ -216,6 +216,8 @@ export class FriendsService {
         id: friend.id,
         fullName: friend.fullName,
         email: friend.email,
+        avatarUrl: friend.avatarUrl ?? null,
+        avatarFrameId: friend.equippedAvatarFrameId ?? null,
         level: curr?.level || 1,
         currentStreak: curr?.currentStreak || 0,
         totalXP: curr?.xp || 0,

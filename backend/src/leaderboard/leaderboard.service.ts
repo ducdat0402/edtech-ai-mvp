@@ -37,6 +37,7 @@ export class LeaderboardService {
         'user.fullName',
         'user.totalXP',
         'user.avatarUrl',
+        'user.equippedAvatarFrameId',
       ])
       .orderBy('user.totalXP', 'DESC')
       .addOrderBy('user.updatedAt', 'ASC')
@@ -68,6 +69,7 @@ export class LeaderboardService {
         coins: currency?.coins || 0,
         currentStreak: currency?.currentStreak || 0,
         avatar: user.avatarUrl || undefined,
+        avatarFrameId: user.equippedAvatarFrameId ?? null,
       };
     });
 
@@ -120,6 +122,7 @@ export class LeaderboardService {
         'user.fullName',
         'user.totalXP',
         'user.avatarUrl',
+        'user.equippedAvatarFrameId',
       ])
       .orderBy('user.totalXP', 'DESC')
       .addOrderBy('user.updatedAt', 'ASC')
@@ -152,6 +155,7 @@ export class LeaderboardService {
         coins: currency?.coins || 0,
         currentStreak: currency?.currentStreak || 0,
         avatar: user.avatarUrl || undefined,
+        avatarFrameId: user.equippedAvatarFrameId ?? null,
       };
     });
 
@@ -212,7 +216,14 @@ export class LeaderboardService {
     const userIds = subjectProgress.map((p) => p.userId);
     const users = await this.usersRepository.find({
       where: userIds.map((id) => ({ id })),
-      select: ['id', 'email', 'fullName', 'totalXP', 'avatarUrl'],
+      select: [
+        'id',
+        'email',
+        'fullName',
+        'totalXP',
+        'avatarUrl',
+        'equippedAvatarFrameId',
+      ],
     });
 
     const userMap = new Map(users.map((u) => [u.id, u]));
@@ -238,6 +249,7 @@ export class LeaderboardService {
         coins: currency?.coins || 0,
         currentStreak: currency?.currentStreak || 0,
         avatar: user?.avatarUrl || undefined,
+        avatarFrameId: user?.equippedAvatarFrameId ?? null,
       };
     });
 

@@ -645,6 +645,7 @@ class _PodiumItem extends StatelessWidget {
         LeaderboardUserAvatar(
           displayName: name,
           imageUrl: entry['avatar'] as String?,
+          avatarFrameId: entry['avatarFrameId'] as String?,
           size: 40,
           onTap: userId != null && userId.isNotEmpty ? openProfile : null,
         ),
@@ -755,6 +756,7 @@ class _WeeklyEntryCard extends StatelessWidget {
           LeaderboardUserAvatar(
             displayName: name,
             imageUrl: entry['avatar'] as String?,
+            avatarFrameId: entry['avatarFrameId'] as String?,
             size: 44,
             onTap: userId != null && userId.isNotEmpty ? openProfile : null,
           ),
@@ -876,6 +878,7 @@ class _LeaderboardEntryCard extends StatelessWidget {
           LeaderboardUserAvatar(
             displayName: name,
             imageUrl: entry['avatar'] as String?,
+            avatarFrameId: entry['avatarFrameId'] as String?,
             size: 44,
             onTap: userId != null && userId.isNotEmpty ? openProfile : null,
           ),

@@ -28,6 +28,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       fullName: user.fullName,
       phone: user.phone,
       avatarUrl: user.avatarUrl ?? null,
+      avatarFrameId: user.equippedAvatarFrameId ?? null,
       role: user.role || 'user',
       currentStreak: user.currentStreak,
       totalXP: user.totalXP,

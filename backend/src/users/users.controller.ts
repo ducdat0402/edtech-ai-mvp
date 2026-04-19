@@ -20,16 +20,22 @@ export class UsersController {
   @Get('profile')
   async getProfile(@Request() req) {
     const user = await this.usersService.findById(req.user.id);
-    const { password, ...result } = user;
-    return result;
+    const { password, equippedAvatarFrameId, ...result } = user;
+    return {
+      ...result,
+      avatarFrameId: equippedAvatarFrameId ?? null,
+    };
   }
 
   /** Cập nhật tên, ảnh đại diện (URL hoặc `/uploads/...`), số điện thoại. */
   @Patch('profile')
   async updateProfile(@Request() req, @Body() body: UpdateProfileDto) {
     const user = await this.usersService.updateProfile(req.user.id, body);
-    const { password, ...result } = user;
-    return result;
+    const { password, equippedAvatarFrameId, ...result } = user;
+    return {
+      ...result,
+      avatarFrameId: equippedAvatarFrameId ?? null,
+    };
   }
 
   /** Xem hồ sơ người khác (đã đăng nhập) — dùng cho leaderboard, không lộ email. */
@@ -55,8 +61,11 @@ export class UsersController {
     }
     try {
       const user = await this.usersService.switchRole(req.user.id, body.role);
-      const { password, ...result } = user;
-      return result;
+      const { password, equippedAvatarFrameId, ...result } = user;
+      return {
+        ...result,
+        avatarFrameId: equippedAvatarFrameId ?? null,
+      };
     } catch (e) {
       throw new BadRequestException(e.message);
     }

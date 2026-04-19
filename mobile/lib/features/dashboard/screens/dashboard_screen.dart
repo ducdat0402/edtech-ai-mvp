@@ -448,11 +448,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
           gradient: AppGradients.forLevelMuted(level),
           borderRadius:
               const BorderRadius.vertical(bottom: Radius.circular(18)),
+          border: Border.all(
+            color: AppColors.xpGold.withValues(alpha: 0.12),
+            width: 1,
+          ),
           boxShadow: [
             BoxShadow(
-              color: levelColor.withValues(alpha: 0.18),
-              blurRadius: 8,
-              offset: const Offset(0, 3),
+              color: levelColor.withValues(alpha: 0.22),
+              blurRadius: 14,
+              offset: const Offset(0, 4),
+            ),
+            BoxShadow(
+              color: AppColors.purpleNeon.withValues(alpha: 0.08),
+              blurRadius: 22,
+              offset: const Offset(0, 8),
             ),
           ],
         ),
@@ -475,6 +484,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               totalXP: totalXP,
               displayName: displayName,
               avatarUrl: _userProfile?['avatarUrl'] as String?,
+              avatarFrameId: _userProfile?['avatarFrameId'] as String?,
               onAvatarTap: () => context.push('/profile'),
               onShowTitles: () => _showLevelTitlesDialog(),
               stripCoins: coins is int ? coins : int.tryParse('$coins') ?? 0,

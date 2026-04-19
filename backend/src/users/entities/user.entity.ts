@@ -24,6 +24,10 @@ export class User {
   @Column({ type: 'text', nullable: true })
   avatarUrl: string | null;
 
+  /** Khung avatar đang trang bị (`af_01` …), null = không dùng khung shop. */
+  @Column({ type: 'varchar', length: 32, nullable: true })
+  equippedAvatarFrameId: string | null;
+
   @Column({ nullable: true })
   phone: string;
 

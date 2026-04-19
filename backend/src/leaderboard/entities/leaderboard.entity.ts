@@ -10,6 +10,8 @@ export interface LeaderboardEntry {
   coins: number;
   currentStreak: number;
   avatar?: string;
+  /** Khung avatar shop (`af_01` …), đồng bộ với bạn bè / hồ sơ. */
+  avatarFrameId?: string | null;
 }
 
 export interface LeaderboardResponse {

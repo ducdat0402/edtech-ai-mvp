@@ -43,6 +43,7 @@ import { SelfLeadershipCheckin } from '../self-leadership/entities/self-leadersh
 import { CommunityStatus } from '../community/entities/community-status.entity';
 import { CommunityStatusReaction } from '../community/entities/community-status-reaction.entity';
 import { CommunityStatusComment } from '../community/entities/community-status-comment.entity';
+import { UserOwnedAvatarFrame } from '../avatar-frames/entities/user-owned-avatar-frame.entity';
 
 @Injectable()
 export class TypeOrmConfigService implements TypeOrmOptionsFactory {
@@ -114,6 +115,7 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
         CommunityStatus,
         CommunityStatusReaction,
         CommunityStatusComment,
+        UserOwnedAvatarFrame,
       ],
       synchronize: !isProduction || this.configService.get<string>('ENABLE_SYNC') === 'true',
       logging: !isProduction ? ['error', 'warn'] : ['error'],

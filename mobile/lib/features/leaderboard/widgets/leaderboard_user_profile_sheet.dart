@@ -4,6 +4,7 @@ import 'package:edtech_mobile/core/constants/currency_labels.dart';
 import 'package:edtech_mobile/core/config/api_config.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/theme/theme.dart';
+import 'package:edtech_mobile/theme/widgets/avatar_frame_ring.dart';
 
 /// Chữ viết tắt từ tên hiển thị trên avatar.
 String leaderboardInitials(String? name) {
@@ -22,6 +23,7 @@ String leaderboardInitials(String? name) {
 class LeaderboardUserAvatar extends StatelessWidget {
   final String? displayName;
   final String? imageUrl;
+  final String? avatarFrameId;
   final double size;
   final VoidCallback? onTap;
 
@@ -29,6 +31,7 @@ class LeaderboardUserAvatar extends StatelessWidget {
     super.key,
     this.displayName,
     this.imageUrl,
+    this.avatarFrameId,
     this.size = 44,
     this.onTap,
   });
@@ -38,22 +41,74 @@ class LeaderboardUserAvatar extends StatelessWidget {
     final initials = leaderboardInitials(displayName);
     final url = ApiConfig.absoluteMediaUrl(imageUrl?.trim());
     final hasUrl = url.isNotEmpty;
+    final inner = size * 0.88;
+    final hasFrame = avatarFrameTier(avatarFrameId) != null;
 
-    Widget avatar = CircleAvatar(
-      radius: size / 2,
-      backgroundColor: AppColors.purpleNeon.withValues(alpha: 0.25),
-      backgroundImage: hasUrl ? NetworkImage(url) : null,
-      child: hasUrl
-          ? null
-          : Text(
-              initials,
-              style: AppTextStyles.labelLarge.copyWith(
-                color: AppColors.purpleNeon,
-                fontWeight: FontWeight.bold,
-                fontSize: size * 0.32,
+    final Widget photoCore = ClipOval(
+      child: SizedBox(
+        width: inner,
+        height: inner,
+        child: hasUrl
+            ? Image.network(
+                url,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => ColoredBox(
+                  color: AppColors.bgTertiary,
+                  child: Center(
+                    child: Text(
+                      initials,
+                      style: AppTextStyles.labelLarge.copyWith(
+                        color: AppColors.purpleNeon,
+                        fontWeight: FontWeight.bold,
+                        fontSize: inner * 0.32,
+                      ),
+                    ),
+                  ),
+                ),
+              )
+            : ColoredBox(
+                color: AppColors.bgTertiary,
+                child: Center(
+                  child: Text(
+                    initials,
+                    style: AppTextStyles.labelLarge.copyWith(
+                      color: AppColors.purpleNeon,
+                      fontWeight: FontWeight.bold,
+                      fontSize: inner * 0.32,
+                    ),
+                  ),
+                ),
+              ),
+      ),
+    );
+
+    Widget avatar = hasFrame
+        ? SizedBox(
+            width: avatarFrameOuterDiameter(inner, avatarFrameId),
+            height: avatarFrameOuterDiameter(inner, avatarFrameId),
+            child: Center(
+              child: AvatarFrameRing(
+                frameId: avatarFrameId,
+                diameter: inner,
+                child: photoCore,
               ),
             ),
-    );
+          )
+        : CircleAvatar(
+            radius: size / 2,
+            backgroundColor: AppColors.purpleNeon.withValues(alpha: 0.25),
+            backgroundImage: hasUrl ? NetworkImage(url) : null,
+            child: hasUrl
+                ? null
+                : Text(
+                    initials,
+                    style: AppTextStyles.labelLarge.copyWith(
+                      color: AppColors.purpleNeon,
+                      fontWeight: FontWeight.bold,
+                      fontSize: size * 0.32,
+                    ),
+                  ),
+          );
 
     if (onTap == null) return avatar;
 

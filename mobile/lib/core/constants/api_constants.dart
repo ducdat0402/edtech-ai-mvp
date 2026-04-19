@@ -80,6 +80,11 @@ class ApiConstants {
   static String claimQuest(String userQuestId) => '/quests/claim/$userQuestId';
   static const String questHistory = '/quests/history';
 
+  // Avatar frames (shop — khung avatar)
+  static const String avatarFrames = '/avatar-frames';
+  static const String avatarFramesPurchase = '/avatar-frames/purchase';
+  static const String avatarFramesEquip = '/avatar-frames/equip';
+
   // Leaderboard
   static const String globalLeaderboard = '/leaderboard/global';
   static const String weeklyLeaderboard = '/leaderboard/weekly';

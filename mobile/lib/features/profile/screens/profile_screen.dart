@@ -18,6 +18,7 @@ import 'package:edtech_mobile/features/chat/widgets/chat_bubble.dart';
 import 'package:edtech_mobile/features/dashboard/screens/dashboard_screen.dart';
 import 'package:edtech_mobile/features/profile/widgets/profile_competency_preview_row.dart';
 import 'package:edtech_mobile/theme/theme.dart';
+import 'package:edtech_mobile/theme/widgets/avatar_frame_ring.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -855,65 +856,95 @@ class _ProfileScreenState extends State<ProfileScreen> {
           child: InkWell(
             onTap: _avatarBusy ? null : _showAvatarSheet,
             customBorder: const CircleBorder(),
-            child: Container(
-              width: 110,
-              height: 110,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: _primaryGradient,
-                boxShadow: [
-                  BoxShadow(
-                    color: _accentColor.withValues(alpha: 0.5),
-                    blurRadius: 20,
-                    spreadRadius: 2,
-                  ),
-                ],
-              ),
-              child: Container(
-                margin: const EdgeInsets.all(4),
-                clipBehavior: Clip.antiAlias,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                ),
-                child: imgUrl != null
-                    ? CachedNetworkImage(
-                        imageUrl: imgUrl,
-                        fit: BoxFit.cover,
-                        width: 102,
-                        height: 102,
-                        placeholder: (_, __) => Container(
-                          color: _bgSecondary,
-                          child: const Center(
-                            child: SizedBox(
-                              width: 28,
-                              height: 28,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: AppColors.primaryLight,
+            child: Builder(
+              builder: (context) {
+                const innerD = 102.0;
+                final frameId = _profileData?['avatarFrameId'] as String?;
+                final hasF = avatarFrameTier(frameId) != null;
+                final photo = ClipOval(
+                  child: SizedBox(
+                    width: innerD,
+                    height: innerD,
+                    child: imgUrl != null
+                        ? CachedNetworkImage(
+                            imageUrl: imgUrl,
+                            fit: BoxFit.cover,
+                            placeholder: (_, __) => Container(
+                              color: _bgSecondary,
+                              child: const Center(
+                                child: SizedBox(
+                                  width: 28,
+                                  height: 28,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: AppColors.primaryLight,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            errorWidget: (_, __, ___) => ColoredBox(
+                              color: _bgSecondary,
+                              child: Icon(
+                                _isContributor
+                                    ? Icons.edit_note
+                                    : Icons.person,
+                                size: 50,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          )
+                        : ColoredBox(
+                            color: _bgSecondary,
+                            child: Center(
+                              child: Icon(
+                                _isContributor
+                                    ? Icons.edit_note
+                                    : Icons.person,
+                                size: 50,
+                                color: AppColors.textSecondary,
                               ),
                             ),
                           ),
-                        ),
-                        errorWidget: (_, __, ___) => ColoredBox(
-                          color: _bgSecondary,
-                          child: Icon(
-                            _isContributor ? Icons.edit_note : Icons.person,
-                            size: 50,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
+                  ),
+                );
+                final core = hasF
+                    ? AvatarFrameRing(
+                        frameId: frameId,
+                        diameter: innerD,
+                        child: photo,
                       )
-                    : ColoredBox(
-                        color: _bgSecondary,
-                        child: Center(
-                          child: Icon(
-                            _isContributor ? Icons.edit_note : Icons.person,
-                            size: 50,
-                            color: AppColors.textSecondary,
+                    : Container(
+                        margin: const EdgeInsets.all(4),
+                        clipBehavior: Clip.antiAlias,
+                        decoration: const BoxDecoration(shape: BoxShape.circle),
+                        child: photo,
+                      );
+                final outerD = hasF
+                    ? avatarFrameOuterDiameter(innerD, frameId).clamp(110.0, 148.0)
+                    : 110.0;
+                return SizedBox(
+                  width: outerD,
+                  height: outerD,
+                  child: Center(
+                    child: Container(
+                      width: outerD,
+                      height: outerD,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: _primaryGradient,
+                        boxShadow: [
+                          BoxShadow(
+                            color: _accentColor.withValues(alpha: 0.5),
+                            blurRadius: 20,
+                            spreadRadius: 2,
                           ),
-                        ),
+                        ],
                       ),
-              ),
+                      child: Center(child: core),
+                    ),
+                  ),
+                );
+              },
             ),
           ),
         ),

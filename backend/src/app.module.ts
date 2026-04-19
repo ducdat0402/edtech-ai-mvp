@@ -35,6 +35,7 @@ import { CommunityModule } from './community/community.module';
 import { DmModule } from './direct-message/dm.module';
 import { WeeklyRewardsModule } from './weekly-rewards/weekly-rewards.module';
 import { SelfLeadershipModule } from './self-leadership/self-leadership.module';
+import { AvatarFramesModule } from './avatar-frames/avatar-frames.module';
 import { TypeOrmConfigService } from './config/typeorm.config';
 
 @Module({
@@ -80,6 +81,7 @@ import { TypeOrmConfigService } from './config/typeorm.config';
     DmModule,
     WeeklyRewardsModule,
     SelfLeadershipModule,
+    AvatarFramesModule,
   ],
 })
 export class AppModule {}

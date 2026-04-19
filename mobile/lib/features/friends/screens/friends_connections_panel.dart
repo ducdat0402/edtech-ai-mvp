@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/core/widgets/empty_state.dart';
+import 'package:edtech_mobile/features/leaderboard/widgets/leaderboard_user_profile_sheet.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 
 /// Tab "Bạn bè": danh sách, lời mời, gợi ý (không bọc Scaffold).
@@ -154,12 +155,12 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
                       child: Semantics(
                         label: 'Đã chặn',
                         button: true,
-                        child: Row(
+                        child: const Row(
                           children: [
                             Icon(Icons.block_rounded,
                                 size: 22, color: AppColors.textPrimary),
-                            const SizedBox(width: 12),
-                            const Text('Đã chặn',
+                            SizedBox(width: 12),
+                            Text('Đã chặn',
                                 style: TextStyle(
                                     color: AppColors.textPrimary,
                                     fontWeight: FontWeight.w500)),
@@ -172,12 +173,12 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
                       child: Semantics(
                         label: 'Tin nhắn',
                         button: true,
-                        child: Row(
+                        child: const Row(
                           children: [
                             Icon(Icons.chat_rounded,
                                 size: 22, color: AppColors.textPrimary),
-                            const SizedBox(width: 12),
-                            const Text('Tin nhắn',
+                            SizedBox(width: 12),
+                            Text('Tin nhắn',
                                 style: TextStyle(
                                     color: AppColors.textPrimary,
                                     fontWeight: FontWeight.w500)),
@@ -190,12 +191,12 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
                       child: Semantics(
                         label: 'Tìm kiếm người dùng',
                         button: true,
-                        child: Row(
+                        child: const Row(
                           children: [
                             Icon(Icons.search_rounded,
                                 size: 22, color: AppColors.textPrimary),
-                            const SizedBox(width: 12),
-                            const Text('Tìm kiếm',
+                            SizedBox(width: 12),
+                            Text('Tìm kiếm',
                                 style: TextStyle(
                                     color: AppColors.textPrimary,
                                     fontWeight: FontWeight.w500)),
@@ -208,12 +209,12 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
                       child: Semantics(
                         label: 'Hoạt động bạn bè',
                         button: true,
-                        child: Row(
+                        child: const Row(
                           children: [
                             Icon(Icons.timeline_rounded,
                                 size: 22, color: AppColors.textPrimary),
-                            const SizedBox(width: 12),
-                            const Text('Hoạt động',
+                            SizedBox(width: 12),
+                            Text('Hoạt động',
                                 style: TextStyle(
                                     color: AppColors.textPrimary,
                                     fontWeight: FontWeight.w500)),
@@ -322,13 +323,12 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: CircleAvatar(
-          backgroundColor: AppColors.purpleNeon.withValues(alpha: 0.2),
-          child: Text(
-            (name as String).isNotEmpty ? name[0].toUpperCase() : '?',
-            style: const TextStyle(
-                color: AppColors.purpleNeon, fontWeight: FontWeight.bold),
-          ),
+        leading: LeaderboardUserAvatar(
+          displayName: name,
+          imageUrl: friend['avatarUrl'] as String?,
+          avatarFrameId: friend['avatarFrameId'] as String?,
+          size: 46,
+          onTap: null,
         ),
         title: Text(name,
             style: const TextStyle(

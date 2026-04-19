@@ -1108,6 +1108,34 @@ class ApiService {
     return response.data;
   }
 
+  /// Catalog khung avatar + số dư + khung đang đeo.
+  Future<Map<String, dynamic>> getAvatarFramesCatalog() async {
+    final response = await _apiClient.get(ApiConstants.avatarFrames);
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> purchaseAvatarFrame(
+    String frameId, {
+    String? currency,
+  }) async {
+    final response = await _apiClient.post(
+      ApiConstants.avatarFramesPurchase,
+      data: {
+        'frameId': frameId,
+        if (currency != null) 'currency': currency,
+      },
+    );
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> equipAvatarFrame(String? frameId) async {
+    final response = await _apiClient.post(
+      ApiConstants.avatarFramesEquip,
+      data: {'frameId': frameId},
+    );
+    return response.data;
+  }
+
   // =====================
   // World Chat APIs
   // =====================

@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:edtech_mobile/core/constants/currency_labels.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
+import 'package:edtech_mobile/features/shop/widgets/shop_avatar_frames_tab.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 
 class ShopScreen extends StatefulWidget {
@@ -21,13 +22,17 @@ class _ShopScreenState extends State<ShopScreen>
   List<dynamic> _shopItems = [];
   List<dynamic> _inventory = [];
   Map<String, dynamic> _activeEffects = {};
+  List<Map<String, dynamic>> _avatarFrames = [];
+  String? _equippedAvatarFrameId;
+  int _frameUserLevel = 1;
+  int _diamondsBalance = 0;
   bool _isLoading = true;
   String? _error;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
     _loadData();
   }
 
@@ -48,10 +53,12 @@ class _ShopScreenState extends State<ShopScreen>
       final results = await Future.wait([
         apiService.getShopItems(),
         apiService.getShopInventory(),
+        apiService.getAvatarFramesCatalog(),
       ]);
 
       final shopData = results[0];
       final inventoryData = results[1];
+      final afData = Map<String, dynamic>.from(results[2] as Map);
 
       if (mounted) {
         setState(() {
@@ -60,6 +67,12 @@ class _ShopScreenState extends State<ShopScreen>
           _inventory = inventoryData['inventory'] as List<dynamic>? ?? [];
           _activeEffects =
               inventoryData['activeEffects'] as Map<String, dynamic>? ?? {};
+          _diamondsBalance = afData['diamonds'] as int? ?? 0;
+          _frameUserLevel = afData['level'] as int? ?? 1;
+          _equippedAvatarFrameId = afData['equippedId'] as String?;
+          _avatarFrames = (afData['frames'] as List<dynamic>? ?? const [])
+              .map((e) => Map<String, dynamic>.from(e as Map))
+              .toList();
           _isLoading = false;
         });
       }
@@ -322,6 +335,25 @@ class _ShopScreenState extends State<ShopScreen>
     );
   }
 
+  Future<void> _purchaseAvatarFrame(
+    Map<String, dynamic> frame, {
+    String? currency,
+  }) async {
+    final api = Provider.of<ApiService>(context, listen: false);
+    final id = frame['id'] as String? ?? '';
+    if (id.isEmpty) return;
+    await api.purchaseAvatarFrame(id, currency: currency);
+    if (!mounted) return;
+    await _loadData();
+  }
+
+  Future<void> _equipAvatarFrame(String? frameId) async {
+    final api = Provider.of<ApiService>(context, listen: false);
+    await api.equipAvatarFrame(frameId);
+    if (!mounted) return;
+    await _loadData();
+  }
+
   String _extractError(dynamic e) {
     final str = e.toString();
     final match = RegExp(r'"message":"([^"]+)"').firstMatch(str);
@@ -351,27 +383,60 @@ class _ShopScreenState extends State<ShopScreen>
                 color: AppColors.primaryLight, size: 26),
             onPressed: () => context.push('/payment'),
           ),
-          Container(
-            margin: const EdgeInsets.only(right: 12),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: AppColors.coinGold.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(20),
-              border:
-                  Border.all(color: AppColors.coinGold.withValues(alpha: 0.3)),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const GtuCoinIcon(size: 18),
-                const SizedBox(width: 6),
-                Text(
-                  '$_coins',
-                  style: AppTextStyles.labelLarge.copyWith(
-                      color: AppColors.coinGold, fontWeight: FontWeight.bold),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppColors.coinGold.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                      color: AppColors.coinGold.withValues(alpha: 0.3)),
                 ),
-              ],
-            ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const GtuCoinIcon(size: 18),
+                    const SizedBox(width: 6),
+                    Text(
+                      '$_coins',
+                      style: AppTextStyles.labelLarge.copyWith(
+                          color: AppColors.coinGold,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                margin: const EdgeInsets.only(right: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryLight.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                      color: AppColors.primaryLight.withValues(alpha: 0.28)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.diamond_rounded,
+                        color: AppColors.primaryLight, size: 18),
+                    const SizedBox(width: 4),
+                    Text(
+                      '$_diamondsBalance',
+                      style: AppTextStyles.labelLarge.copyWith(
+                        color: AppColors.primaryLight,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
         bottom: TabBar(
@@ -383,6 +448,9 @@ class _ShopScreenState extends State<ShopScreen>
             Tab(
                 text: 'Cửa hàng',
                 icon: Icon(Icons.storefront_rounded, size: 20)),
+            Tab(
+                text: 'Khung avatar',
+                icon: Icon(Icons.shutter_speed_rounded, size: 20)),
             Tab(
                 text: 'Kho đồ',
                 icon: Icon(Icons.inventory_2_rounded, size: 20)),
@@ -415,6 +483,16 @@ class _ShopScreenState extends State<ShopScreen>
                   controller: _tabController,
                   children: [
                     _buildShopTab(),
+                    ShopAvatarFramesTab(
+                      frames: _avatarFrames,
+                      coins: _coins,
+                      diamonds: _diamondsBalance,
+                      userLevel: _frameUserLevel,
+                      equippedId: _equippedAvatarFrameId,
+                      onRefresh: _loadData,
+                      onPurchase: _purchaseAvatarFrame,
+                      onEquip: _equipAvatarFrame,
+                    ),
                     _buildInventoryTab(),
                   ],
                 ),

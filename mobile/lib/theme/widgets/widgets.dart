@@ -8,5 +8,6 @@ export 'coin_display.dart';
 export 'gtu_coin_icon.dart';
 export 'achievement_badge.dart';
 export 'level_display.dart';
+export 'avatar_frame_ring.dart';
 export 'confetti_celebration.dart';
 export 'micro_interactions.dart';
