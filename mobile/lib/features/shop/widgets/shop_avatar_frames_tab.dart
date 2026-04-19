@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:edtech_mobile/core/constants/currency_labels.dart';
 import 'package:edtech_mobile/theme/theme.dart';
-import 'package:edtech_mobile/theme/widgets/avatar_frame_ring.dart';
+
 /// Tab cửa hàng — danh sách khung avatar (catalog từ backend).
 class ShopAvatarFramesTab extends StatelessWidget {
   final List<Map<String, dynamic>> frames;
@@ -34,37 +34,76 @@ class ShopAvatarFramesTab extends StatelessWidget {
     return RefreshIndicator(
       color: AppColors.primaryLight,
       onRefresh: onRefresh,
-      child: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          _WalletBar(coins: coins, diamonds: diamonds, level: userLevel),
-          const SizedBox(height: 16),
-          Text(
-            'Khung avatar',
-            style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Tier càng cao càng chi tiết — giá theo GTU hoặc kim cương. Một số khung cần đủ cấp mới mua được.',
-            style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.textSecondary,
-              height: 1.4,
+      child: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
+                _WalletBar(coins: coins, diamonds: diamonds, level: userLevel),
+                const SizedBox(height: 16),
+                Text(
+                  'Khung avatar',
+                  style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Tier càng cao càng chi tiết — giá theo GTU hoặc kim cương. Một số khung cần đủ cấp mới mua được.',
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.textSecondary,
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ]),
             ),
           ),
-          const SizedBox(height: 16),
-          ...frames.map((f) => _FrameCard(
-                frame: f,
-                equippedId: equippedId,
-                userLevel: userLevel,
-                coins: coins,
-                diamonds: diamonds,
-                onPurchase: onPurchase,
-                onEquip: onEquip,
-              )),
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+            sliver: SliverLayoutBuilder(
+              builder: (context, constraints) {
+                final cols = _avatarFrameGridColumns(constraints.crossAxisExtent);
+                return SliverGrid(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: cols,
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
+                    childAspectRatio: cols >= 4
+                        ? 0.52
+                        : cols >= 3
+                            ? 0.56
+                            : 0.62,
+                  ),
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      return _FrameCard(
+                        frame: frames[index],
+                        equippedId: equippedId,
+                        userLevel: userLevel,
+                        coins: coins,
+                        diamonds: diamonds,
+                        onPurchase: onPurchase,
+                        onEquip: onEquip,
+                      );
+                    },
+                    childCount: frames.length,
+                  ),
+                );
+              },
+            ),
+          ),
         ],
       ),
     );
   }
+}
+
+/// 2–4 cột tùy bề ngang nội dung (điện thoại ~2, máy rộng hơn ~3–4).
+int _avatarFrameGridColumns(double width) {
+  if (width >= 900) return 4;
+  if (width >= 520) return 3;
+  return 2;
 }
 
 class _WalletBar extends StatelessWidget {
@@ -182,7 +221,6 @@ class _FrameCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final id = frame['id'] as String? ?? '';
     final name = frame['name'] as String? ?? id;
-    final desc = frame['description'] as String? ?? '';
     final tier = (frame['tier'] as num?)?.toInt() ?? 1;
     final minLevel = (frame['minLevel'] as num?)?.toInt() ?? 1;
     final mode = frame['paymentMode'] as String? ?? 'coins';
@@ -193,29 +231,7 @@ class _FrameCard extends StatelessWidget {
     final canPurchase = frame['canPurchase'] as bool? ?? false;
     final isEquipped = equippedId == id;
 
-    final preview = SizedBox(
-      width: 56,
-      height: 56,
-      child: Center(
-        child: AvatarFrameRing(
-          frameId: id,
-          diameter: 40,
-          child: ClipOval(
-            child: Container(
-              color: AppColors.bgTertiary,
-              child: Icon(
-                Icons.person_rounded,
-                size: 22,
-                color: AppColors.textTertiary,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: AppColors.bgSecondary,
         borderRadius: BorderRadius.circular(16),
@@ -226,157 +242,164 @@ class _FrameCard extends StatelessWidget {
         ),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(10),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            Stack(
+              clipBehavior: Clip.none,
+              alignment: Alignment.center,
               children: [
-                preview,
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              name,
-                              style: AppTextStyles.labelLarge.copyWith(
-                                color: AppColors.textPrimary,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: AppColors.bgTertiary,
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Text(
-                              'T$tier',
-                              style: AppTextStyles.caption.copyWith(
-                                color: AppColors.textTertiary,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        desc,
-                        style: AppTextStyles.caption.copyWith(
-                          color: AppColors.textSecondary,
-                          height: 1.35,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      _PriceRow(
-                        mode: mode,
-                        priceCoins: priceCoins,
-                        priceDiamonds: priceDiamonds,
-                      ),
-                      if (minLevel > 1)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 6),
-                          child: Text(
-                            'Cần cấp $minLevel để mở khóa mua',
-                            style: AppTextStyles.caption.copyWith(
-                              color: lockedByLevel
-                                  ? AppColors.warningNeon
-                                  : AppColors.textTertiary,
-                              fontSize: 11,
-                            ),
+                SizedBox(
+                  height: 72,
+                  child: Center(
+                    child: AvatarFrameRing(
+                      frameId: id,
+                      diameter: 44,
+                      child: ClipOval(
+                        child: Container(
+                          color: AppColors.bgTertiary,
+                          child: Icon(
+                            Icons.person_rounded,
+                            size: 24,
+                            color: AppColors.textTertiary,
                           ),
                         ),
-                    ],
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: AppColors.bgTertiary,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      'T$tier',
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.textTertiary,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 10),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                if (owned && !isEquipped)
-                  OutlinedButton(
-                    onPressed: () async {
-                      HapticFeedback.lightImpact();
-                      await onEquip(id);
-                    },
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.primaryLight,
-                      side: BorderSide(
-                        color: AppColors.primaryLight.withValues(alpha: 0.5),
-                      ),
-                    ),
-                    child: const Text('Đeo'),
-                  ),
-                if (isEquipped)
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: AppColors.successNeon.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      'Đang đeo',
-                      style: AppTextStyles.caption.copyWith(
-                        color: AppColors.successNeon,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ),
-                if (!owned)
-                  Tooltip(
-                    message: lockedByLevel
-                        ? 'Cần cấp $minLevel để mua (bạn đang cấp $userLevel)'
-                        : (mode == 'choice'
-                            ? 'Chọn GTU hoặc kim cương khi mua'
-                            : 'Mua khung'),
-                    child: FilledButton(
-                      onPressed: (!canPurchase || lockedByLevel)
-                          ? null
-                          : () => _confirmPurchase(
-                                context,
-                                frame,
-                                mode,
-                                priceCoins,
-                                priceDiamonds,
-                              ),
-                      style: FilledButton.styleFrom(
-                        backgroundColor: canPurchase && !lockedByLevel
-                            ? AppColors.purpleNeon
-                            : AppColors.bgTertiary,
-                        foregroundColor: Colors.white,
-                      ),
-                      child: Text(
-                        lockedByLevel ? 'Khóa cấp' : 'Mua',
-                      ),
-                    ),
-                  ),
-                if (owned && isEquipped)
-                  TextButton(
-                    onPressed: () async {
-                      HapticFeedback.lightImpact();
-                      await onEquip(null);
-                    },
-                    child: const Text(
-                      'Gỡ khung',
-                      style: TextStyle(color: AppColors.textTertiary),
-                    ),
-                  ),
-              ],
+            const SizedBox(height: 8),
+            Text(
+              name,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: AppTextStyles.labelMedium.copyWith(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w800,
+                height: 1.2,
+              ),
             ),
+            const SizedBox(height: 6),
+            _PriceRow(
+              mode: mode,
+              priceCoins: priceCoins,
+              priceDiamonds: priceDiamonds,
+              compact: true,
+            ),
+            if (minLevel > 1) ...[
+              const SizedBox(height: 4),
+              Text(
+                'Cấp $minLevel',
+                textAlign: TextAlign.center,
+                style: AppTextStyles.caption.copyWith(
+                  color: lockedByLevel
+                      ? AppColors.warningNeon
+                      : AppColors.textTertiary,
+                  fontSize: 10,
+                ),
+              ),
+            ],
+            const Spacer(),
+            const SizedBox(height: 6),
+            if (owned && !isEquipped)
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: () async {
+                    HapticFeedback.lightImpact();
+                    await onEquip(id);
+                  },
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    foregroundColor: AppColors.primaryLight,
+                    side: BorderSide(
+                      color: AppColors.primaryLight.withValues(alpha: 0.5),
+                    ),
+                  ),
+                  child: const Text('Đeo'),
+                ),
+              ),
+            if (isEquipped)
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                decoration: BoxDecoration(
+                  color: AppColors.successNeon.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'Đang đeo',
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.caption.copyWith(
+                    color: AppColors.successNeon,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            if (!owned)
+              Tooltip(
+                message: lockedByLevel
+                    ? 'Cần cấp $minLevel để mua (bạn đang cấp $userLevel)'
+                    : (mode == 'choice'
+                        ? 'Chọn GTU hoặc kim cương khi mua'
+                        : 'Mua khung'),
+                child: FilledButton(
+                  onPressed: (!canPurchase || lockedByLevel)
+                      ? null
+                      : () => _confirmPurchase(
+                            context,
+                            frame,
+                            mode,
+                            priceCoins,
+                            priceDiamonds,
+                          ),
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    backgroundColor: canPurchase && !lockedByLevel
+                        ? AppColors.purpleNeon
+                        : AppColors.bgTertiary,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: Text(
+                    lockedByLevel ? 'Khóa cấp' : 'Mua',
+                  ),
+                ),
+              ),
+            if (owned && isEquipped)
+              TextButton(
+                onPressed: () async {
+                  HapticFeedback.lightImpact();
+                  await onEquip(null);
+                },
+                child: const Text(
+                  'Gỡ khung',
+                  style: TextStyle(color: AppColors.textTertiary),
+                ),
+              ),
           ],
         ),
       ),
@@ -502,22 +525,28 @@ class _PriceRow extends StatelessWidget {
   final String mode;
   final int? priceCoins;
   final int? priceDiamonds;
+  final bool compact;
 
   const _PriceRow({
     required this.mode,
     required this.priceCoins,
     required this.priceDiamonds,
+    this.compact = false,
   });
 
   @override
   Widget build(BuildContext context) {
     if (mode == 'coins' && priceCoins != null) {
-      return Row(
+      final row = Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
           const GtuCoinIcon(size: 16),
           const SizedBox(width: 4),
           Text(
             '$priceCoins ${CurrencyLabels.gtuShort}',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: AppTextStyles.caption.copyWith(
               color: AppColors.coinGold,
               fontWeight: FontWeight.w700,
@@ -525,15 +554,23 @@ class _PriceRow extends StatelessWidget {
           ),
         ],
       );
+      if (compact) {
+        return Center(child: row);
+      }
+      return row;
     }
     if (mode == 'diamonds' && priceDiamonds != null) {
-      return Row(
+      final row = Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
           const Icon(Icons.diamond_rounded,
               color: AppColors.primaryLight, size: 16),
           const SizedBox(width: 4),
           Text(
-            '$priceDiamonds kim cương',
+            compact ? '$priceDiamonds 💎' : '$priceDiamonds kim cương',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: AppTextStyles.caption.copyWith(
               color: AppColors.primaryLight,
               fontWeight: FontWeight.w700,
@@ -541,20 +578,34 @@ class _PriceRow extends StatelessWidget {
           ),
         ],
       );
+      if (compact) {
+        return Center(child: row);
+      }
+      return row;
     }
     if (mode == 'choice') {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      final col = Column(
+        crossAxisAlignment: compact
+            ? CrossAxisAlignment.center
+            : CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           if (priceCoins != null)
             Row(
+              mainAxisAlignment: compact
+                  ? MainAxisAlignment.center
+                  : MainAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                const GtuCoinIcon(size: 16),
+                const GtuCoinIcon(size: 14),
                 const SizedBox(width: 4),
                 Text(
                   '$priceCoins ${CurrencyLabels.gtuShort}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.caption.copyWith(
                     color: AppColors.coinGold,
+                    fontSize: 11,
                   ),
                 ),
               ],
@@ -562,29 +613,42 @@ class _PriceRow extends StatelessWidget {
           if (priceDiamonds != null) ...[
             const SizedBox(height: 2),
             Row(
+              mainAxisAlignment: compact
+                  ? MainAxisAlignment.center
+                  : MainAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 const Icon(Icons.diamond_rounded,
-                    color: AppColors.primaryLight, size: 16),
+                    color: AppColors.primaryLight, size: 14),
                 const SizedBox(width: 4),
                 Text(
-                  '$priceDiamonds kim cương',
+                  '$priceDiamonds 💎',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.caption.copyWith(
                     color: AppColors.primaryLight,
+                    fontSize: 11,
                   ),
                 ),
               ],
             ),
           ],
-          const SizedBox(height: 4),
-          Text(
-            'Chọn loại tiền khi bấm Mua',
-            style: AppTextStyles.caption.copyWith(
-              color: AppColors.textTertiary,
-              fontSize: 10,
+          if (!compact) ...[
+            const SizedBox(height: 4),
+            Text(
+              'Chọn loại tiền khi bấm Mua',
+              style: AppTextStyles.caption.copyWith(
+                color: AppColors.textTertiary,
+                fontSize: 10,
+              ),
             ),
-          ),
+          ],
         ],
       );
+      if (compact) {
+        return Center(child: col);
+      }
+      return col;
     }
     return const SizedBox.shrink();
   }
