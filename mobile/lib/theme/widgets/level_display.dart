@@ -9,6 +9,9 @@ import '../colors.dart';
 import '../gradients.dart';
 import '../text_styles.dart';
 
+/// Phân loại viên nang tiền tệ trên thanh HUD (gradient / highlight khác nhau).
+enum _HudResourceKind { diamond, coin, streak }
+
 /// Level badge with gradient based on level
 class LevelBadge extends StatelessWidget {
   final int level;
@@ -227,9 +230,31 @@ class LevelCard extends StatelessWidget {
                 vertical: strip ? 1 : 2,
               ),
               decoration: BoxDecoration(
-                color: const Color(0xFFB91C1C),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    const Color(0xFFEF4444),
+                    const Color(0xFF991B1B),
+                  ],
+                ),
                 borderRadius: BorderRadius.circular(strip ? 5 : 6),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.85)),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.55),
+                  width: strip ? 0.8 : 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.45),
+                    offset: const Offset(0, 2),
+                    blurRadius: 3,
+                  ),
+                  BoxShadow(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    offset: const Offset(0, -1),
+                    blurRadius: 0,
+                  ),
+                ],
               ),
               child: Text(
                 'Lv.$level',
@@ -237,6 +262,13 @@ class LevelCard extends StatelessWidget {
                   color: Colors.white,
                   fontSize: strip ? 8.0 : 9.0,
                   fontWeight: FontWeight.w800,
+                  shadows: [
+                    Shadow(
+                      color: Colors.black.withValues(alpha: 0.35),
+                      offset: const Offset(0, 0.5),
+                      blurRadius: 1,
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -296,17 +328,21 @@ class LevelCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Expanded(
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(4),
-                            child: LinearProgressIndicator(
-                              value: progress,
-                              minHeight: stripProgressH,
-                              backgroundColor:
-                                  Colors.white.withValues(alpha: 0.22),
-                              valueColor: const AlwaysStoppedAnimation<Color>(
-                                  Colors.white),
-                            ),
-                          ),
+                          child: strip
+                              ? _buildStripHudXpBar(progress, stripProgressH)
+                              : ClipRRect(
+                                  borderRadius: BorderRadius.circular(4),
+                                  child: LinearProgressIndicator(
+                                    value: progress,
+                                    minHeight: stripProgressH,
+                                    backgroundColor:
+                                        Colors.white.withValues(alpha: 0.22),
+                                    valueColor:
+                                        const AlwaysStoppedAnimation<Color>(
+                                      Colors.white,
+                                    ),
+                                  ),
+                                ),
                         ),
                         if (!strip) ...[
                           const SizedBox(width: 6),
@@ -354,6 +390,7 @@ class LevelCard extends StatelessWidget {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 _stripResourceChip(
+                                  hudKind: _HudResourceKind.diamond,
                                   icon: Icons.diamond_rounded,
                                   color: AppColors.cyanNeon,
                                   value: stripDiamonds!,
@@ -364,6 +401,7 @@ class LevelCard extends StatelessWidget {
                                 ),
                                 _stripResourceDivider(height: stripDividerH),
                                 _stripResourceChip(
+                                  hudKind: _HudResourceKind.coin,
                                   iconWidget: GtuCoinIcon(size: stripChipIcon),
                                   color: AppColors.coinGold,
                                   value: stripCoins!,
@@ -374,6 +412,7 @@ class LevelCard extends StatelessWidget {
                                 ),
                                 _stripResourceDivider(height: stripDividerH),
                                 _stripResourceChip(
+                                  hudKind: _HudResourceKind.streak,
                                   icon: Icons.local_fire_department_rounded,
                                   color: AppColors.streakOrange,
                                   value: stripStreak!,
@@ -445,16 +484,110 @@ class LevelCard extends StatelessWidget {
     );
   }
 
+  /// Thanh XP kiểu HUD: rãnh tối + vạch sáng nổi (skeuomorphic).
+  Widget _buildStripHudXpBar(double value, double height) {
+    final v = value.clamp(0.0, 1.0);
+    final h = height.clamp(3.0, 10.0);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 1),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(999),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.4),
+              offset: const Offset(0, 2),
+              blurRadius: 3,
+            ),
+          ],
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(2.5),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(999),
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.black.withValues(alpha: 0.38),
+                Colors.black.withValues(alpha: 0.16),
+              ],
+            ),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.14),
+            ),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: SizedBox(
+              height: h,
+              width: double.infinity,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  ColoredBox(
+                    color: Colors.white.withValues(alpha: 0.05),
+                  ),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: FractionallySizedBox(
+                      widthFactor: v,
+                      heightFactor: 1,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(999),
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.white.withValues(alpha: 0.98),
+                              Colors.white.withValues(alpha: 0.68),
+                            ],
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.white.withValues(alpha: 0.28),
+                              blurRadius: 5,
+                              spreadRadius: -1,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _stripResourceDivider({double height = 14}) {
-    return Container(
-      width: 1,
-      height: height,
-      margin: const EdgeInsets.symmetric(horizontal: 5),
-      color: Colors.white.withValues(alpha: 0.35),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 3),
+      child: Container(
+        width: 1,
+        height: height,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(1),
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.white.withValues(alpha: 0.0),
+              Colors.white.withValues(alpha: 0.22),
+              Colors.white.withValues(alpha: 0.0),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
   Widget _stripResourceChip({
+    required _HudResourceKind hudKind,
     IconData? icon,
     Widget? iconWidget,
     required Color color,
@@ -466,39 +599,17 @@ class LevelCard extends StatelessWidget {
     double fontSize = 10,
   }) {
     assert(icon != null || iconWidget != null);
-    final row = Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        iconWidget ??
-            Icon(icon!, size: iconSize, color: color),
-        const SizedBox(width: 3),
-        Text(
-          '$value$suffix',
-          style: TextStyle(
-            color: valueColor ?? Colors.white.withValues(alpha: 0.95),
-            fontSize: fontSize,
-            fontWeight: FontWeight.w700,
-            fontFeatures: const [FontFeature.tabularFigures()],
-          ),
-        ),
-      ],
-    );
-    if (onTap == null) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 2),
-        child: row,
-      );
-    }
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
-          child: row,
-        ),
-      ),
+    return _SkeuHudResourceChip(
+      kind: hudKind,
+      icon: icon,
+      iconWidget: iconWidget,
+      accent: color,
+      value: value,
+      valueColor: valueColor,
+      suffix: suffix,
+      onTap: onTap,
+      iconSize: iconSize,
+      fontSize: fontSize,
     );
   }
 
@@ -514,6 +625,285 @@ class LevelCard extends StatelessWidget {
           fontWeight: FontWeight.w800,
           color: Colors.white,
         ),
+      ),
+    );
+  }
+}
+
+/// Nút tiền tệ kiểu HUD: gradient nổi, viền highlight, bóng — trông như có thể bấm.
+class _SkeuHudResourceChip extends StatelessWidget {
+  final _HudResourceKind kind;
+  final IconData? icon;
+  final Widget? iconWidget;
+  final Color accent;
+  final int value;
+  final Color? valueColor;
+  final String suffix;
+  final VoidCallback? onTap;
+  final double iconSize;
+  final double fontSize;
+
+  const _SkeuHudResourceChip({
+    required this.kind,
+    this.icon,
+    this.iconWidget,
+    required this.accent,
+    required this.value,
+    this.valueColor,
+    this.suffix = '',
+    this.onTap,
+    required this.iconSize,
+    required this.fontSize,
+  }) : assert(icon != null || iconWidget != null);
+
+  (LinearGradient, List<BoxShadow>, Color) _shellStyle() {
+    switch (kind) {
+      case _HudResourceKind.diamond:
+        return (
+          LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              accent.withValues(alpha: 0.95),
+              const Color(0xFF0A3D52),
+              const Color(0xFF051F2A),
+            ],
+            stops: const [0.0, 0.55, 1.0],
+          ),
+          [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.55),
+              offset: const Offset(0, 3),
+              blurRadius: 5,
+            ),
+            BoxShadow(
+              color: accent.withValues(alpha: 0.35),
+              offset: const Offset(0, -1),
+              blurRadius: 0,
+            ),
+          ],
+          Colors.white.withValues(alpha: 0.38),
+        );
+      case _HudResourceKind.coin:
+        return (
+          LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              const Color(0xFFFFE8A8),
+              accent,
+              const Color(0xFF7A5200),
+            ],
+            stops: const [0.0, 0.45, 1.0],
+          ),
+          [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.5),
+              offset: const Offset(0, 3),
+              blurRadius: 5,
+            ),
+            BoxShadow(
+              color: const Color(0xFFFFF6D6).withValues(alpha: 0.45),
+              offset: const Offset(0, -1.5),
+              blurRadius: 0,
+            ),
+          ],
+          const Color(0xFFFFF2C4).withValues(alpha: 0.65),
+        );
+      case _HudResourceKind.streak:
+        return (
+          LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              const Color(0xFFFF9A6B),
+              accent,
+              const Color(0xFF6B1F0A),
+            ],
+            stops: const [0.0, 0.5, 1.0],
+          ),
+          [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.52),
+              offset: const Offset(0, 3),
+              blurRadius: 5,
+            ),
+            BoxShadow(
+              color: const Color(0xFFFFD4B8).withValues(alpha: 0.4),
+              offset: const Offset(0, -1),
+              blurRadius: 0,
+            ),
+          ],
+          Colors.white.withValues(alpha: 0.42),
+        );
+    }
+  }
+
+  BoxDecoration _iconBossDecoration() {
+    switch (kind) {
+      case _HudResourceKind.diamond:
+        return BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: RadialGradient(
+            colors: [
+              Colors.white.withValues(alpha: 0.55),
+              accent.withValues(alpha: 0.35),
+              const Color(0xFF062530),
+            ],
+            stops: const [0.0, 0.45, 1.0],
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.45),
+              offset: const Offset(0, 2),
+              blurRadius: 3,
+            ),
+            BoxShadow(
+              color: Colors.white.withValues(alpha: 0.25),
+              offset: const Offset(0, -1),
+              blurRadius: 0,
+            ),
+          ],
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.35),
+            width: 0.8,
+          ),
+        );
+      case _HudResourceKind.coin:
+        return BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: const RadialGradient(
+            colors: [
+              Color(0xFFFFF6E0),
+              Color(0xFFE8B84A),
+              Color(0xFF5C3D00),
+            ],
+            stops: [0.0, 0.55, 1.0],
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.42),
+              offset: const Offset(0, 2),
+              blurRadius: 3,
+            ),
+          ],
+          border: Border.all(
+            color: const Color(0xFFFFF0C8).withValues(alpha: 0.9),
+            width: 0.9,
+          ),
+        );
+      case _HudResourceKind.streak:
+        return BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: RadialGradient(
+            colors: [
+              const Color(0xFFFFE0C8),
+              accent.withValues(alpha: 0.9),
+              const Color(0xFF4A1508),
+            ],
+            stops: const [0.0, 0.5, 1.0],
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.45),
+              offset: const Offset(0, 2),
+              blurRadius: 3,
+            ),
+            BoxShadow(
+              color: const Color(0xFFFFB899).withValues(alpha: 0.5),
+              offset: const Offset(0, -1),
+              blurRadius: 0,
+            ),
+          ],
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.4),
+            width: 0.8,
+          ),
+        );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final (gradient, outerShadows, borderHighlight) = _shellStyle();
+    final boss = iconSize + 5;
+    final radius = BorderRadius.circular(999);
+    final textColor = valueColor ?? accent;
+
+    final iconArea = Container(
+      width: boss,
+      height: boss,
+      alignment: Alignment.center,
+      decoration: _iconBossDecoration(),
+      child: iconWidget ??
+          Icon(
+            icon,
+            size: iconSize,
+            color: Colors.white,
+            shadows: [
+              Shadow(
+                color: Colors.black.withValues(alpha: 0.55),
+                offset: const Offset(0, 1),
+                blurRadius: 1.5,
+              ),
+            ],
+          ),
+    );
+
+    final label = Text(
+      '$value$suffix',
+      style: TextStyle(
+        fontFamily: AppTextStyles.fontUI,
+        fontSize: fontSize,
+        fontWeight: FontWeight.w800,
+        letterSpacing: -0.2,
+        color: textColor,
+        shadows: [
+          Shadow(
+            color: Colors.black.withValues(alpha: 0.55),
+            offset: const Offset(0, 1),
+            blurRadius: 2,
+          ),
+          Shadow(
+            color: Colors.white.withValues(alpha: 0.25),
+            offset: const Offset(0, -0.5),
+            blurRadius: 0,
+          ),
+        ],
+      ),
+    );
+
+    final inner = Padding(
+      padding: const EdgeInsets.fromLTRB(5, 4, 8, 4),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          iconArea,
+          const SizedBox(width: 5),
+          label,
+        ],
+      ),
+    );
+
+    final deco = BoxDecoration(
+      borderRadius: radius,
+      gradient: gradient,
+      border: Border.all(color: borderHighlight, width: 1),
+      boxShadow: outerShadows,
+    );
+
+    if (onTap == null) {
+      return DecoratedBox(decoration: deco, child: inner);
+    }
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        customBorder: RoundedRectangleBorder(borderRadius: radius),
+        splashColor: Colors.white.withValues(alpha: 0.22),
+        highlightColor: Colors.white.withValues(alpha: 0.12),
+        child: Ink(decoration: deco, child: inner),
       ),
     );
   }
