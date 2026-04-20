@@ -309,6 +309,8 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                               if (_isContributor) ...[
                                 _buildTypeSection(
                                   title: 'Môn học cá nhân',
+                                  sectionIcon: Icons.lock_rounded,
+                                  sectionTint: AppColors.primaryLight,
                                   summary:
                                       'Môn riêng — chỉ bạn thấy; bài học private miễn phí cho bạn.',
                                   detail:
@@ -319,6 +321,8 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                                 const SizedBox(height: 12),
                                 _buildTypeSection(
                                   title: 'Môn học cộng đồng',
+                                  sectionIcon: Icons.groups_rounded,
+                                  sectionTint: AppColors.orangeNeon,
                                   summary:
                                       'Đóng góp bài được duyệt có thể mang lại thưởng hàng tháng.',
                                   detail:
@@ -329,6 +333,8 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                                 const SizedBox(height: 12),
                                 _buildTypeSection(
                                   title: 'Môn học chuyên gia',
+                                  sectionIcon: Icons.workspace_premium_rounded,
+                                  sectionTint: AppColors.purpleNeon,
                                   summary:
                                       'Nội dung chuyên sâu — mỗi bài mở bằng 50 kim cương; cần admin duyệt.',
                                   detail:
@@ -391,7 +397,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                 },
               ),
         filled: true,
-        fillColor: AppColors.bgSecondary,
+        fillColor: _bgSecondary,
         isDense: true,
         contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
         border: const OutlineInputBorder(
@@ -462,40 +468,74 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
   }
 
   Widget _buildLearnerFilterChips() {
+    ChipThemeData chipTheme(Color accent) {
+      return ChipThemeData(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(
+            color: accent.withValues(alpha: 0.35),
+          ),
+        ),
+        showCheckmark: false,
+        labelStyle: AppTextStyles.labelMedium,
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+      );
+    }
+
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
-          ChoiceChip(
-            label: const Text('Tất cả'),
-            selected: _subjectFilter == 'all',
-            onSelected: (_) => setState(() => _subjectFilter = 'all'),
-            selectedColor: AppColors.purpleNeon.withValues(alpha: 0.18),
-            backgroundColor: _bgSecondary,
+          Theme(
+            data: Theme.of(context).copyWith(
+              chipTheme: chipTheme(AppColors.purpleNeon),
+            ),
+            child: ChoiceChip(
+              label: const Text('Tất cả'),
+              selected: _subjectFilter == 'all',
+              onSelected: (_) => setState(() => _subjectFilter = 'all'),
+              selectedColor: AppColors.purpleNeon.withValues(alpha: 0.22),
+              backgroundColor: _bgSecondary,
+            ),
           ),
           const SizedBox(width: 10),
-          ChoiceChip(
-            label: const Text('Cá nhân'),
-            selected: _subjectFilter == 'private',
-            onSelected: (_) => setState(() => _subjectFilter = 'private'),
-            selectedColor: AppColors.primaryLight.withValues(alpha: 0.16),
-            backgroundColor: _bgSecondary,
+          Theme(
+            data: Theme.of(context).copyWith(
+              chipTheme: chipTheme(AppColors.primaryLight),
+            ),
+            child: ChoiceChip(
+              label: const Text('Cá nhân'),
+              selected: _subjectFilter == 'private',
+              onSelected: (_) => setState(() => _subjectFilter = 'private'),
+              selectedColor: AppColors.primaryLight.withValues(alpha: 0.2),
+              backgroundColor: _bgSecondary,
+            ),
           ),
           const SizedBox(width: 10),
-          ChoiceChip(
-            label: const Text('Cộng đồng'),
-            selected: _subjectFilter == 'community',
-            onSelected: (_) => setState(() => _subjectFilter = 'community'),
-            selectedColor: AppColors.orangeNeon.withValues(alpha: 0.18),
-            backgroundColor: _bgSecondary,
+          Theme(
+            data: Theme.of(context).copyWith(
+              chipTheme: chipTheme(AppColors.orangeNeon),
+            ),
+            child: ChoiceChip(
+              label: const Text('Cộng đồng'),
+              selected: _subjectFilter == 'community',
+              onSelected: (_) => setState(() => _subjectFilter = 'community'),
+              selectedColor: AppColors.orangeNeon.withValues(alpha: 0.22),
+              backgroundColor: _bgSecondary,
+            ),
           ),
           const SizedBox(width: 10),
-          ChoiceChip(
-            label: const Text('Chuyên gia'),
-            selected: _subjectFilter == 'expert',
-            onSelected: (_) => setState(() => _subjectFilter = 'expert'),
-            selectedColor: AppColors.purpleNeon.withValues(alpha: 0.2),
-            backgroundColor: _bgSecondary,
+          Theme(
+            data: Theme.of(context).copyWith(
+              chipTheme: chipTheme(AppColors.purpleNeon),
+            ),
+            child: ChoiceChip(
+              label: const Text('Chuyên gia'),
+              selected: _subjectFilter == 'expert',
+              onSelected: (_) => setState(() => _subjectFilter = 'expert'),
+              selectedColor: AppColors.purpleNeon.withValues(alpha: 0.24),
+              backgroundColor: _bgSecondary,
+            ),
           ),
         ],
       ),
@@ -643,21 +683,88 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style: AppTextStyles.h4.copyWith(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                AppColors.purpleNeon.withValues(alpha: 0.16),
+                _bgSecondary,
+              ],
+            ),
+            border: Border.all(
+              color: AppColors.purpleNeon.withValues(alpha: 0.28),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.28),
+                offset: const Offset(0, 4),
+                blurRadius: 10,
+              ),
+            ],
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(9),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      AppColors.purpleNeon.withValues(alpha: 0.45),
+                      AppColors.purpleNeon.withValues(alpha: 0.1),
+                    ],
+                  ),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.1),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.purpleNeon.withValues(alpha: 0.2),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.menu_book_rounded,
+                  color: AppColors.primaryLight,
+                  size: 22,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: AppTextStyles.h4.copyWith(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${items.length} môn học',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
-        const SizedBox(height: 4),
-        Text(
-          '${items.length} môn học',
-          style: AppTextStyles.bodySmall.copyWith(
-            color: AppColors.textSecondary,
-          ),
-        ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 12),
         if (items.isEmpty)
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 20),
@@ -670,12 +777,8 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
           GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount:
-                  _gridCrossAxisCount(MediaQuery.sizeOf(context).width - 28),
-              mainAxisSpacing: 10,
-              crossAxisSpacing: 10,
-              childAspectRatio: 0.84,
+            gridDelegate: _librarySubjectsGridDelegate(
+              MediaQuery.sizeOf(context).width - 28,
             ),
             itemCount: items.length,
             itemBuilder: (context, index) => _buildSubjectTile(items[index]),
@@ -832,10 +935,21 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
     return Color(_subjectColor(name));
   }
 
-  int _gridCrossAxisCount(double width) {
-    if (width >= 520) return 4;
-    if (width >= 340) return 3;
-    return 2;
+  /// Lưới môn học dày — ưu tiên nhiều cột, icon tròn (không còn thẻ vuông lớn).
+  int _libraryTileCrossAxisCount(double width) {
+    if (width >= 560) return 6;
+    if (width >= 440) return 5;
+    if (width >= 320) return 4;
+    return 3;
+  }
+
+  SliverGridDelegate _librarySubjectsGridDelegate(double gridWidth) {
+    return SliverGridDelegateWithFixedCrossAxisCount(
+      crossAxisCount: _libraryTileCrossAxisCount(gridWidth),
+      mainAxisSpacing: 10,
+      crossAxisSpacing: 8,
+      childAspectRatio: 0.74,
+    );
   }
 
   /// Optional admin cover; otherwise tiles use icon watermark + gradient (no remote image).
@@ -846,22 +960,31 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
     return custom;
   }
 
-  Widget _subjectIconWatermark(
-      Map<String, dynamic> subject, String name, Color accent) {
+  Widget _subjectCircleGlyph(
+    Map<String, dynamic> subject,
+    String name,
+    double diameter,
+  ) {
     final meta = _metadata(subject);
     final iconRaw = meta?['icon']?.toString().trim();
+    final emojiSize = diameter * 0.44;
+    final letterSize = diameter * 0.38;
     if (iconRaw != null && iconRaw.isNotEmpty) {
       final hasPicto =
           RegExp(r'\p{Extended_Pictographic}', unicode: true).hasMatch(iconRaw);
       if (hasPicto) {
         return Text(
           iconRaw,
+          textAlign: TextAlign.center,
           style: TextStyle(
-            fontSize: 88,
+            fontSize: emojiSize,
             height: 1,
-            color: Colors.white.withValues(alpha: 0.2),
             shadows: [
-              Shadow(color: accent.withValues(alpha: 0.35), blurRadius: 24),
+              Shadow(
+                color: Colors.black.withValues(alpha: 0.45),
+                offset: const Offset(0, 1),
+                blurRadius: 2,
+              ),
             ],
           ),
         );
@@ -870,10 +993,17 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
         return Text(
           iconRaw.toUpperCase(),
           style: TextStyle(
-            fontSize: 80,
+            fontSize: letterSize,
             fontWeight: FontWeight.w900,
-            color: accent.withValues(alpha: 0.22),
+            color: Colors.white,
             height: 1,
+            shadows: [
+              Shadow(
+                color: Colors.black.withValues(alpha: 0.55),
+                offset: const Offset(0, 1),
+                blurRadius: 3,
+              ),
+            ],
           ),
         );
       }
@@ -882,54 +1012,127 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
     return Text(
       letter,
       style: TextStyle(
-        fontSize: 80,
+        fontSize: letterSize,
         fontWeight: FontWeight.w900,
-        color: Colors.white.withValues(alpha: 0.14),
+        color: Colors.white,
         height: 1,
+        shadows: [
+          Shadow(
+            color: Colors.black.withValues(alpha: 0.5),
+            offset: const Offset(0, 1),
+            blurRadius: 3,
+          ),
+        ],
       ),
     );
   }
 
-  Widget _iconBackdrop(
-      Map<String, dynamic> subject, String name, Color accent) {
-    final base =
-        Color.lerp(accent, const Color(0xFF0A0A0F), 0.72) ?? _bgSecondary;
-    final deep = Color.lerp(accent, Colors.black, 0.55) ?? _bgSecondary;
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            base,
-            _bgSecondary,
-            deep,
-          ],
-          stops: const [0.0, 0.45, 1.0],
+  Widget _buildSubjectCircleAvatar({
+    required Map<String, dynamic> subject,
+    required String name,
+    required Color accent,
+    required String? coverUrl,
+    double diameter = 56,
+  }) {
+    final hasCover = coverUrl != null && coverUrl.isNotEmpty;
+    final deep = Color.lerp(accent, Colors.black, 0.52) ?? _bgSecondary;
+    final mid = Color.lerp(accent, const Color(0xFF12121A), 0.45) ?? _bgSecondary;
+
+    Widget baseGradient() {
+      return Container(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: RadialGradient(
+            center: const Alignment(-0.4, -0.45),
+            radius: 1.05,
+            colors: [
+              Color.lerp(accent, Colors.white, 0.22)!,
+              mid,
+              deep,
+            ],
+            stops: const [0.0, 0.45, 1.0],
+          ),
         ),
-      ),
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          Positioned.fill(
-            child: IgnorePointer(
-              child: Align(
-                alignment: const Alignment(0, -0.25),
-                child: FractionallySizedBox(
-                  widthFactor: 0.95,
-                  heightFactor: 0.55,
-                  child: Transform.rotate(
-                    angle: -0.1,
-                    child: FittedBox(
-                      fit: BoxFit.contain,
-                      child: _subjectIconWatermark(subject, name, accent),
-                    ),
-                  ),
-                ),
+      );
+    }
+
+    Widget gloss() {
+      return Positioned(
+        top: 0,
+        left: 0,
+        right: 0,
+        height: diameter * 0.42,
+        child: IgnorePointer(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              shape: BoxShape.rectangle,
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.white.withValues(alpha: 0.32),
+                  Colors.white.withValues(alpha: 0.0),
+                ],
               ),
             ),
           ),
+        ),
+      );
+    }
+
+    return Container(
+      width: diameter,
+      height: diameter,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.5),
+            offset: const Offset(0, 4),
+            blurRadius: 8,
+          ),
+          BoxShadow(
+            color: accent.withValues(alpha: 0.38),
+            offset: const Offset(0, 2),
+            blurRadius: 12,
+          ),
         ],
+      ),
+      child: ClipOval(
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            baseGradient(),
+            if (hasCover)
+              Image.network(
+                coverUrl,
+                fit: BoxFit.cover,
+                width: diameter,
+                height: diameter,
+                loadingBuilder: (context, child, progress) {
+                  if (progress == null) return child;
+                  return Center(
+                    child: SizedBox(
+                      width: diameter * 0.32,
+                      height: diameter * 0.32,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: accent.withValues(alpha: 0.85),
+                      ),
+                    ),
+                  );
+                },
+                errorBuilder: (_, __, ___) => Center(
+                  child: _subjectCircleGlyph(subject, name, diameter),
+                ),
+              ),
+            if (!hasCover)
+              Center(
+                child: _subjectCircleGlyph(subject, name, diameter),
+              ),
+            gloss(),
+          ],
+        ),
       ),
     );
   }
@@ -941,136 +1144,67 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
     final coverUrl = _customCoverUrl(subject);
     final accent = _accentFromSubject(subject, name);
 
-    final meta = _metadata(subject);
-    final iconRaw = meta?['icon']?.toString().trim();
-    final iconText = iconRaw != null && iconRaw.isNotEmpty
-        ? iconRaw
-        : (name.isNotEmpty ? name.substring(0, 1).toUpperCase() : '?');
+    const double d = 54;
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          if (coverUrl != null)
-            Image.network(
-              coverUrl,
-              fit: BoxFit.cover,
-              width: double.infinity,
-              height: double.infinity,
-              loadingBuilder: (context, child, progress) {
-                if (progress == null) return child;
-                return _iconBackdrop(subject, name, accent);
-              },
-              errorBuilder: (_, __, ___) =>
-                  _iconBackdrop(subject, name, accent),
-            )
-          else
-            _iconBackdrop(subject, name, accent),
+    void onTap() {
+      if (_isContributor) {
+        context.push(
+          '/contributor/mind-map?subjectId=$id&subjectName=${Uri.encodeComponent(name)}',
+        );
+      } else {
+        context.push('/subjects/$id/intro');
+      }
+    }
 
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.black.withValues(alpha: 0.02),
-                  Colors.black.withValues(alpha: 0.35),
-                  Colors.black.withValues(alpha: 0.82),
-                ],
-                stops: const [0.0, 0.55, 1.0],
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        splashColor: accent.withValues(alpha: 0.18),
+        highlightColor: accent.withValues(alpha: 0.06),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              _buildSubjectCircleAvatar(
+                subject: subject,
+                name: name,
+                accent: accent,
+                coverUrl: coverUrl,
+                diameter: d,
               ),
-            ),
-          ),
-
-          Positioned.fill(
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: () {
-                  if (_isContributor) {
-                    context.push(
-                      '/contributor/mind-map?subjectId=$id&subjectName=${Uri.encodeComponent(name)}',
-                    );
-                  } else {
-                    context.push('/subjects/$id/intro');
-                  }
-                },
-                child: const SizedBox.expand(),
+              const SizedBox(height: 8),
+              Text(
+                name,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 11.5,
+                  height: 1.25,
+                ),
               ),
-            ),
-          ),
-
-          // Icon-only layout (ẩn mô tả / nút bên dưới).
-          Positioned.fill(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 66,
-                    height: 66,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: _bgSecondary.withValues(
-                          alpha: _isContributor ? 0.35 : 0.25),
-                      border: Border.all(color: accent.withValues(alpha: 0.55)),
-                    ),
-                    child: Center(
-                      child: Text(
-                        iconText,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
+              if (totalNodes != null) ...[
+                const SizedBox(height: 3),
+                Text(
+                  '$totalNodes bài',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 10,
                   ),
-                  const SizedBox(height: 10),
-                  Text(
-                    name,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.92),
-                      fontWeight: FontWeight.w800,
-                      fontSize: 12.5,
-                      height: 1.3,
-                      shadows: [
-                        Shadow(
-                          color: Colors.black.withValues(alpha: 0.9),
-                          blurRadius: 8,
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (totalNodes != null) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      '$totalNodes bài học',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.78),
-                        fontWeight: FontWeight.w600,
-                        fontSize: 11,
-                        shadows: [
-                          Shadow(
-                            color: Colors.black.withValues(alpha: 0.85),
-                            blurRadius: 6,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
+                ),
+              ],
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -1176,26 +1310,70 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
     required String detail,
     required List<Map<String, dynamic>> items,
     required Future<void> Function() onCreate,
+    IconData sectionIcon = Icons.folder_rounded,
+    Color sectionTint = AppColors.primaryLight,
   }) {
     return Container(
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 14),
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0x332D363D)),
+        borderRadius: BorderRadius.circular(16),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            sectionTint.withValues(alpha: 0.14),
+            _bgSecondary,
+            _bgSecondary,
+          ],
+        ),
+        border: Border.all(
+          color: sectionTint.withValues(alpha: 0.28),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.35),
+            offset: const Offset(0, 6),
+            blurRadius: 14,
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      sectionTint.withValues(alpha: 0.45),
+                      sectionTint.withValues(alpha: 0.12),
+                    ],
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: sectionTint.withValues(alpha: 0.25),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.12),
+                  ),
+                ),
+                child: Icon(sectionIcon, color: sectionTint, size: 20),
+              ),
+              const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   title,
                   style: const TextStyle(
                     color: AppColors.textPrimary,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w800,
                     fontSize: 15,
+                    letterSpacing: -0.2,
                   ),
                 ),
               ),
@@ -1203,30 +1381,37 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                 tooltip: 'Chi tiết loại môn',
                 onPressed: () =>
                     _showContributorSectionDetail(title, detail),
-                icon: const Icon(Icons.info_outline,
-                    color: AppColors.textSecondary, size: 20),
+                icon: const Icon(Icons.info_outline_rounded,
+                    color: AppColors.textSecondary, size: 22),
                 visualDensity: VisualDensity.compact,
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
               ),
-              const SizedBox(width: 4),
-              TextButton.icon(
+              const SizedBox(width: 2),
+              FilledButton.tonalIcon(
+                style: FilledButton.styleFrom(
+                  visualDensity: VisualDensity.compact,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  backgroundColor: sectionTint.withValues(alpha: 0.2),
+                  foregroundColor: sectionTint,
+                ),
                 onPressed: onCreate,
-                icon: const Icon(Icons.add, size: 18),
+                icon: const Icon(Icons.add_rounded, size: 18),
                 label: const Text('Tạo'),
               ),
             ],
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           Text(
             summary,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
+            style: TextStyle(
+              color: AppColors.textSecondary.withValues(alpha: 0.95),
               fontSize: 12.5,
-              height: 1.35,
+              height: 1.38,
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           if (items.isEmpty)
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 12),
@@ -1239,11 +1424,8 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
             GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisSpacing: 10,
-                crossAxisSpacing: 10,
-                childAspectRatio: 0.84,
+              gridDelegate: _librarySubjectsGridDelegate(
+                MediaQuery.sizeOf(context).width - 48,
               ),
               itemCount: items.length,
               itemBuilder: (context, index) => _buildSubjectTile(items[index]),
