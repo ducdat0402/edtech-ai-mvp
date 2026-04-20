@@ -501,20 +501,19 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(18),
                         gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
                           colors: [
-                            AppColors.orangeNeon.withValues(alpha: 0.1),
-                            AppColors.bgSecondary,
+                            const Color(0xFF202A34),
                             AppColors.bgSecondary,
                           ],
                         ),
                         border: Border.all(
-                          color: AppColors.purpleNeon.withValues(alpha: 0.24),
+                          color: AppColors.purpleNeon.withValues(alpha: 0.18),
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.38),
+                            color: Colors.black.withValues(alpha: 0.42),
                             offset: const Offset(0, 6),
                             blurRadius: 14,
                           ),

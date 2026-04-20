@@ -508,8 +508,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
         leading: const AppBarLeadingBackAndHome(),
         leadingWidth: 112,
         automaticallyImplyLeading: false,
-        title: Text('Hồ sơ',
-            style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    _accentColor.withValues(alpha: 0.34),
+                    _accentColor.withValues(alpha: 0.12),
+                  ],
+                ),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                boxShadow: [
+                  BoxShadow(
+                    color: _accentColor.withValues(alpha: 0.32),
+                    blurRadius: 14,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: const Icon(Icons.person_rounded,
+                  color: Colors.white, size: 18),
+            ),
+            const SizedBox(width: 10),
+            Text('Hồ sơ',
+                style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
+          ],
+        ),
         actions: [
           IconButton(
             icon: Container(
@@ -553,8 +581,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const CircularProgressIndicator(color: AppColors.primaryLight),
-          const SizedBox(height: 16),
+          Container(
+            width: 76,
+            height: 76,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  _accentColor.withValues(alpha: 0.32),
+                  _accentColor.withValues(alpha: 0.12),
+                ],
+              ),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+              boxShadow: [
+                BoxShadow(
+                  color: _accentColor.withValues(alpha: 0.24),
+                  blurRadius: 18,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: const Center(
+              child: CircularProgressIndicator(color: AppColors.primaryLight),
+            ),
+          ),
+          const SizedBox(height: 18),
           Text('Đang tải...',
               style: AppTextStyles.bodyMedium
                   .copyWith(color: AppColors.textSecondary)),
@@ -577,11 +630,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Flexible(
-                child: Text(
-                  _profileData!['fullName'] ?? _profileData!['email'] ?? 'User',
-                  textAlign: TextAlign.center,
-                  style:
-                      AppTextStyles.h2.copyWith(color: AppColors.textPrimary),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.white.withValues(alpha: 0.08),
+                        Colors.white.withValues(alpha: 0.03),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: _accentColor.withValues(alpha: 0.24),
+                    ),
+                  ),
+                  child: Text(
+                    _profileData!['fullName'] ?? _profileData!['email'] ?? 'User',
+                    textAlign: TextAlign.center,
+                    style:
+                        AppTextStyles.h2.copyWith(color: AppColors.textPrimary),
+                  ),
                 ),
               ),
               IconButton(
@@ -1014,9 +1085,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
         borderRadius: BorderRadius.circular(14),
         child: Ink(
           decoration: BoxDecoration(
-            color: _bgSecondary,
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.white.withValues(alpha: 0.06),
+                _bgSecondary,
+              ],
+            ),
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: _borderColor.withValues(alpha: 0.85)),
+            border: Border.all(color: _accentColor.withValues(alpha: 0.22)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.3),
+                blurRadius: 12,
+                offset: const Offset(0, 5),
+              ),
+            ],
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
@@ -1122,9 +1207,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const Icon(Icons.workspace_premium_rounded,
                 color: AppColors.xpGold, size: 20),
             const SizedBox(width: 8),
-            Text('Huy hiệu',
-                style: AppTextStyles.labelLarge
-                    .copyWith(color: AppColors.textPrimary)),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    AppColors.xpGold.withValues(alpha: 0.22),
+                    AppColors.xpGold.withValues(alpha: 0.08),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(999),
+                border: Border.all(
+                  color: AppColors.xpGold.withValues(alpha: 0.32),
+                ),
+              ),
+              child: Text('Huy hiệu',
+                  style: AppTextStyles.labelLarge
+                      .copyWith(color: AppColors.textPrimary)),
+            ),
             const Spacer(),
             GestureDetector(
               onTap: () => context.push('/weekly-rewards-history'),
@@ -1147,9 +1249,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 width: 70,
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: _bgSecondary,
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      AppColors.xpGold.withValues(alpha: 0.14),
+                      _bgSecondary,
+                    ],
+                  ),
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: const Color(0x332D363D)),
+                  border: Border.all(
+                    color: AppColors.xpGold.withValues(alpha: 0.24),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.25),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -1187,9 +1305,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: _bgSecondary,
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            color.withValues(alpha: 0.14),
+            _bgSecondary,
+          ],
+        ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: color.withValues(alpha: 0.3)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.28),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: ListTile(
         onTap: () {
@@ -1221,9 +1353,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
       margin: const EdgeInsets.only(top: 12),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: _bgSecondary,
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Colors.white.withValues(alpha: 0.06),
+            _bgSecondary,
+          ],
+        ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _borderColor),
+        border: Border.all(color: _accentColor.withValues(alpha: 0.22)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.28),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1277,29 +1423,50 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildLogoutButton() {
-    return GestureDetector(
-      onTap: () {
-        HapticFeedback.mediumImpact();
-        _handleLogout();
-      },
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppColors.errorNeon.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.errorNeon.withValues(alpha: 0.3)),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.logout, color: AppColors.errorNeon),
-            const SizedBox(width: 8),
-            Text(
-              'Đăng xuất',
-              style:
-                  AppTextStyles.labelLarge.copyWith(color: AppColors.errorNeon),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.mediumImpact();
+          _handleLogout();
+        },
+        borderRadius: BorderRadius.circular(16),
+        child: Ink(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                AppColors.errorNeon.withValues(alpha: 0.28),
+                AppColors.errorNeon.withValues(alpha: 0.14),
+              ],
             ),
-          ],
+            borderRadius: BorderRadius.circular(16),
+            border:
+                Border.all(color: AppColors.errorNeon.withValues(alpha: 0.48)),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.errorNeon.withValues(alpha: 0.2),
+                blurRadius: 14,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.logout, color: Colors.white),
+              const SizedBox(width: 8),
+              Text(
+                'Đăng xuất',
+                style: AppTextStyles.labelLarge.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
