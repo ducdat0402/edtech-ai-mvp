@@ -635,6 +635,7 @@ class _PodiumItem extends StatelessWidget {
         rankHint: rank,
         sourceLabel: profileSourceLabel,
         weeklyXpFromBoard: wxp > 0 ? wxp : null,
+        avatarFrameIdHint: entry['avatarFrameId'] as String?,
       );
     }
 
@@ -726,6 +727,7 @@ class _WeeklyEntryCard extends StatelessWidget {
         rankHint: rank,
         sourceLabel: profileSourceLabel,
         weeklyXpFromBoard: wxp > 0 ? wxp : null,
+        avatarFrameIdHint: entry['avatarFrameId'] as String?,
       );
     }
 
@@ -831,6 +833,7 @@ class _LeaderboardEntryCard extends StatelessWidget {
         nameHint: name,
         rankHint: rank,
         sourceLabel: profileSourceLabel,
+        avatarFrameIdHint: entry['avatarFrameId'] as String?,
       );
     }
 

@@ -36,11 +36,17 @@ export class CommunityService {
     }
   }
 
-  private mapAuthor(user: { id: string; fullName: string | null; avatarUrl: string | null }) {
+  private mapAuthor(user: {
+    id: string;
+    fullName: string | null;
+    avatarUrl: string | null;
+    equippedAvatarFrameId?: string | null;
+  }) {
     return {
       id: user.id,
       fullName: user.fullName || 'Anonymous',
       avatarUrl: user.avatarUrl ?? null,
+      avatarFrameId: user.equippedAvatarFrameId ?? null,
     };
   }
 
@@ -51,7 +57,12 @@ export class CommunityService {
     const qb = this.statusRepo
       .createQueryBuilder('s')
       .innerJoin('s.user', 'user')
-      .addSelect(['user.id', 'user.fullName', 'user.avatarUrl'])
+      .addSelect([
+        'user.id',
+        'user.fullName',
+        'user.avatarUrl',
+        'user.equippedAvatarFrameId',
+      ])
       .orderBy('s.createdAt', 'DESC')
       .addOrderBy('s.id', 'DESC')
       .take(take);
@@ -132,7 +143,12 @@ export class CommunityService {
     const full = await this.statusRepo
       .createQueryBuilder('s')
       .innerJoin('s.user', 'user')
-      .addSelect(['user.id', 'user.fullName', 'user.avatarUrl'])
+      .addSelect([
+        'user.id',
+        'user.fullName',
+        'user.avatarUrl',
+        'user.equippedAvatarFrameId',
+      ])
       .where('s.id = :id', { id: saved.id })
       .getOne();
     if (!full) throw new NotFoundException();
@@ -198,7 +214,12 @@ export class CommunityService {
     const comments = await this.commentRepo
       .createQueryBuilder('c')
       .innerJoin('c.user', 'user')
-      .addSelect(['user.id', 'user.fullName', 'user.avatarUrl'])
+      .addSelect([
+        'user.id',
+        'user.fullName',
+        'user.avatarUrl',
+        'user.equippedAvatarFrameId',
+      ])
       .where('c.statusId = :statusId', { statusId })
       .orderBy('c.createdAt', 'ASC')
       .take(take)
@@ -225,7 +246,12 @@ export class CommunityService {
     const full = await this.commentRepo
       .createQueryBuilder('c')
       .innerJoin('c.user', 'user')
-      .addSelect(['user.id', 'user.fullName', 'user.avatarUrl'])
+      .addSelect([
+        'user.id',
+        'user.fullName',
+        'user.avatarUrl',
+        'user.equippedAvatarFrameId',
+      ])
       .where('c.id = :id', { id: saved.id })
       .getOne();
     if (!full) throw new NotFoundException();

@@ -4,7 +4,6 @@ import 'package:edtech_mobile/core/constants/currency_labels.dart';
 import 'package:edtech_mobile/core/config/api_config.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/theme/theme.dart';
-import 'package:edtech_mobile/theme/widgets/avatar_frame_ring.dart';
 
 /// Chữ viết tắt từ tên hiển thị trên avatar.
 String leaderboardInitials(String? name) {
@@ -131,6 +130,8 @@ void showLeaderboardUserProfileSheet(
   int? rankHint,
   String? sourceLabel,
   int? weeklyXpFromBoard,
+  /// Khung từ bảng xếp hạng (hiện ngay; API vẫn là nguồn đúng sau khi tải).
+  String? avatarFrameIdHint,
 }) {
   showModalBottomSheet<void>(
     context: context,
@@ -143,6 +144,7 @@ void showLeaderboardUserProfileSheet(
       rankHint: rankHint,
       sourceLabel: sourceLabel,
       weeklyXpFromBoard: weeklyXpFromBoard,
+      avatarFrameIdHint: avatarFrameIdHint,
     ),
   );
 }
@@ -154,6 +156,7 @@ class _LeaderboardUserProfileSheetBody extends StatefulWidget {
   final int? rankHint;
   final String? sourceLabel;
   final int? weeklyXpFromBoard;
+  final String? avatarFrameIdHint;
 
   const _LeaderboardUserProfileSheetBody({
     required this.api,
@@ -162,6 +165,7 @@ class _LeaderboardUserProfileSheetBody extends StatefulWidget {
     this.rankHint,
     this.sourceLabel,
     this.weeklyXpFromBoard,
+    this.avatarFrameIdHint,
   });
 
   @override
@@ -227,6 +231,8 @@ class _LeaderboardUserProfileSheetBodyState
               LeaderboardUserAvatar(
                 displayName: _data?['fullName'] as String? ?? widget.nameHint,
                 imageUrl: _data?['avatarUrl'] as String?,
+                avatarFrameId: (_data?['avatarFrameId'] as String?) ??
+                    widget.avatarFrameIdHint,
                 size: 64,
               ),
               const SizedBox(width: 16),

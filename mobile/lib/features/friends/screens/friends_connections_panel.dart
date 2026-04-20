@@ -313,6 +313,7 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
     final level = friend['level'] ?? 1;
     final streak = friend['currentStreak'] ?? 0;
     final name = friend['fullName'] ?? friend['email'] ?? 'User';
+    final friendId = friend['id'] as String?;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -328,7 +329,19 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
           imageUrl: friend['avatarUrl'] as String?,
           avatarFrameId: friend['avatarFrameId'] as String?,
           size: 46,
-          onTap: null,
+          onTap: friendId == null || friendId.isEmpty
+              ? null
+              : () {
+                  final api =
+                      Provider.of<ApiService>(context, listen: false);
+                  showLeaderboardUserProfileSheet(
+                    context,
+                    api: api,
+                    userId: friendId,
+                    nameHint: name.toString(),
+                    avatarFrameIdHint: friend['avatarFrameId'] as String?,
+                  );
+                },
         ),
         title: Text(name,
             style: const TextStyle(

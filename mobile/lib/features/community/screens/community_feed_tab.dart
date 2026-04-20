@@ -1,9 +1,8 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:edtech_mobile/core/config/api_config.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
+import 'package:edtech_mobile/features/leaderboard/widgets/leaderboard_user_profile_sheet.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 
 /// Bảng tin cộng đồng: đăng status, like/dislike, bình luận, xem hồ sơ user.
@@ -194,14 +193,21 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
     );
   }
 
-  Future<void> _openUserProfile(String userId) async {
+  Future<void> _openUserProfile(
+    String userId, {
+    String? avatarFrameIdHint,
+  }) async {
     final api = Provider.of<ApiService>(context, listen: false);
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: AppColors.bgSecondary,
-      builder: (ctx) =>
-          _UserProfileSheet(api: api, userId: userId, myUserId: _myUserId),
+      builder: (ctx) => _UserProfileSheet(
+        api: api,
+        userId: userId,
+        myUserId: _myUserId,
+        avatarFrameIdHint: avatarFrameIdHint,
+      ),
     );
   }
 
@@ -422,8 +428,8 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
                         item['author'] as Map<String, dynamic>? ?? {};
                     final authorId = author['id']?.toString() ?? '';
                     final name = author['fullName']?.toString() ?? 'User';
-                    final avatarUrl = ApiConfig.absoluteMediaUrl(
-                        author['avatarUrl']?.toString());
+                    final authorFrameId =
+                        author['avatarFrameId'] as String?;
                     final isMine = _myUserId != null && authorId == _myUserId;
                     final myReaction = item['myReaction'] as String?;
                     final likeCount = item['likeCount'] as int? ?? 0;
@@ -444,30 +450,17 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
                           children: [
                             Row(
                               children: [
-                                InkWell(
+                                LeaderboardUserAvatar(
+                                  displayName: name,
+                                  imageUrl: author['avatarUrl']?.toString(),
+                                  avatarFrameId: authorFrameId,
+                                  size: 44,
                                   onTap: authorId.isEmpty
                                       ? null
-                                      : () => _openUserProfile(authorId),
-                                  borderRadius: BorderRadius.circular(24),
-                                  child: CircleAvatar(
-                                    radius: 22,
-                                    backgroundColor: AppColors.purpleNeon
-                                        .withValues(alpha: 0.2),
-                                    backgroundImage: avatarUrl.isNotEmpty
-                                        ? CachedNetworkImageProvider(avatarUrl)
-                                        : null,
-                                    child: avatarUrl.isEmpty
-                                        ? Text(
-                                            name.isNotEmpty
-                                                ? name[0].toUpperCase()
-                                                : '?',
-                                            style: const TextStyle(
-                                              color: AppColors.purpleNeon,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          )
-                                        : null,
-                                  ),
+                                      : () => _openUserProfile(
+                                            authorId,
+                                            avatarFrameIdHint: authorFrameId,
+                                          ),
                                 ),
                                 const SizedBox(width: 10),
                                 Expanded(
@@ -478,7 +471,11 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
                                       InkWell(
                                         onTap: authorId.isEmpty
                                             ? null
-                                            : () => _openUserProfile(authorId),
+                                            : () => _openUserProfile(
+                                                  authorId,
+                                                  avatarFrameIdHint:
+                                                      authorFrameId,
+                                                ),
                                         child: Text(
                                           name,
                                           style: const TextStyle(
@@ -876,11 +873,13 @@ class _UserProfileSheet extends StatefulWidget {
     required this.api,
     required this.userId,
     required this.myUserId,
+    this.avatarFrameIdHint,
   });
 
   final ApiService api;
   final String userId;
   final String? myUserId;
+  final String? avatarFrameIdHint;
 
   @override
   State<_UserProfileSheet> createState() => _UserProfileSheetState();
@@ -983,8 +982,6 @@ class _UserProfileSheetState extends State<_UserProfileSheet> {
     final name = _profile?['fullName']?.toString() ?? 'User';
     final level = _profile?['level'] ?? 1;
     final streak = _profile?['currentStreak'] ?? 0;
-    final avatarUrl =
-        ApiConfig.absoluteMediaUrl(_profile?['avatarUrl']?.toString());
     final status = _rel?['friendshipStatus']?.toString();
     final isSelf = status == 'self' || widget.myUserId == widget.userId;
 
@@ -993,22 +990,13 @@ class _UserProfileSheetState extends State<_UserProfileSheet> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          CircleAvatar(
-            radius: 40,
-            backgroundColor: AppColors.purpleNeon.withValues(alpha: 0.2),
-            backgroundImage: avatarUrl.isNotEmpty
-                ? CachedNetworkImageProvider(avatarUrl)
-                : null,
-            child: avatarUrl.isEmpty
-                ? Text(
-                    name.isNotEmpty ? name[0].toUpperCase() : '?',
-                    style: const TextStyle(
-                      fontSize: 28,
-                      color: AppColors.purpleNeon,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  )
-                : null,
+          LeaderboardUserAvatar(
+            displayName: name,
+            imageUrl: _profile?['avatarUrl'] as String?,
+            avatarFrameId: (_profile?['avatarFrameId'] as String?) ??
+                widget.avatarFrameIdHint,
+            size: 80,
+            onTap: null,
           ),
           const SizedBox(height: 12),
           Text(
