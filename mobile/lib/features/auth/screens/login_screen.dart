@@ -7,6 +7,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:edtech_mobile/core/constants/api_constants.dart';
 import 'package:edtech_mobile/core/services/auth_service.dart';
 import 'package:go_router/go_router.dart';
+import 'package:edtech_mobile/core/onboarding/onboarding_resume_controller.dart';
 import 'package:edtech_mobile/core/widgets/mascot_image.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 import 'package:edtech_mobile/features/auth/utils/google_js_stub.dart'
@@ -89,7 +90,7 @@ class _LoginScreenState extends State<LoginScreen>
           debugPrint('[LOGIN] navigating -> /dashboard');
         }
         if (mounted) {
-          context.go('/dashboard');
+          goHomeAfterAuth(context);
         }
       } else {
         setState(() {
@@ -448,7 +449,7 @@ class _LoginScreenState extends State<LoginScreen>
             final result = await authService.googleLogin(idToken: idToken);
             if (!mounted) return;
             if (result['success'] == true) {
-              context.go('/dashboard');
+              goHomeAfterAuth(context);
             } else {
               setState(() {
                 _errorMessage =
@@ -519,9 +520,9 @@ class _LoginScreenState extends State<LoginScreen>
       if (!mounted) return;
       if (result['success'] == true) {
         if (kDebugMode) {
-          debugPrint('[LOGIN][GOOGLE] navigating -> /dashboard');
+          debugPrint('[LOGIN][GOOGLE] navigating after auth');
         }
-        context.go('/dashboard');
+        goHomeAfterAuth(context);
       } else {
         setState(() {
           _errorMessage = result['message'] ?? 'Đăng nhập Google thất bại';

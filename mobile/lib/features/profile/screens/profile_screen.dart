@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:edtech_mobile/core/constants/currency_labels.dart';
 import 'package:edtech_mobile/core/config/api_config.dart';
+import 'package:edtech_mobile/core/onboarding/onboarding_resume_controller.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/services/auth_service.dart';
 import 'package:edtech_mobile/core/services/tutorial_service.dart';
@@ -478,7 +479,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     if (shouldLogout == true) {
       try {
+        if (!mounted) return;
+        final resume = context.read<OnboardingResumeController>();
         final authService = Provider.of<AuthService>(context, listen: false);
+        await resume.clearOnboardingFlow();
         await authService.logout();
         DashboardScreen.clearMemoryCache();
 

@@ -53,20 +53,26 @@ import 'package:edtech_mobile/features/auth/screens/forgot_password_screen.dart'
 import 'package:edtech_mobile/features/leaderboard/screens/weekly_rewards_history_screen.dart';
 import 'package:edtech_mobile/features/self_leadership/screens/weekly_plan_screen.dart';
 import 'package:edtech_mobile/core/auth/auth_session_controller.dart';
+import 'package:edtech_mobile/core/onboarding/onboarding_resume_controller.dart';
 import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 
-/// Router có redirect theo phiên đăng nhập (30 ngày + JWT).
-GoRouter createAppRouter(AuthSessionController authSession) {
+/// Router có redirect theo phiên đăng nhập (30 ngày + JWT) và onboarding đang dở.
+GoRouter createAppRouter(
+  AuthSessionController authSession,
+  OnboardingResumeController onboardingResume,
+) {
   return GoRouter(
-    initialLocation: authSession.isLoggedIn ? '/dashboard' : '/login',
-    refreshListenable: authSession,
+    initialLocation: authSession.isLoggedIn
+        ? (onboardingResume.isPending ? '/onboarding' : '/dashboard')
+        : '/login',
+    refreshListenable: Listenable.merge([authSession, onboardingResume]),
     redirect: (BuildContext context, GoRouterState state) {
       final loc = state.matchedLocation;
       final atAuthGate =
           loc == '/login' || loc == '/register' || loc == '/forgot-password';
       if (kDebugMode) {
         debugPrint(
-          '[ROUTER] redirect check: loc=$loc, atAuthGate=$atAuthGate, isLoggedIn=${authSession.isLoggedIn}',
+          '[ROUTER] redirect check: loc=$loc, atAuthGate=$atAuthGate, isLoggedIn=${authSession.isLoggedIn}, onboardingPending=${onboardingResume.isPending}',
         );
       }
       if (!authSession.isLoggedIn && !atAuthGate) {
@@ -76,10 +82,20 @@ GoRouter createAppRouter(AuthSessionController authSession) {
         return '/login';
       }
       if (authSession.isLoggedIn && atAuthGate) {
+        final target =
+            onboardingResume.isPending ? '/onboarding' : '/dashboard';
         if (kDebugMode) {
-          debugPrint('[ROUTER] redirect -> /dashboard');
+          debugPrint('[ROUTER] redirect -> $target');
         }
-        return '/dashboard';
+        return target;
+      }
+      if (authSession.isLoggedIn &&
+          onboardingResume.isPending &&
+          loc == '/dashboard') {
+        if (kDebugMode) {
+          debugPrint('[ROUTER] redirect onboarding pending -> /onboarding');
+        }
+        return '/onboarding';
       }
       return null;
     },

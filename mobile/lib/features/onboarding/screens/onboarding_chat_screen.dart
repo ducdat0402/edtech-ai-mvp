@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:edtech_mobile/core/onboarding/onboarding_resume_controller.dart';
 import 'package:edtech_mobile/core/widgets/mascot_image.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
@@ -242,6 +243,19 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
     _fadeAnimation =
         CurvedAnimation(parent: _fadeController, curve: Curves.easeIn);
     _fadeController.forward();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      final resume = context.read<OnboardingResumeController>();
+      await resume.setPending(true);
+      if (!mounted) return;
+      final target =
+          resume.savedSlideIndex.clamp(0, _totalSlides - 1).toInt();
+      if (target > 0) {
+        _pageController.jumpToPage(target);
+        setState(() => _currentPage = target);
+      }
+    });
   }
 
   @override
@@ -329,6 +343,7 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
   }
 
   Future<void> _showOnboardingChoiceSheet() async {
+    final hostContext = context;
     await showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
@@ -394,8 +409,12 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
                 const SizedBox(height: 16),
                 Center(
                   child: TextButton(
-                    onPressed: () {
+                    onPressed: () async {
                       Navigator.pop(ctx);
+                      await hostContext
+                          .read<OnboardingResumeController>()
+                          .clearOnboardingFlow();
+                      if (!mounted) return;
                       context.go('/dashboard');
                     },
                     child: Text('Vào trang chính',
@@ -496,9 +515,9 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
                             final desc = s['description'] as String? ?? '';
 
                             return GestureDetector(
-                              onTap: () {
+                              onTap: () async {
                                 Navigator.pop(ctx);
-                                _navigateAfterChoice(
+                                await _navigateAfterChoice(
                                     mode, s['id'] as String, name);
                               },
                               child: Container(
@@ -567,8 +586,11 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
     }
   }
 
-  void _navigateAfterChoice(String mode, String subjectId, String subjectName) {
+  Future<void> _navigateAfterChoice(
+      String mode, String subjectId, String subjectName) async {
     HapticFeedback.mediumImpact();
+    await context.read<OnboardingResumeController>().clearOnboardingFlow();
+    if (!mounted) return;
     if (mode == 'try_lesson') {
       context.go('/subjects/$subjectId/all-lessons?openFirst=1');
     } else {
@@ -618,7 +640,8 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
         if (didPop) return;
         final shouldPop = await _onWillPop();
         if (shouldPop && context.mounted) {
-          context.go('/login');
+          await context.read<OnboardingResumeController>().clearOnboardingFlow();
+          if (context.mounted) context.go('/login');
         }
       },
       child: Scaffold(
@@ -648,8 +671,12 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
                     child: PageView(
                       controller: _pageController,
                       physics: const NeverScrollableScrollPhysics(),
-                      onPageChanged: (page) =>
-                          setState(() => _currentPage = page),
+                      onPageChanged: (page) {
+                        setState(() => _currentPage = page);
+                        context
+                            .read<OnboardingResumeController>()
+                            .persistSlideIndex(page);
+                      },
                       children: [
                         _buildWelcomeSlide(),
                         ..._featureIntroSlides.asMap().entries.map(
