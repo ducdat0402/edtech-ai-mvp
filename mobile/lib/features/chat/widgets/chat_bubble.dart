@@ -74,10 +74,10 @@ class _FloatingChatBubbleState extends State<FloatingChatBubble>
     super.initState();
     _pulseController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 2),
+      duration: const Duration(seconds: 3),
     )..repeat(reverse: true);
 
-    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.06).animate(
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.025).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
 
@@ -256,16 +256,19 @@ class _FloatingChatBubbleState extends State<FloatingChatBubble>
       child: _circleButton(
         onTap: _openChat,
         showDot: _chatUnreadDot,
-        gradient: const LinearGradient(
-          colors: [AppColors.primaryLight, AppColors.purpleNeon],
+        gradient: LinearGradient(
+          colors: [
+            AppColors.primaryLight.withValues(alpha: 0.82),
+            AppColors.purpleNeon.withValues(alpha: 0.75),
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         shadows: [
           BoxShadow(
-            color: AppColors.primaryLight.withValues(alpha: 0.35),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
+            color: AppColors.primaryLight.withValues(alpha: 0.16),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
         child: const Icon(Icons.chat_rounded, color: Colors.white, size: 22),

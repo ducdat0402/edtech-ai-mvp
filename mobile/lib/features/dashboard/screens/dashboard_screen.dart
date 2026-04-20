@@ -794,20 +794,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppColors.purpleNeon.withValues(alpha: 0.12),
+            AppColors.purpleNeon.withValues(alpha: 0.06),
             AppColors.bgSecondary,
             AppColors.surfaceContainerLow.withValues(alpha: 0.92),
           ],
           stops: const [0.0, 0.42, 1.0],
         ),
         border: Border.all(
-          color: AppColors.primaryLight.withValues(alpha: 0.22),
+          color: AppColors.primaryLight.withValues(alpha: 0.14),
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.purpleNeon.withValues(alpha: 0.1),
-            blurRadius: 22,
-            offset: const Offset(0, 8),
+            color: AppColors.purpleNeon.withValues(alpha: 0.04),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -819,7 +819,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: Icon(
               Icons.format_quote_rounded,
               size: 96,
-              color: AppColors.purpleNeon.withValues(alpha: 0.07),
+              color: AppColors.purpleNeon.withValues(alpha: 0.04),
             ),
           ),
           Padding(
@@ -836,13 +836,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         height: 42,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(14),
-                          gradient: AppGradients.primary,
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              AppColors.primaryLight.withValues(alpha: 0.55),
+                              AppColors.purpleNeon.withValues(alpha: 0.45),
+                            ],
+                          ),
                           boxShadow: [
                             BoxShadow(
                               color:
-                                  AppColors.purpleNeon.withValues(alpha: 0.35),
-                              blurRadius: 14,
-                              offset: const Offset(0, 4),
+                                  AppColors.purpleNeon.withValues(alpha: 0.12),
+                              blurRadius: 8,
+                              offset: const Offset(0, 3),
                             ),
                           ],
                         ),
@@ -880,8 +887,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               begin: Alignment.topCenter,
                               end: Alignment.bottomCenter,
                               colors: [
-                                AppColors.successNeon.withValues(alpha: 0.95),
-                                AppColors.purpleNeon.withValues(alpha: 0.88),
+                                AppColors.successNeon.withValues(alpha: 0.45),
+                                AppColors.purpleNeon.withValues(alpha: 0.38),
                               ],
                             ),
                           ),
@@ -1063,7 +1070,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: AppColors.purpleNeon.withValues(alpha: 0.18),
+          color: AppColors.purpleNeon.withValues(alpha: 0.11),
         ),
         gradient: LinearGradient(
           begin: Alignment.topCenter,
@@ -1076,9 +1083,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.purpleNeon.withValues(alpha: 0.06),
-            blurRadius: 24,
-            offset: const Offset(0, 8),
+            color: AppColors.purpleNeon.withValues(alpha: 0.03),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -1103,12 +1110,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       height: 40,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
-                        gradient: AppGradients.primary,
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            AppColors.primaryLight.withValues(alpha: 0.5),
+                            AppColors.purpleNeon.withValues(alpha: 0.42),
+                          ],
+                        ),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.purpleNeon.withValues(alpha: 0.35),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
+                            color: AppColors.purpleNeon.withValues(alpha: 0.1),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3),
                           ),
                         ],
                       ),
@@ -1244,7 +1258,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  AppColors.successNeon.withValues(alpha: 0.18),
+                  AppColors.successNeon.withValues(alpha: 0.1),
                   AppColors.bgTertiary,
                   AppColors.surfaceContainerLow.withValues(alpha: 0.9),
                 ],
@@ -1254,7 +1268,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  AppColors.purpleNeon.withValues(alpha: 0.22),
+                  AppColors.purpleNeon.withValues(alpha: 0.12),
                   AppColors.bgTertiary,
                   AppColors.surfaceContainerLow.withValues(alpha: 0.95),
                 ],
@@ -1264,8 +1278,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final borderColor = isLocked
         ? const Color(0x442D363D)
         : (isFirst
-            ? AppColors.successNeon.withValues(alpha: 0.45)
-            : AppColors.purpleNeon.withValues(alpha: 0.4));
+            ? AppColors.successNeon.withValues(alpha: 0.28)
+            : AppColors.purpleNeon.withValues(alpha: 0.24));
 
     return Padding(
       padding: EdgeInsets.only(bottom: isLast ? 0 : 12),
@@ -1287,9 +1301,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         color: (isFirst
                                 ? AppColors.successNeon
                                 : AppColors.purpleNeon)
-                            .withValues(alpha: 0.12),
-                        blurRadius: 16,
-                        offset: const Offset(0, 6),
+                            .withValues(alpha: 0.06),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
                       ),
                     ],
             ),
@@ -1314,12 +1328,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       begin: Alignment.topCenter,
                                       end: Alignment.bottomCenter,
                                       colors: [
-                                        AppColors.successNeon,
                                         AppColors.successNeon
-                                            .withValues(alpha: 0.45),
+                                            .withValues(alpha: 0.55),
+                                        AppColors.successNeon
+                                            .withValues(alpha: 0.28),
                                       ],
                                     )
-                                  : AppGradients.primary,
+                                  : LinearGradient(
+                                      begin: Alignment.topCenter,
+                                      end: Alignment.bottomCenter,
+                                      colors: [
+                                        AppColors.primaryLight
+                                            .withValues(alpha: 0.45),
+                                        AppColors.purpleNeon
+                                            .withValues(alpha: 0.38),
+                                      ],
+                                    ),
                             ),
                           ),
                         ),
@@ -1356,7 +1380,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             alignment: Alignment.center,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(999),
-                              gradient: isLocked ? null : AppGradients.primary,
+                              gradient: isLocked
+                                  ? null
+                                  : LinearGradient(
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                      colors: [
+                                        AppColors.primaryLight
+                                            .withValues(alpha: 0.75),
+                                        AppColors.purpleNeon
+                                            .withValues(alpha: 0.65),
+                                      ],
+                                    ),
                               color: isLocked
                                   ? AppColors.bgSecondary
                                   : null,
@@ -1370,9 +1405,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   : [
                                       BoxShadow(
                                         color: AppColors.purpleNeon
-                                            .withValues(alpha: 0.35),
-                                        blurRadius: 10,
-                                        offset: const Offset(0, 3),
+                                            .withValues(alpha: 0.14),
+                                        blurRadius: 6,
+                                        offset: const Offset(0, 2),
                                       ),
                                     ],
                             ),
@@ -1383,8 +1418,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 fontSize: 11,
                                 color: isLocked
                                     ? AppColors.textTertiary
-                                    : Colors.white,
-                                letterSpacing: 0.45,
+                                    : Colors.white.withValues(alpha: 0.95),
+                                letterSpacing: 0.35,
                               ),
                             ),
                           ),
@@ -1493,7 +1528,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: AppColors.purpleNeon.withValues(alpha: 0.18),
+          color: AppColors.purpleNeon.withValues(alpha: 0.11),
         ),
         gradient: LinearGradient(
           begin: Alignment.topCenter,
@@ -1506,9 +1541,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.purpleNeon.withValues(alpha: 0.06),
-            blurRadius: 24,
-            offset: const Offset(0, 8),
+            color: AppColors.purpleNeon.withValues(alpha: 0.03),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -1537,15 +1572,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                           colors: [
-                            AppColors.successNeon.withValues(alpha: 0.95),
-                            AppColors.purpleNeon.withValues(alpha: 0.9),
+                            AppColors.successNeon.withValues(alpha: 0.5),
+                            AppColors.purpleNeon.withValues(alpha: 0.42),
                           ],
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.successNeon.withValues(alpha: 0.25),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
+                            color: AppColors.successNeon.withValues(alpha: 0.1),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3),
                           ),
                         ],
                       ),
@@ -1571,16 +1606,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           vertical: 5,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.cyanNeon.withValues(alpha: 0.1),
+                          color: AppColors.cyanNeon.withValues(alpha: 0.06),
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(
-                            color: AppColors.primaryLight.withValues(alpha: 0.22),
+                            color: AppColors.primaryLight.withValues(alpha: 0.14),
                           ),
                         ),
                         child: Text(
                           '$activeQuestCount đang làm',
                           style: AppTextStyles.caption.copyWith(
-                            color: AppColors.primaryLight,
+                            color: AppColors.textSecondary,
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 0.15,
@@ -1800,19 +1835,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: [
-          AppColors.successNeon.withValues(alpha: 0.26),
+          AppColors.successNeon.withValues(alpha: 0.14),
           AppColors.bgTertiary,
           AppColors.surfaceContainerLow.withValues(alpha: 0.95),
         ],
         stops: const [0.0, 0.55, 1.0],
       );
       cardColor = null;
-      borderColor = AppColors.successNeon.withValues(alpha: 0.55);
+      borderColor = AppColors.successNeon.withValues(alpha: 0.35);
       cardShadow = [
         BoxShadow(
-          color: AppColors.successNeon.withValues(alpha: 0.18),
-          blurRadius: 16,
-          offset: const Offset(0, 6),
+          color: AppColors.successNeon.withValues(alpha: 0.08),
+          blurRadius: 10,
+          offset: const Offset(0, 4),
         ),
       ];
     } else {
@@ -1820,19 +1855,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: [
-          AppColors.cyanNeon.withValues(alpha: 0.1),
+          AppColors.cyanNeon.withValues(alpha: 0.05),
           AppColors.bgTertiary,
           AppColors.surfaceContainerLow.withValues(alpha: 0.95),
         ],
         stops: const [0.0, 0.45, 1.0],
       );
       cardColor = null;
-      borderColor = AppColors.purpleNeon.withValues(alpha: 0.38);
+      borderColor = AppColors.purpleNeon.withValues(alpha: 0.22);
       cardShadow = [
         BoxShadow(
-          color: AppColors.purpleNeon.withValues(alpha: 0.1),
-          blurRadius: 14,
-          offset: const Offset(0, 5),
+          color: AppColors.purpleNeon.withValues(alpha: 0.05),
+          blurRadius: 10,
+          offset: const Offset(0, 4),
         ),
       ];
     }
@@ -1883,8 +1918,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 begin: Alignment.topCenter,
                                 end: Alignment.bottomCenter,
                                 colors: [
-                                  AppColors.successNeon,
-                                  AppColors.purpleNeon.withValues(alpha: 0.85),
+                                  AppColors.successNeon.withValues(alpha: 0.5),
+                                  AppColors.purpleNeon.withValues(alpha: 0.42),
                                 ],
                               ),
                             ),
@@ -1896,11 +1931,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: isCompleted || isClaimed
-                              ? AppColors.successNeon.withValues(alpha: 0.18)
+                              ? AppColors.successNeon.withValues(alpha: 0.14)
                               : AppColors.bgSecondary.withValues(alpha: 0.8),
                           border: Border.all(
                             color: isCompleted || isClaimed
-                                ? AppColors.successNeon.withValues(alpha: 0.65)
+                                ? AppColors.successNeon.withValues(alpha: 0.45)
                                 : const Color(0x552D363D),
                           ),
                         ),
@@ -1913,7 +1948,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     : Icons.radio_button_unchecked_rounded,
                             size: 15,
                             color: isCompleted || isClaimed
-                                ? AppColors.successNeon
+                                ? AppColors.successNeon.withValues(alpha: 0.85)
                                 : AppColors.textTertiary,
                           ),
                         ),
@@ -2064,8 +2099,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           value: percent,
                           minHeight: 10,
                           backgroundColor: Colors.transparent,
-                          valueColor: const AlwaysStoppedAnimation<Color>(
-                            AppColors.successNeon,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            AppColors.successNeon.withValues(alpha: 0.75),
                           ),
                         ),
                       ),
@@ -2125,13 +2160,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 14),
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: AppColors.successNeon,
+          color: AppColors.successNeon.withValues(alpha: 0.88),
           borderRadius: BorderRadius.circular(999),
           boxShadow: [
             BoxShadow(
-              color: AppColors.successNeon.withValues(alpha: 0.42),
-              blurRadius: 10,
-              offset: const Offset(0, 3),
+              color: AppColors.successNeon.withValues(alpha: 0.18),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
@@ -2157,12 +2192,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
       alignment: Alignment.center,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(999),
-        gradient: AppGradients.primary,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.primaryLight.withValues(alpha: 0.75),
+            AppColors.purpleNeon.withValues(alpha: 0.65),
+          ],
+        ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.purpleNeon.withValues(alpha: 0.35),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
+            color: AppColors.purpleNeon.withValues(alpha: 0.14),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -2173,8 +2215,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
           style: AppTextStyles.labelSmall.copyWith(
             fontWeight: FontWeight.w800,
             fontSize: 11,
-            color: Colors.white,
-            letterSpacing: 0.45,
+            color: Colors.white.withValues(alpha: 0.95),
+            letterSpacing: 0.35,
           ),
           textAlign: TextAlign.center,
         ),
