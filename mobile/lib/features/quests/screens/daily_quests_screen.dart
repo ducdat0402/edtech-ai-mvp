@@ -7,7 +7,6 @@ import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/core/widgets/bottom_nav_bar.dart';
 import 'package:edtech_mobile/core/widgets/error_widget.dart';
-import 'package:edtech_mobile/core/widgets/empty_state.dart';
 import 'package:edtech_mobile/features/chat/widgets/chat_bubble.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 
@@ -138,24 +137,124 @@ class _DailyQuestsScreenState extends State<DailyQuestsScreen>
         leading: const AppBarLeadingBackAndHome(),
         leadingWidth: 112,
         automaticallyImplyLeading: false,
-        title: Text('Nhiệm vụ hằng ngày',
-            style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: AppColors.primaryLight,
-          indicatorWeight: 3,
-          labelColor: AppColors.textPrimary,
-          unselectedLabelColor: AppColors.textTertiary,
-          labelStyle: AppTextStyles.labelMedium,
-          tabs: const [
-            Tab(text: 'Hôm nay', icon: Icon(Icons.today_rounded, size: 20)),
-            Tab(text: 'Lịch sử', icon: Icon(Icons.history_rounded, size: 20)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    AppColors.orangeNeon.withValues(alpha: 0.48),
+                    AppColors.orangeNeon.withValues(alpha: 0.08),
+                  ],
+                ),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.1),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.orangeNeon.withValues(alpha: 0.28),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.task_alt_rounded,
+                color: AppColors.orangeNeon,
+                size: 22,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Nhiệm vụ hằng ngày',
+                style: AppTextStyles.h4.copyWith(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.3,
+                ),
+              ),
+            ),
           ],
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(56),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(18),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    AppColors.orangeNeon.withValues(alpha: 0.14),
+                    AppColors.bgSecondary,
+                  ],
+                ),
+                border: Border.all(
+                  color: AppColors.orangeNeon.withValues(alpha: 0.28),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.35),
+                    offset: const Offset(0, 5),
+                    blurRadius: 12,
+                  ),
+                ],
+              ),
+              child: TabBar(
+                controller: _tabController,
+                padding: const EdgeInsets.all(5),
+                dividerColor: Colors.transparent,
+                indicatorSize: TabBarIndicatorSize.tab,
+                indicator: BoxDecoration(
+                  borderRadius: BorderRadius.circular(13),
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.purpleNeon.withValues(alpha: 0.45),
+                      AppColors.purpleNeon.withValues(alpha: 0.14),
+                    ],
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.purpleNeon.withValues(alpha: 0.28),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                labelColor: Colors.white,
+                unselectedLabelColor: AppColors.textTertiary,
+                labelStyle: AppTextStyles.labelMedium.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+                unselectedLabelStyle: AppTextStyles.labelMedium,
+                tabs: const [
+                  Tab(
+                    height: 44,
+                    text: 'Hôm nay',
+                    icon: Icon(Icons.today_rounded, size: 20),
+                  ),
+                  Tab(
+                    height: 44,
+                    text: 'Lịch sử',
+                    icon: Icon(Icons.history_rounded, size: 20),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh_rounded,
-                color: AppColors.textSecondary),
+            tooltip: 'Làm mới',
+            icon: Icon(
+              Icons.refresh_rounded,
+              color: AppColors.primaryLight.withValues(alpha: 0.95),
+            ),
             onPressed: _loadQuests,
           ),
         ],
@@ -197,12 +296,12 @@ class _DailyQuestsScreenState extends State<DailyQuestsScreen>
 
   Widget _buildDailyQuestsTab() {
     if (_dailyQuests == null || _dailyQuests!.isEmpty) {
-      return const EmptyQuestsWidget();
+      return const _DailyQuestsEmptyGamified();
     }
 
     return RefreshIndicator(
       onRefresh: _loadQuests,
-      color: AppColors.primaryLight,
+      color: AppColors.purpleNeon,
       child: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: _dailyQuests!.length,
@@ -234,16 +333,12 @@ class _DailyQuestsScreenState extends State<DailyQuestsScreen>
 
   Widget _buildHistoryTab() {
     if (_questHistory == null || _questHistory!.isEmpty) {
-      return const EmptyStateWidget(
-        icon: Icons.history_rounded,
-        title: 'Chưa có lịch sử nhiệm vụ',
-        message: 'Lịch sử nhiệm vụ sẽ hiển thị tại đây',
-      );
+      return const _QuestHistoryEmptyGamified();
     }
 
     return RefreshIndicator(
       onRefresh: _loadQuests,
-      color: AppColors.primaryLight,
+      color: AppColors.purpleNeon,
       child: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: _questHistory!.length,
@@ -294,25 +389,32 @@ class _QuestCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(22),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            color.withValues(alpha: isClaimed ? 0.1 : (canClaim ? 0.14 : 0.06)),
+            AppColors.bgSecondary,
+          ],
+        ),
         border: Border.all(
           color: isClaimed
-              ? AppColors.successNeon.withValues(alpha: 0.5)
+              ? AppColors.successNeon.withValues(alpha: 0.52)
               : canClaim
-                  ? color.withValues(alpha: 0.5)
-                  : const Color(0x332D363D),
-          width: canClaim || isClaimed ? 2 : 1,
+                  ? color.withValues(alpha: 0.52)
+                  : color.withValues(alpha: 0.2),
+          width: canClaim || isClaimed ? 1.5 : 1,
         ),
-        boxShadow: canClaim
-            ? [
-                BoxShadow(
-                  color: color.withValues(alpha: 0.3),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ]
-            : null,
+        boxShadow: [
+          BoxShadow(
+            color: canClaim
+                ? color.withValues(alpha: 0.32)
+                : Colors.black.withValues(alpha: 0.3),
+            blurRadius: canClaim ? 14 : 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -323,13 +425,36 @@ class _QuestCard extends StatelessWidget {
               children: [
                 // Quest icon
                 Container(
-                  padding: const EdgeInsets.all(14),
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: color.withValues(alpha: 0.3)),
+                    borderRadius: BorderRadius.circular(16),
+                    gradient: RadialGradient(
+                      center: const Alignment(-0.35, -0.4),
+                      radius: 1.05,
+                      colors: [
+                        color.withValues(alpha: 0.55),
+                        color.withValues(alpha: 0.18),
+                        AppColors.bgTertiary,
+                      ],
+                    ),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.12),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.32),
+                        offset: const Offset(0, 3),
+                        blurRadius: 6,
+                      ),
+                    ],
                   ),
-                  child: Icon(icon, color: color, size: 26),
+                  child: Icon(
+                    icon,
+                    color: color == AppColors.textSecondary
+                        ? AppColors.primaryLight
+                        : Colors.white,
+                    size: 26,
+                  ),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -369,11 +494,29 @@ class _QuestCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: AppColors.successNeon.withValues(alpha: 0.2),
                       shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: [
+                          AppColors.successNeon.withValues(alpha: 0.45),
+                          AppColors.successNeon.withValues(alpha: 0.12),
+                        ],
+                      ),
+                      border: Border.all(
+                        color: AppColors.successNeon.withValues(alpha: 0.45),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.successNeon.withValues(alpha: 0.25),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
-                    child: const Icon(Icons.check_rounded,
-                        color: AppColors.successNeon, size: 24),
+                    child: const Icon(
+                      Icons.check_rounded,
+                      color: Colors.white,
+                      size: 22,
+                    ),
                   ),
               ],
             ),
@@ -398,35 +541,58 @@ class _QuestCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 10),
-                Stack(
-                  children: [
-                    Container(
-                      height: 10,
-                      decoration: BoxDecoration(
-                        color: AppColors.bgTertiary,
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                    ),
-                    AnimatedProgressBox(
-                      widthFactor: progressPercent,
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeOut,
-                      child: Container(
-                        height: 10,
+                SizedBox(
+                  height: 12,
+                  width: double.infinity,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      DecoratedBox(
                         decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                              colors: [color, color.withValues(alpha: 0.7)]),
-                          borderRadius: BorderRadius.circular(5),
-                          boxShadow: [
-                            BoxShadow(
-                              color: color.withValues(alpha: 0.5),
-                              blurRadius: 8,
-                            ),
-                          ],
+                          borderRadius: BorderRadius.circular(999),
+                          color: Colors.black.withValues(alpha: 0.38),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.06),
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                      Padding(
+                        padding: const EdgeInsets.all(1.5),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(999),
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              ColoredBox(color: AppColors.bgTertiary),
+                              AnimatedProgressBox(
+                                widthFactor: progressPercent,
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeOut,
+                                child: Container(
+                                  height: 9,
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        color.withValues(alpha: 0.95),
+                                        color.withValues(alpha: 0.65),
+                                      ],
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: color.withValues(alpha: 0.45),
+                                        blurRadius: 6,
+                                        offset: const Offset(0, 1),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -452,21 +618,39 @@ class _QuestCard extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 decoration: BoxDecoration(
-                  color: AppColors.successNeon.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(16),
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.successNeon.withValues(alpha: 0.22),
+                      AppColors.successNeon.withValues(alpha: 0.06),
+                    ],
+                  ),
                   border: Border.all(
-                      color: AppColors.successNeon.withValues(alpha: 0.3)),
+                    color: AppColors.successNeon.withValues(alpha: 0.42),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.successNeon.withValues(alpha: 0.15),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.check_circle_rounded,
-                        color: AppColors.successNeon, size: 20),
+                    const Icon(
+                      Icons.check_circle_rounded,
+                      color: AppColors.successNeon,
+                      size: 22,
+                    ),
                     const SizedBox(width: 8),
                     Text(
                       'Đã nhận phần thưởng',
-                      style: AppTextStyles.labelMedium
-                          .copyWith(color: AppColors.successNeon),
+                      style: AppTextStyles.labelMedium.copyWith(
+                        color: AppColors.successNeon,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                   ],
                 ),
@@ -480,21 +664,37 @@ class _QuestCard extends StatelessWidget {
                     onTap: onGo,
                     borderRadius: BorderRadius.circular(999),
                     child: Container(
-                      height: 40,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      height: 42,
+                      padding: const EdgeInsets.symmetric(horizontal: 18),
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: AppColors.bgTertiary,
                         borderRadius: BorderRadius.circular(999),
-                        border: Border.all(color: const Color(0x442D363D)),
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            AppColors.purpleNeon.withValues(alpha: 0.35),
+                            AppColors.purpleNeon.withValues(alpha: 0.12),
+                          ],
+                        ),
+                        border: Border.all(
+                          color: AppColors.purpleNeon.withValues(alpha: 0.45),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.28),
+                            offset: const Offset(0, 3),
+                            blurRadius: 6,
+                          ),
+                        ],
                       ),
                       child: Text(
                         'ĐẾN',
                         style: AppTextStyles.labelSmall.copyWith(
                           fontWeight: FontWeight.w800,
                           fontSize: 12,
-                          color: AppColors.textSecondary,
-                          letterSpacing: 0.3,
+                          color: Colors.white,
+                          letterSpacing: 0.4,
                         ),
                       ),
                     ),
@@ -511,9 +711,25 @@ class _QuestCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.xpGold.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.xpGold.withValues(alpha: 0.2)),
+        borderRadius: BorderRadius.circular(16),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.xpGold.withValues(alpha: 0.22),
+            AppColors.xpGold.withValues(alpha: 0.05),
+          ],
+        ),
+        border: Border.all(
+          color: AppColors.xpGold.withValues(alpha: 0.38),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.xpGold.withValues(alpha: 0.12),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         children: [
@@ -631,23 +847,51 @@ class _QuestHistoryCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            color.withValues(alpha: 0.1),
+            AppColors.bgSecondary,
+          ],
+        ),
         border: Border.all(
           color: isClaimed
-              ? AppColors.successNeon.withValues(alpha: 0.3)
-              : const Color(0x332D363D),
+              ? AppColors.successNeon.withValues(alpha: 0.4)
+              : color.withValues(alpha: 0.22),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.28),
+            offset: const Offset(0, 4),
+            blurRadius: 9,
+          ),
+        ],
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.all(12),
         leading: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(14),
+            gradient: RadialGradient(
+              colors: [
+                color.withValues(alpha: 0.5),
+                color.withValues(alpha: 0.12),
+              ],
+            ),
+            border: Border.all(
+              color: color.withValues(alpha: 0.35),
+            ),
           ),
-          child: Icon(icon, color: color, size: 22),
+          child: Icon(
+            icon,
+            color: color == AppColors.textSecondary
+                ? AppColors.primaryLight
+                : Colors.white,
+            size: 22,
+          ),
         ),
         title: Text(
           quest['title'] ?? 'Nhiệm vụ',
@@ -725,5 +969,131 @@ class _QuestHistoryCard extends StatelessWidget {
     } catch (e) {
       return dateString;
     }
+  }
+}
+
+class _DailyQuestsEmptyGamified extends StatelessWidget {
+  const _DailyQuestsEmptyGamified();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(26),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    AppColors.orangeNeon.withValues(alpha: 0.4),
+                    AppColors.bgSecondary,
+                  ],
+                ),
+                border: Border.all(
+                  color: AppColors.purpleNeon.withValues(alpha: 0.32),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.35),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Icon(
+                Icons.task_alt_rounded,
+                size: 52,
+                color: AppColors.orangeNeon.withValues(alpha: 0.95),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'Chưa có quest nào hôm nay',
+              textAlign: TextAlign.center,
+              style: AppTextStyles.h4.copyWith(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Quests sẽ được tạo tự động mỗi ngày.',
+              textAlign: TextAlign.center,
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.textSecondary,
+                height: 1.4,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _QuestHistoryEmptyGamified extends StatelessWidget {
+  const _QuestHistoryEmptyGamified();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(22),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    AppColors.purpleNeon.withValues(alpha: 0.35),
+                    AppColors.bgSecondary,
+                  ],
+                ),
+                border: Border.all(
+                  color: AppColors.purpleNeon.withValues(alpha: 0.3),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.3),
+                    blurRadius: 14,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: Icon(
+                Icons.history_rounded,
+                size: 48,
+                color: AppColors.primaryLight.withValues(alpha: 0.95),
+              ),
+            ),
+            const SizedBox(height: 18),
+            Text(
+              'Chưa có lịch sử nhiệm vụ',
+              textAlign: TextAlign.center,
+              style: AppTextStyles.h4.copyWith(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Hoàn thành và nhận thưởng để thấy lịch sử tại đây.',
+              textAlign: TextAlign.center,
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.textSecondary,
+                height: 1.4,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

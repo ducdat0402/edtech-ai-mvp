@@ -62,18 +62,62 @@ class ShopAvatarFramesTab extends StatelessWidget {
             sliver: SliverList(
               delegate: SliverChildListDelegate([
                 _WalletBar(coins: coins, diamonds: diamonds, level: userLevel),
-                const SizedBox(height: 16),
-                Text(
-                  'Khung avatar',
-                  style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Tier càng cao càng chi tiết — giá theo GTU hoặc kim cương. Một số khung cần đủ cấp mới mua được.',
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
-                    height: 1.4,
-                  ),
+                const SizedBox(height: 18),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(9),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(14),
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.purpleNeon.withValues(alpha: 0.4),
+                            AppColors.purpleNeon.withValues(alpha: 0.1),
+                          ],
+                        ),
+                        border: Border.all(
+                          color: AppColors.purpleNeon.withValues(alpha: 0.4),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.purpleNeon.withValues(alpha: 0.2),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.shutter_speed_rounded,
+                        color: AppColors.primaryLight,
+                        size: 22,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Khung avatar',
+                            style: AppTextStyles.h3.copyWith(
+                              color: AppColors.textPrimary,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -0.3,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'Tier càng cao càng chi tiết — giá theo GTU hoặc kim cương. Một số khung cần đủ cấp mới mua được.',
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: AppColors.textSecondary,
+                              height: 1.4,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 12),
               ]),
@@ -134,20 +178,48 @@ class _WalletBar extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
           colors: [
-            AppColors.purpleNeon.withValues(alpha: 0.12),
+            AppColors.coinGold.withValues(alpha: 0.12),
+            AppColors.purpleNeon.withValues(alpha: 0.1),
             AppColors.bgSecondary,
           ],
         ),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: AppColors.primaryLight.withValues(alpha: 0.2),
+          color: AppColors.primaryLight.withValues(alpha: 0.32),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            offset: const Offset(0, 4),
+            blurRadius: 11,
+          ),
+        ],
       ),
       child: Row(
         children: [
-          const Icon(Icons.account_balance_wallet_rounded,
-              color: AppColors.primaryLight, size: 22),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [
+                  AppColors.coinGold.withValues(alpha: 0.35),
+                  AppColors.coinGold.withValues(alpha: 0.06),
+                ],
+              ),
+              border: Border.all(
+                color: AppColors.coinGold.withValues(alpha: 0.35),
+              ),
+            ),
+            child: const Icon(
+              Icons.account_balance_wallet_rounded,
+              color: AppColors.coinGold,
+              size: 20,
+            ),
+          ),
           const SizedBox(width: 10),
           Expanded(
             child: Wrap(
@@ -186,16 +258,24 @@ class _WalletBar extends StatelessWidget {
                 ),
                 Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   decoration: BoxDecoration(
-                    color: AppColors.bgTertiary,
-                    borderRadius: BorderRadius.circular(8),
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.purpleNeon.withValues(alpha: 0.25),
+                        AppColors.bgTertiary,
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: AppColors.purpleNeon.withValues(alpha: 0.35),
+                    ),
                   ),
                   child: Text(
                     'Cấp $level',
                     style: AppTextStyles.caption.copyWith(
-                      color: AppColors.textSecondary,
-                      fontWeight: FontWeight.w700,
+                      color: AppColors.primaryLight,
+                      fontWeight: FontWeight.w800,
                     ),
                   ),
                 ),
@@ -243,13 +323,27 @@ class _FrameCard extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(14),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.purpleNeon.withValues(alpha: 0.1),
+            AppColors.bgSecondary,
+          ],
+        ),
         border: Border.all(
           color: isEquipped
-              ? AppColors.successNeon.withValues(alpha: 0.45)
-              : const Color(0x332D363D),
+              ? AppColors.successNeon.withValues(alpha: 0.55)
+              : AppColors.purpleNeon.withValues(alpha: 0.22),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.28),
+            offset: const Offset(0, 4),
+            blurRadius: 9,
+          ),
+        ],
       ),
       child: Align(
         alignment: Alignment.topCenter,
@@ -336,10 +430,18 @@ class _FrameCard extends StatelessWidget {
             if (isEquipped)
               Container(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.successNeon.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(5),
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.successNeon.withValues(alpha: 0.35),
+                      AppColors.successNeon.withValues(alpha: 0.1),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: AppColors.successNeon.withValues(alpha: 0.45),
+                  ),
                 ),
                 child: Text(
                   'Đang đeo',
@@ -372,6 +474,8 @@ class _FrameCard extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(vertical: 2),
                     minimumSize: const Size(0, 28),
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    elevation: canPurchase && !lockedByLevel ? 2 : 0,
+                    shadowColor: AppColors.purpleNeon.withValues(alpha: 0.45),
                     backgroundColor: canPurchase && !lockedByLevel
                         ? AppColors.purpleNeon
                         : AppColors.bgTertiary,

@@ -60,8 +60,48 @@ class _WeeklyRewardsHistoryScreenState
         leading: const AppBarLeadingBackAndHome(),
         leadingWidth: 112,
         automaticallyImplyLeading: false,
-        title: Text('Phần thưởng tuần',
-            style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    AppColors.primaryLight.withValues(alpha: 0.45),
+                    AppColors.primaryLight.withValues(alpha: 0.08),
+                  ],
+                ),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.1),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.purpleNeon.withValues(alpha: 0.22),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.history_rounded,
+                color: AppColors.primaryLight,
+                size: 22,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Phần thưởng tuần',
+                style: AppTextStyles.h4.copyWith(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.3,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
       body: _isLoading
           ? const Center(
@@ -70,7 +110,7 @@ class _WeeklyRewardsHistoryScreenState
               ? AppErrorWidget(message: _error!, onRetry: _load)
               : RefreshIndicator(
                   onRefresh: _load,
-                  color: AppColors.primaryLight,
+                  color: AppColors.purpleNeon,
                   child: CustomScrollView(
                     slivers: [
                       SliverToBoxAdapter(child: _buildStats()),
@@ -96,25 +136,39 @@ class _WeeklyRewardsHistoryScreenState
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColors.purpleNeon.withValues(alpha: 0.8),
-            AppColors.cyanNeon.withValues(alpha: 0.6),
+            AppColors.purpleNeon.withValues(alpha: 0.85),
+            AppColors.cyanNeon.withValues(alpha: 0.55),
+            AppColors.primaryLight.withValues(alpha: 0.35),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.2),
+        ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.purpleNeon.withValues(alpha: 0.3),
-            blurRadius: 20,
+            color: AppColors.purpleNeon.withValues(alpha: 0.38),
+            blurRadius: 22,
             offset: const Offset(0, 8),
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            offset: const Offset(0, 5),
+            blurRadius: 12,
           ),
         ],
       ),
       child: Column(
         children: [
-          Text('Tổng quan',
-              style: AppTextStyles.h4.copyWith(color: Colors.white)),
+          Text(
+            'Tổng quan',
+            style: AppTextStyles.h4.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
           const SizedBox(height: 16),
           Row(
             children: [
@@ -162,8 +216,38 @@ class _WeeklyRewardsHistoryScreenState
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Text('Bộ sưu tập huy hiệu',
-              style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(7),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.orangeNeon.withValues(alpha: 0.35),
+                      AppColors.orangeNeon.withValues(alpha: 0.1),
+                    ],
+                  ),
+                  border: Border.all(
+                    color: AppColors.orangeNeon.withValues(alpha: 0.4),
+                  ),
+                ),
+                child: const Icon(
+                  Icons.workspace_premium_rounded,
+                  color: AppColors.xpGold,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                'Bộ sưu tập huy hiệu',
+                style: AppTextStyles.h4.copyWith(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
         ),
         const SizedBox(height: 12),
         SizedBox(
@@ -190,9 +274,39 @@ class _WeeklyRewardsHistoryScreenState
 
   Widget _buildHistoryHeader() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Text('Lịch sử phần thưởng',
-          style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(7),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              gradient: LinearGradient(
+                colors: [
+                  AppColors.purpleNeon.withValues(alpha: 0.35),
+                  AppColors.purpleNeon.withValues(alpha: 0.08),
+                ],
+              ),
+              border: Border.all(
+                color: AppColors.purpleNeon.withValues(alpha: 0.35),
+              ),
+            ),
+            child: const Icon(
+              Icons.receipt_long_rounded,
+              color: AppColors.primaryLight,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            'Lịch sử phần thưởng',
+            style: AppTextStyles.h4.copyWith(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -201,10 +315,58 @@ class _WeeklyRewardsHistoryScreenState
     if (items.isEmpty) {
       return SliverFillRemaining(
         child: Center(
-          child: Text(
-            'Chưa có phần thưởng nào',
-            style: AppTextStyles.bodyMedium
-                .copyWith(color: AppColors.textSecondary),
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(22),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        AppColors.primaryLight.withValues(alpha: 0.35),
+                        AppColors.bgSecondary,
+                      ],
+                    ),
+                    border: Border.all(
+                      color: AppColors.purpleNeon.withValues(alpha: 0.3),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.3),
+                        blurRadius: 14,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    Icons.card_giftcard_rounded,
+                    size: 48,
+                    color: AppColors.primaryLight.withValues(alpha: 0.95),
+                  ),
+                ),
+                const SizedBox(height: 18),
+                Text(
+                  'Chưa có phần thưởng nào',
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.h4.copyWith(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Tham gia bảng XP hàng tuần để nhận kim cương và huy hiệu.',
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.textSecondary,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       );
@@ -265,13 +427,23 @@ class _BadgeCard extends StatelessWidget {
       width: 90,
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0x332D363D)),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.purpleNeon.withValues(alpha: 0.12),
+            AppColors.bgSecondary,
+          ],
+        ),
+        border: Border.all(
+          color: AppColors.purpleNeon.withValues(alpha: 0.22),
+        ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.purpleNeon.withValues(alpha: 0.1),
-            blurRadius: 8,
+            color: Colors.black.withValues(alpha: 0.28),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -320,14 +492,32 @@ class _HistoryItem extends StatelessWidget {
     }
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
-        borderRadius: BorderRadius.circular(14),
-        border: rank <= 3
-            ? Border.all(color: rankColor.withValues(alpha: 0.4))
-            : Border.all(color: const Color(0x332D363D)),
+        borderRadius: BorderRadius.circular(18),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            rank <= 3
+                ? rankColor.withValues(alpha: 0.12)
+                : AppColors.purpleNeon.withValues(alpha: 0.06),
+            AppColors.bgSecondary,
+          ],
+        ),
+        border: Border.all(
+          color: rank <= 3
+              ? rankColor.withValues(alpha: 0.45)
+              : const Color(0x332D363D),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.28),
+            offset: const Offset(0, 4),
+            blurRadius: 9,
+          ),
+        ],
       ),
       child: Row(
         children: [
@@ -335,8 +525,18 @@ class _HistoryItem extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: rankColor.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(12),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  rankColor.withValues(alpha: 0.45),
+                  rankColor.withValues(alpha: 0.12),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: rankColor.withValues(alpha: 0.5),
+              ),
             ),
             child: Center(
               child: Text('#$rank',

@@ -115,7 +115,7 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(4, 0, 8, 4),
+          padding: const EdgeInsets.fromLTRB(8, 4, 12, 4),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
@@ -227,21 +227,72 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
             ],
           ),
         ),
-        TabBar(
-          controller: _tabController,
-          indicatorColor: AppColors.purpleNeon,
-          labelColor: AppColors.purpleNeon,
-          unselectedLabelColor: AppColors.textSecondary,
-          tabs: [
-            const Tab(
-                text: 'Danh sách', icon: Icon(Icons.people_rounded, size: 20)),
-            Tab(
-              icon: const Icon(Icons.mail_rounded, size: 20),
-              child: _buildRequestsTabLabel(),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(18),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  AppColors.purpleNeon.withValues(alpha: 0.14),
+                  AppColors.bgSecondary,
+                ],
+              ),
+              border: Border.all(
+                color: AppColors.purpleNeon.withValues(alpha: 0.26),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.32),
+                  offset: const Offset(0, 4),
+                  blurRadius: 11,
+                ),
+              ],
             ),
-            const Tab(
-                text: 'Gợi ý', icon: Icon(Icons.person_add_rounded, size: 20)),
-          ],
+            child: TabBar(
+              controller: _tabController,
+              padding: const EdgeInsets.all(5),
+              dividerColor: Colors.transparent,
+              indicatorSize: TabBarIndicatorSize.tab,
+              indicator: BoxDecoration(
+                borderRadius: BorderRadius.circular(13),
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.purpleNeon.withValues(alpha: 0.4),
+                    AppColors.purpleNeon.withValues(alpha: 0.12),
+                  ],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.purpleNeon.withValues(alpha: 0.22),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              labelColor: Colors.white,
+              unselectedLabelColor: AppColors.textSecondary,
+              tabs: [
+                const Tab(
+                  height: 44,
+                  text: 'Danh sách',
+                  icon: Icon(Icons.people_rounded, size: 20),
+                ),
+                Tab(
+                  height: 44,
+                  icon: const Icon(Icons.mail_rounded, size: 20),
+                  child: _buildRequestsTabLabel(),
+                ),
+                const Tab(
+                  height: 44,
+                  text: 'Gợi ý',
+                  icon: Icon(Icons.person_add_rounded, size: 20),
+                ),
+              ],
+            ),
+          ),
         ),
         Expanded(
           child: TabBarView(
@@ -318,9 +369,25 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0x332D363D)),
+        borderRadius: BorderRadius.circular(18),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.primaryLight.withValues(alpha: 0.08),
+            AppColors.bgSecondary,
+          ],
+        ),
+        border: Border.all(
+          color: AppColors.purpleNeon.withValues(alpha: 0.22),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.34),
+            offset: const Offset(0, 5),
+            blurRadius: 12,
+          ),
+        ],
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -462,29 +529,74 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
   }
 
   Widget _buildSectionHeader(String title, IconData icon, int count) {
-    return Row(
-      children: [
-        Icon(icon, color: AppColors.purpleNeon, size: 18),
-        const SizedBox(width: 8),
-        Text(title,
-            style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontWeight: FontWeight.bold,
-                fontSize: 16)),
-        const Spacer(),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-          decoration: BoxDecoration(
-            color: AppColors.purpleNeon.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Text('$count',
-              style: const TextStyle(
-                  color: AppColors.purpleNeon,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold)),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        gradient: LinearGradient(
+          colors: [
+            AppColors.purpleNeon.withValues(alpha: 0.12),
+            AppColors.bgSecondary,
+          ],
         ),
-      ],
+        border: Border.all(
+          color: AppColors.purpleNeon.withValues(alpha: 0.2),
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppColors.purpleNeon.withValues(alpha: 0.18),
+            ),
+            child: Icon(icon, color: AppColors.purpleNeon, size: 18),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              title,
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w800,
+                fontSize: 15,
+                letterSpacing: -0.2,
+              ),
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  AppColors.purpleNeon.withValues(alpha: 0.35),
+                  AppColors.purpleNeon.withValues(alpha: 0.12),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: AppColors.purpleNeon.withValues(alpha: 0.45),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.purpleNeon.withValues(alpha: 0.2),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Text(
+              '$count',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -495,9 +607,25 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.purpleNeon.withValues(alpha: 0.3)),
+        borderRadius: BorderRadius.circular(18),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.successNeon.withValues(alpha: 0.1),
+            AppColors.bgSecondary,
+          ],
+        ),
+        border: Border.all(
+          color: AppColors.purpleNeon.withValues(alpha: 0.35),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            offset: const Offset(0, 4),
+            blurRadius: 10,
+          ),
+        ],
       ),
       child: Padding(
         padding: const EdgeInsets.all(12),
@@ -544,9 +672,25 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0x332D363D)),
+        borderRadius: BorderRadius.circular(18),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.orangeNeon.withValues(alpha: 0.08),
+            AppColors.bgSecondary,
+          ],
+        ),
+        border: Border.all(
+          color: const Color(0x332D363D),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.28),
+            offset: const Offset(0, 4),
+            blurRadius: 10,
+          ),
+        ],
       ),
       child: Padding(
         padding: const EdgeInsets.all(12),

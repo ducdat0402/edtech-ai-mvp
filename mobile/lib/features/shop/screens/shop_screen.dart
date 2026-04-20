@@ -371,8 +371,48 @@ class _ShopScreenState extends State<ShopScreen>
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text('Cửa hàng',
-            style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    AppColors.coinGold.withValues(alpha: 0.5),
+                    AppColors.coinGold.withValues(alpha: 0.08),
+                  ],
+                ),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.1),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.coinGold.withValues(alpha: 0.25),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.storefront_rounded,
+                color: AppColors.coinGold,
+                size: 22,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Cửa hàng',
+                style: AppTextStyles.h4.copyWith(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.3,
+                ),
+              ),
+            ),
+          ],
+        ),
         leading: const AppBarLeadingBackAndHome(),
         leadingWidth: 112,
         automaticallyImplyLeading: false,
@@ -388,37 +428,64 @@ class _ShopScreenState extends State<ShopScreen>
             children: [
               Container(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
                 decoration: BoxDecoration(
-                  color: AppColors.coinGold.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(22),
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.coinGold.withValues(alpha: 0.22),
+                      AppColors.bgSecondary,
+                    ],
+                  ),
                   border: Border.all(
-                      color: AppColors.coinGold.withValues(alpha: 0.3)),
+                    color: AppColors.coinGold.withValues(alpha: 0.42),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.28),
+                      offset: const Offset(0, 3),
+                      blurRadius: 6,
+                    ),
+                  ],
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const GtuCoinIcon(size: 18),
-                    const SizedBox(width: 6),
+                    const SizedBox(width: 5),
                     Text(
                       '$_coins',
                       style: AppTextStyles.labelLarge.copyWith(
-                          color: AppColors.coinGold,
-                          fontWeight: FontWeight.bold),
+                        color: AppColors.coinGold,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 7),
               Container(
-                margin: const EdgeInsets.only(right: 12),
+                margin: const EdgeInsets.only(right: 10),
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryLight.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(22),
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.primaryLight.withValues(alpha: 0.18),
+                      AppColors.bgSecondary,
+                    ],
+                  ),
                   border: Border.all(
-                      color: AppColors.primaryLight.withValues(alpha: 0.28)),
+                    color: AppColors.primaryLight.withValues(alpha: 0.38),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.25),
+                      offset: const Offset(0, 3),
+                      blurRadius: 6,
+                    ),
+                  ],
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -430,7 +497,7 @@ class _ShopScreenState extends State<ShopScreen>
                       '$_diamondsBalance',
                       style: AppTextStyles.labelLarge.copyWith(
                         color: AppColors.primaryLight,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
                   ],
@@ -439,22 +506,79 @@ class _ShopScreenState extends State<ShopScreen>
             ],
           ),
         ],
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: AppColors.primaryLight,
-          labelColor: AppColors.primaryLight,
-          unselectedLabelColor: AppColors.textTertiary,
-          tabs: const [
-            Tab(
-                text: 'Cửa hàng',
-                icon: Icon(Icons.storefront_rounded, size: 20)),
-            Tab(
-                text: 'Khung avatar',
-                icon: Icon(Icons.shutter_speed_rounded, size: 20)),
-            Tab(
-                text: 'Kho đồ',
-                icon: Icon(Icons.inventory_2_rounded, size: 20)),
-          ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(56),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(18),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    AppColors.coinGold.withValues(alpha: 0.16),
+                    AppColors.bgSecondary,
+                  ],
+                ),
+                border: Border.all(
+                  color: AppColors.coinGold.withValues(alpha: 0.28),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.35),
+                    offset: const Offset(0, 5),
+                    blurRadius: 12,
+                  ),
+                ],
+              ),
+              child: TabBar(
+                controller: _tabController,
+                padding: const EdgeInsets.all(5),
+                dividerColor: Colors.transparent,
+                indicatorSize: TabBarIndicatorSize.tab,
+                indicator: BoxDecoration(
+                  borderRadius: BorderRadius.circular(13),
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.purpleNeon.withValues(alpha: 0.45),
+                      AppColors.purpleNeon.withValues(alpha: 0.14),
+                    ],
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.purpleNeon.withValues(alpha: 0.28),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                labelColor: Colors.white,
+                unselectedLabelColor: AppColors.textTertiary,
+                labelStyle: AppTextStyles.labelMedium.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+                unselectedLabelStyle: AppTextStyles.labelMedium,
+                tabs: const [
+                  Tab(
+                    height: 44,
+                    text: 'Cửa hàng',
+                    icon: Icon(Icons.storefront_rounded, size: 20),
+                  ),
+                  Tab(
+                    height: 44,
+                    text: 'Khung avatar',
+                    icon: Icon(Icons.shutter_speed_rounded, size: 20),
+                  ),
+                  Tab(
+                    height: 44,
+                    text: 'Kho đồ',
+                    icon: Icon(Icons.inventory_2_rounded, size: 20),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
       body: _isLoading
@@ -462,21 +586,55 @@ class _ShopScreenState extends State<ShopScreen>
               child: CircularProgressIndicator(color: AppColors.primaryLight))
           : _error != null
               ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text('Lỗi tải dữ liệu',
-                          style: TextStyle(color: AppColors.textSecondary)),
-                      const SizedBox(height: 12),
-                      ElevatedButton(
-                        onPressed: _loadData,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.purpleNeon,
-                          foregroundColor: Colors.white,
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: RadialGradient(
+                              colors: [
+                                AppColors.errorNeon.withValues(alpha: 0.25),
+                                AppColors.bgSecondary,
+                              ],
+                            ),
+                            border: Border.all(
+                              color:
+                                  AppColors.errorNeon.withValues(alpha: 0.35),
+                            ),
+                          ),
+                          child: const Icon(
+                            Icons.store_mall_directory_rounded,
+                            size: 44,
+                            color: AppColors.textTertiary,
+                          ),
                         ),
-                        child: const Text('Thử lại'),
-                      ),
-                    ],
+                        const SizedBox(height: 16),
+                        Text(
+                          'Lỗi tải dữ liệu',
+                          style: AppTextStyles.h4.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        FilledButton.icon(
+                          onPressed: _loadData,
+                          icon: const Icon(Icons.refresh_rounded, size: 20),
+                          label: const Text('Thử lại'),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: AppColors.purpleNeon,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 22,
+                              vertical: 12,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 )
               : TabBarView(
@@ -501,14 +659,46 @@ class _ShopScreenState extends State<ShopScreen>
 
   Widget _buildShopTab() {
     return RefreshIndicator(
+      color: AppColors.purpleNeon,
       onRefresh: _loadData,
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           _buildCoinInfoBanner(),
           const SizedBox(height: 20),
-          Text('Vật phẩm',
-              style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary)),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.purpleNeon.withValues(alpha: 0.35),
+                      AppColors.purpleNeon.withValues(alpha: 0.1),
+                    ],
+                  ),
+                  border: Border.all(
+                    color: AppColors.purpleNeon.withValues(alpha: 0.35),
+                  ),
+                ),
+                child: const Icon(
+                  Icons.shopping_bag_rounded,
+                  color: AppColors.primaryLight,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                'Vật phẩm',
+                style: AppTextStyles.h3.copyWith(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.3,
+                ),
+              ),
+            ],
+          ),
           const SizedBox(height: 12),
           ..._shopItems
               .map((item) => _buildShopItemCard(item as Map<String, dynamic>)),
@@ -522,13 +712,25 @@ class _ShopScreenState extends State<ShopScreen>
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
           colors: [
-            AppColors.coinGold.withValues(alpha: 0.12),
-            AppColors.orangeNeon.withValues(alpha: 0.06)
+            AppColors.coinGold.withValues(alpha: 0.2),
+            AppColors.orangeNeon.withValues(alpha: 0.08),
+            AppColors.bgSecondary,
           ],
         ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.coinGold.withValues(alpha: 0.25)),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: AppColors.coinGold.withValues(alpha: 0.38),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.32),
+            offset: const Offset(0, 5),
+            blurRadius: 12,
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -554,13 +756,15 @@ class _ShopScreenState extends State<ShopScreen>
             icon: const Icon(Icons.diamond_rounded, size: 20),
             label: const Text('Mua kim cương'),
             style: FilledButton.styleFrom(
-              backgroundColor: AppColors.primaryLight.withValues(alpha: 0.22),
+              backgroundColor: AppColors.primaryLight.withValues(alpha: 0.28),
               foregroundColor: AppColors.primaryLight,
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+              elevation: 2,
+              shadowColor: AppColors.primaryLight.withValues(alpha: 0.35),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(14),
                 side: BorderSide(
-                  color: AppColors.primaryLight.withValues(alpha: 0.45),
+                  color: AppColors.primaryLight.withValues(alpha: 0.55),
                 ),
               ),
             ),
@@ -579,32 +783,70 @@ class _ShopScreenState extends State<ShopScreen>
     final category = item['category'] as String? ?? '';
 
     final categoryColor = _getCategoryColor(category);
+    final iconFg = categoryColor == AppColors.textSecondary
+        ? AppColors.primaryLight
+        : Colors.white;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0x332D363D)),
+        borderRadius: BorderRadius.circular(18),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            categoryColor.withValues(alpha: 0.12),
+            AppColors.bgSecondary,
+          ],
+        ),
+        border: Border.all(
+          color: categoryColor.withValues(alpha: 0.28),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.34),
+            offset: const Offset(0, 5),
+            blurRadius: 12,
+          ),
+        ],
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(18),
+          splashColor: categoryColor.withValues(alpha: 0.12),
           onTap: canAfford ? () => _purchaseItem(item) : null,
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
                 Container(
-                  width: 52,
-                  height: 52,
+                  width: 54,
+                  height: 54,
                   decoration: BoxDecoration(
-                    color: categoryColor.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(16),
+                    gradient: RadialGradient(
+                      center: const Alignment(-0.35, -0.4),
+                      radius: 1.1,
+                      colors: [
+                        categoryColor.withValues(alpha: 0.45),
+                        categoryColor.withValues(alpha: 0.15),
+                        AppColors.bgTertiary,
+                      ],
+                    ),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.12),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.35),
+                        offset: const Offset(0, 3),
+                        blurRadius: 6,
+                      ),
+                    ],
                   ),
                   child: Icon(_getItemIcon(iconName),
-                      color: categoryColor, size: 26),
+                      color: iconFg, size: 26),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -629,9 +871,33 @@ class _ShopScreenState extends State<ShopScreen>
                     padding: const EdgeInsets.symmetric(
                         horizontal: 14, vertical: 10),
                     decoration: BoxDecoration(
-                      color:
-                          canAfford ? AppColors.coinGold : AppColors.bgTertiary,
-                      borderRadius: BorderRadius.circular(20),
+                      gradient: canAfford
+                          ? LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                const Color(0xFFFFE8A8),
+                                AppColors.coinGold,
+                                const Color(0xFFC99500),
+                              ],
+                            )
+                          : null,
+                      color: canAfford ? null : AppColors.bgTertiary,
+                      borderRadius: BorderRadius.circular(22),
+                      border: Border.all(
+                        color: canAfford
+                            ? const Color(0xFFFFF0C8).withValues(alpha: 0.65)
+                            : const Color(0x332D363D),
+                      ),
+                      boxShadow: canAfford
+                          ? [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.35),
+                                offset: const Offset(0, 3),
+                                blurRadius: 6,
+                              ),
+                            ]
+                          : null,
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -665,24 +931,64 @@ class _ShopScreenState extends State<ShopScreen>
 
   Widget _buildInventoryTab() {
     return RefreshIndicator(
+      color: AppColors.purpleNeon,
       onRefresh: _loadData,
       child: _inventory.isEmpty
           ? ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
               children: [
                 const SizedBox(height: 100),
                 Center(
                   child: Column(
                     children: [
-                      const Icon(Icons.inventory_2_outlined,
-                          size: 64, color: AppColors.textTertiary),
-                      const SizedBox(height: 16),
-                      Text('Kho đồ trống',
-                          style: AppTextStyles.h4
-                              .copyWith(color: AppColors.textSecondary)),
+                      Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: RadialGradient(
+                            colors: [
+                              AppColors.purpleNeon.withValues(alpha: 0.35),
+                              AppColors.bgSecondary,
+                            ],
+                          ),
+                          border: Border.all(
+                            color:
+                                AppColors.purpleNeon.withValues(alpha: 0.35),
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.35),
+                              blurRadius: 14,
+                              offset: const Offset(0, 6),
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          Icons.inventory_2_rounded,
+                          size: 52,
+                          color: AppColors.purpleNeon.withValues(alpha: 0.95),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        'Kho đồ trống',
+                        style: AppTextStyles.h4.copyWith(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
                       const SizedBox(height: 8),
-                      Text('Mua vật phẩm từ cửa hàng để thấy ở đây',
-                          style: AppTextStyles.bodySmall
-                              .copyWith(color: AppColors.textTertiary)),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 32),
+                        child: Text(
+                          'Mua vật phẩm từ cửa hàng để thấy ở đây',
+                          textAlign: TextAlign.center,
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: AppColors.textTertiary,
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -707,20 +1013,43 @@ class _ShopScreenState extends State<ShopScreen>
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: color.withValues(alpha: 0.35)),
+        borderRadius: BorderRadius.circular(16),
+        gradient: LinearGradient(
+          colors: [
+            color.withValues(alpha: 0.22),
+            color.withValues(alpha: 0.06),
+          ],
+        ),
+        border: Border.all(color: color.withValues(alpha: 0.45)),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.2),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Row(
         children: [
-          Icon(icon, color: color, size: 22),
-          const SizedBox(width: 10),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: color.withValues(alpha: 0.2),
+            ),
+            child: Icon(icon, color: color, size: 22),
+          ),
+          const SizedBox(width: 12),
           Expanded(
-              child: Text(text,
-                  style: TextStyle(
-                      color: color,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14))),
+            child: Text(
+              text,
+              style: TextStyle(
+                color: color,
+                fontWeight: FontWeight.w700,
+                fontSize: 14,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -735,32 +1064,66 @@ class _ShopScreenState extends State<ShopScreen>
     final iconName = item['icon'] as String? ?? '';
     final category = item['category'] as String? ?? '';
     final categoryColor = _getCategoryColor(category);
+    final iconFg = categoryColor == AppColors.textSecondary
+        ? AppColors.primaryLight
+        : Colors.white;
 
     if (quantity <= 0 && !isActive) return const SizedBox.shrink();
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            categoryColor.withValues(alpha: isActive ? 0.14 : 0.08),
+            AppColors.bgSecondary,
+          ],
+        ),
         border: Border.all(
-            color: isActive
-                ? categoryColor.withValues(alpha: 0.5)
-                : const Color(0x332D363D)),
+          color: isActive
+              ? categoryColor.withValues(alpha: 0.5)
+              : categoryColor.withValues(alpha: 0.22),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            offset: const Offset(0, 4),
+            blurRadius: 10,
+          ),
+        ],
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
             Container(
-              width: 48,
-              height: 48,
+              width: 50,
+              height: 50,
               decoration: BoxDecoration(
-                color: categoryColor.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(14),
+                gradient: RadialGradient(
+                  colors: [
+                    categoryColor.withValues(alpha: 0.5),
+                    categoryColor.withValues(alpha: 0.18),
+                    AppColors.bgTertiary,
+                  ],
+                ),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.1),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.28),
+                    offset: const Offset(0, 2),
+                    blurRadius: 5,
+                  ),
+                ],
               ),
-              child:
-                  Icon(_getItemIcon(iconName), color: categoryColor, size: 24),
+              child: Icon(_getItemIcon(iconName),
+                  color: iconFg, size: 24),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -809,16 +1172,31 @@ class _ShopScreenState extends State<ShopScreen>
                     child: Container(
                       margin: const EdgeInsets.only(top: 6),
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
+                          horizontal: 12, vertical: 7),
                       decoration: BoxDecoration(
-                        color: AppColors.primaryLight,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(14),
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.primaryLight.withValues(alpha: 0.95),
+                            AppColors.purpleNeon.withValues(alpha: 0.85),
+                          ],
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.purpleNeon.withValues(alpha: 0.35),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
-                      child: const Text('Dùng',
-                          style: TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12)),
+                      child: const Text(
+                        'Dùng',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 12,
+                        ),
+                      ),
                     ),
                   ),
               ],

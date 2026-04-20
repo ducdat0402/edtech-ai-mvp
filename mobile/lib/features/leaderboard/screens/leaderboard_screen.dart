@@ -6,7 +6,6 @@ import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/core/widgets/bottom_nav_bar.dart';
 import 'package:edtech_mobile/core/widgets/error_widget.dart';
-import 'package:edtech_mobile/core/widgets/empty_state.dart';
 import 'package:edtech_mobile/features/chat/widgets/chat_bubble.dart';
 import 'package:edtech_mobile/features/leaderboard/widgets/leaderboard_user_profile_sheet.dart';
 import 'package:edtech_mobile/theme/theme.dart';
@@ -132,36 +131,138 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
         leading: const AppBarLeadingBackAndHome(),
         leadingWidth: 112,
         automaticallyImplyLeading: false,
-        title: Text('Bảng xếp hạng',
-            style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: AppColors.purpleNeon,
-          indicatorWeight: 3,
-          labelColor: AppColors.textPrimary,
-          unselectedLabelColor: AppColors.textTertiary,
-          labelStyle: AppTextStyles.labelMedium,
-          tabs: [
-            const Tab(
-                text: 'Toàn cầu', icon: Icon(Icons.public_rounded, size: 20)),
-            const Tab(
-                text: 'Tuần này',
-                icon: Icon(Icons.emoji_events_rounded, size: 20)),
-            if (widget.subjectId != null)
-              const Tab(
-                  text: 'Môn học', icon: Icon(Icons.book_rounded, size: 20)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    AppColors.xpGold.withValues(alpha: 0.5),
+                    AppColors.xpGold.withValues(alpha: 0.08),
+                  ],
+                ),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.12),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.xpGold.withValues(alpha: 0.28),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.emoji_events_rounded,
+                color: AppColors.xpGold,
+                size: 22,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Bảng xếp hạng',
+                style: AppTextStyles.h4.copyWith(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.3,
+                ),
+              ),
+            ),
           ],
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(56),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(18),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    AppColors.xpGold.withValues(alpha: 0.14),
+                    AppColors.bgSecondary,
+                  ],
+                ),
+                border: Border.all(
+                  color: AppColors.xpGold.withValues(alpha: 0.28),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.35),
+                    offset: const Offset(0, 5),
+                    blurRadius: 12,
+                  ),
+                ],
+              ),
+              child: TabBar(
+                controller: _tabController,
+                padding: const EdgeInsets.all(5),
+                dividerColor: Colors.transparent,
+                indicatorSize: TabBarIndicatorSize.tab,
+                indicator: BoxDecoration(
+                  borderRadius: BorderRadius.circular(13),
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.purpleNeon.withValues(alpha: 0.45),
+                      AppColors.purpleNeon.withValues(alpha: 0.14),
+                    ],
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.purpleNeon.withValues(alpha: 0.28),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                labelColor: Colors.white,
+                unselectedLabelColor: AppColors.textTertiary,
+                labelStyle: AppTextStyles.labelMedium.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+                unselectedLabelStyle: AppTextStyles.labelMedium,
+                tabs: [
+                  const Tab(
+                    height: 44,
+                    text: 'Toàn cầu',
+                    icon: Icon(Icons.public_rounded, size: 20),
+                  ),
+                  const Tab(
+                    height: 44,
+                    text: 'Tuần này',
+                    icon: Icon(Icons.emoji_events_rounded, size: 20),
+                  ),
+                  if (widget.subjectId != null)
+                    const Tab(
+                      height: 44,
+                      text: 'Môn học',
+                      icon: Icon(Icons.book_rounded, size: 20),
+                    ),
+                ],
+              ),
+            ),
+          ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.history_rounded,
-                color: AppColors.textSecondary),
+            icon: Icon(
+              Icons.history_rounded,
+              color: AppColors.purpleNeon.withValues(alpha: 0.95),
+            ),
             tooltip: 'Lịch sử phần thưởng',
             onPressed: () => context.push('/weekly-rewards-history'),
           ),
           IconButton(
-            icon: const Icon(Icons.refresh_rounded,
-                color: AppColors.textSecondary),
+            icon: Icon(
+              Icons.refresh_rounded,
+              color: AppColors.primaryLight.withValues(alpha: 0.95),
+            ),
+            tooltip: 'Làm mới',
             onPressed: _loadData,
           ),
         ],
@@ -189,8 +290,42 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
   }
 
   Widget _buildLoading() {
-    return const Center(
-      child: CircularProgressIndicator(color: AppColors.primaryLight),
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [
+                  AppColors.purpleNeon.withValues(alpha: 0.35),
+                  AppColors.bgSecondary,
+                ],
+              ),
+              border: Border.all(
+                color: AppColors.purpleNeon.withValues(alpha: 0.3),
+              ),
+            ),
+            child: const SizedBox(
+              width: 28,
+              height: 28,
+              child: CircularProgressIndicator(
+                color: AppColors.primaryLight,
+                strokeWidth: 2.5,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Đang tải bảng xếp hạng…',
+            style: AppTextStyles.bodySmall.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -211,7 +346,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
   }) {
     if (data == null) return _buildLoading();
     final entries = data['entries'] as List? ?? [];
-    if (entries.isEmpty) return const EmptyLeaderboardWidget();
+    if (entries.isEmpty) return const _LeaderboardEmptyState();
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       itemCount: entries.length,
@@ -244,7 +379,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
         if (entries.length >= 3)
           SliverToBoxAdapter(child: _buildPodium(entries)),
         if (entries.isEmpty)
-          const SliverFillRemaining(child: EmptyLeaderboardWidget()),
+          const SliverFillRemaining(child: _LeaderboardEmptyState()),
         if (entries.isNotEmpty)
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -285,18 +420,27 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColors.purpleNeon.withValues(alpha: 0.8),
-            AppColors.primaryLight.withValues(alpha: 0.6)
+            AppColors.purpleNeon.withValues(alpha: 0.85),
+            AppColors.primaryLight.withValues(alpha: 0.55),
+            AppColors.xpGold.withValues(alpha: 0.35),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.22),
+        ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.purpleNeon.withValues(alpha: 0.3),
-            blurRadius: 20,
+            color: AppColors.purpleNeon.withValues(alpha: 0.38),
+            blurRadius: 22,
             offset: const Offset(0, 8),
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.35),
+            offset: const Offset(0, 6),
+            blurRadius: 14,
           ),
         ],
       ),
@@ -345,16 +489,58 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0x332D363D)),
+        borderRadius: BorderRadius.circular(18),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.purpleNeon.withValues(alpha: 0.12),
+            AppColors.bgSecondary,
+          ],
+        ),
+        border: Border.all(
+          color: AppColors.purpleNeon.withValues(alpha: 0.26),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            offset: const Offset(0, 4),
+            blurRadius: 11,
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Phần thưởng tuần',
-              style: AppTextStyles.labelLarge
-                  .copyWith(color: AppColors.textPrimary)),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.xpGold.withValues(alpha: 0.35),
+                      AppColors.xpGold.withValues(alpha: 0.08),
+                    ],
+                  ),
+                ),
+                child: const Icon(
+                  Icons.card_giftcard_rounded,
+                  color: AppColors.xpGold,
+                  size: 18,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Phần thưởng tuần',
+                style: AppTextStyles.labelLarge.copyWith(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
           const SizedBox(height: 12),
           Wrap(
             spacing: 8,
@@ -368,13 +554,29 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
-                  color: maxRank <= 3
-                      ? AppColors.purpleNeon.withValues(alpha: 0.1)
-                      : AppColors.bgTertiary,
-                  borderRadius: BorderRadius.circular(12),
-                  border: maxRank <= 3
-                      ? Border.all(
-                          color: AppColors.purpleNeon.withValues(alpha: 0.3))
+                  gradient: maxRank <= 3
+                      ? LinearGradient(
+                          colors: [
+                            AppColors.purpleNeon.withValues(alpha: 0.22),
+                            AppColors.purpleNeon.withValues(alpha: 0.06),
+                          ],
+                        )
+                      : null,
+                  color: maxRank <= 3 ? null : AppColors.bgTertiary,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: maxRank <= 3
+                        ? AppColors.purpleNeon.withValues(alpha: 0.45)
+                        : const Color(0x332D363D),
+                  ),
+                  boxShadow: maxRank <= 3
+                      ? [
+                          BoxShadow(
+                            color: AppColors.purpleNeon.withValues(alpha: 0.18),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
                       : null,
                 ),
                 child: Row(
@@ -450,12 +652,15 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: AppGradients.primary,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.2),
+        ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.purpleNeon.withValues(alpha: 0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color: AppColors.purpleNeon.withValues(alpha: 0.38),
+            blurRadius: 14,
+            offset: const Offset(0, 5),
           ),
         ],
       ),
@@ -467,6 +672,9 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.2),
               shape: BoxShape.circle,
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.35),
+              ),
             ),
             child: Center(
               child: Text('#$rank',
@@ -504,11 +712,14 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: AppGradients.primary,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.22),
+        ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.purpleNeon.withValues(alpha: 0.4),
-            blurRadius: 20,
+            color: AppColors.purpleNeon.withValues(alpha: 0.42),
+            blurRadius: 22,
             offset: const Offset(0, 8),
           ),
         ],
@@ -522,7 +733,16 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
               color: Colors.white.withValues(alpha: 0.2),
               shape: BoxShape.circle,
               border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.3), width: 2),
+                color: Colors.white.withValues(alpha: 0.4),
+                width: 2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.25),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+              ],
             ),
             child: Center(
               child: Text('#$rank',
@@ -564,8 +784,25 @@ class _CountdownBlock extends StatelessWidget {
           width: 50,
           height: 50,
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(12),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.white.withValues(alpha: 0.28),
+                Colors.white.withValues(alpha: 0.08),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.35),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.25),
+                offset: const Offset(0, 3),
+                blurRadius: 5,
+              ),
+            ],
           ),
           child: Center(
             child: Text(value,
@@ -677,13 +914,25 @@ class _PodiumItem extends StatelessWidget {
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                _color.withValues(alpha: 0.8),
-                _color.withValues(alpha: 0.4)
+                _color.withValues(alpha: 0.95),
+                _color.withValues(alpha: 0.45),
+                _color.withValues(alpha: 0.28),
               ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.22),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: _color.withValues(alpha: 0.45),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: Center(
             child: Text(
@@ -732,26 +981,54 @@ class _WeeklyEntryCard extends StatelessWidget {
     }
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(13),
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0x332D363D)),
+        borderRadius: BorderRadius.circular(18),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.purpleNeon.withValues(alpha: 0.08),
+            AppColors.bgSecondary,
+          ],
+        ),
+        border: Border.all(
+          color: AppColors.purpleNeon.withValues(alpha: 0.2),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            offset: const Offset(0, 4),
+            blurRadius: 10,
+          ),
+        ],
       ),
       child: Row(
         children: [
           Container(
-            width: 40,
-            height: 40,
+            width: 42,
+            height: 42,
             decoration: BoxDecoration(
-              color: AppColors.bgTertiary,
-              borderRadius: BorderRadius.circular(10),
+              gradient: LinearGradient(
+                colors: [
+                  AppColors.bgTertiary,
+                  AppColors.bgSecondary,
+                ],
+              ),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: const Color(0x332D363D),
+              ),
             ),
             child: Center(
-              child: Text('#$rank',
-                  style: AppTextStyles.labelLarge
-                      .copyWith(color: AppColors.textSecondary)),
+              child: Text(
+                '#$rank',
+                style: AppTextStyles.labelLarge.copyWith(
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
             ),
           ),
           const SizedBox(width: 10),
@@ -775,19 +1052,41 @@ class _WeeklyEntryCard extends StatelessWidget {
             ),
           ),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
             decoration: BoxDecoration(
-              color: AppColors.xpGold.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(14),
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  AppColors.xpGold.withValues(alpha: 0.35),
+                  AppColors.xpGold.withValues(alpha: 0.1),
+                ],
+              ),
+              border: Border.all(
+                color: AppColors.xpGold.withValues(alpha: 0.45),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.xpGold.withValues(alpha: 0.2),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
             child: Row(
               children: [
                 const Icon(Icons.star_rounded,
                     color: AppColors.xpGold, size: 16),
                 const SizedBox(width: 4),
-                Text('${entry['weeklyXp'] ?? 0}',
-                    style: AppTextStyles.numberMedium
-                        .copyWith(color: AppColors.xpGold, fontSize: 14)),
+                Text(
+                  '${entry['weeklyXp'] ?? 0}',
+                  style: AppTextStyles.numberMedium.copyWith(
+                    color: AppColors.xpGold,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
               ],
             ),
           ),
@@ -838,22 +1137,35 @@ class _LeaderboardEntryCard extends StatelessWidget {
     }
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(13),
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
-        borderRadius: BorderRadius.circular(16),
-        border: isTopThree
-            ? Border.all(color: rankColor.withValues(alpha: 0.5), width: 2)
-            : Border.all(color: const Color(0x332D363D)),
-        boxShadow: isTopThree
-            ? [
-                BoxShadow(
-                    color: rankColor.withValues(alpha: 0.2),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2))
-              ]
-            : null,
+        borderRadius: BorderRadius.circular(18),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            isTopThree
+                ? rankColor.withValues(alpha: 0.14)
+                : AppColors.purpleNeon.withValues(alpha: 0.06),
+            AppColors.bgSecondary,
+          ],
+        ),
+        border: Border.all(
+          color: isTopThree
+              ? rankColor.withValues(alpha: 0.55)
+              : const Color(0x332D363D),
+          width: isTopThree ? 1.5 : 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isTopThree
+                ? rankColor.withValues(alpha: 0.25)
+                : Colors.black.withValues(alpha: 0.28),
+            blurRadius: isTopThree ? 12 : 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         children: [
@@ -861,20 +1173,42 @@ class _LeaderboardEntryCard extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: isTopThree
-                  ? rankColor.withValues(alpha: 0.2)
-                  : AppColors.bgTertiary,
-              borderRadius: BorderRadius.circular(12),
-              border: isTopThree
-                  ? Border.all(color: rankColor.withValues(alpha: 0.5))
+              gradient: isTopThree
+                  ? RadialGradient(
+                      colors: [
+                        rankColor.withValues(alpha: 0.55),
+                        rankColor.withValues(alpha: 0.15),
+                      ],
+                    )
+                  : null,
+              color: isTopThree ? null : AppColors.bgTertiary,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: isTopThree
+                    ? rankColor.withValues(alpha: 0.6)
+                    : const Color(0x332D363D),
+              ),
+              boxShadow: isTopThree
+                  ? [
+                      BoxShadow(
+                        color: rankColor.withValues(alpha: 0.35),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ]
                   : null,
             ),
             child: Center(
               child: isTopThree
-                  ? Icon(Icons.emoji_events_rounded, color: rankColor, size: 24)
-                  : Text('#$rank',
-                      style: AppTextStyles.labelLarge
-                          .copyWith(color: AppColors.textSecondary)),
+                  ? Icon(Icons.emoji_events_rounded,
+                      color: Colors.white, size: 24)
+                  : Text(
+                      '#$rank',
+                      style: AppTextStyles.labelLarge.copyWith(
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
             ),
           ),
           const SizedBox(width: 10),
@@ -928,21 +1262,106 @@ class _LeaderboardEntryCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: AppColors.xpGold.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(14),
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  AppColors.xpGold.withValues(alpha: 0.38),
+                  AppColors.xpGold.withValues(alpha: 0.1),
+                ],
+              ),
+              border: Border.all(
+                color: AppColors.xpGold.withValues(alpha: 0.45),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.xpGold.withValues(alpha: 0.22),
+                  blurRadius: 7,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
             child: Row(
               children: [
                 const Icon(Icons.star_rounded,
                     color: AppColors.xpGold, size: 18),
                 const SizedBox(width: 4),
-                Text('${entry['totalXP'] ?? 0}',
-                    style: AppTextStyles.numberMedium
-                        .copyWith(color: AppColors.xpGold, fontSize: 16)),
+                Text(
+                  '${entry['totalXP'] ?? 0}',
+                  style: AppTextStyles.numberMedium.copyWith(
+                    color: AppColors.xpGold,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
               ],
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Empty state — tránh dùng widget chung phẳng.
+class _LeaderboardEmptyState extends StatelessWidget {
+  const _LeaderboardEmptyState();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(26),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    AppColors.xpGold.withValues(alpha: 0.4),
+                    AppColors.bgSecondary,
+                  ],
+                ),
+                border: Border.all(
+                  color: AppColors.purpleNeon.withValues(alpha: 0.35),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.35),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Icon(
+                Icons.emoji_events_rounded,
+                size: 52,
+                color: AppColors.xpGold.withValues(alpha: 0.95),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'Chưa có dữ liệu',
+              style: AppTextStyles.h4.copyWith(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Bảng xếp hạng sẽ được cập nhật khi có người dùng',
+              textAlign: TextAlign.center,
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.textSecondary,
+                height: 1.4,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

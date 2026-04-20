@@ -301,45 +301,66 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(12, 4, 12, 0),
-          child: TextField(
-            controller: _searchController,
-            onChanged: (_) => setState(() {}),
-            style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
-            decoration: InputDecoration(
-              hintText: 'Tìm theo tên hoặc nội dung…',
-              hintStyle: TextStyle(
-                color: AppColors.textSecondary.withValues(alpha: 0.85),
-                fontSize: 14,
+          padding: const EdgeInsets.fromLTRB(12, 8, 12, 6),
+          child: Container(
+            padding: const EdgeInsets.all(1.5),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  AppColors.purpleNeon.withValues(alpha: 0.55),
+                  AppColors.orangeNeon.withValues(alpha: 0.22),
+                ],
               ),
-              isDense: true,
-              filled: true,
-              fillColor: AppColors.bgSecondary,
-              prefixIcon: const Icon(Icons.search_rounded,
-                  color: AppColors.textSecondary, size: 22),
-              suffixIcon: _searchController.text.isEmpty
-                  ? null
-                  : IconButton(
-                      tooltip: 'Xóa tìm kiếm',
-                      icon: const Icon(Icons.close_rounded,
-                          color: AppColors.textTertiary, size: 20),
-                      onPressed: () {
-                        _searchController.clear();
-                        setState(() {});
-                      },
-                    ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0x332D363D)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.28),
+                  offset: const Offset(0, 4),
+                  blurRadius: 10,
+                ),
+              ],
+            ),
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppColors.bgSecondary,
+                borderRadius: BorderRadius.circular(14.5),
               ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0x332D363D)),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(
-                    color: AppColors.purpleNeon, width: 1.2),
+              child: TextField(
+                controller: _searchController,
+                onChanged: (_) => setState(() {}),
+                style:
+                    const TextStyle(color: AppColors.textPrimary, fontSize: 14),
+                cursorColor: AppColors.purpleNeon,
+                decoration: InputDecoration(
+                  hintText: 'Tìm theo tên hoặc nội dung…',
+                  hintStyle: TextStyle(
+                    color: AppColors.textSecondary.withValues(alpha: 0.85),
+                    fontSize: 14,
+                  ),
+                  isDense: true,
+                  filled: true,
+                  fillColor: Colors.transparent,
+                  prefixIcon: const Icon(Icons.search_rounded,
+                      color: AppColors.textSecondary, size: 22),
+                  suffixIcon: _searchController.text.isEmpty
+                      ? null
+                      : IconButton(
+                          tooltip: 'Xóa tìm kiếm',
+                          icon: const Icon(Icons.close_rounded,
+                              color: AppColors.textTertiary, size: 20),
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() {});
+                          },
+                        ),
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
+                ),
               ),
             ),
           ),
@@ -355,14 +376,53 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
                         physics: const AlwaysScrollableScrollPhysics(),
                         padding:
                             const EdgeInsets.only(bottom: _listBottomInset),
-                        children: const [
-                          SizedBox(height: 120),
+                        children: [
+                          const SizedBox(height: 100),
                           Center(
-                            child: Text(
-                              'Chưa có status nào.\nHãy là người đầu tiên đăng!',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                  color: AppColors.textSecondary, height: 1.4),
+                            child: Column(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(22),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    gradient: RadialGradient(
+                                      colors: [
+                                        AppColors.orangeNeon
+                                            .withValues(alpha: 0.35),
+                                        AppColors.bgSecondary,
+                                      ],
+                                    ),
+                                    border: Border.all(
+                                      color: AppColors.orangeNeon
+                                          .withValues(alpha: 0.35),
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black
+                                            .withValues(alpha: 0.35),
+                                        blurRadius: 14,
+                                        offset: const Offset(0, 6),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Icon(
+                                    Icons.forum_rounded,
+                                    size: 48,
+                                    color: AppColors.orangeNeon
+                                        .withValues(alpha: 0.95),
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                                const Text(
+                                  'Chưa có status nào.\nHãy là người đầu tiên đăng!',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: AppColors.textSecondary,
+                                    height: 1.45,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
@@ -436,15 +496,32 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
                     final dislikeCount = item['dislikeCount'] as int? ?? 0;
                     final commentCount = item['commentCount'] as int? ?? 0;
 
-                    return Card(
-                      color: AppColors.bgSecondary,
-                      margin: const EdgeInsets.only(bottom: 10),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        side: const BorderSide(color: Color(0x332D363D)),
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(18),
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            AppColors.orangeNeon.withValues(alpha: 0.1),
+                            AppColors.bgSecondary,
+                            AppColors.bgSecondary,
+                          ],
+                        ),
+                        border: Border.all(
+                          color: AppColors.purpleNeon.withValues(alpha: 0.24),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.38),
+                            offset: const Offset(0, 6),
+                            blurRadius: 14,
+                          ),
+                        ],
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.all(12),
+                        padding: const EdgeInsets.all(14),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -545,13 +622,57 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
                 ),
               ),
               Positioned(
-                right: 16,
-                bottom: 16,
-                child: FloatingActionButton(
-                  onPressed: _composeStatus,
-                  tooltip: 'Đăng status',
-                  backgroundColor: AppColors.purpleNeon,
-                  child: const Icon(Icons.edit_rounded),
+                right: 14,
+                bottom: 14,
+                child: Tooltip(
+                  message: 'Đăng status',
+                  child: Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.purpleNeon.withValues(alpha: 0.45),
+                          blurRadius: 16,
+                          offset: const Offset(0, 5),
+                        ),
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.35),
+                          offset: const Offset(0, 4),
+                          blurRadius: 8,
+                        ),
+                      ],
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      shape: const CircleBorder(),
+                      clipBehavior: Clip.antiAlias,
+                      child: InkWell(
+                        onTap: _composeStatus,
+                        child: Ink(
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                AppColors.purpleNeon,
+                                Color(0xFF5E42E8),
+                              ],
+                            ),
+                          ),
+                          child: const SizedBox(
+                            width: 58,
+                            height: 58,
+                            child: Icon(
+                              Icons.edit_rounded,
+                              color: Colors.white,
+                              size: 26,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -678,25 +799,64 @@ class _ReactionChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: active ? color.withValues(alpha: 0.15) : AppColors.bgTertiary,
-      borderRadius: BorderRadius.circular(20),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(active ? activeIcon : icon,
-                  size: 18, color: active ? color : AppColors.textSecondary),
-              const SizedBox(width: 4),
-              Text(label,
+    final borderColor = active
+        ? color.withValues(alpha: 0.55)
+        : const Color(0x332D363D);
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22),
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: active
+              ? [
+                  color.withValues(alpha: 0.38),
+                  color.withValues(alpha: 0.1),
+                ]
+              : [
+                  AppColors.bgTertiary,
+                  AppColors.bgTertiary.withValues(alpha: 0.85),
+                ],
+        ),
+        border: Border.all(color: borderColor),
+        boxShadow: [
+          BoxShadow(
+            color: active
+                ? color.withValues(alpha: 0.28)
+                : Colors.black.withValues(alpha: 0.28),
+            offset: const Offset(0, 2),
+            blurRadius: active ? 7 : 4,
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(22),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(22),
+          splashColor: color.withValues(alpha: 0.2),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  active ? activeIcon : icon,
+                  size: 18,
+                  color: active ? color : AppColors.textSecondary,
+                ),
+                const SizedBox(width: 5),
+                Text(
+                  label,
                   style: TextStyle(
-                      color: active ? color : AppColors.textSecondary,
-                      fontSize: 13)),
-            ],
+                    color: active ? color : AppColors.textSecondary,
+                    fontSize: 13,
+                    fontWeight: active ? FontWeight.w700 : FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
