@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:edtech_mobile/core/services/auth_service.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:edtech_mobile/core/widgets/mascot_image.dart';
 import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 
@@ -169,13 +169,12 @@ class _RegisterScreenState extends State<RegisterScreen>
                   ],
                 ),
               ),
-              Positioned(
+              const Positioned(
                 bottom: -6,
-                child: SvgPicture.asset(
-                  'assets/mascot/celebrating.svg',
+                child: MascotImage(
+                  MascotKind.celebrating,
                   width: 108,
                   height: 108,
-                  fit: BoxFit.contain,
                 ),
               ),
             ],

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:edtech_mobile/core/widgets/mascot_image.dart';
 import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/core/services/auth_service.dart';
 import 'package:edtech_mobile/theme/theme.dart';
@@ -109,13 +109,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   ],
                 ),
               ),
-              Positioned(
+              const Positioned(
                 bottom: -4,
-                child: SvgPicture.asset(
-                  'assets/mascot/happy.svg',
+                child: MascotImage(
+                  MascotKind.happy,
                   width: 112,
                   height: 112,
-                  fit: BoxFit.contain,
                 ),
               ),
             ],
@@ -171,13 +170,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     ],
                   ),
                 ),
-                Positioned(
+                const Positioned(
                   bottom: -6,
-                  child: SvgPicture.asset(
-                    'assets/mascot/idle.svg',
+                  child: MascotImage(
+                    MascotKind.idle,
                     width: 104,
                     height: 104,
-                    fit: BoxFit.contain,
                   ),
                 ),
               ],
@@ -254,8 +252,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     ),
                   ),
                   validator: (value) {
-                    if (value == null || value.isEmpty)
+                    if (value == null || value.isEmpty) {
                       return 'Vui lòng nhập email';
+                    }
                     if (!value.contains('@')) return 'Email không hợp lệ';
                     return null;
                   },

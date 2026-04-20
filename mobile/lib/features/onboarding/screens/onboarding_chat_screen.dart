@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:edtech_mobile/core/widgets/mascot_image.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
@@ -41,17 +41,16 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
       'noto': '1f30d',
     },
     {
-      'title': 'Có bản đồ năng lực',
-      'subtitle':
-          'Theo dõi tiến bộ năng lực học tập và năng lực con người trực quan theo thời gian.',
+      'title': 'Bản đồ năng lực',
+      'subtitle': 'Theo dõi sự tiến bộ thật, không phải điểm số.',
       'icon': '📊',
       'hero': '🧠',
       'noto': '1f9e0',
     },
     {
-      'title': 'Chia sẻ kiến thức và kiếm tiền',
+      'title': 'Chia sẻ kiến thức',
       'subtitle':
-          'Nhận 30% doanh thu khi tạo khóa học bổ ích được cộng đồng học và đánh giá tốt.',
+          'Chia sẻ kiến thức và tăng thu nhập thông qua đóng góp bài học hữu ích cho cộng đồng',
       'icon': '💸',
       'hero': '🏆',
       'noto': '1f3c6',
@@ -653,7 +652,9 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
                           setState(() => _currentPage = page),
                       children: [
                         _buildWelcomeSlide(),
-                        ..._featureIntroSlides.map(_buildFeatureIntroSlide),
+                        ..._featureIntroSlides.asMap().entries.map(
+                              (e) => _buildFeatureIntroSlide(e.value, e.key),
+                            ),
                         _buildAcquisitionSlide(),
                         _buildSegmentSlide(),
                         _buildGoalsSlide(),
@@ -980,13 +981,12 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
                           ),
                         ),
                       ),
-                      Positioned(
+                      const Positioned(
                         bottom: -6,
-                        child: SvgPicture.asset(
-                          'assets/mascot/idle.svg',
+                        child: MascotImage(
+                          MascotKind.idle,
                           width: 140,
                           height: 140,
-                          fit: BoxFit.contain,
                         ),
                       ),
                     ],
@@ -1095,125 +1095,223 @@ class _OnboardingChatScreenState extends State<OnboardingChatScreen>
     );
   }
 
-  Widget _buildFeatureIntroSlide(Map<String, String> slide) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
-      child: Column(
+  MascotKind _mascotKindForFeatureSlide(int index) {
+    switch (index) {
+      case 0:
+        return MascotKind.happy;
+      case 1:
+        return MascotKind.idle;
+      case 2:
+        return MascotKind.celebrating;
+      case 3:
+        return MascotKind.happy;
+      case 4:
+        return MascotKind.idle;
+      default:
+        return MascotKind.idle;
+    }
+  }
+
+  Widget _buildFeatureIntroMascotSide(MascotKind kind) {
+    return SizedBox(
+      width: 128,
+      height: 210,
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.bottomCenter,
         children: [
-          _buildEyebrow('KHÁM PHÁ'),
-          const SizedBox(height: 28),
-          Container(
-            width: 118,
-            height: 118,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(32),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.purpleNeon.withValues(alpha: 0.4),
-                  blurRadius: 28,
-                  spreadRadius: 0,
-                  offset: const Offset(0, 10),
-                ),
-                BoxShadow(
-                  color: AppColors.primaryLight.withValues(alpha: 0.15),
-                  blurRadius: 40,
-                  spreadRadius: 4,
-                ),
-              ],
-            ),
+          Positioned(
+            bottom: 18,
             child: Container(
+              width: 96,
+              height: 28,
               decoration: BoxDecoration(
-                gradient: AppGradients.primary,
-                borderRadius: BorderRadius.circular(32),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.12),
-                  width: 1,
-                ),
-              ),
-              child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: OnboardingNotoLottie(
-                    notoHex: slide['noto'] ?? '1f31f',
-                    size: 92,
-                    fallbackEmoji: slide['hero'] ?? '✨',
-                    repeat: true,
+                borderRadius: BorderRadius.circular(999),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.purpleNeon.withValues(alpha: 0.45),
+                    blurRadius: 28,
+                    spreadRadius: 2,
+                    offset: const Offset(0, 8),
                   ),
-                ),
+                ],
               ),
             ),
           ),
-          const SizedBox(height: 28),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              OnboardingNotoLottie(
-                notoHex: slide['noto'] ?? '1f31f',
-                size: 34,
-                fallbackEmoji: slide['icon'] ?? '✨',
-                repeat: true,
-              ),
-              const SizedBox(width: 10),
-              Flexible(
-                child: AppTextStyles.gradientText(
-                  slide['title'] ?? '',
-                  AppTextStyles.h3,
-                  AppGradients.primary,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 18),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
-            decoration: BoxDecoration(
-              color: AppColors.bgSecondary,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: _ghostBorder),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.12),
-                  blurRadius: 16,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
-            child: Text(
-              slide['subtitle'] ?? '',
-              textAlign: TextAlign.center,
-              style: AppTextStyles.bodyMedium
-                  .copyWith(color: AppColors.textSecondary, height: 1.55),
+          Positioned(
+            top: 8,
+            right: -4,
+            child: Icon(
+              Icons.star_rounded,
+              size: 18,
+              color: AppColors.xpGold.withValues(alpha: 0.95),
             ),
           ),
-          const SizedBox(height: 22),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: AppColors.purpleNeon.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                color: AppColors.primaryLight.withValues(alpha: 0.32),
-              ),
+          Positioned(
+            top: 36,
+            left: -8,
+            child: Icon(
+              Icons.star_rounded,
+              size: 14,
+              color: AppColors.xpGold.withValues(alpha: 0.75),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.touch_app_rounded,
-                    size: 18, color: AppColors.primaryLight),
-                const SizedBox(width: 8),
-                Flexible(
-                  child: Text(
-                    'Nhấn Tiếp tục để xem thêm',
-                    style: AppTextStyles.caption
-                        .copyWith(color: AppColors.primaryLight),
-                  ),
-                ),
-              ],
+          ),
+          Positioned(
+            bottom: 52,
+            right: 2,
+            child: Icon(
+              Icons.star_rounded,
+              size: 12,
+              color: AppColors.xpGold.withValues(alpha: 0.65),
+            ),
+          ),
+          Positioned(
+            bottom: 0,
+            child: MascotImage(
+              kind,
+              width: 118,
+              height: 118,
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildFeatureIntroSlide(Map<String, String> slide, int slideIndex) {
+    final mascot = _mascotKindForFeatureSlide(slideIndex);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final wide = constraints.maxWidth >= 400;
+        final hero = Container(
+          width: wide ? 108 : 118,
+          height: wide ? 108 : 118,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(32),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.purpleNeon.withValues(alpha: 0.4),
+                blurRadius: 28,
+                spreadRadius: 0,
+                offset: const Offset(0, 10),
+              ),
+              BoxShadow(
+                color: AppColors.primaryLight.withValues(alpha: 0.15),
+                blurRadius: 40,
+                spreadRadius: 4,
+              ),
+            ],
+          ),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: AppGradients.primary,
+              borderRadius: BorderRadius.circular(32),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.12),
+                width: 1,
+              ),
+            ),
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: OnboardingNotoLottie(
+                  notoHex: slide['noto'] ?? '1f31f',
+                  size: wide ? 84 : 92,
+                  fallbackEmoji: slide['hero'] ?? '✨',
+                  repeat: true,
+                ),
+              ),
+            ),
+          ),
+        );
+
+        final titleRow = Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            OnboardingNotoLottie(
+              notoHex: slide['noto'] ?? '1f31f',
+              size: 34,
+              fallbackEmoji: slide['icon'] ?? '✨',
+              repeat: true,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: AppTextStyles.gradientText(
+                slide['title'] ?? '',
+                AppTextStyles.h3,
+                AppGradients.primary,
+              ),
+            ),
+          ],
+        );
+
+        final subtitleBox = Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+          decoration: BoxDecoration(
+            color: AppColors.bgSecondary,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: _ghostBorder),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.12),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Text(
+            slide['subtitle'] ?? '',
+            textAlign: wide ? TextAlign.start : TextAlign.center,
+            style: AppTextStyles.bodyMedium
+                .copyWith(color: AppColors.textSecondary, height: 1.55),
+          ),
+        );
+
+        final textColumn = Column(
+          crossAxisAlignment:
+              wide ? CrossAxisAlignment.start : CrossAxisAlignment.center,
+          children: [
+            if (!wide) ...[
+              hero,
+              const SizedBox(height: 24),
+            ] else ...[
+              hero,
+              const SizedBox(height: 20),
+            ],
+            titleRow,
+            const SizedBox(height: 18),
+            subtitleBox,
+          ],
+        );
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+          child: Column(
+            children: [
+              _buildEyebrow('KHÁM PHÁ'),
+              const SizedBox(height: 20),
+              if (wide)
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Expanded(child: textColumn),
+                    const SizedBox(width: 8),
+                    _buildFeatureIntroMascotSide(mascot),
+                  ],
+                )
+              else
+                Column(
+                  children: [
+                    textColumn,
+                    const SizedBox(height: 16),
+                    Center(child: _buildFeatureIntroMascotSide(mascot)),
+                  ],
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
 

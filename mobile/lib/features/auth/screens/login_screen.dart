@@ -7,7 +7,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:edtech_mobile/core/constants/api_constants.dart';
 import 'package:edtech_mobile/core/services/auth_service.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:edtech_mobile/core/widgets/mascot_image.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 import 'package:edtech_mobile/features/auth/utils/google_js_stub.dart'
     if (dart.library.html) 'package:edtech_mobile/features/auth/utils/google_js_web.dart';
@@ -180,13 +180,12 @@ class _LoginScreenState extends State<LoginScreen>
                   ),
                 ),
               ),
-              Positioned(
+              const Positioned(
                 bottom: -8,
-                child: SvgPicture.asset(
-                  'assets/mascot/happy.svg',
+                child: MascotImage(
+                  MascotKind.happy,
                   width: 128,
                   height: 128,
-                  fit: BoxFit.contain,
                 ),
               ),
             ],
