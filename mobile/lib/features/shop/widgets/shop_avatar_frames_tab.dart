@@ -3,6 +3,26 @@ import 'package:flutter/services.dart';
 import 'package:edtech_mobile/core/constants/currency_labels.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 
+const double _kAvatarFrameGridGap = 8;
+/// Chiều cao nội dung thẻ ~mục tiêu — dùng để tính `childAspectRatio` theo bề ngang ô (tránh ô cao dư trên web).
+const double _kAvatarFrameTargetMainExtent = 152;
+
+/// Số cột: ước từ bề ngang tối thiểu mỗi thẻ (web rộng → nhiều cột hơn, ô không quá rộng).
+int _avatarFrameGridColumns(double crossAxisExtent) {
+  const minTile = 154.0;
+  final n = ((crossAxisExtent + _kAvatarFrameGridGap) / (minTile + _kAvatarFrameGridGap))
+      .floor();
+  return n.clamp(2, 5);
+}
+
+/// `width/height` mỗi ô; height ≈ `_kAvatarFrameTargetMainExtent` khi đủ chỗ (bỏ khoảng trống dưới nút).
+double _avatarFrameChildAspectRatio(double crossAxisExtent, int cols) {
+  final cellW =
+      (crossAxisExtent - (cols - 1) * _kAvatarFrameGridGap) / cols;
+  final r = cellW / _kAvatarFrameTargetMainExtent;
+  return r.clamp(0.78, 2.85);
+}
+
 /// Tab cửa hàng — danh sách khung avatar (catalog từ backend).
 class ShopAvatarFramesTab extends StatelessWidget {
   final List<Map<String, dynamic>> frames;
@@ -63,18 +83,15 @@ class ShopAvatarFramesTab extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
             sliver: SliverLayoutBuilder(
               builder: (context, constraints) {
-                final cols = _avatarFrameGridColumns(constraints.crossAxisExtent);
+                final w = constraints.crossAxisExtent;
+                final cols = _avatarFrameGridColumns(w);
+                final aspect = _avatarFrameChildAspectRatio(w, cols);
                 return SliverGrid(
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: cols,
-                    crossAxisSpacing: 8,
-                    mainAxisSpacing: 8,
-                    // width/height — càng lớn ô càng thấp (ít trống dọc).
-                    childAspectRatio: cols >= 4
-                        ? 0.78
-                        : cols >= 3
-                            ? 0.88
-                            : 0.98,
+                    crossAxisSpacing: _kAvatarFrameGridGap,
+                    mainAxisSpacing: _kAvatarFrameGridGap,
+                    childAspectRatio: aspect,
                   ),
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
@@ -98,13 +115,6 @@ class ShopAvatarFramesTab extends StatelessWidget {
       ),
     );
   }
-}
-
-/// 2–4 cột tùy bề ngang nội dung (điện thoại ~2, máy rộng hơn ~3–4).
-int _avatarFrameGridColumns(double width) {
-  if (width >= 900) return 4;
-  if (width >= 520) return 3;
-  return 2;
 }
 
 class _WalletBar extends StatelessWidget {
