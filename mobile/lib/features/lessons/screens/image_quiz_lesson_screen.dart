@@ -219,9 +219,11 @@ class _ImageQuizLessonScreenState extends State<ImageQuizLessonScreen> {
             ),
           ),
 
+          LessonContributorCreditStrip(contributor: widget.contributor),
+
           // Bottom section: only show test button when all slides answered
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             child: hasAnsweredAllSlides
                 ? SizedBox(
                     width: double.infinity,

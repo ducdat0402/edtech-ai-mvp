@@ -186,9 +186,11 @@ class _VideoLessonScreenState extends State<VideoLessonScreen> {
             ),
           ),
 
+          LessonContributorCreditStrip(contributor: widget.contributor),
+
           // Bottom button
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             child: SizedBox(
               width: double.infinity,
               height: 52,
