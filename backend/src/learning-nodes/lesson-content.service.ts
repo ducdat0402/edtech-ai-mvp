@@ -276,6 +276,7 @@ TRẢ VỀ JSON DUY NHẤT:
         version: null,
         createdAt: updatedAt.toISOString(),
         contributor: currentContributor,
+        editContributor: null,
         note: null,
       });
     }

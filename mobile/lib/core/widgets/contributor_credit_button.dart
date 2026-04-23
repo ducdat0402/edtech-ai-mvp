@@ -35,6 +35,9 @@ bool lessonCreditSheetVisible(
     if (lessonContributorVisible(_contributorMapFromEntry(e['contributor']))) {
       return true;
     }
+    if (lessonContributorVisible(_contributorMapFromEntry(e['editContributor']))) {
+      return true;
+    }
   }
   return false;
 }
@@ -49,6 +52,10 @@ Map<String, dynamic>? primaryContributorForCreditIcon(
   for (final e in h) {
     final c = _contributorMapFromEntry(e['contributor']);
     if (lessonContributorVisible(c)) return c;
+  }
+  for (final e in h) {
+    final ed = _contributorMapFromEntry(e['editContributor']);
+    if (lessonContributorVisible(ed)) return ed;
   }
   return null;
 }
@@ -212,14 +219,23 @@ class _VersionHistoryTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final contrib = _contributorMapFromEntry(entry['contributor']);
-    final hasContributor = lessonContributorVisible(contrib);
-    final name = hasContributor
-        ? lessonContributorDisplayName(contrib!)
-        : '—';
-    final avatarUrl = hasContributor
-        ? ApiConfig.absoluteMediaUrl(contrib!['avatarUrl'] as String?)
+    final content = _contributorMapFromEntry(entry['contributor']);
+    final edit = _contributorMapFromEntry(entry['editContributor']);
+    final hasContent = lessonContributorVisible(content);
+    final hasEdit = lessonContributorVisible(edit);
+    final samePerson = hasContent &&
+        hasEdit &&
+        content!['id'].toString() == edit!['id'].toString();
+
+    final primaryForAvatar = hasContent ? content! : (hasEdit ? edit! : null);
+    final avatarUrl = primaryForAvatar != null
+        ? ApiConfig.absoluteMediaUrl(primaryForAvatar['avatarUrl'] as String?)
         : '';
+
+    final headline = hasContent
+        ? lessonContributorDisplayName(content!)
+        : (hasEdit ? lessonContributorDisplayName(edit!) : '—');
+
     final date = _formatVersionDate(entry['createdAt'] as String?);
     final note = (entry['note'] as String?)?.trim();
     final label = _versionEntryLabel(entry);
@@ -275,14 +291,39 @@ class _VersionHistoryTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  name,
+                  headline,
                   style: AppTextStyles.labelMedium
                       .copyWith(color: AppColors.textPrimary),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                if (date.isNotEmpty) ...[
+                if (hasContent) ...[
                   const SizedBox(height: 2),
+                  Text(
+                    'Ghi nhận nội dung',
+                    style: AppTextStyles.caption
+                        .copyWith(color: AppColors.textTertiary),
+                  ),
+                ] else if (hasEdit) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    'Theo bản lưu (chưa tách ghi nhận nội dung)',
+                    style: AppTextStyles.caption
+                        .copyWith(color: AppColors.textTertiary),
+                  ),
+                ],
+                if (hasContent && hasEdit && !samePerson) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    'Cập nhật đã duyệt: ${lessonContributorDisplayName(edit!)}',
+                    style: AppTextStyles.caption
+                        .copyWith(color: AppColors.textSecondary, height: 1.25),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+                if (date.isNotEmpty) ...[
+                  const SizedBox(height: 4),
                   Text(
                     date,
                     style: AppTextStyles.caption
@@ -403,6 +444,10 @@ int _distinctContributorCount(List<Map<String, dynamic>>? history) {
     final c = _contributorMapFromEntry(e['contributor']);
     if (lessonContributorVisible(c)) {
       ids.add(c!['id'].toString());
+    }
+    final ed = _contributorMapFromEntry(e['editContributor']);
+    if (lessonContributorVisible(ed)) {
+      ids.add(ed!['id'].toString());
     }
   }
   return ids.length;

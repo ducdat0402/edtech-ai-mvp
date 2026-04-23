@@ -38,6 +38,16 @@ export class LessonTypeContentVersion {
   @Column({ type: 'jsonb', nullable: true })
   endQuiz: Record<string, any> | null;
 
+  /**
+   * Người được ghi nhận trên node (learning_nodes.contributorId) tại thời điểm lưu bản —
+   * tức ghi công cho *nội dung* của snapshot này.
+   */
+  @Column({ type: 'uuid', nullable: true })
+  contentCreditedContributorId: string | null;
+
+  /**
+   * Người gửi bản chỉnh sửa đã duyệt — thao tác này kích hoạt lưu snapshot (bản cũ).
+   */
   @Column({ nullable: true })
   contributorId: string;
 

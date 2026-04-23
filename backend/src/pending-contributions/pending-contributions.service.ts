@@ -916,14 +916,21 @@ export class PendingContributionsService {
         if (contribution.data.isContentEdit && contribution.data.lessonType && contribution.data.lessonData) {
           const contentNodeId = contribution.data.nodeId || entityId;
           const contentLessonType = contribution.data.lessonType;
+          const contentNode = await this.learningNodeRepo.findOne({
+            where: { id: contentNodeId },
+          });
 
           // Save the current version to history before updating
           try {
             await this.lessonTypeContentsService.saveVersionSnapshot(
               contentNodeId,
               contentLessonType,
-              contribution.contributorId,
-              `Phiên bản trước khi chỉnh sửa bởi contributor`,
+              {
+                editContributorId: contribution.contributorId,
+                contentCreditedContributorId:
+                  contentNode?.contributorId ?? undefined,
+                note: 'Bản lưu trước khi cập nhật nội dung (đã duyệt).',
+              },
             );
           } catch (e) {
             // If no existing content to snapshot, that's OK (it will be created)
@@ -951,7 +958,6 @@ export class PendingContributionsService {
           }
 
           // Also update legacy fields on the node
-          const contentNode = await this.learningNodeRepo.findOne({ where: { id: contentNodeId } });
           if (contentNode) {
             contentNode.lessonType = contentLessonType;
             contentNode.lessonData = contribution.data.lessonData;

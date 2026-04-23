@@ -17,7 +17,10 @@ export type LessonContentVersionHistoryEntryDto = {
   version: number | null;
   createdAt: string;
   note: string | null;
+  /** Ghi nhận nội dung (node.contributorId tại thời điểm lưu / phiên bản hiện tại). */
   contributor: LessonContentVersionContributorDto | null;
+  /** Người gửi bản chỉnh đã duyệt — kích hoạt lưu snapshot (có thể trùng contributor). */
+  editContributor: LessonContentVersionContributorDto | null;
 };
 
 @Injectable()
@@ -173,8 +176,13 @@ export class LessonTypeContentsService {
   async saveVersionSnapshot(
     nodeId: string,
     lessonType: string,
-    contributorId?: string,
-    note?: string,
+    params: {
+      /** Người gửi bản chỉnh đã duyệt (thay thế nội dung). */
+      editContributorId?: string;
+      /** Ghi nhận trên node cho nội dung đang được lưu vào snapshot. */
+      contentCreditedContributorId?: string;
+      note?: string;
+    },
   ): Promise<LessonTypeContentVersion> {
     const content = await this.getByNodeIdAndType(nodeId, lessonType);
     if (!content) {
@@ -196,8 +204,10 @@ export class LessonTypeContentsService {
       version: nextVersion,
       lessonData: content.lessonData,
       endQuiz: content.endQuiz,
-      contributorId,
-      note,
+      contributorId: params.editContributorId,
+      contentCreditedContributorId:
+        params.contentCreditedContributorId ?? null,
+      note: params.note,
     });
 
     return this.versionRepo.save(version);
@@ -225,16 +235,16 @@ export class LessonTypeContentsService {
     lessonType: string,
   ): Promise<LessonContentVersionHistoryEntryDto[]> {
     const versions = await this.getHistory(nodeId, lessonType);
-    const ids = [
-      ...new Set(
-        versions
-          .map((v) => v.contributorId)
-          .filter((id): id is string => !!id && id.trim().length > 0),
-      ),
-    ];
+    const ids = new Set<string>();
+    for (const v of versions) {
+      const a = v.contributorId?.trim();
+      if (a) ids.add(a);
+      const b = v.contentCreditedContributorId?.trim();
+      if (b) ids.add(b);
+    }
     const userMap = new Map<string, LessonContentVersionContributorDto>();
     await Promise.all(
-      ids.map(async (id) => {
+      [...ids].map(async (id) => {
         const u = await this.usersService.findById(id);
         if (u) {
           userMap.set(id, {
@@ -246,18 +256,28 @@ export class LessonTypeContentsService {
       }),
     );
 
-    return versions.map((v) => ({
-      id: v.id,
-      version: v.version,
-      createdAt:
-        v.createdAt instanceof Date
-          ? v.createdAt.toISOString()
-          : String(v.createdAt),
-      note: v.note ?? null,
-      contributor: v.contributorId
-        ? userMap.get(v.contributorId) ?? null
-        : null,
-    }));
+    return versions.map((v) => {
+      const contentId = v.contentCreditedContributorId?.trim();
+      const editId = v.contributorId?.trim();
+      const contentContributor = contentId
+        ? userMap.get(contentId) ?? null
+        : null;
+      const editContributor = editId ? userMap.get(editId) ?? null : null;
+      return {
+        id: v.id,
+        version: v.version,
+        createdAt:
+          v.createdAt instanceof Date
+            ? v.createdAt.toISOString()
+            : String(v.createdAt),
+        note: v.note ?? null,
+        contributor: contentContributor,
+        editContributor:
+          contentContributor && editId === contentId
+            ? null
+            : editContributor,
+      };
+    });
   }
 
   /**
