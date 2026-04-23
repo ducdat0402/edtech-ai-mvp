@@ -13,6 +13,7 @@ class VideoLessonScreen extends StatefulWidget {
   final Map<String, dynamic>? endQuiz;
   final String? lessonType;
   final Map<String, dynamic>? contributor;
+  final List<Map<String, dynamic>>? contentVersionHistory;
 
   const VideoLessonScreen({
     super.key,
@@ -22,6 +23,7 @@ class VideoLessonScreen extends StatefulWidget {
     this.endQuiz,
     this.lessonType,
     this.contributor,
+    this.contentVersionHistory,
   });
 
   @override
@@ -81,7 +83,10 @@ class _VideoLessonScreenState extends State<VideoLessonScreen> {
           ),
         ),
         actions: [
-          ContributorCreditButton(contributor: widget.contributor),
+          ContributorCreditButton(
+            contributor: widget.contributor,
+            contentVersionHistory: widget.contentVersionHistory,
+          ),
         ],
       ),
       body: Column(

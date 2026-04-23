@@ -88,11 +88,23 @@ export class LessonTypeContentsController {
   async getHistory(
     @Param('nodeId') nodeId: string,
     @Param('lessonType') lessonType: string,
+    @Request() req,
   ) {
-    const versions = await this.lessonTypeContentsService.getHistory(
-      nodeId,
-      lessonType,
-    );
+    if (!this.canBypassUnlock(req)) {
+      const userId = req.user?.id;
+      const access = await this.unlockService.canAccessNode(userId, nodeId);
+      if (!access.canAccess) {
+        throw new ForbiddenException({
+          message: 'Bài học đang bị khóa. Vui lòng mở khóa để xem nội dung.',
+          ...access,
+        });
+      }
+    }
+    const versions =
+      await this.lessonTypeContentsService.getHistoryWithContributors(
+        nodeId,
+        lessonType,
+      );
     return {
       nodeId,
       lessonType,

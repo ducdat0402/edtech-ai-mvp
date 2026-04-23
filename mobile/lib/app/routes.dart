@@ -441,6 +441,8 @@ GoRouter createAppRouter(
           final title = extra?['title'] as String? ?? 'Bài học';
           final endQuiz = extra?['endQuiz'] as Map<String, dynamic>?;
           final contributor = _contributorFromRouteExtra(extra?['contributor']);
+          final contentVersionHistory =
+              _contentVersionHistoryFromExtra(extra?['contentVersionHistory']);
 
           switch (lessonType) {
             case 'image_quiz':
@@ -451,6 +453,7 @@ GoRouter createAppRouter(
                 endQuiz: endQuiz,
                 lessonType: lessonType,
                 contributor: contributor,
+                contentVersionHistory: contentVersionHistory,
               );
             case 'image_gallery':
               return ImageGalleryLessonScreen(
@@ -460,6 +463,7 @@ GoRouter createAppRouter(
                 endQuiz: endQuiz,
                 lessonType: lessonType,
                 contributor: contributor,
+                contentVersionHistory: contentVersionHistory,
               );
             case 'video':
               return VideoLessonScreen(
@@ -469,6 +473,7 @@ GoRouter createAppRouter(
                 endQuiz: endQuiz,
                 lessonType: lessonType,
                 contributor: contributor,
+                contentVersionHistory: contentVersionHistory,
               );
             case 'text':
             default:
@@ -479,6 +484,7 @@ GoRouter createAppRouter(
                 endQuiz: endQuiz,
                 lessonType: lessonType,
                 contributor: contributor,
+                contentVersionHistory: contentVersionHistory,
               );
           }
         },
@@ -590,4 +596,12 @@ Map<String, dynamic>? _contributorFromRouteExtra(Object? raw) {
   if (raw is Map<String, dynamic>) return raw;
   if (raw is Map) return Map<String, dynamic>.from(raw);
   return null;
+}
+
+List<Map<String, dynamic>>? _contentVersionHistoryFromExtra(Object? raw) {
+  if (raw == null) return null;
+  if (raw is! List) return null;
+  return raw
+      .map((e) => Map<String, dynamic>.from(e as Map))
+      .toList(growable: false);
 }

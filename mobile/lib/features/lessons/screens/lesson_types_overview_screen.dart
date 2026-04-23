@@ -114,17 +114,36 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
     }
   }
 
-  void _openLessonType(Map<String, dynamic> content) {
+  Future<void> _openLessonType(Map<String, dynamic> content) async {
     final lessonType = content['lessonType'] as String;
     final lessonData = content['lessonData'] as Map<String, dynamic>? ?? {};
     final endQuiz = content['endQuiz'] as Map<String, dynamic>?;
+
+    Map<String, dynamic>? contributor = _nodeContributor;
+    List<Map<String, dynamic>> contentVersionHistory = [];
+    try {
+      final apiService = Provider.of<ApiService>(context, listen: false);
+      final detail =
+          await apiService.getLessonDataByType(widget.nodeId, lessonType);
+      contributor = (detail['contributor'] as Map?)?.cast<String, dynamic>() ??
+          contributor;
+      final raw = detail['contentVersionHistory'];
+      if (raw is List) {
+        contentVersionHistory = raw
+            .map((e) => Map<String, dynamic>.from(e as Map))
+            .toList();
+      }
+    } catch (_) {}
+
+    if (!mounted) return;
 
     context.push('/lessons/${widget.nodeId}/view', extra: {
       'lessonType': lessonType,
       'lessonData': lessonData,
       'title': widget.title,
       'endQuiz': endQuiz,
-      'contributor': _nodeContributor,
+      'contributor': contributor,
+      'contentVersionHistory': contentVersionHistory,
     }).then((_) async {
       if (!mounted) return;
       final apiService = Provider.of<ApiService>(context, listen: false);

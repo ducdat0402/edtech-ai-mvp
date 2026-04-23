@@ -181,8 +181,27 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
             final singleContent = contents[0] as Map<String, dynamic>;
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted) {
-                ensureUnlocked().then((ok) {
+                ensureUnlocked().then((ok) async {
                   if (!ok || !mounted) return;
+                  Map<String, dynamic>? mergeContributor =
+                      nodeData['contributor'] as Map<String, dynamic>?;
+                  var verHistory = <Map<String, dynamic>>[];
+                  try {
+                    final d = await apiService.getLessonDataByType(
+                      widget.nodeId,
+                      singleContent['lessonType'] as String,
+                    );
+                    mergeContributor =
+                        (d['contributor'] as Map?)?.cast<String, dynamic>() ??
+                            mergeContributor;
+                    final raw = d['contentVersionHistory'];
+                    if (raw is List) {
+                      verHistory = raw
+                          .map((e) => Map<String, dynamic>.from(e as Map))
+                          .toList();
+                    }
+                  } catch (_) {}
+                  if (!mounted) return;
                   context.push('/lessons/${widget.nodeId}/view', extra: {
                     'lessonType': singleContent['lessonType'] as String,
                     'lessonData':
@@ -190,7 +209,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                             {},
                     'title': title,
                     'endQuiz': singleContent['endQuiz'] as Map<String, dynamic>?,
-                    'contributor': nodeData['contributor'],
+                    'contributor': mergeContributor,
+                    'contentVersionHistory': verHistory,
                   });
                 });
               }
@@ -206,6 +226,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
         Map<String, dynamic>? endQuiz;
         Map<String, dynamic>? contributor =
             nodeData['contributor'] as Map<String, dynamic>?;
+        var contentVersionHistory = <Map<String, dynamic>>[];
         try {
           final fullLessonData = await apiService.getLessonData(widget.nodeId);
           lessonData =
@@ -213,6 +234,12 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
           endQuiz = fullLessonData['endQuiz'] as Map<String, dynamic>?;
           contributor ??=
               fullLessonData['contributor'] as Map<String, dynamic>?;
+          final rawHist = fullLessonData['contentVersionHistory'];
+          if (rawHist is List) {
+            contentVersionHistory = rawHist
+                .map((e) => Map<String, dynamic>.from(e as Map))
+                .toList();
+          }
         } catch (_) {
           lessonData = nodeData['lessonData'] as Map<String, dynamic>? ?? {};
           endQuiz = nodeData['endQuiz'] as Map<String, dynamic>?;
@@ -227,6 +254,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                 'title': title,
                 'endQuiz': endQuiz,
                 'contributor': contributor,
+                'contentVersionHistory': contentVersionHistory,
               });
             });
           }

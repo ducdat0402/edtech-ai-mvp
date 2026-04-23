@@ -3,6 +3,22 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { LessonTypeContent } from './entities/lesson-type-content.entity';
 import { LessonTypeContentVersion } from './entities/lesson-type-content-version.entity';
+import { UsersService } from '../users/users.service';
+
+export type LessonContentVersionContributorDto = {
+  id: string;
+  fullName: string;
+  avatarUrl: string | null;
+};
+
+export type LessonContentVersionHistoryEntryDto = {
+  id?: string;
+  isCurrent?: boolean;
+  version: number | null;
+  createdAt: string;
+  note: string | null;
+  contributor: LessonContentVersionContributorDto | null;
+};
 
 @Injectable()
 export class LessonTypeContentsService {
@@ -11,6 +27,7 @@ export class LessonTypeContentsService {
     private readonly lessonTypeContentRepo: Repository<LessonTypeContent>,
     @InjectRepository(LessonTypeContentVersion)
     private readonly versionRepo: Repository<LessonTypeContentVersion>,
+    private readonly usersService: UsersService,
   ) {}
 
   /**
@@ -198,6 +215,49 @@ export class LessonTypeContentsService {
       where: { nodeId, lessonType: lessonType as any },
       order: { version: 'DESC' },
     });
+  }
+
+  /**
+   * Archived snapshots with resolved contributor profiles (newest version first).
+   */
+  async getHistoryWithContributors(
+    nodeId: string,
+    lessonType: string,
+  ): Promise<LessonContentVersionHistoryEntryDto[]> {
+    const versions = await this.getHistory(nodeId, lessonType);
+    const ids = [
+      ...new Set(
+        versions
+          .map((v) => v.contributorId)
+          .filter((id): id is string => !!id && id.trim().length > 0),
+      ),
+    ];
+    const userMap = new Map<string, LessonContentVersionContributorDto>();
+    await Promise.all(
+      ids.map(async (id) => {
+        const u = await this.usersService.findById(id);
+        if (u) {
+          userMap.set(id, {
+            id: u.id,
+            fullName: (u.fullName && u.fullName.trim()) || 'Thành viên',
+            avatarUrl: u.avatarUrl ?? null,
+          });
+        }
+      }),
+    );
+
+    return versions.map((v) => ({
+      id: v.id,
+      version: v.version,
+      createdAt:
+        v.createdAt instanceof Date
+          ? v.createdAt.toISOString()
+          : String(v.createdAt),
+      note: v.note ?? null,
+      contributor: v.contributorId
+        ? userMap.get(v.contributorId) ?? null
+        : null,
+    }));
   }
 
   /**

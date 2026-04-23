@@ -5,11 +5,13 @@ import { LessonTypeContentVersion } from './entities/lesson-type-content-version
 import { LessonTypeContentsService } from './lesson-type-contents.service';
 import { LessonTypeContentsController } from './lesson-type-contents.controller';
 import { UnlockTransactionsModule } from '../unlock-transactions/unlock-transactions.module';
+import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([LessonTypeContent, LessonTypeContentVersion]),
     forwardRef(() => UnlockTransactionsModule),
+    UsersModule,
   ],
   controllers: [LessonTypeContentsController],
   providers: [LessonTypeContentsService],

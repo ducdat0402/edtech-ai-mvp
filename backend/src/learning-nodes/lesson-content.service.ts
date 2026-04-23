@@ -13,7 +13,10 @@ import {
   validateLessonContent,
   validateEndQuiz,
 } from './dto/lesson-content.dto';
-import { LessonTypeContentsService } from '../lesson-type-contents/lesson-type-contents.service';
+import {
+  LessonTypeContentsService,
+  LessonContentVersionHistoryEntryDto,
+} from '../lesson-type-contents/lesson-type-contents.service';
 import { UsersService } from '../users/users.service';
 
 @Injectable()
@@ -238,6 +241,48 @@ TRẢ VỀ JSON DUY NHẤT:
   }
 
   /**
+   * Phiên bản hiện tại (theo node.contributorId + cập nhật nội dung) + các bản lưu trước khi chỉnh.
+   */
+  private async buildContentVersionHistory(
+    node: LearningNode,
+    lessonType: string,
+  ): Promise<LessonContentVersionHistoryEntryDto[]> {
+    const typeContent =
+      await this.lessonTypeContentsService.getByNodeIdAndType(
+        node.id,
+        lessonType,
+      );
+    if (!typeContent) {
+      return [];
+    }
+
+    const archived =
+      await this.lessonTypeContentsService.getHistoryWithContributors(
+        node.id,
+        lessonType,
+      );
+    const currentContributor = await this.contributorPayload(
+      node.contributorId,
+    );
+    const updatedAt =
+      typeContent.updatedAt instanceof Date
+        ? typeContent.updatedAt
+        : new Date();
+
+    const head: LessonContentVersionHistoryEntryDto[] = [];
+    if (currentContributor !== null || archived.length > 0) {
+      head.push({
+        isCurrent: true,
+        version: null,
+        createdAt: updatedAt.toISOString(),
+        contributor: currentContributor,
+        note: null,
+      });
+    }
+    return [...head, ...archived];
+  }
+
+  /**
    * Get lesson data for a learning node
    */
   async getLessonData(nodeId: string): Promise<{
@@ -255,11 +300,20 @@ TRẢ VỀ JSON DUY NHẤT:
       fullName: string;
       avatarUrl: string | null;
     } | null;
+    contentVersionHistory: LessonContentVersionHistoryEntryDto[];
   }> {
     const node = await this.nodeRepository.findOne({ where: { id: nodeId } });
     if (!node) throw new NotFoundException('Learning node not found');
 
     const contributor = await this.contributorPayload(node.contributorId);
+
+    let contentVersionHistory: LessonContentVersionHistoryEntryDto[] = [];
+    if (node.lessonType) {
+      contentVersionHistory = await this.buildContentVersionHistory(
+        node,
+        node.lessonType,
+      );
+    }
 
     return {
       id: node.id,
@@ -272,6 +326,7 @@ TRẢ VỀ JSON DUY NHẤT:
       subjectId: node.subjectId,
       domainId: node.domainId,
       contributor,
+      contentVersionHistory,
     };
   }
 
@@ -649,6 +704,7 @@ CHỈ TRẢ VỀ JSON.`;
       fullName: string;
       avatarUrl: string | null;
     } | null;
+    contentVersionHistory: LessonContentVersionHistoryEntryDto[];
   }> {
     const node = await this.nodeRepository.findOne({ where: { id: nodeId } });
     if (!node) throw new NotFoundException('Learning node not found');
@@ -659,6 +715,10 @@ CHỈ TRẢ VỀ JSON.`;
     }
 
     const contributor = await this.contributorPayload(node.contributorId);
+    const contentVersionHistory = await this.buildContentVersionHistory(
+      node,
+      lessonType,
+    );
 
     return {
       id: typeContent.id,
@@ -672,6 +732,7 @@ CHỈ TRẢ VỀ JSON.`;
       subjectId: node.subjectId,
       domainId: node.domainId,
       contributor,
+      contentVersionHistory,
     };
   }
 

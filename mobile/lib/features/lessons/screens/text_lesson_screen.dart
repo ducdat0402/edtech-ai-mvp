@@ -16,6 +16,7 @@ class TextLessonScreen extends StatefulWidget {
   final Map<String, dynamic>? endQuiz;
   final String? lessonType;
   final Map<String, dynamic>? contributor;
+  final List<Map<String, dynamic>>? contentVersionHistory;
 
   const TextLessonScreen({
     super.key,
@@ -25,6 +26,7 @@ class TextLessonScreen extends StatefulWidget {
     this.endQuiz,
     this.lessonType,
     this.contributor,
+    this.contentVersionHistory,
   });
 
   @override
@@ -266,7 +268,10 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
           ),
         ),
         actions: [
-          ContributorCreditButton(contributor: widget.contributor),
+          ContributorCreditButton(
+            contributor: widget.contributor,
+            contentVersionHistory: widget.contentVersionHistory,
+          ),
         ],
       ),
       body: Column(
