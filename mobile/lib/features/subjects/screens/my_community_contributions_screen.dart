@@ -16,18 +16,11 @@ class MyCommunityContributionsScreen extends StatefulWidget {
 
 class _MyCommunityContributionsScreenState
     extends State<MyCommunityContributionsScreen> {
-  static const String _tooltipHowToRead =
-      'Các con số lấy từ thống kê môn trên máy chủ.\n'
-      '• Tổng quan môn: so với toàn bộ bài trong môn.\n'
-      '• Phần của bạn: trong các bài đã ghi nhận đóng góp, bao nhiêu bài có tên bạn.';
-
-  static const String _tooltipTongQuanMon =
-      'Đếm trên toàn bộ bài học của môn: có bao nhiêu bài đã gắn ít nhất một người đóng góp cộng đồng (không chỉ riêng bạn). '
-      'Phần trăm là tỷ lệ số bài đó so với tổng số bài trong môn.';
-
-  static const String _tooltipPhanBan =
-      'Trong các bài đã được ghi nhận đóng góp ở môn này (nhóm “tổng quan” phía trên), đếm bao nhiêu bài ghi tên bạn. '
-      'Phần trăm (nếu có) là phần của bạn trong nhóm bài đó.';
+  static const String _helpText =
+      'Cách đọc số liệu:\n\n'
+      '• Tổng quan môn: trong toàn bộ bài học của môn, có bao nhiêu bài đã được ghi nhận người đóng góp cộng đồng.\n'
+      '• Phần của bạn: trong nhóm bài đã ghi nhận đóng góp ở trên, có bao nhiêu bài ghi tên bạn.\n\n'
+      'Bạn bấm vào từng môn để xem chi tiết dạng mind-map.';
 
   bool _loading = true;
   String? _error;
@@ -84,6 +77,15 @@ class _MyCommunityContributionsScreenState
           'Đóng góp của tôi',
           style: AppTextStyles.labelLarge.copyWith(color: AppColors.textPrimary),
         ),
+        actions: [
+          IconButton(
+            tooltip: 'Cách đọc số liệu',
+            onPressed: _showHowToReadDialog,
+            icon: const Icon(Icons.help_outline_rounded),
+            color: AppColors.contributorBlue,
+          ),
+          const SizedBox(width: 4),
+        ],
       ),
       body: RefreshIndicator(
         color: AppColors.contributorBlue,
@@ -145,8 +147,6 @@ class _MyCommunityContributionsScreenState
                         physics: const AlwaysScrollableScrollPhysics(),
                         padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
                         children: [
-                          _buildHowToReadBox(),
-                          const SizedBox(height: 12),
                           for (var i = 0; i < _items.length; i++) ...[
                             if (i > 0) const SizedBox(height: 10),
                             _buildSubjectTile(_items[i]),
@@ -157,71 +157,111 @@ class _MyCommunityContributionsScreenState
     );
   }
 
-  /// Giải thích ngắn — tránh từ viết tắt, tránh “%” khó nếu chưa đọc dòng dưới.
-  Widget _buildHowToReadBox() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
-      decoration: BoxDecoration(
-        color: AppColors.contributorBgSecondary,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: AppColors.textTertiary.withValues(alpha: 0.25),
-        ),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Text(
-              'Mỗi dòng là một môn cộng đồng. Hai câu bên dưới tên môn: '
-              '(1) trong tất cả bài học của môn, có bao nhiêu bài đã được ghi nhận người đóng góp; '
-              '(2) trong số các bài đã ghi nhận đó, có bao nhiêu bài ghi tên bạn.',
-              style: AppTextStyles.caption.copyWith(
-                color: AppColors.textSecondary,
-                height: 1.4,
-              ),
+  Future<void> _showHowToReadDialog() async {
+    await showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Cách đọc số liệu'),
+          content: Text(
+            _helpText,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.textSecondary,
+              height: 1.4,
             ),
           ),
-          const SizedBox(width: 4),
-          Tooltip(
-            message: _tooltipHowToRead,
-            showDuration: const Duration(seconds: 8),
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () {},
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(4, 0, 2, 4),
-                child: Icon(
-                  Icons.help_outline_rounded,
-                  size: 20,
-                  color: AppColors.contributorBlue.withValues(alpha: 0.85),
-                ),
-              ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Đã hiểu'),
             ),
-          ),
-        ],
-      ),
+          ],
+        );
+      },
     );
   }
 
-  /// Icon “?”: giữ tap để không kích hoạt thẻ môn; nhấn giữ để xem Tooltip.
-  Widget _tooltipHintIcon(String message) {
-    return Tooltip(
-      message: message,
-      showDuration: const Duration(seconds: 8),
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: () {},
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(2, 0, 0, 2),
-          child: Icon(
-            Icons.info_outline_rounded,
-            size: 17,
-            color: AppColors.contributorBlue.withValues(alpha: 0.75),
+  IconData _iconForSubject(String name) {
+    final n = name.toLowerCase();
+    if (n.contains('toán') || n.contains('math')) return Icons.calculate_rounded;
+    if (n.contains('lý') || n.contains('physics')) return Icons.science_rounded;
+    if (n.contains('hoá') || n.contains('hoa') || n.contains('chem')) {
+      return Icons.biotech_rounded;
+    }
+    if (n.contains('sinh') || n.contains('bio')) return Icons.eco_rounded;
+    if (n.contains('văn') || n.contains('ngu van')) return Icons.menu_book_rounded;
+    if (n.contains('anh') || n.contains('english')) return Icons.translate_rounded;
+    if (n.contains('sử') || n.contains('history')) return Icons.history_edu_rounded;
+    if (n.contains('địa') || n.contains('dia') || n.contains('geo')) {
+      return Icons.public_rounded;
+    }
+    if (n.contains('tin') || n.contains('it') || n.contains('lập trình')) {
+      return Icons.computer_rounded;
+    }
+    if (n.contains('bóng') || n.contains('thể')) return Icons.sports_soccer_rounded;
+    return Icons.auto_stories_rounded;
+  }
+
+  Color _accentForSubject(String name) {
+    final n = name.toLowerCase();
+    if (n.contains('toán') || n.contains('math')) return const Color(0xFF4F7CFF);
+    if (n.contains('lý') || n.contains('physics')) return const Color(0xFF7B61FF);
+    if (n.contains('hoá') || n.contains('hoa') || n.contains('chem')) {
+      return const Color(0xFF26B3A0);
+    }
+    if (n.contains('sinh') || n.contains('bio')) return const Color(0xFF3CBF5E);
+    if (n.contains('văn') || n.contains('ngu van')) return const Color(0xFFCF7C2D);
+    if (n.contains('anh') || n.contains('english')) return const Color(0xFF2F9BFF);
+    if (n.contains('sử') || n.contains('history')) return const Color(0xFFB05BD0);
+    if (n.contains('địa') || n.contains('dia') || n.contains('geo')) {
+      return const Color(0xFF1FA18A);
+    }
+    if (n.contains('tin') || n.contains('it') || n.contains('lập trình')) {
+      return const Color(0xFF2E7BEA);
+    }
+    if (n.contains('bóng') || n.contains('thể')) return const Color(0xFF26A96D);
+    return AppColors.contributorBlue;
+  }
+
+  Widget _buildProgressRow({
+    required String label,
+    required int percent,
+    required Color color,
+  }) {
+    final clamped = percent.clamp(0, 100);
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                style: AppTextStyles.caption.copyWith(
+                  color: AppColors.textTertiary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            Text(
+              '$clamped%',
+              style: AppTextStyles.caption.copyWith(
+                color: color,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(999),
+          child: LinearProgressIndicator(
+            minHeight: 7,
+            value: clamped / 100,
+            backgroundColor: AppColors.textTertiary.withValues(alpha: 0.22),
+            valueColor: AlwaysStoppedAnimation<Color>(color),
           ),
         ),
-      ),
+      ],
     );
   }
 
@@ -258,6 +298,9 @@ class _MyCommunityContributionsScreenState
     final ccPct = (m['communityPercent'] as num?)?.toInt() ?? 0;
     final mine = (m['myCreditedNodes'] as num?)?.toInt() ?? 0;
     final myPct = m['mySharePercent'] as int?;
+    final accent = _accentForSubject(name);
+    final mySharePercent = (myPct ?? (withCc == 0 ? 0 : ((mine * 100) ~/ withCc)))
+        .clamp(0, 100);
 
     return Material(
       color: AppColors.contributorBgSecondary,
@@ -276,6 +319,20 @@ class _MyCommunityContributionsScreenState
             children: [
               Row(
                 children: [
+                  Container(
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      color: accent.withValues(alpha: 0.16),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(
+                      _iconForSubject(name),
+                      size: 18,
+                      color: accent,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       name,
@@ -300,7 +357,6 @@ class _MyCommunityContributionsScreenState
                       letterSpacing: 0.2,
                     ),
                   ),
-                  _tooltipHintIcon(_tooltipTongQuanMon),
                 ],
               ),
               const SizedBox(height: 4),
@@ -310,6 +366,12 @@ class _MyCommunityContributionsScreenState
                   color: AppColors.textSecondary,
                   height: 1.4,
                 ),
+              ),
+              const SizedBox(height: 8),
+              _buildProgressRow(
+                label: 'Mức ghi nhận cộng đồng',
+                percent: ccPct,
+                color: accent,
               ),
               const SizedBox(height: 10),
               Row(
@@ -322,7 +384,6 @@ class _MyCommunityContributionsScreenState
                       letterSpacing: 0.2,
                     ),
                   ),
-                  _tooltipHintIcon(_tooltipPhanBan),
                 ],
               ),
               const SizedBox(height: 4),
@@ -332,6 +393,12 @@ class _MyCommunityContributionsScreenState
                   color: AppColors.textSecondary,
                   height: 1.4,
                 ),
+              ),
+              const SizedBox(height: 8),
+              _buildProgressRow(
+                label: 'Tỷ lệ phần của bạn',
+                percent: mySharePercent,
+                color: AppColors.contributorBlue,
               ),
             ],
           ),
