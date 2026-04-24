@@ -96,7 +96,19 @@ export class DashboardService {
 
     // Batch: fetch ALL nodes once (instead of per-subject)
     const allNodes = await this.nodeRepository.find({
-      select: ['id', 'title', 'description', 'subjectId', 'domainId', 'topicId', 'order', 'metadata', 'expReward', 'coinReward'],
+      select: [
+        'id',
+        'title',
+        'description',
+        'subjectId',
+        'domainId',
+        'topicId',
+        'order',
+        'metadata',
+        'expReward',
+        'coinReward',
+        'contributorId',
+      ],
       order: { order: 'ASC' },
     });
 
@@ -117,6 +129,20 @@ export class DashboardService {
     for (const subject of allSubjects) {
       const subjectNodes = nodesBySubject.get(subject.id) || [];
       const totalNodesCount = subjectNodes.length;
+      const nodesWithContributor = subjectNodes.filter(
+        (n) => n.contributorId != null && String(n.contributorId).trim() !== '',
+      ).length;
+      const myCreditedNodes = subjectNodes.filter(
+        (n) => n.contributorId != null && n.contributorId === userId,
+      ).length;
+      const communityPercent =
+        totalNodesCount > 0
+          ? Math.round((100 * nodesWithContributor) / totalNodesCount)
+          : 0;
+      const mySharePercent =
+        nodesWithContributor > 0
+          ? Math.round((100 * myCreditedNodes) / nodesWithContributor)
+          : null;
 
       // Calculate available nodes (no prerequisites or all prereqs completed)
       const availableNodesCount = subjectNodes.filter(node => {
@@ -158,6 +184,13 @@ export class DashboardService {
         requiredDiamonds: subject.unlockConditions?.minCoin || 0,
         userDiamonds: currency.diamonds ?? 0,
         userCoins: currency.coins,
+        contributorStats: {
+          totalNodes: totalNodesCount,
+          nodesWithContributor,
+          communityPercent,
+          myCreditedNodes,
+          mySharePercent,
+        },
       });
 
       if (totalProgress > 0 && completedCount < totalNodesCount) {

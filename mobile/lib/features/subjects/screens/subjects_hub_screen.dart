@@ -1202,11 +1202,61 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                   ),
                 ),
               ],
+              if (_isContributor) ..._contributorStatsWidgets(subject),
             ],
           ),
         ),
       ),
     );
+  }
+
+  /// A: % bài có ghi công cộng đồng; B: % bài CC do bạn ghi công (trên tổng bài CC trong môn).
+  List<Widget> _contributorStatsWidgets(Map<String, dynamic> subject) {
+    final raw = subject['contributorStats'];
+    if (raw is! Map) return const [];
+    final m = Map<String, dynamic>.from(raw);
+    final total = (m['totalNodes'] as num?)?.toInt() ?? 0;
+    final withCc = (m['nodesWithContributor'] as num?)?.toInt() ?? 0;
+    final ccPct = (m['communityPercent'] as num?)?.toInt() ?? 0;
+    final mine = (m['myCreditedNodes'] as num?)?.toInt() ?? 0;
+    final myPct = m['mySharePercent'] as int?;
+
+    return [
+      const SizedBox(height: 5),
+      Text(
+        total > 0
+            ? 'Cộng đồng: $ccPct% ($withCc/$total bài)'
+            : 'Cộng đồng: — (chưa có bài)',
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          color: AppColors.contributorBlue.withValues(alpha: 0.95),
+          fontWeight: FontWeight.w600,
+          fontSize: 9,
+          height: 1.2,
+        ),
+      ),
+      const SizedBox(height: 2),
+      Text(
+        withCc > 0
+            ? (myPct != null
+                ? 'Bạn: $myPct% ($mine/$withCc bài CC)'
+                : 'Bạn: $mine/$withCc bài CC')
+            : (mine > 0
+                ? 'Bạn: $mine bài ghi công (môn chưa có bài CC)'
+                : 'Bạn: 0 bài ghi công'),
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          color: AppColors.textTertiary,
+          fontWeight: FontWeight.w500,
+          fontSize: 8.5,
+          height: 1.2,
+        ),
+      ),
+    ];
   }
 
   // ignore: unused_element
