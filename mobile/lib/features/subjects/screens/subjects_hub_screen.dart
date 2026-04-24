@@ -422,44 +422,60 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
   }
 
   Widget _buildContributorBanner() {
-    final text = _isContributor
-        ? 'Bạn đang ở chế độ Contributor: có thể đóng góp bài học theo từng môn.'
-        : 'Đổi sang chế độ Contributor ở Hồ sơ để mở quyền đóng góp bài học.';
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(13),
+      padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: _isContributor
-              ? [
-                  AppColors.successNeon.withValues(alpha: 0.12),
-                  AppColors.successNeon.withValues(alpha: 0.04),
-                ]
-              : [
-                  AppColors.purpleNeon.withValues(alpha: 0.14),
-                  AppColors.primaryLight.withValues(alpha: 0.05),
-                ],
-        ),
-        borderRadius: BorderRadius.circular(12),
+        color: AppColors.contributorBgSecondary,
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: _isContributor
-              ? AppColors.successNeon.withValues(alpha: 0.4)
-              : AppColors.purpleNeon.withValues(alpha: 0.35),
+          color: AppColors.contributorBlue.withValues(alpha: 0.35),
         ),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Icon(
-            _isContributor ? Icons.verified : Icons.info_outline,
-            color:
-                _isContributor ? AppColors.successNeon : AppColors.primaryLight,
+          Row(
+            children: [
+              Icon(
+                Icons.insights_rounded,
+                color: AppColors.contributorBlue,
+                size: 22,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Xem đóng góp của tôi',
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              text,
-              style:
-                  const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+          const SizedBox(height: 6),
+          Text(
+            'Chỉ hiện các môn cộng đồng đã ghi nhận bài của bạn, kèm tỉ lệ cộng đồng và phần của bạn.',
+            style: TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 12.5,
+              height: 1.35,
+            ),
+          ),
+          const SizedBox(height: 12),
+          FilledButton.icon(
+            onPressed: () => context.push('/library/my-contributions'),
+            icon: const Icon(Icons.arrow_forward_rounded, size: 20),
+            label: const Text('Mở bảng đóng góp'),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.contributorBlue,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
           ),
         ],
@@ -1202,61 +1218,11 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                   ),
                 ),
               ],
-              if (_isContributor) ..._contributorStatsWidgets(subject),
             ],
           ),
         ),
       ),
     );
-  }
-
-  /// A: % bài có ghi công cộng đồng; B: % bài CC do bạn ghi công (trên tổng bài CC trong môn).
-  List<Widget> _contributorStatsWidgets(Map<String, dynamic> subject) {
-    final raw = subject['contributorStats'];
-    if (raw is! Map) return const [];
-    final m = Map<String, dynamic>.from(raw);
-    final total = (m['totalNodes'] as num?)?.toInt() ?? 0;
-    final withCc = (m['nodesWithContributor'] as num?)?.toInt() ?? 0;
-    final ccPct = (m['communityPercent'] as num?)?.toInt() ?? 0;
-    final mine = (m['myCreditedNodes'] as num?)?.toInt() ?? 0;
-    final myPct = m['mySharePercent'] as int?;
-
-    return [
-      const SizedBox(height: 5),
-      Text(
-        total > 0
-            ? 'Cộng đồng: $ccPct% ($withCc/$total bài)'
-            : 'Cộng đồng: — (chưa có bài)',
-        maxLines: 2,
-        overflow: TextOverflow.ellipsis,
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          color: AppColors.contributorBlue.withValues(alpha: 0.95),
-          fontWeight: FontWeight.w600,
-          fontSize: 9,
-          height: 1.2,
-        ),
-      ),
-      const SizedBox(height: 2),
-      Text(
-        withCc > 0
-            ? (myPct != null
-                ? 'Bạn: $myPct% ($mine/$withCc bài CC)'
-                : 'Bạn: $mine/$withCc bài CC')
-            : (mine > 0
-                ? 'Bạn: $mine bài ghi công (môn chưa có bài CC)'
-                : 'Bạn: 0 bài ghi công'),
-        maxLines: 2,
-        overflow: TextOverflow.ellipsis,
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          color: AppColors.textTertiary,
-          fontWeight: FontWeight.w500,
-          fontSize: 8.5,
-          height: 1.2,
-        ),
-      ),
-    ];
   }
 
   // ignore: unused_element

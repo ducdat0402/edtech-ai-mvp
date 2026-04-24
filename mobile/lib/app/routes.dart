@@ -12,6 +12,7 @@ import 'package:edtech_mobile/features/placement_test/screens/placement_test_scr
 import 'package:edtech_mobile/features/placement_test/screens/analysis_complete_screen.dart';
 import 'package:edtech_mobile/features/subjects/screens/subject_intro_screen.dart';
 import 'package:edtech_mobile/features/subjects/screens/subjects_hub_screen.dart';
+import 'package:edtech_mobile/features/subjects/screens/my_community_contributions_screen.dart';
 import 'package:edtech_mobile/features/subjects/screens/subject_learning_goals_screen.dart';
 import 'package:edtech_mobile/features/subjects/screens/personal_mind_map_screen.dart';
 import 'package:edtech_mobile/features/subjects/screens/learning_path_choice_screen.dart';
@@ -137,6 +138,10 @@ GoRouter createAppRouter(
       GoRoute(
         path: '/library',
         builder: (context, state) => const SubjectsHubScreen(),
+      ),
+      GoRoute(
+        path: '/library/my-contributions',
+        builder: (context, state) => const MyCommunityContributionsScreen(),
       ),
       GoRoute(
         path: '/subjects/:id/intro',
