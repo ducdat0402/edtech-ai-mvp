@@ -457,7 +457,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
           ),
           const SizedBox(height: 6),
           Text(
-            'Chỉ hiện các môn cộng đồng đã ghi nhận bài của bạn, kèm tỉ lệ cộng đồng và phần của bạn.',
+            'Chỉ liệt kê môn cộng đồng mà đã có bài ghi tên bạn; mỗi môn hiện hai câu giải thích rõ (tổng quan môn và phần của bạn).',
             style: TextStyle(
               color: AppColors.textSecondary,
               fontSize: 12.5,
