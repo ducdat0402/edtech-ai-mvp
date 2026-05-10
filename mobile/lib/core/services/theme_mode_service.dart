@@ -10,12 +10,8 @@ class ThemeModeService extends ChangeNotifier {
 
   Future<void> load() async {
     final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString(_key);
-    if (raw == 'dark') {
-      _themeMode = ThemeMode.dark;
-    } else {
-      _themeMode = ThemeMode.light;
-    }
+    _themeMode = ThemeMode.light;
+    await prefs.setString(_key, 'light');
     notifyListeners();
   }
 
