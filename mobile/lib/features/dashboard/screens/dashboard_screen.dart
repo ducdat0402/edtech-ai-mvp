@@ -33,12 +33,12 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   static const double _kSectionGap = 24;
   static const double _kSectionInnerPadding = 16;
+  static const double _kHeroHeaderHeight = 178;
+
   /// Khoảng cách thẻ chào/động lực → block tiếp (banner thường trống → tránh 24+24).
   static const double _kGapMotivationToNext = 10;
 
   final ScrollController _dashboardScrollController = ScrollController();
-  /// 0 = header mở, 1 = thu gọn khi cuộn (A1).
-  double _headerCollapseT = 0;
 
   static void clearMemoryCache() {
     _cachedDashboardData = null;
@@ -83,22 +83,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
       _error = null;
     }
     _loadDashboard();
-    _dashboardScrollController.addListener(_onDashboardScroll);
   }
 
   @override
   void dispose() {
-    _dashboardScrollController.removeListener(_onDashboardScroll);
     _dashboardScrollController.dispose();
     super.dispose();
-  }
-
-  void _onDashboardScroll() {
-    if (!_dashboardScrollController.hasClients) return;
-    final t = (_dashboardScrollController.offset / 56.0).clamp(0.0, 1.0);
-    if ((_headerCollapseT - t).abs() > 0.02) {
-      setState(() => _headerCollapseT = t);
-    }
   }
 
   void _showDashboardTutorial() {
@@ -117,7 +107,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         key: _statsRowKey,
         title: 'Tài nguyên của bạn',
         description:
-            'Kim cương, ${CurrencyLabels.gtuCoin} và chuỗi ngày nằm bên phải thanh trên. Chạm để nạp tiền, cửa hàng hoặc ví.',
+            'XP và kim cương nằm trên thanh đầu trang. Chạm vào kim cương để nạp thêm khi cần.',
         icon: Icons.account_balance_wallet,
         stepLabel: 'Bước 2/4',
       ),
@@ -134,7 +124,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         key: _bottomNavKey,
         title: 'Thanh điều hướng',
         description:
-            'Chuyển nhanh giữa Tổng quan, Môn học và Bạn bè. Hồ sơ: chạm avatar trên thanh trên cùng.',
+            'Chuyển nhanh giữa Trang chủ, Thư viện, Của tôi và Profile.',
         icon: Icons.navigation,
         stepLabel: 'Bước 4/4',
         align: ContentAlign.top,
@@ -262,68 +252,68 @@ class _DashboardScreenState extends State<DashboardScreen> {
         builder: (ctx) {
           final sem = ctx.colors;
           return AlertDialog(
-          backgroundColor: sem.card,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Row(
-            children: [
-              Icon(Icons.emoji_events_rounded, color: Colors.amber, size: 28),
-              SizedBox(width: 8),
-              Expanded(child: Text('Phần thưởng tuần!')),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Chúc mừng! Bạn đạt hạng #$rank tuần $week',
-                style: AppTextStyles.bodyMedium
-                    .copyWith(color: sem.textPrimary),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.diamond_rounded,
-                      color: Colors.lightBlueAccent, size: 24),
-                  const SizedBox(width: 6),
-                  Text('+$diamonds',
-                      style: AppTextStyles.h3
-                          .copyWith(color: Colors.lightBlueAccent)),
-                ],
-              ),
-              if (badge != null) ...[
-                const SizedBox(height: 8),
-                const Icon(Icons.workspace_premium_rounded,
-                    color: Colors.amber, size: 32),
-                Text('Huy hiệu: ${badge.toString().replaceAll('_', ' ')}',
-                    style:
-                        AppTextStyles.bodySmall.copyWith(color: Colors.amber)),
+            backgroundColor: sem.card,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: const Row(
+              children: [
+                Icon(Icons.emoji_events_rounded, color: Colors.amber, size: 28),
+                SizedBox(width: 8),
+                Expanded(child: Text('Phần thưởng tuần!')),
               ],
-              if (rewards.length > 1)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Text('và ${rewards.length - 1} phần thưởng khác...',
-                      style: AppTextStyles.caption
-                          .copyWith(color: sem.textSecondary)),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Chúc mừng! Bạn đạt hạng #$rank tuần $week',
+                  style:
+                      AppTextStyles.bodyMedium.copyWith(color: sem.textPrimary),
+                  textAlign: TextAlign.center,
                 ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.diamond_rounded,
+                        color: Colors.lightBlueAccent, size: 24),
+                    const SizedBox(width: 6),
+                    Text('+$diamonds',
+                        style: AppTextStyles.h3
+                            .copyWith(color: Colors.lightBlueAccent)),
+                  ],
+                ),
+                if (badge != null) ...[
+                  const SizedBox(height: 8),
+                  const Icon(Icons.workspace_premium_rounded,
+                      color: Colors.amber, size: 32),
+                  Text('Huy hiệu: ${badge.toString().replaceAll('_', ' ')}',
+                      style: AppTextStyles.bodySmall
+                          .copyWith(color: Colors.amber)),
+                ],
+                if (rewards.length > 1)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Text('và ${rewards.length - 1} phần thưởng khác...',
+                        style: AppTextStyles.caption
+                            .copyWith(color: sem.textSecondary)),
+                  ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  context.push('/weekly-rewards-history');
+                },
+                child: const Text('Xem chi tiết'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Tuyệt vời!'),
+              ),
             ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(ctx);
-                context.push('/weekly-rewards-history');
-              },
-              child: const Text('Xem chi tiết'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Tuyệt vời!'),
-            ),
-          ],
-        );
+          );
         },
       );
     } catch (_) {}
@@ -333,28 +323,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     final hasData = !_isLoading && _error == null && _dashboardData != null;
     final sem = context.colors;
+    final stats = hasData
+        ? ((_dashboardData!['stats'] as Map<String, dynamic>?) ?? const {})
+        : const <String, dynamic>{};
+    final subjects = hasData
+        ? ((_dashboardData!['subjects'] as List<dynamic>?) ?? const [])
+        : const <dynamic>[];
 
     return Scaffold(
-      backgroundColor: context.colors.bg,
+      backgroundColor: sem.bg,
       appBar: null,
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+      body: Stack(
         children: [
           if (hasData)
-            _buildPinnedLevelHeader(
-              (_dashboardData!['stats'] as Map<String, dynamic>?) ?? {},
-              _headerCollapseT,
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: _buildHeroHeader(stats),
             ),
-          if (_isRefreshing && hasData)
-            SizedBox(
-              height: 3,
-              child: LinearProgressIndicator(
-                minHeight: 3,
-                backgroundColor: sem.cardMuted,
-                color: Color.lerp(sem.brand, sem.textOnBrand, 0.55)!,
-              ),
-            ),
-          Expanded(
+          Positioned.fill(
             child: Stack(
               children: [
                 if (_isLoading)
@@ -372,37 +360,37 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     child: SingleChildScrollView(
                       controller: _dashboardScrollController,
                       physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.fromLTRB(
+                      padding: EdgeInsets.fromLTRB(
                         _kSectionInnerPadding,
-                        12,
+                        hasData ? (_kHeroHeaderHeight - 42) : 12,
                         _kSectionInnerPadding,
                         24,
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          if (_motivation != null &&
-                              _motivation!['quote'] != null) ...[
-                            _buildMotivationCard(_motivation!),
-                            const SizedBox(height: _kGapMotivationToNext),
-                          ],
-                          _buildOnboardingBanner(),
-                          SizedBox(
-                            height: (_motivation != null &&
-                                    _motivation!['quote'] != null)
-                                ? _kGapMotivationToNext
-                                : _kSectionGap,
-                          ),
                           _buildContinueLearningSection(
                             _dashboardData!['continueLearning']
                                 as Map<String, dynamic>?,
                           ),
+                          const SizedBox(height: 14),
+                          _buildStatsChipsRow(stats),
+                          const SizedBox(height: _kSectionGap),
+                          _buildSuggestedSubjectsSection(subjects),
                           const SizedBox(height: _kSectionGap),
                           _buildDailyQuestsSection(
                             _dashboardData!['dailyQuests'] as List<dynamic>?,
                             _dashboardData!['continueLearning']
                                 as Map<String, dynamic>?,
                           ),
+                          if (_motivation != null &&
+                              _motivation!['quote'] != null) ...[
+                            const SizedBox(height: _kSectionGap),
+                            _buildMotivationCard(_motivation!),
+                            const SizedBox(height: _kGapMotivationToNext),
+                          ],
+                          const SizedBox(height: _kSectionGap),
+                          _buildOnboardingBanner(),
                         ],
                       ),
                     ),
@@ -417,6 +405,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ],
             ),
           ),
+          if (_isRefreshing && hasData)
+            Positioned(
+              top: _kHeroHeaderHeight - 2,
+              left: 0,
+              right: 0,
+              child: SizedBox(
+                height: 3,
+                child: LinearProgressIndicator(
+                  minHeight: 3,
+                  backgroundColor: sem.cardMuted,
+                  color: Color.lerp(sem.brand, sem.textOnBrand, 0.55)!,
+                ),
+              ),
+            ),
         ],
       ),
       bottomNavigationBar: KeyedSubtree(
@@ -426,87 +428,348 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  /// Thanh cố định trên cùng: level + avatar + refresh/menu (thay cho AppBar).
-  Widget _buildPinnedLevelHeader(
-    Map<String, dynamic> stats,
-    double headerCollapseT,
-  ) {
-    final level = stats['level'] as int? ?? 1;
-    final levelInfo = stats['levelInfo'] as Map<String, dynamic>?;
-    final currentXP = levelInfo?['currentXP'] as int? ?? 0;
-    final xpForNextLevel = levelInfo?['xpForNextLevel'] as int? ?? 100;
-    final totalXP = stats['totalXP'] as int? ?? 0;
-    final rawName = _userProfile?['fullName'] as String?;
-    final displayName = (rawName != null && rawName.trim().isNotEmpty)
-        ? rawName.trim()
-        : 'Bạn học';
+  Widget _buildHeroHeader(Map<String, dynamic> stats) {
     final sem = context.colors;
-    final levelColor =
-        LevelPalette.tierAccentMuted(LevelPalette.getLevelColor(level), sem.card);
-    final coins = stats['totalCoins'] ?? stats['coins'] ?? 0;
-    final diamonds = stats['totalDiamonds'] ?? stats['diamonds'] ?? 0;
-    final streak = stats['currentStreak'] ?? stats['streak'] ?? 0;
+    final totalXP = (stats['totalXP'] as num?)?.toInt() ?? 0;
+    final diamonds = (stats['totalDiamonds'] as num?)?.toInt() ??
+        (stats['diamonds'] as num?)?.toInt() ??
+        0;
+    final nameRaw = _userProfile?['fullName'] as String?;
+    final displayName = (nameRaw != null && nameRaw.trim().isNotEmpty)
+        ? nameRaw.trim()
+        : 'Bạn học';
 
     return KeyedSubtree(
       key: _levelCardKey,
-      child: DecoratedBox(
+      child: Container(
+        height: _kHeroHeaderHeight,
         decoration: BoxDecoration(
-          gradient: AppGradients.forLevelMuted(level, surface: sem.card),
-          borderRadius:
-              const BorderRadius.vertical(bottom: Radius.circular(18)),
-          border: Border.all(
-            color: sem.gold.withValues(alpha: 0.12),
-            width: 1,
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              sem.brandStrong,
+              sem.brand,
+            ],
           ),
-          boxShadow: [
-            BoxShadow(
-              color: levelColor.withValues(alpha: 0.22),
-              blurRadius: 14,
-              offset: const Offset(0, 4),
-            ),
-            BoxShadow(
-              color: sem.brand.withValues(alpha: 0.08),
-              blurRadius: 22,
-              offset: const Offset(0, 8),
-            ),
-          ],
         ),
         child: SafeArea(
           bottom: false,
           child: Padding(
-            padding: EdgeInsets.lerp(
-                  const EdgeInsets.fromLTRB(6, 2, 8, 6),
-                  const EdgeInsets.fromLTRB(4, 0, 6, 4),
-                  headerCollapseT,
-                ) ??
-                const EdgeInsets.fromLTRB(6, 2, 8, 6),
-            child: LevelCard(
-              topBarStrip: true,
-              stripCollapseT: headerCollapseT,
-              level: level,
-              title: _getLevelTitle(level),
-              currentXP: currentXP,
-              xpForNextLevel: xpForNextLevel,
-              totalXP: totalXP,
-              displayName: displayName,
-              avatarUrl: _userProfile?['avatarUrl'] as String?,
-              avatarFrameId: _userProfile?['avatarFrameId'] as String?,
-              onAvatarTap: () => context.push('/profile'),
-              onShowTitles: () => _showLevelTitlesDialog(),
-              stripCoins: coins is int ? coins : int.tryParse('$coins') ?? 0,
-              stripDiamonds:
-                  diamonds is int ? diamonds : int.tryParse('$diamonds') ?? 0,
-              stripStreak:
-                  streak is int ? streak : int.tryParse('$streak') ?? 0,
-              onStripCoinsTap: () => context.push('/shop'),
-              onStripDiamondsTap: () => context.push('/payment'),
-              onStripStreakTap: () => context.push('/currency'),
-              stripResourcesKey: _statsRowKey,
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 40),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    GestureDetector(
+                      onTap: () => context.push('/profile'),
+                      child: Column(
+                        children: [
+                          Container(
+                            width: 46,
+                            height: 46,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: sem.card,
+                              border: Border.all(color: sem.gold, width: 1.2),
+                            ),
+                            child: Center(
+                              child: Text(
+                                _initials(displayName),
+                                style: AppTextStyles.labelLarge.copyWith(
+                                  color: sem.textPrimary,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 1,
+                            ),
+                            decoration: BoxDecoration(
+                              color: sem.gold.withValues(alpha: 0.9),
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                            child: Text(
+                              'Lv.${stats['level'] ?? 1}',
+                              style: AppTextStyles.caption.copyWith(
+                                color:
+                                    Theme.of(context).colorScheme.onSecondary,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: RichText(
+                        text: TextSpan(
+                          style: AppTextStyles.h3.copyWith(
+                            color: sem.textOnBrand,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          children: [
+                            TextSpan(text: '${_timeGreeting()}, '),
+                            TextSpan(
+                              text: displayName,
+                              style: AppTextStyles.h3.copyWith(
+                                color: sem.gold,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: _showLevelTitlesDialog,
+                      icon: Icon(
+                        Icons.notifications_rounded,
+                        color: sem.textOnBrand,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  key: _statsRowKey,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      width: 116,
+                      child: _buildHeroMetricChip(
+                        icon: Icons.star_rounded,
+                        iconColor: sem.gold,
+                        value: '$totalXP',
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    SizedBox(
+                      width: 126,
+                      child: _buildHeroMetricChip(
+                        icon: Icons.diamond_rounded,
+                        iconColor: sem.info,
+                        value: '$diamonds',
+                        trailingAdd: true,
+                        onTap: () => context.push('/payment'),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
         ),
       ),
     );
+  }
+
+  Widget _buildHeroMetricChip({
+    required IconData icon,
+    required Color iconColor,
+    required String value,
+    bool trailingAdd = false,
+    VoidCallback? onTap,
+  }) {
+    final sem = context.colors;
+    final child = Container(
+      height: 34,
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: BoxDecoration(
+        color: sem.textOnBrand.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: sem.textOnBrand.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, size: 19, color: iconColor),
+          const SizedBox(width: 5),
+          Text(
+            value,
+            style: AppTextStyles.bodyBold.copyWith(
+              color: sem.textOnBrand,
+              fontSize: 22,
+            ),
+          ),
+          if (trailingAdd) ...[
+            const SizedBox(width: 6),
+            Container(
+              width: 18,
+              height: 18,
+              decoration: BoxDecoration(
+                color: sem.textOnBrand.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Icon(Icons.add, size: 13, color: sem.textOnBrand),
+            ),
+          ],
+        ],
+      ),
+    );
+    if (onTap == null) return child;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(999),
+      child: child,
+    );
+  }
+
+  Widget _buildStatsChipsRow(Map<String, dynamic> stats) {
+    final sem = context.colors;
+    final completedLessons = (stats['completedLessons'] as num?)?.toInt() ?? 3;
+    final streak = (stats['currentStreak'] as num?)?.toInt() ??
+        (stats['streak'] as num?)?.toInt() ??
+        0;
+    final xpDelta = (stats['weeklyXP'] as num?)?.toInt() ??
+        (stats['todayXP'] as num?)?.toInt() ??
+        180;
+    final competency =
+        ((stats['competencyUpdates'] as num?)?.toInt() ?? 2).clamp(0, 99);
+    return Row(
+      children: [
+        Expanded(
+          child: _buildSmallStatChip(
+            icon: Icons.menu_book_rounded,
+            value: '$completedLessons',
+            iconColor: sem.brand,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _buildSmallStatChip(
+            icon: Icons.local_fire_department_rounded,
+            value: '$streak',
+            iconColor: sem.warning,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _buildSmallStatChip(
+            icon: Icons.star_rounded,
+            value: '+$xpDelta',
+            iconColor: sem.gold,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _buildSmallStatChip(
+            icon: Icons.tips_and_updates_outlined,
+            value: '$competency',
+            iconColor: sem.info,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSmallStatChip({
+    required IconData icon,
+    required String value,
+    required Color iconColor,
+  }) {
+    final sem = context.colors;
+    return Container(
+      height: 44,
+      decoration: BoxDecoration(
+        color: sem.card,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: sem.border),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, size: 18, color: iconColor),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              value,
+              overflow: TextOverflow.ellipsis,
+              style: AppTextStyles.h4.copyWith(fontWeight: FontWeight.w800),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSuggestedSubjectsSection(List<dynamic> subjects) {
+    final sem = context.colors;
+    final mapped = subjects
+        .whereType<Map>()
+        .map((e) => Map<String, dynamic>.from(e))
+        .toList();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Gợi ý cho bạn', style: AppTextStyles.h2),
+        const SizedBox(height: 14),
+        if (mapped.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: sem.card,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: sem.border),
+            ),
+            child: Text(
+              'Chưa có môn học phù hợp, hãy khám phá trong Thư viện.',
+              style: AppTextStyles.bodySmall.copyWith(color: sem.textSecondary),
+            ),
+          )
+        else
+          Column(
+            children: mapped.take(2).map((subject) {
+              final subjectId = subject['id'] as String?;
+              final name = subject['name'] as String? ?? 'Môn học';
+              final totalNodes = (subject['totalNodesCount'] as num?)?.toInt();
+              final learners = (subject['totalLearners'] as num?)?.toInt();
+              final subtitle = '${totalNodes ?? 0} bài · '
+                  '${learners != null ? '${(learners / 1000).toStringAsFixed(1)}k' : '--'} người học';
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: SubjectListTile(
+                  name: name,
+                  subtitle: subtitle,
+                  leadingIcon: Icons.school_rounded,
+                  actionLabel: 'Học',
+                  onTap: () {
+                    if (subjectId != null) {
+                      context.push('/subjects/$subjectId/intro');
+                    }
+                  },
+                ),
+              );
+            }).toList(),
+          ),
+      ],
+    );
+  }
+
+  String _timeGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return 'Chào buổi sáng';
+    if (hour < 18) return 'Chào buổi chiều';
+    return 'Chào buổi tối';
+  }
+
+  String _initials(String name) {
+    final parts = name.trim().split(RegExp(r'\s+'));
+    if (parts.isEmpty) return 'U';
+    if (parts.length == 1) return parts.first.substring(0, 1).toUpperCase();
+    final first = parts.first.substring(0, 1);
+    final last = parts.last.substring(0, 1);
+    return '$first$last'.toUpperCase();
   }
 
   Widget _buildSkeletonLoader() {
@@ -561,164 +824,161 @@ class _DashboardScreenState extends State<DashboardScreen> {
         final sem = dialogContext.colors;
         final brandHi = Color.lerp(sem.brand, sem.textOnBrand, 0.55)!;
         return Dialog(
-        backgroundColor: sem.card,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height * 0.8,
-          ),
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Row(
-                  children: [
-                    Icon(Icons.bolt_rounded, color: brandHi, size: 26),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Kinh nghiệm',
-                      style: AppTextStyles.h3.copyWith(
-                        color: sem.textPrimary,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: sem.cardMuted,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: sem.border.withValues(alpha: 0.65)),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+          backgroundColor: sem.card,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.8,
+            ),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
                     children: [
+                      Icon(Icons.bolt_rounded, color: brandHi, size: 26),
+                      const SizedBox(width: 8),
                       Text(
-                        'Tổng XP: $totalXP',
-                        style: AppTextStyles.bodyMedium.copyWith(
+                        'Kinh nghiệm',
+                        style: AppTextStyles.h3.copyWith(
                           color: sem.textPrimary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Tiến độ lên cấp ${currentLevel + 1}: $currentXP / $xpForNextLevel · ${(progress * 100).toStringAsFixed(1)}%',
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: sem.textSecondary,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
-                        child: LinearProgressIndicator(
-                          value: progress,
-                          minHeight: 6,
-                          backgroundColor: sem.cardMuted,
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(sem.success),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Level hiện tại: $currentLevel',
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: sem.textSecondary,
-                        ),
-                      ),
-                      Text(
-                        'Danh hiệu: $titleName',
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: sem.textPrimary,
-                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
                   ),
-                ),
-                const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.military_tech,
-                        color: Colors.amber.shade700, size: 28),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Danh hiệu theo cấp',
-                      style: AppTextStyles.h3.copyWith(
-                        color: sem.textPrimary,
-                      ),
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: sem.cardMuted,
+                      borderRadius: BorderRadius.circular(12),
+                      border:
+                          Border.all(color: sem.border.withValues(alpha: 0.65)),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                _buildLevelTitleRow(
-                    'Người mới',
-                    '1 - 5',
-                    Icons.emoji_people,
-                    LevelPalette.levelNewbie,
-                    currentLevel >= 1 && currentLevel <= 5,
-                    sem),
-                _buildLevelTitleRow(
-                    'Học viên',
-                    '6 - 10',
-                    Icons.school,
-                    LevelPalette.levelStudent,
-                    currentLevel >= 6 && currentLevel <= 10,
-                    sem),
-                _buildLevelTitleRow(
-                    'Sinh viên',
-                    '11 - 20',
-                    Icons.menu_book,
-                    LevelPalette.levelScholar,
-                    currentLevel >= 11 && currentLevel <= 20,
-                    sem),
-                _buildLevelTitleRow(
-                    'Chuyên gia',
-                    '21 - 35',
-                    Icons.psychology,
-                    LevelPalette.levelExpert,
-                    currentLevel >= 21 && currentLevel <= 35,
-                    sem),
-                _buildLevelTitleRow(
-                    'Bậc thầy',
-                    '36 - 50',
-                    Icons.workspace_premium,
-                    LevelPalette.levelMaster,
-                    currentLevel >= 36 && currentLevel <= 50,
-                    sem),
-                _buildLevelTitleRow(
-                    'Huyền thoại',
-                    '51 - 75',
-                    Icons.auto_awesome,
-                    LevelPalette.levelLegend,
-                    currentLevel >= 51 && currentLevel <= 75,
-                    sem),
-                _buildLevelTitleRow(
-                    'Thần đồng',
-                    '76+',
-                    Icons.diamond,
-                    LevelPalette.levelProdigy,
-                    currentLevel >= 76,
-                    sem),
-                const SizedBox(height: 12),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: Text(
-                      'Đóng',
-                      style: TextStyle(color: brandHi),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Tổng XP: $totalXP',
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            color: sem.textPrimary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Tiến độ lên cấp ${currentLevel + 1}: $currentXP / $xpForNextLevel · ${(progress * 100).toStringAsFixed(1)}%',
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: sem.textSecondary,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: LinearProgressIndicator(
+                            value: progress,
+                            minHeight: 6,
+                            backgroundColor: sem.cardMuted,
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(sem.success),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Level hiện tại: $currentLevel',
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: sem.textSecondary,
+                          ),
+                        ),
+                        Text(
+                          'Danh hiệu: $titleName',
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: sem.textPrimary,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.military_tech,
+                          color: Colors.amber.shade700, size: 28),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Danh hiệu theo cấp',
+                        style: AppTextStyles.h3.copyWith(
+                          color: sem.textPrimary,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  _buildLevelTitleRow(
+                      'Người mới',
+                      '1 - 5',
+                      Icons.emoji_people,
+                      LevelPalette.levelNewbie,
+                      currentLevel >= 1 && currentLevel <= 5,
+                      sem),
+                  _buildLevelTitleRow(
+                      'Học viên',
+                      '6 - 10',
+                      Icons.school,
+                      LevelPalette.levelStudent,
+                      currentLevel >= 6 && currentLevel <= 10,
+                      sem),
+                  _buildLevelTitleRow(
+                      'Sinh viên',
+                      '11 - 20',
+                      Icons.menu_book,
+                      LevelPalette.levelScholar,
+                      currentLevel >= 11 && currentLevel <= 20,
+                      sem),
+                  _buildLevelTitleRow(
+                      'Chuyên gia',
+                      '21 - 35',
+                      Icons.psychology,
+                      LevelPalette.levelExpert,
+                      currentLevel >= 21 && currentLevel <= 35,
+                      sem),
+                  _buildLevelTitleRow(
+                      'Bậc thầy',
+                      '36 - 50',
+                      Icons.workspace_premium,
+                      LevelPalette.levelMaster,
+                      currentLevel >= 36 && currentLevel <= 50,
+                      sem),
+                  _buildLevelTitleRow(
+                      'Huyền thoại',
+                      '51 - 75',
+                      Icons.auto_awesome,
+                      LevelPalette.levelLegend,
+                      currentLevel >= 51 && currentLevel <= 75,
+                      sem),
+                  _buildLevelTitleRow('Thần đồng', '76+', Icons.diamond,
+                      LevelPalette.levelProdigy, currentLevel >= 76, sem),
+                  const SizedBox(height: 12),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text(
+                        'Đóng',
+                        style: TextStyle(color: brandHi),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-      );
+        );
       },
     );
   }
@@ -733,8 +993,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   ) {
     final brandHi = Color.lerp(sem.brand, sem.textOnBrand, 0.55)!;
     final muted = LevelPalette.tierAccentMuted(tierColor, sem.card);
-    final leftBar =
-        isCurrent ? muted : muted.withValues(alpha: 0.42);
+    final leftBar = isCurrent ? muted : muted.withValues(alpha: 0.42);
     final iconTint = LevelPalette.tierIconTint(
       tierColor,
       isCurrent: isCurrent,
@@ -765,8 +1024,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       Container(
                         padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
-                          color: muted.withValues(
-                              alpha: isCurrent ? 0.14 : 0.08),
+                          color:
+                              muted.withValues(alpha: isCurrent ? 0.14 : 0.08),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Icon(icon, color: iconTint, size: 20),
@@ -1051,7 +1310,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     required String? questParticipationId,
     required String questType,
   }) async {
-    if (isClaimed || questParticipationId == null || questParticipationId.isEmpty) {
+    if (isClaimed ||
+        questParticipationId == null ||
+        questParticipationId.isEmpty) {
       return;
     }
     if (canClaim) {
@@ -1096,47 +1357,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildContinueLearningSection(Map<String, dynamic>? data) {
     final sem = context.colors;
-    final brandHi = Color.lerp(sem.brand, sem.textOnBrand, 0.55)!;
     final lessons = (data?['nextFreeLessons'] as List<dynamic>? ?? const [])
         .whereType<Map>()
         .map((e) => Map<String, dynamic>.from(e))
         .toList();
-
-    final remaining = (data?['remainingFreeLessonsToday'] as num?)?.toInt();
-    final freeTotal = (data?['freeLessonsPerDay'] as num?)?.toInt() ?? 2;
-
-    final remainingText = remaining == null
-        ? 'Chưa rõ miễn phí còn lại'
-        : '$remaining/$freeTotal miễn phí còn lại';
-
+    final firstLesson = lessons.isNotEmpty ? lessons.first : null;
     final recentSubject = data?['recentSubject'] as Map<String, dynamic>?;
-    var sectionSubjectName = recentSubject?['name'] as String?;
-    if (sectionSubjectName == null || sectionSubjectName.trim().isEmpty) {
-      if (lessons.isNotEmpty) {
-        sectionSubjectName = lessons.first['subjectName'] as String?;
-      }
-    }
-    final subjectHeader =
-        sectionSubjectName != null && sectionSubjectName.trim().isNotEmpty
-            ? sectionSubjectName.trim()
-            : null;
+    final continueTitle = (firstLesson?['title'] as String?) ??
+        (recentSubject?['name'] as String?) ??
+        'Bạn chưa có bài cần học tiếp';
+    final progress = ((firstLesson?['progress'] as num?)?.toDouble() ?? 0.45)
+        .clamp(0.05, 1.0);
+    final lessonInfo = firstLesson != null
+        ? '${(firstLesson['estimatedMinutes'] as num?)?.toInt() ?? 10} phút'
+        : 'Sẵn sàng bắt đầu';
 
+    final lessonForTap = firstLesson;
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: sem.brand.withValues(alpha: 0.11),
-        ),
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            sem.card,
-            sem.card.withValues(alpha: 0.92),
-            sem.cardOverlay.withValues(alpha: 0.85),
-          ],
-        ),
+        color: sem.card,
+        border: Border.all(color: sem.border),
         boxShadow: [
           BoxShadow(
             color: sem.brand.withValues(alpha: 0.03),
@@ -1149,152 +1391,113 @@ class _DashboardScreenState extends State<DashboardScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(
-              _kSectionInnerPadding,
-              _kSectionInnerPadding,
-              _kSectionInnerPadding,
-              10,
-            ),
-            child: Column(
+            padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
+            child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            brandHi.withValues(alpha: 0.5),
-                            sem.brand.withValues(alpha: 0.42),
-                          ],
+                Container(
+                  width: 58,
+                  height: 58,
+                  decoration: BoxDecoration(
+                    color: sem.info.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: Icon(
+                    Icons.auto_stories_rounded,
+                    color: sem.info,
+                    size: 32,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Tiếp tục học',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: sem.textSecondary,
+                          fontWeight: FontWeight.w600,
                         ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: sem.brand.withValues(alpha: 0.1),
-                            blurRadius: 8,
-                            offset: const Offset(0, 3),
+                      ),
+                      const SizedBox(height: 1),
+                      Text(
+                        continueTitle,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.h3.copyWith(height: 1.15),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(99),
+                              child: LinearProgressIndicator(
+                                value: progress,
+                                minHeight: 8,
+                                backgroundColor: sem.cardMuted,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  sem.gold,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            '${(progress * 100).round()}%',
+                            style: AppTextStyles.caption.copyWith(
+                              color: sem.textSecondary,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ],
                       ),
-                      child: Icon(
-                        Icons.auto_stories_rounded,
-                        color: sem.textOnBrand,
-                        size: 22,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        'Bài học hôm nay',
-                        style: AppTextStyles.h3.copyWith(
-                          letterSpacing: 0.15,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 5,
-                      ),
-                      decoration: BoxDecoration(
-                        color: sem.gold.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: sem.gold.withValues(alpha: 0.28),
-                        ),
-                      ),
-                      child: Text(
-                        remainingText,
+                      const SizedBox(height: 4),
+                      Text(
+                        lessonInfo,
                         style: AppTextStyles.caption.copyWith(
-                          color: sem.gold,
+                          color: sem.textTertiary,
                           fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 0.2,
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-                if (subjectHeader != null) ...[
-                  const SizedBox(height: 12),
-                  Container(
-                    width: double.infinity,
+                const SizedBox(width: 10),
+                ElevatedButton(
+                  onPressed: () {
+                    if (lessonForTap != null) {
+                      _handleContinueLessonTap(lessonForTap);
+                    } else {
+                      context.push('/library');
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: sem.brand,
+                    foregroundColor: sem.textOnBrand,
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
+                      horizontal: 18,
+                      vertical: 12,
                     ),
-                    decoration: BoxDecoration(
-                      color: sem.cardOverlay,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: brandHi.withValues(alpha: 0.12),
-                      ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(999),
                     ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.menu_book_rounded,
-                          size: 16,
-                          color: brandHi.withValues(alpha: 0.95),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            subjectHeader,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: AppTextStyles.labelSmall.copyWith(
-                              color: sem.textSecondary,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 13,
-                              height: 1.25,
-                            ),
-                          ),
-                        ),
-                      ],
+                    textStyle: AppTextStyles.labelLarge.copyWith(
+                      fontWeight: FontWeight.w800,
                     ),
                   ),
-                ],
+                  child: const Text('Tiếp'),
+                ),
               ],
             ),
           ),
-          if (lessons.isEmpty)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              child: Text(
-                'Bạn chưa có bài phù hợp để tiếp tục ngay.',
-                style: AppTextStyles.bodySmall
-                    .copyWith(color: sem.textSecondary),
-              ),
-            )
-          else
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 0, 12, 14),
-              child: Column(
-                children: lessons.asMap().entries.map((entry) {
-                  final index = entry.key;
-                  final lesson = entry.value;
-                  final isLast = index == lessons.length - 1;
-                  return _buildTodayLessonTile(
-                    lesson: lesson,
-                    index: index,
-                    isLast: isLast,
-                    onTap: () => _handleContinueLessonTap(lesson),
-                  );
-                }).toList(),
-              ),
-            ),
         ],
       ),
     );
   }
 
+  // ignore: unused_element
   Widget _buildTodayLessonTile({
     required Map<String, dynamic> lesson,
     required int index,
@@ -1442,9 +1645,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                         sem.brand.withValues(alpha: 0.65),
                                       ],
                                     ),
-                              color: isLocked
-                                  ? sem.card
-                                  : null,
+                              color: isLocked ? sem.card : null,
                               border: Border.all(
                                 color: isLocked
                                     ? const Color(0x552D363D)
@@ -1454,8 +1655,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   ? null
                                   : [
                                       BoxShadow(
-                                        color: sem.brand
-                                            .withValues(alpha: 0.14),
+                                        color:
+                                            sem.brand.withValues(alpha: 0.14),
                                         blurRadius: 6,
                                         offset: const Offset(0, 2),
                                       ),
@@ -1502,17 +1703,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             Icon(
                               Icons.bolt_rounded,
                               size: 15,
-                              color: isLocked
-                                  ? sem.textTertiary
-                                  : sem.gold,
+                              color: isLocked ? sem.textTertiary : sem.gold,
                             ),
                             const SizedBox(width: 4),
                             Text(
                               '+$expReward XP',
                               style: AppTextStyles.caption.copyWith(
-                                color: isLocked
-                                    ? sem.textTertiary
-                                    : sem.gold,
+                                color: isLocked ? sem.textTertiary : sem.gold,
                                 fontSize: 12,
                                 fontWeight: FontWeight.w800,
                               ),
@@ -1685,6 +1882,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     height: 1.4,
                   ),
                 ),
+                const SizedBox(height: 10),
+                _buildQuestMilestoneRow(
+                  completedCount: quests
+                      .where((q) => (q['status'] as String?) == 'claimed')
+                      .length,
+                ),
               ],
             ),
           ),
@@ -1693,8 +1896,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
               child: Text(
                 'Không có nhiệm vụ hôm nay.',
-                style: AppTextStyles.bodySmall
-                    .copyWith(color: sem.textSecondary),
+                style:
+                    AppTextStyles.bodySmall.copyWith(color: sem.textSecondary),
               ),
             )
           else
@@ -1762,7 +1965,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               padding: const EdgeInsets.fromLTRB(12, 0, 12, 14),
               child: Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 decoration: BoxDecoration(
                   color: sem.cardOverlay.withValues(alpha: 0.9),
                   borderRadius: BorderRadius.circular(12),
@@ -2070,7 +2274,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                         color: sem.gold.withValues(alpha: 0.1),
                                         borderRadius: BorderRadius.circular(8),
                                         border: Border.all(
-                                          color: sem.gold.withValues(alpha: 0.28),
+                                          color:
+                                              sem.gold.withValues(alpha: 0.28),
                                         ),
                                       ),
                                       child: Text(
@@ -2094,7 +2299,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                         color: sem.gold.withValues(alpha: 0.1),
                                         borderRadius: BorderRadius.circular(8),
                                         border: Border.all(
-                                          color: sem.gold.withValues(alpha: 0.28),
+                                          color:
+                                              sem.gold.withValues(alpha: 0.28),
                                         ),
                                       ),
                                       child: Row(
@@ -2136,32 +2342,54 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(999),
                       child: Container(
-                        height: 10,
+                        height: 18,
                         decoration: BoxDecoration(
                           border: Border.all(
                             color: const Color(0x332D363D),
                           ),
                           color: sem.card,
                         ),
-                        alignment: Alignment.centerLeft,
-                        child: LinearProgressIndicator(
-                          value: percent,
-                          minHeight: 10,
-                          backgroundColor: Colors.transparent,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            sem.success.withValues(alpha: 0.75),
-                          ),
+                        child: Stack(
+                          children: [
+                            LinearProgressIndicator(
+                              value: percent,
+                              minHeight: 18,
+                              backgroundColor: Colors.transparent,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                sem.success.withValues(alpha: 0.75),
+                              ),
+                            ),
+                            Center(
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 8),
+                                  child: Text(
+                                    '${progressNum.toInt()} / ${targetNum.toInt()}',
+                                    style: AppTextStyles.caption.copyWith(
+                                      color: sem.textPrimary,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
-                    const SizedBox(height: 6),
-                    Text(
-                      '${progressNum.toInt()} / ${targetNum.toInt()} hoàn thành',
-                      style: AppTextStyles.caption.copyWith(
-                        color: sem.textTertiary,
-                        fontSize: 12,
+                    if (targetNum.toInt() >= 100) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        '${progressNum.toInt()} / ${targetNum.toInt()} hoàn thành',
+                        style: AppTextStyles.caption.copyWith(
+                          color: sem.textTertiary,
+                          fontSize: 11,
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ],
               ),
@@ -2169,6 +2397,49 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildQuestMilestoneRow({required int completedCount}) {
+    final sem = context.colors;
+    return Row(
+      children: List.generate(4, (index) {
+        final unlocked = completedCount > index;
+        return Expanded(
+          child: Row(
+            children: [
+              if (index > 0)
+                Expanded(
+                  child: Container(
+                    height: 4,
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    decoration: BoxDecoration(
+                      color: unlocked
+                          ? sem.brand
+                          : sem.cardMuted.withValues(alpha: 0.9),
+                      borderRadius: BorderRadius.circular(99),
+                    ),
+                  ),
+                ),
+              Container(
+                width: 30,
+                height: 30,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: unlocked
+                      ? sem.brand.withValues(alpha: 0.9)
+                      : sem.cardMuted.withValues(alpha: 0.9),
+                ),
+                child: Icon(
+                  Icons.card_giftcard_rounded,
+                  size: 16,
+                  color: unlocked ? sem.textOnBrand : sem.textTertiary,
+                ),
+              ),
+            ],
+          ),
+        );
+      }),
     );
   }
 

@@ -67,9 +67,7 @@ class _CommunityHubScreenState extends State<CommunityHubScreen>
                 ],
               ),
               child: Icon(
-                _outer.index == 0
-                    ? Icons.groups_rounded
-                    : Icons.people_rounded,
+                _outer.index == 0 ? Icons.groups_rounded : Icons.people_rounded,
                 color: t.gold,
                 size: 22,
               ),
@@ -167,7 +165,7 @@ class _CommunityHubScreenState extends State<CommunityHubScreen>
           ),
         ],
       ),
-      bottomNavigationBar: const BottomNavBar(currentIndex: 2),
+      bottomNavigationBar: const BottomNavBar(currentIndex: 3),
     );
   }
 }

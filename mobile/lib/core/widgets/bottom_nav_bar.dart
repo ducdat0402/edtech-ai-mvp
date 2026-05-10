@@ -10,7 +10,7 @@ import 'package:edtech_mobile/theme/text_styles.dart';
 /// Tabs:
 /// 0. Trang chủ → /dashboard
 /// 1. Thư viện → /library
-/// 2. Cộng đồng → /friends
+/// 2. Của tôi → /library/my-contributions
 /// 3. Profile → /profile (Cửa hàng / Quests / Leaderboard nằm bên trong)
 class BottomNavBar extends StatefulWidget {
   final int currentIndex;
@@ -52,7 +52,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
         context.go('/library');
         break;
       case 2:
-        context.go('/friends');
+        context.go('/library/my-contributions');
         break;
       case 3:
         context.go('/profile');
@@ -83,9 +83,8 @@ class _BottomNavBarState extends State<BottomNavBar> {
           color: isDark ? null : tokens.card,
           border: Border(
             top: BorderSide(
-              color: isDark
-                  ? tokens.brand.withValues(alpha: 0.28)
-                  : tokens.border,
+              color:
+                  isDark ? tokens.brand.withValues(alpha: 0.28) : tokens.border,
               width: 1,
             ),
           ),
@@ -127,11 +126,10 @@ class _BottomNavBarState extends State<BottomNavBar> {
                 Expanded(
                   child: _NavEntry(
                     selected: widget.currentIndex == 2,
-                    label: 'Cộng đồng',
-                    icon: Icons.groups_outlined,
-                    activeIcon: Icons.groups_rounded,
+                    label: 'Của tôi',
+                    icon: Icons.edit_note_outlined,
+                    activeIcon: Icons.edit_note_rounded,
                     onTap: () => _onItemTapped(context, 2),
-                    badgeCount: _pendingCount,
                   ),
                 ),
                 Expanded(
@@ -141,6 +139,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
                     icon: Icons.person_outline_rounded,
                     activeIcon: Icons.person_rounded,
                     onTap: () => _onItemTapped(context, 3),
+                    badgeCount: _pendingCount,
                   ),
                 ),
               ],
@@ -213,7 +212,7 @@ class _NavEntry extends StatelessWidget {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 220),
           curve: Curves.easeOutCubic,
-          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
             gradient: selected && isDark
@@ -226,7 +225,7 @@ class _NavEntry extends StatelessWidget {
                     ],
                   )
                 : null,
-            color: selected && !isDark ? tokens.brandSoft : null,
+            color: null,
             border: Border.all(
               color: selected && isDark
                   ? tokens.brand.withValues(alpha: 0.45)
@@ -246,7 +245,7 @@ class _NavEntry extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               iconWidget,
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
               Text(
                 label,
                 maxLines: 1,
@@ -255,7 +254,7 @@ class _NavEntry extends StatelessWidget {
                 style: AppTextStyles.labelSmall.copyWith(
                   color: labelColor,
                   fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
-                  fontSize: 11,
+                  fontSize: 10.5,
                   letterSpacing: selected ? -0.1 : 0,
                 ),
               ),
