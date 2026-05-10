@@ -584,20 +584,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
       height: 34,
       padding: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
-        color: sem.textOnBrand.withValues(alpha: 0.14),
+        color: Colors.white.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: sem.textOnBrand.withValues(alpha: 0.2)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.36)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: 19, color: iconColor),
+          Icon(icon, size: 19, color: iconColor.withValues(alpha: 0.98)),
           const SizedBox(width: 5),
           Text(
             value,
             style: AppTextStyles.bodyBold.copyWith(
               color: sem.textOnBrand,
-              fontSize: 22,
+              fontSize: 21,
+              fontWeight: FontWeight.w900,
             ),
           ),
           if (trailingAdd) ...[
@@ -606,7 +607,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               width: 18,
               height: 18,
               decoration: BoxDecoration(
-                color: sem.textOnBrand.withValues(alpha: 0.2),
+                color: Colors.white.withValues(alpha: 0.35),
                 borderRadius: BorderRadius.circular(999),
               ),
               child: Icon(Icons.add, size: 13, color: sem.textOnBrand),
@@ -694,7 +695,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: Text(
               value,
               overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.h4.copyWith(fontWeight: FontWeight.w800),
+              style: AppTextStyles.h4.copyWith(
+                color: sem.textPrimary,
+                fontWeight: FontWeight.w800,
+              ),
             ),
           ),
         ],
@@ -711,7 +715,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Gợi ý cho bạn', style: AppTextStyles.h2),
+        Text(
+          'Gợi ý cho bạn',
+          style: AppTextStyles.h2.copyWith(
+            color: sem.textPrimary,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
         const SizedBox(height: 14),
         if (mapped.isEmpty)
           Container(
@@ -724,7 +734,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             child: Text(
               'Chưa có môn học phù hợp, hãy khám phá trong Thư viện.',
-              style: AppTextStyles.bodySmall.copyWith(color: sem.textSecondary),
+              style: AppTextStyles.bodySmall.copyWith(
+                color: sem.textSecondary,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           )
         else
@@ -1425,7 +1438,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         continueTitle,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.h3.copyWith(height: 1.15),
+                        style: AppTextStyles.h3.copyWith(
+                          height: 1.15,
+                          color: sem.textPrimary,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                       const SizedBox(height: 8),
                       Row(
@@ -1447,7 +1464,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           Text(
                             '${(progress * 100).round()}%',
                             style: AppTextStyles.caption.copyWith(
-                              color: sem.textSecondary,
+                              color: sem.textPrimary,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -1457,8 +1474,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       Text(
                         lessonInfo,
                         style: AppTextStyles.caption.copyWith(
-                          color: sem.textTertiary,
+                          color: sem.textSecondary,
                           fontSize: 11,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
@@ -1846,6 +1864,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         'Nhiệm vụ hôm nay',
                         style: AppTextStyles.h3.copyWith(
                           letterSpacing: 0.15,
+                          color: sem.textPrimary,
+                          fontWeight: FontWeight.w800,
                         ),
                       ),
                     ),
@@ -1856,16 +1876,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           vertical: 5,
                         ),
                         decoration: BoxDecoration(
-                          color: sem.info.withValues(alpha: 0.06),
+                          color: sem.info.withValues(alpha: 0.14),
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(
-                            color: brandHi.withValues(alpha: 0.14),
+                            color: brandHi.withValues(alpha: 0.3),
                           ),
                         ),
                         child: Text(
                           '$activeQuestCount đang làm',
                           style: AppTextStyles.caption.copyWith(
-                            color: sem.textSecondary,
+                            color: sem.textPrimary,
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 0.15,
@@ -1878,7 +1898,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Text(
                   'Hoàn thành để nhận thêm ${CurrencyLabels.gtuCoin} và XP.',
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: sem.textSecondary,
+                    color: sem.textPrimary,
+                    fontWeight: FontWeight.w600,
                     height: 1.4,
                   ),
                 ),
@@ -2385,8 +2406,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       Text(
                         '${progressNum.toInt()} / ${targetNum.toInt()} hoàn thành',
                         style: AppTextStyles.caption.copyWith(
-                          color: sem.textTertiary,
+                          color: sem.textSecondary,
                           fontSize: 11,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],

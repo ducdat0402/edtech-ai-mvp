@@ -174,10 +174,10 @@ class _NavEntry extends StatelessWidget {
     final tokens = context.colors;
 
     final iconColor = selected
-        ? (isDark ? tokens.textOnBrand : tokens.brand)
+        ? (isDark ? tokens.textOnBrand : tokens.brandStrong)
         : (isDark
             ? tokens.textTertiary.withValues(alpha: 0.9)
-            : tokens.textTertiary);
+            : tokens.textSecondary);
     final labelColor = iconColor;
 
     Widget iconWidget = Icon(
@@ -225,10 +225,12 @@ class _NavEntry extends StatelessWidget {
                     ],
                   )
                 : null,
-            color: null,
+            color: selected && !isDark ? tokens.brandSoft : null,
             border: Border.all(
-              color: selected && isDark
-                  ? tokens.brand.withValues(alpha: 0.45)
+              color: selected
+                  ? (isDark
+                      ? tokens.brand.withValues(alpha: 0.45)
+                      : tokens.brand.withValues(alpha: 0.3))
                   : Colors.transparent,
             ),
             boxShadow: selected && isDark
@@ -239,7 +241,15 @@ class _NavEntry extends StatelessWidget {
                       offset: const Offset(0, 3),
                     ),
                   ]
-                : null,
+                : (selected && !isDark
+                    ? [
+                        BoxShadow(
+                          color: tokens.brand.withValues(alpha: 0.12),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ]
+                    : null),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -253,8 +263,8 @@ class _NavEntry extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: AppTextStyles.labelSmall.copyWith(
                   color: labelColor,
-                  fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
-                  fontSize: 10.5,
+                  fontWeight: selected ? FontWeight.w800 : FontWeight.w700,
+                  fontSize: selected ? 11.5 : 10.5,
                   letterSpacing: selected ? -0.1 : 0,
                 ),
               ),
