@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
-import 'package:edtech_mobile/theme/colors.dart';
+import 'package:edtech_mobile/theme/theme.dart';
 import 'package:edtech_mobile/features/lessons/screens/image_quiz_lesson_screen.dart';
 import 'package:edtech_mobile/features/lessons/screens/image_gallery_lesson_screen.dart';
 import 'package:edtech_mobile/features/lessons/screens/video_lesson_screen.dart';
@@ -207,10 +207,11 @@ class _LessonTypeHistoryScreenState extends State<LessonTypeHistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: t.bg,
       appBar: AppBar(
-        backgroundColor: AppColors.bgSecondary,
+        backgroundColor: t.card,
         elevation: 0,
         leading: const AppBarLeadingBackAndHome(),
         leadingWidth: 112,
@@ -218,17 +219,16 @@ class _LessonTypeHistoryScreenState extends State<LessonTypeHistoryScreen> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Lịch sử chỉnh sửa',
               style: TextStyle(
-                  color: AppColors.textPrimary,
+                  color: t.textPrimary,
                   fontSize: 16,
                   fontWeight: FontWeight.bold),
             ),
             Text(
               _getLessonTypeLabel(widget.lessonType),
-              style:
-                  const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+              style: TextStyle(color: t.textSecondary, fontSize: 12),
             ),
           ],
         ),
@@ -244,15 +244,16 @@ class _LessonTypeHistoryScreenState extends State<LessonTypeHistoryScreen> {
   }
 
   Widget _buildError() {
+    final t = context.colors;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.error_outline, size: 48, color: AppColors.errorNeon),
+          Icon(Icons.error_outline, size: 48, color: t.error),
           const SizedBox(height: 16),
           Text('Lỗi: $_error',
               textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.errorNeon)),
+              style: TextStyle(color: t.error)),
           const SizedBox(height: 16),
           ElevatedButton(onPressed: _loadHistory, child: const Text('Thử lại')),
         ],
@@ -261,21 +262,22 @@ class _LessonTypeHistoryScreenState extends State<LessonTypeHistoryScreen> {
   }
 
   Widget _buildEmpty() {
+    final t = context.colors;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.history,
-              size: 64, color: AppColors.textTertiary.withValues(alpha: 0.5)),
+              size: 64, color: t.textTertiary.withValues(alpha: 0.5)),
           const SizedBox(height: 16),
-          const Text(
+          Text(
             'Chưa có lịch sử chỉnh sửa',
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 16),
+            style: TextStyle(color: t.textSecondary, fontSize: 16),
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Lịch sử sẽ xuất hiện khi nội dung được chỉnh sửa và duyệt.',
-            style: TextStyle(color: AppColors.textTertiary, fontSize: 13),
+            style: TextStyle(color: t.textTertiary, fontSize: 13),
             textAlign: TextAlign.center,
           ),
         ],
@@ -299,6 +301,7 @@ class _LessonTypeHistoryScreenState extends State<LessonTypeHistoryScreen> {
   }
 
   Widget _buildVersionCard(Map<String, dynamic> version, bool isNewest) {
+    final t = context.colors;
     final versionNumber = version['version'] as int? ?? 0;
     final createdAt = version['createdAt'] as String? ?? '';
     final note = version['note'] as String? ?? '';
@@ -341,12 +344,12 @@ class _LessonTypeHistoryScreenState extends State<LessonTypeHistoryScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
+        color: t.card,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isNewest
-              ? AppColors.purpleNeon.withValues(alpha: 0.3)
-              : const Color(0x332D363D),
+              ? t.brand.withValues(alpha: 0.3)
+              : t.border,
         ),
       ),
       child: Column(
@@ -363,16 +366,16 @@ class _LessonTypeHistoryScreenState extends State<LessonTypeHistoryScreen> {
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: isNewest
-                        ? AppColors.purpleNeon.withValues(alpha: 0.15)
-                        : AppColors.bgTertiary,
+                        ? t.brand.withValues(alpha: 0.15)
+                        : t.cardMuted,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     'v$versionNumber',
                     style: TextStyle(
                       color: isNewest
-                          ? AppColors.purpleNeon
-                          : AppColors.textSecondary,
+                          ? t.brand
+                          : t.textSecondary,
                       fontSize: 13,
                       fontWeight: FontWeight.bold,
                     ),
@@ -384,13 +387,13 @@ class _LessonTypeHistoryScreenState extends State<LessonTypeHistoryScreen> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
-                      color: AppColors.successNeon.withValues(alpha: 0.15),
+                      color: t.success.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(6),
                     ),
-                    child: const Text(
+                    child: Text(
                       'Mới nhất',
                       style: TextStyle(
-                          color: AppColors.successNeon,
+                          color: t.success,
                           fontSize: 11,
                           fontWeight: FontWeight.bold),
                     ),
@@ -399,8 +402,7 @@ class _LessonTypeHistoryScreenState extends State<LessonTypeHistoryScreen> {
                 const Spacer(),
                 Text(
                   dateStr,
-                  style: const TextStyle(
-                      color: AppColors.textTertiary, fontSize: 12),
+                  style: TextStyle(color: t.textTertiary, fontSize: 12),
                 ),
               ],
             ),
@@ -413,25 +415,24 @@ class _LessonTypeHistoryScreenState extends State<LessonTypeHistoryScreen> {
               children: [
                 if (note.isNotEmpty) ...[
                   Text(note,
-                      style: const TextStyle(
-                          color: AppColors.textSecondary, fontSize: 13)),
+                      style:
+                          TextStyle(color: t.textSecondary, fontSize: 13)),
                   const SizedBox(height: 8),
                 ],
                 Row(
                   children: [
-                    const Icon(Icons.description_outlined,
-                        size: 14, color: AppColors.textTertiary),
+                    Icon(Icons.description_outlined,
+                        size: 14, color: t.textTertiary),
                     const SizedBox(width: 4),
                     Text(contentSummary,
-                        style: const TextStyle(
-                            color: AppColors.textTertiary, fontSize: 12)),
+                        style:
+                            TextStyle(color: t.textTertiary, fontSize: 12)),
                     const SizedBox(width: 12),
-                    const Icon(Icons.quiz_outlined,
-                        size: 14, color: AppColors.textTertiary),
+                    Icon(Icons.quiz_outlined, size: 14, color: t.textTertiary),
                     const SizedBox(width: 4),
                     Text('$quizCount câu hỏi',
-                        style: const TextStyle(
-                            color: AppColors.textTertiary, fontSize: 12)),
+                        style:
+                            TextStyle(color: t.textTertiary, fontSize: 12)),
                   ],
                 ),
               ],
@@ -448,7 +449,7 @@ class _LessonTypeHistoryScreenState extends State<LessonTypeHistoryScreen> {
                   icon: const Icon(Icons.visibility_outlined, size: 16),
                   label: const Text('Xem', style: TextStyle(fontSize: 13)),
                   style: TextButton.styleFrom(
-                    foregroundColor: AppColors.primaryLight,
+                    foregroundColor: t.brand,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                 ),
@@ -461,7 +462,7 @@ class _LessonTypeHistoryScreenState extends State<LessonTypeHistoryScreen> {
                   label: const Text('Sửa từ bản này',
                       style: TextStyle(fontSize: 13)),
                   style: TextButton.styleFrom(
-                    foregroundColor: AppColors.orangeNeon,
+                    foregroundColor: t.warning,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                 ),

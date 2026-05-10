@@ -6,7 +6,7 @@ import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/core/widgets/ai_generated_notice.dart';
 import 'package:edtech_mobile/core/widgets/contributor_credit_button.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
-import 'package:edtech_mobile/theme/colors.dart';
+import 'package:edtech_mobile/theme/theme.dart';
 import 'end_quiz_screen.dart';
 
 class TextLessonScreen extends StatefulWidget {
@@ -251,18 +251,28 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final tokens = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: tokens.bg,
       appBar: AppBar(
-        backgroundColor: AppColors.bgPrimary,
+        backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: const AppBarLeadingBackAndHome(),
+        flexibleSpace: isDark
+            ? null
+            : const BrandHeader(
+                padding: EdgeInsets.zero,
+                child: SizedBox.shrink(),
+              ),
+        leading: AppBarLeadingBackAndHome(
+          iconColor: isDark ? null : tokens.textOnBrand,
+        ),
         leadingWidth: 112,
         automaticallyImplyLeading: false,
         title: Text(
           widget.title,
-          style: const TextStyle(
-            color: AppColors.textPrimary,
+          style: TextStyle(
+            color: isDark ? tokens.textPrimary : tokens.textOnBrand,
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
@@ -337,8 +347,8 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.purpleNeon,
-                  foregroundColor: Colors.white,
+                  backgroundColor: tokens.brand,
+                  foregroundColor: tokens.textOnBrand,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
@@ -356,22 +366,23 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
   }
 
   Widget _buildReadingTimeChip() {
+    final t = context.colors;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: AppColors.purpleNeon.withValues(alpha: 0.1),
+        color: t.brand.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.purpleNeon.withValues(alpha: 0.3)),
+        border: Border.all(color: t.brand.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.schedule, color: AppColors.purpleNeon, size: 16),
+          Icon(Icons.schedule, color: t.brand, size: 16),
           const SizedBox(width: 6),
           Text(
             'Thời gian đọc: ~$_estimatedReadingTime phút',
-            style: const TextStyle(
-              color: AppColors.purpleNeon,
+            style: TextStyle(
+              color: t.brand,
               fontSize: 13,
               fontWeight: FontWeight.w600,
             ),
@@ -382,6 +393,7 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
   }
 
   Widget _buildSimplifyButton() {
+    final t = context.colors;
     final canShowTabs = _simplifiedText != null && _simplifiedText!.isNotEmpty;
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -390,9 +402,9 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
           Container(
             padding: const EdgeInsets.all(3),
             decoration: BoxDecoration(
-              color: AppColors.bgSecondary,
+              color: t.card,
               borderRadius: BorderRadius.circular(999),
-              border: Border.all(color: AppColors.purpleNeon.withValues(alpha: 0.25)),
+              border: Border.all(color: t.brand.withValues(alpha: 0.25)),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -408,20 +420,20 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
           child: ElevatedButton.icon(
             onPressed: _isSimplifying ? null : _onSimplifyPressed,
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.purpleNeon,
-              foregroundColor: Colors.white,
+              backgroundColor: t.brand,
+              foregroundColor: t.textOnBrand,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(999),
               ),
               padding: const EdgeInsets.symmetric(horizontal: 12),
             ),
             icon: _isSimplifying
-                ? const SizedBox(
+                ? SizedBox(
                     width: 16,
                     height: 16,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      color: Colors.white,
+                      color: t.textOnBrand,
                     ),
                   )
                 : const Icon(Icons.auto_fix_high, size: 18),
@@ -436,6 +448,7 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
   }
 
   Widget _buildViewChip({required String label, required int value}) {
+    final t = context.colors;
     final selected = _selectedView == value;
     return InkWell(
       borderRadius: BorderRadius.circular(999),
@@ -444,7 +457,7 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
           color: selected
-              ? AppColors.purpleNeon.withValues(alpha: 0.18)
+              ? t.brand.withValues(alpha: 0.18)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(999),
         ),
@@ -453,7 +466,7 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w700,
-            color: selected ? AppColors.purpleNeon : AppColors.textTertiary,
+            color: selected ? t.brand : t.textTertiary,
           ),
         ),
       ),
@@ -484,10 +497,10 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
     if (_inlineQuizzes.isNotEmpty) {
       widgets.add(const SizedBox(height: 6));
       widgets.add(
-        const Text(
+        Text(
           'Câu hỏi ôn tập',
           style: TextStyle(
-            color: AppColors.textPrimary,
+            color: context.colors.textPrimary,
             fontSize: 16,
             fontWeight: FontWeight.w700,
           ),
@@ -503,21 +516,22 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
   }
 
   Widget _buildSimplifiedCard(String simplified) {
+    final t = context.colors;
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: AppColors.bgSecondary,
+          color: t.card,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.purpleNeon.withValues(alpha: 0.25)),
+          border: Border.all(color: t.brand.withValues(alpha: 0.25)),
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              AppColors.bgSecondary,
-              AppColors.purpleNeon.withValues(alpha: 0.05),
+              t.card,
+              t.brand.withValues(alpha: 0.05),
             ],
           ),
         ),
@@ -529,21 +543,21 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: AppColors.purpleNeon.withValues(alpha: 0.15),
+                    color: t.brand.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.auto_fix_high,
-                    color: AppColors.purpleNeon,
+                    color: t.brand,
                     size: 20,
                   ),
                 ),
                 const SizedBox(width: 10),
-                const Expanded(
+                Expanded(
                   child: Text(
                     'Bản đơn giản',
                     style: TextStyle(
-                      color: AppColors.textPrimary,
+                      color: t.textPrimary,
                       fontSize: 16,
                       fontWeight: FontWeight.w800,
                     ),
@@ -554,8 +568,8 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
             const SizedBox(height: 12),
             Text(
               simplified,
-              style: const TextStyle(
-                color: AppColors.textSecondary,
+              style: TextStyle(
+                color: t.textSecondary,
                 fontSize: 15,
                 height: 1.7,
               ),
@@ -568,6 +582,7 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
 
 
   Widget _buildSectionCard(Map<String, dynamic> section) {
+    final t = context.colors;
     final rawSectionTitle =
         (section['title'] ?? section['heading'] ?? '').toString();
     final content = (section['content'] ??
@@ -589,9 +604,9 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
         width: double.infinity,
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: AppColors.bgSecondary,
+          color: t.card,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: const Color(0x332D363D)),
+          border: Border.all(color: t.border),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -601,8 +616,8 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Text(
                   sectionTitle,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
+                  style: TextStyle(
+                    color: t.textPrimary,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
@@ -611,8 +626,8 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
             if (content.isNotEmpty)
               Text(
                 content,
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
+                style: TextStyle(
+                  color: t.textSecondary,
                   fontSize: 15,
                   height: 1.7,
                 ),
@@ -629,6 +644,7 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
   }
 
   Widget _buildExampleItem(Map<String, dynamic> example) {
+    final t = context.colors;
     final type = example['type'] as String? ?? 'real_world_scenario';
     final info =
         _exampleTypeInfo[type] ?? _exampleTypeInfo['real_world_scenario']!;
@@ -680,9 +696,9 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
                   const SizedBox(height: 4),
                 if (content.isNotEmpty)
                   Text(content,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 13,
-                          color: AppColors.textSecondary,
+                          color: t.textSecondary,
                           height: 1.5)),
               ],
             ),
@@ -693,6 +709,7 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
   }
 
   Widget _buildInlineQuiz(int quizIndex, Map<String, dynamic> quiz) {
+    final t = context.colors;
     final question = (quiz['question'] ?? '').toString();
     final options = List<Map<String, dynamic>>.from(quiz['options'] ?? []);
     final correctIndex = _getCorrectAnswer(quiz);
@@ -705,14 +722,14 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
+        color: t.card,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: revealed
               ? (selected == correctIndex
-                  ? AppColors.successNeon.withValues(alpha: 0.5)
-                  : AppColors.errorNeon.withValues(alpha: 0.5))
-              : AppColors.purpleNeon.withValues(alpha: 0.3),
+                  ? t.success.withValues(alpha: 0.5)
+                  : t.error.withValues(alpha: 0.5))
+              : t.brand.withValues(alpha: 0.3),
           width: 1.5,
         ),
       ),
@@ -725,18 +742,18 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.purpleNeon.withValues(alpha: 0.2),
+                  color: t.brand.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.quiz, color: AppColors.purpleNeon, size: 14),
-                    SizedBox(width: 4),
+                    Icon(Icons.quiz, color: t.brand, size: 14),
+                    const SizedBox(width: 4),
                     Text(
                       'Câu hỏi kiểm tra',
                       style: TextStyle(
-                        color: AppColors.purpleNeon,
+                        color: t.brand,
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
                       ),
@@ -751,8 +768,8 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
           // Question
           Text(
             question,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
+            style: TextStyle(
+              color: t.textPrimary,
               fontSize: 15,
               fontWeight: FontWeight.w600,
             ),
@@ -769,18 +786,18 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
             final isSelected = selected == optIdx;
 
             Color borderColor = const Color(0x332D363D);
-            Color bgColor = AppColors.bgTertiary;
-            Color labelColor = AppColors.textSecondary;
+            Color bgColor = t.cardMuted;
+            Color labelColor = t.textSecondary;
 
             if (revealed) {
               if (isCorrect) {
-                borderColor = AppColors.successNeon;
-                bgColor = AppColors.successNeon.withValues(alpha: 0.1);
-                labelColor = AppColors.successNeon;
+                borderColor = t.success;
+                bgColor = t.success.withValues(alpha: 0.1);
+                labelColor = t.success;
               } else if (isSelected && !isCorrect) {
-                borderColor = AppColors.errorNeon;
-                bgColor = AppColors.errorNeon.withValues(alpha: 0.1);
-                labelColor = AppColors.errorNeon;
+                borderColor = t.error;
+                bgColor = t.error.withValues(alpha: 0.1);
+                labelColor = t.error;
               }
             }
 
@@ -805,10 +822,10 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
                         height: 30,
                         decoration: BoxDecoration(
                           color: revealed && isCorrect
-                              ? AppColors.successNeon.withValues(alpha: 0.2)
+                              ? t.success.withValues(alpha: 0.2)
                               : revealed && isSelected
-                                  ? AppColors.errorNeon.withValues(alpha: 0.2)
-                                  : AppColors.bgSecondary,
+                                  ? t.error.withValues(alpha: 0.2)
+                                  : t.card,
                           borderRadius: BorderRadius.circular(6),
                         ),
                         alignment: Alignment.center,
@@ -825,18 +842,16 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
                       Expanded(
                         child: Text(
                           optionText,
-                          style: const TextStyle(
-                            color: AppColors.textPrimary,
+                          style: TextStyle(
+                            color: t.textPrimary,
                             fontSize: 14,
                           ),
                         ),
                       ),
                       if (revealed && isCorrect)
-                        const Icon(Icons.check_circle,
-                            color: AppColors.successNeon, size: 20),
+                        Icon(Icons.check_circle, color: t.success, size: 20),
                       if (revealed && isSelected && !isCorrect)
-                        const Icon(Icons.cancel,
-                            color: AppColors.errorNeon, size: 20),
+                        Icon(Icons.cancel, color: t.error, size: 20),
                     ],
                   ),
                 ),
@@ -859,13 +874,13 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: selected == correctIndex
-                            ? AppColors.successNeon.withValues(alpha: 0.08)
-                            : AppColors.errorNeon.withValues(alpha: 0.08),
+                            ? t.success.withValues(alpha: 0.08)
+                            : t.error.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
                           color: selected == correctIndex
-                              ? AppColors.successNeon.withValues(alpha: 0.3)
-                              : AppColors.errorNeon.withValues(alpha: 0.3),
+                              ? t.success.withValues(alpha: 0.3)
+                              : t.error.withValues(alpha: 0.3),
                         ),
                       ),
                       child: Row(
@@ -876,16 +891,16 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
                                 ? Icons.check_circle_outline
                                 : Icons.info_outline,
                             color: selected == correctIndex
-                                ? AppColors.successNeon
-                                : AppColors.orangeNeon,
+                                ? t.success
+                                : t.warning,
                             size: 18,
                           ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               explanation,
-                              style: const TextStyle(
-                                color: AppColors.textSecondary,
+                              style: TextStyle(
+                                color: t.textSecondary,
                                 fontSize: 13,
                                 height: 1.5,
                               ),
@@ -941,19 +956,20 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
   };
 
   Widget _buildSummaryCard() {
+    final t = context.colors;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
+        color: t.card,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.purpleNeon.withValues(alpha: 0.3)),
+        border: Border.all(color: t.brand.withValues(alpha: 0.3)),
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppColors.bgSecondary,
-            AppColors.purpleNeon.withValues(alpha: 0.05),
+            t.card,
+            t.brand.withValues(alpha: 0.05),
           ],
         ),
       ),
@@ -965,17 +981,16 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppColors.purpleNeon.withValues(alpha: 0.15),
+                  color: t.brand.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.auto_awesome,
-                    color: AppColors.purpleNeon, size: 22),
+                child: Icon(Icons.auto_awesome, color: t.brand, size: 22),
               ),
               const SizedBox(width: 12),
-              const Text(
+              Text(
                 'Tổng kết',
                 style: TextStyle(
-                  color: AppColors.textPrimary,
+                  color: t.textPrimary,
                   fontSize: 17,
                   fontWeight: FontWeight.bold,
                 ),
@@ -985,8 +1000,8 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
           const SizedBox(height: 12),
           Text(
             _summaryText,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
+            style: TextStyle(
+              color: t.textSecondary,
               fontSize: 15,
               height: 1.6,
             ),
@@ -997,13 +1012,14 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
   }
 
   Widget _buildLearningObjectives() {
+    final t = context.colors;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
+        color: t.card,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0x332D363D)),
+        border: Border.all(color: t.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1013,17 +1029,16 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryLight.withValues(alpha: 0.15),
+                  color: t.brand.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.checklist,
-                    color: AppColors.primaryLight, size: 22),
+                child: Icon(Icons.checklist, color: t.brand, size: 22),
               ),
               const SizedBox(width: 12),
-              const Text(
+              Text(
                 'Nội dung cần học',
                 style: TextStyle(
-                  color: AppColors.textPrimary,
+                  color: t.textPrimary,
                   fontSize: 17,
                   fontWeight: FontWeight.bold,
                 ),
@@ -1055,19 +1070,18 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
                       margin: const EdgeInsets.only(top: 2),
                       decoration: BoxDecoration(
                         color: isChecked
-                            ? AppColors.successNeon.withValues(alpha: 0.15)
+                            ? t.success.withValues(alpha: 0.15)
                             : Colors.transparent,
                         borderRadius: BorderRadius.circular(6),
                         border: Border.all(
                           color: isChecked
-                              ? AppColors.successNeon
-                              : AppColors.textTertiary,
+                              ? t.success
+                              : t.textTertiary,
                           width: 1.5,
                         ),
                       ),
                       child: isChecked
-                          ? const Icon(Icons.check,
-                              color: AppColors.successNeon, size: 16)
+                          ? Icon(Icons.check, color: t.success, size: 16)
                           : null,
                     ),
                     const SizedBox(width: 10),
@@ -1076,8 +1090,8 @@ class _TextLessonScreenState extends State<TextLessonScreen> {
                         _learningObjectives[index],
                         style: TextStyle(
                           color: isChecked
-                              ? AppColors.textTertiary
-                              : AppColors.textSecondary,
+                              ? t.textTertiary
+                              : t.textSecondary,
                           fontSize: 14,
                           height: 1.5,
                           decoration:

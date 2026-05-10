@@ -93,86 +93,90 @@ class _ShopScreenState extends State<ShopScreen>
 
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.bgSecondary,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Xác nhận mua',
-            style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.bgTertiary,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Row(
-                children: [
-                  Icon(_getItemIcon(item['icon'] as String? ?? ''),
-                      color: AppColors.purpleNeon, size: 32),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(itemName,
-                            style: AppTextStyles.labelLarge.copyWith(
-                                color: AppColors.textPrimary,
-                                fontWeight: FontWeight.bold)),
-                        Text(item['description'] as String? ?? '',
-                            style: AppTextStyles.caption
-                                .copyWith(color: AppColors.textSecondary)),
-                      ],
+      builder: (ctx) {
+        final d = ctx.colors;
+        return AlertDialog(
+          backgroundColor: d.card,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text('Xác nhận mua',
+              style: AppTextStyles.h4.copyWith(color: d.textPrimary)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: d.cardMuted,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Row(
+                  children: [
+                    Icon(_getItemIcon(item['icon'] as String? ?? ''),
+                        color: d.brand, size: 32),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(itemName,
+                              style: AppTextStyles.labelLarge.copyWith(
+                                  color: d.textPrimary,
+                                  fontWeight: FontWeight.bold)),
+                          Text(item['description'] as String? ?? '',
+                              style: AppTextStyles.caption
+                                  .copyWith(color: d.textSecondary)),
+                        ],
+                      ),
                     ),
-                  ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const GtuCoinIcon(size: 22),
+                  const SizedBox(width: 6),
+                  Text('$price',
+                      style: AppTextStyles.h3.copyWith(color: d.gold)),
+                  const SizedBox(width: 16),
+                  Text('Số dư: $_coins',
+                      style: AppTextStyles.bodySmall
+                          .copyWith(color: d.textSecondary)),
                 ],
               ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text('Hủy',
+                  style: TextStyle(color: d.textSecondary)),
             ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const GtuCoinIcon(size: 22),
-                const SizedBox(width: 6),
-                Text('$price',
-                    style:
-                        AppTextStyles.h3.copyWith(color: AppColors.coinGold)),
-                const SizedBox(width: 16),
-                Text('Số dư: $_coins',
-                    style: AppTextStyles.bodySmall
-                        .copyWith(color: AppColors.textSecondary)),
-              ],
+            ElevatedButton(
+              onPressed: _coins >= price ? () => Navigator.pop(ctx, true) : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor:
+                    _coins >= price ? d.gold : d.cardMuted,
+                foregroundColor: Colors.black,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+              ),
+              child: Text(
+                  _coins >= price ? 'Mua ngay' : 'Không đủ ${CurrencyLabels.gtuCoin}'),
             ),
           ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Hủy',
-                style: TextStyle(color: AppColors.textSecondary)),
-          ),
-          ElevatedButton(
-            onPressed: _coins >= price ? () => Navigator.pop(ctx, true) : null,
-            style: ElevatedButton.styleFrom(
-              backgroundColor:
-                  _coins >= price ? AppColors.coinGold : AppColors.bgTertiary,
-              foregroundColor: Colors.black,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-            ),
-            child: Text(
-                _coins >= price ? 'Mua ngay' : 'Không đủ ${CurrencyLabels.gtuCoin}'),
-          ),
-        ],
-      ),
+        );
+      },
     );
 
     if (confirmed != true) return;
+    if (!mounted) return;
+    final apiService = Provider.of<ApiService>(context, listen: false);
 
     try {
       HapticFeedback.mediumImpact();
-      final apiService = Provider.of<ApiService>(context, listen: false);
       final result = await apiService.purchaseShopItem(itemId);
       final newBalance = result['newBalance'] as int? ?? _coins;
 
@@ -181,7 +185,7 @@ class _ShopScreenState extends State<ShopScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Đã mua $itemName thành công! 🎉'),
-            backgroundColor: AppColors.successNeon,
+            backgroundColor: context.colors.success,
           ),
         );
         _loadData();
@@ -191,7 +195,7 @@ class _ShopScreenState extends State<ShopScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Lỗi: ${_extractError(e)}'),
-            backgroundColor: AppColors.errorNeon,
+            backgroundColor: context.colors.error,
           ),
         );
       }
@@ -205,38 +209,43 @@ class _ShopScreenState extends State<ShopScreen>
 
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.bgSecondary,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Sử dụng $itemName?',
-            style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
-        content: Text(item['description'] as String? ?? '',
-            style: const TextStyle(color: AppColors.textSecondary)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Hủy',
-                style: TextStyle(color: AppColors.textSecondary)),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryLight,
-              foregroundColor: Colors.black,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+      builder: (ctx) {
+        final d = ctx.colors;
+        return AlertDialog(
+          backgroundColor: d.card,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text('Sử dụng $itemName?',
+              style: AppTextStyles.h4.copyWith(color: d.textPrimary)),
+          content: Text(item['description'] as String? ?? '',
+              style: TextStyle(color: d.textSecondary)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text('Hủy',
+                  style: TextStyle(color: d.textSecondary)),
             ),
-            child: const Text('Sử dụng'),
-          ),
-        ],
-      ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: d.brand,
+                foregroundColor: d.onBrand,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+              ),
+              child: const Text('Sử dụng'),
+            ),
+          ],
+        );
+      },
     );
 
     if (confirmed != true) return;
+    if (!mounted) return;
+    final apiService = Provider.of<ApiService>(context, listen: false);
 
     try {
       HapticFeedback.mediumImpact();
-      final apiService = Provider.of<ApiService>(context, listen: false);
       final result = await apiService.useShopItem(itemId);
 
       if (mounted) {
@@ -248,7 +257,7 @@ class _ShopScreenState extends State<ShopScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content: Text('Lỗi: ${_extractError(e)}'),
-              backgroundColor: AppColors.errorNeon),
+              backgroundColor: context.colors.error),
         );
       }
     }
@@ -260,78 +269,82 @@ class _ShopScreenState extends State<ShopScreen>
 
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.bgSecondary,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
-          children: [
-            const Icon(Icons.check_circle_rounded,
-                color: AppColors.successNeon, size: 28),
-            const SizedBox(width: 8),
-            Expanded(
-                child: Text(itemName,
-                    style: AppTextStyles.h4
-                        .copyWith(color: AppColors.textPrimary))),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(message,
-                style: const TextStyle(
-                    color: AppColors.textSecondary, fontSize: 15)),
-            if (reward != null) ...[
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: AppColors.coinGold.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                      color: AppColors.coinGold.withValues(alpha: 0.3)),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    if ((reward['xp'] as int? ?? 0) > 0) ...[
-                      const Icon(Icons.star_rounded,
-                          color: AppColors.xpGold, size: 20),
-                      const SizedBox(width: 4),
-                      Text('+${reward['xp']} XP',
-                          style: const TextStyle(
-                              color: AppColors.xpGold,
-                              fontWeight: FontWeight.bold)),
-                      const SizedBox(width: 16),
-                    ],
-                    if ((reward['coins'] as int? ?? 0) > 0) ...[
-                      const GtuCoinIcon(size: 20),
-                      const SizedBox(width: 4),
-                      Text(
-                          CurrencyLabels.rewardShort(
-                              reward['coins'] as int? ?? 0),
-                          style: const TextStyle(
-                              color: AppColors.coinGold,
-                              fontWeight: FontWeight.bold)),
-                    ],
-                  ],
-                ),
-              ),
+      builder: (ctx) {
+        final d = ctx.colors;
+        return AlertDialog(
+          backgroundColor: d.card,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Row(
+            children: [
+              Icon(Icons.check_circle_rounded,
+                  color: d.success, size: 28),
+              const SizedBox(width: 8),
+              Expanded(
+                  child: Text(itemName,
+                      style: AppTextStyles.h4
+                          .copyWith(color: d.textPrimary))),
             ],
-          ],
-        ),
-        actions: [
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryLight,
-              foregroundColor: Colors.black,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-            ),
-            child: const Text('OK'),
           ),
-        ],
-      ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(message,
+                  style: TextStyle(
+                      color: d.textSecondary, fontSize: 15)),
+              if (reward != null) ...[
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: d.gold.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                        color: d.gold.withValues(alpha: 0.3)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      if ((reward['xp'] as int? ?? 0) > 0) ...[
+                        Icon(Icons.star_rounded,
+                            color: d.gold, size: 20),
+                        const SizedBox(width: 4),
+                        Text('+${reward['xp']} XP',
+                            style: TextStyle(
+                                color: d.gold,
+                                fontWeight: FontWeight.bold)),
+                        const SizedBox(width: 16),
+                      ],
+                      if ((reward['coins'] as int? ?? 0) > 0) ...[
+                        const GtuCoinIcon(size: 20),
+                        const SizedBox(width: 4),
+                        Text(
+                            CurrencyLabels.rewardShort(
+                                reward['coins'] as int? ?? 0),
+                            style: TextStyle(
+                                color: d.gold,
+                                fontWeight: FontWeight.bold)),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () => Navigator.pop(ctx),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: d.brand,
+                foregroundColor: d.onBrand,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+              ),
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -366,8 +379,9 @@ class _ShopScreenState extends State<ShopScreen>
 
   @override
   Widget build(BuildContext context) {
+    final sem = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -379,24 +393,24 @@ class _ShopScreenState extends State<ShopScreen>
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    AppColors.coinGold.withValues(alpha: 0.5),
-                    AppColors.coinGold.withValues(alpha: 0.08),
+                    sem.gold.withValues(alpha: 0.5),
+                    sem.gold.withValues(alpha: 0.08),
                   ],
                 ),
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.1),
+                  color: sem.textOnBrand.withValues(alpha: 0.1),
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.coinGold.withValues(alpha: 0.25),
+                    color: sem.gold.withValues(alpha: 0.25),
                     blurRadius: 10,
                     offset: const Offset(0, 2),
                   ),
                 ],
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.storefront_rounded,
-                color: AppColors.coinGold,
+                color: sem.gold,
                 size: 22,
               ),
             ),
@@ -405,7 +419,7 @@ class _ShopScreenState extends State<ShopScreen>
               child: Text(
                 'Cửa hàng',
                 style: AppTextStyles.h4.copyWith(
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                   fontWeight: FontWeight.w800,
                   letterSpacing: -0.3,
                 ),
@@ -419,8 +433,8 @@ class _ShopScreenState extends State<ShopScreen>
         actions: [
           IconButton(
             tooltip: 'Mua kim cương',
-            icon: const Icon(Icons.diamond_rounded,
-                color: AppColors.primaryLight, size: 26),
+            icon: Icon(Icons.diamond_rounded,
+                color: sem.brand, size: 26),
             onPressed: () => context.push('/payment'),
           ),
           Row(
@@ -433,12 +447,12 @@ class _ShopScreenState extends State<ShopScreen>
                   borderRadius: BorderRadius.circular(22),
                   gradient: LinearGradient(
                     colors: [
-                      AppColors.coinGold.withValues(alpha: 0.22),
-                      AppColors.bgSecondary,
+                      sem.gold.withValues(alpha: 0.22),
+                      sem.card,
                     ],
                   ),
                   border: Border.all(
-                    color: AppColors.coinGold.withValues(alpha: 0.42),
+                    color: sem.gold.withValues(alpha: 0.42),
                   ),
                   boxShadow: [
                     BoxShadow(
@@ -456,7 +470,7 @@ class _ShopScreenState extends State<ShopScreen>
                     Text(
                       '$_coins',
                       style: AppTextStyles.labelLarge.copyWith(
-                        color: AppColors.coinGold,
+                        color: sem.gold,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -472,12 +486,12 @@ class _ShopScreenState extends State<ShopScreen>
                   borderRadius: BorderRadius.circular(22),
                   gradient: LinearGradient(
                     colors: [
-                      AppColors.primaryLight.withValues(alpha: 0.18),
-                      AppColors.bgSecondary,
+                      sem.brand.withValues(alpha: 0.18),
+                      sem.card,
                     ],
                   ),
                   border: Border.all(
-                    color: AppColors.primaryLight.withValues(alpha: 0.38),
+                    color: sem.brand.withValues(alpha: 0.38),
                   ),
                   boxShadow: [
                     BoxShadow(
@@ -490,13 +504,13 @@ class _ShopScreenState extends State<ShopScreen>
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.diamond_rounded,
-                        color: AppColors.primaryLight, size: 18),
+                    Icon(Icons.diamond_rounded,
+                        color: sem.brand, size: 18),
                     const SizedBox(width: 4),
                     Text(
                       '$_diamondsBalance',
                       style: AppTextStyles.labelLarge.copyWith(
-                        color: AppColors.primaryLight,
+                        color: sem.brand,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -517,12 +531,12 @@ class _ShopScreenState extends State<ShopScreen>
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    AppColors.coinGold.withValues(alpha: 0.16),
-                    AppColors.bgSecondary,
+                    sem.gold.withValues(alpha: 0.16),
+                    sem.card,
                   ],
                 ),
                 border: Border.all(
-                  color: AppColors.coinGold.withValues(alpha: 0.28),
+                  color: sem.gold.withValues(alpha: 0.28),
                 ),
                 boxShadow: [
                   BoxShadow(
@@ -541,20 +555,20 @@ class _ShopScreenState extends State<ShopScreen>
                   borderRadius: BorderRadius.circular(13),
                   gradient: LinearGradient(
                     colors: [
-                      AppColors.purpleNeon.withValues(alpha: 0.45),
-                      AppColors.purpleNeon.withValues(alpha: 0.14),
+                      sem.brand.withValues(alpha: 0.45),
+                      sem.brand.withValues(alpha: 0.14),
                     ],
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.purpleNeon.withValues(alpha: 0.28),
+                      color: sem.brand.withValues(alpha: 0.28),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
                   ],
                 ),
-                labelColor: Colors.white,
-                unselectedLabelColor: AppColors.textTertiary,
+                labelColor: sem.textOnBrand,
+                unselectedLabelColor: sem.textTertiary,
                 labelStyle: AppTextStyles.labelMedium.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
@@ -582,8 +596,8 @@ class _ShopScreenState extends State<ShopScreen>
         ),
       ),
       body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: AppColors.primaryLight))
+          ? Center(
+              child: CircularProgressIndicator(color: sem.brand))
           : _error != null
               ? Center(
                   child: Padding(
@@ -597,26 +611,26 @@ class _ShopScreenState extends State<ShopScreen>
                             shape: BoxShape.circle,
                             gradient: RadialGradient(
                               colors: [
-                                AppColors.errorNeon.withValues(alpha: 0.25),
-                                AppColors.bgSecondary,
+                                sem.error.withValues(alpha: 0.25),
+                                sem.card,
                               ],
                             ),
                             border: Border.all(
                               color:
-                                  AppColors.errorNeon.withValues(alpha: 0.35),
+                                  sem.error.withValues(alpha: 0.35),
                             ),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.store_mall_directory_rounded,
                             size: 44,
-                            color: AppColors.textTertiary,
+                            color: sem.textTertiary,
                           ),
                         ),
                         const SizedBox(height: 16),
                         Text(
                           'Lỗi tải dữ liệu',
                           style: AppTextStyles.h4.copyWith(
-                            color: AppColors.textSecondary,
+                            color: sem.textSecondary,
                           ),
                         ),
                         const SizedBox(height: 14),
@@ -625,8 +639,8 @@ class _ShopScreenState extends State<ShopScreen>
                           icon: const Icon(Icons.refresh_rounded, size: 20),
                           label: const Text('Thử lại'),
                           style: FilledButton.styleFrom(
-                            backgroundColor: AppColors.purpleNeon,
-                            foregroundColor: Colors.white,
+                            backgroundColor: sem.brand,
+                            foregroundColor: sem.onBrand,
                             padding: const EdgeInsets.symmetric(
                               horizontal: 22,
                               vertical: 12,
@@ -640,7 +654,7 @@ class _ShopScreenState extends State<ShopScreen>
               : TabBarView(
                   controller: _tabController,
                   children: [
-                    _buildShopTab(),
+                    _buildShopTab(context),
                     ShopAvatarFramesTab(
                       frames: _avatarFrames,
                       coins: _coins,
@@ -651,20 +665,21 @@ class _ShopScreenState extends State<ShopScreen>
                       onPurchase: _purchaseAvatarFrame,
                       onEquip: _equipAvatarFrame,
                     ),
-                    _buildInventoryTab(),
+                    _buildInventoryTab(context),
                   ],
                 ),
     );
   }
 
-  Widget _buildShopTab() {
+  Widget _buildShopTab(BuildContext context) {
+    final sem = context.colors;
     return RefreshIndicator(
-      color: AppColors.purpleNeon,
+      color: sem.brand,
       onRefresh: _loadData,
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          _buildCoinInfoBanner(),
+          _buildCoinInfoBanner(context),
           const SizedBox(height: 20),
           Row(
             children: [
@@ -674,17 +689,17 @@ class _ShopScreenState extends State<ShopScreen>
                   borderRadius: BorderRadius.circular(12),
                   gradient: LinearGradient(
                     colors: [
-                      AppColors.purpleNeon.withValues(alpha: 0.35),
-                      AppColors.purpleNeon.withValues(alpha: 0.1),
+                      sem.brand.withValues(alpha: 0.35),
+                      sem.brand.withValues(alpha: 0.1),
                     ],
                   ),
                   border: Border.all(
-                    color: AppColors.purpleNeon.withValues(alpha: 0.35),
+                    color: sem.brand.withValues(alpha: 0.35),
                   ),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.shopping_bag_rounded,
-                  color: AppColors.primaryLight,
+                  color: sem.brand,
                   size: 20,
                 ),
               ),
@@ -692,7 +707,7 @@ class _ShopScreenState extends State<ShopScreen>
               Text(
                 'Vật phẩm',
                 style: AppTextStyles.h3.copyWith(
-                  color: AppColors.textPrimary,
+                  color: sem.textPrimary,
                   fontWeight: FontWeight.w800,
                   letterSpacing: -0.3,
                 ),
@@ -701,13 +716,15 @@ class _ShopScreenState extends State<ShopScreen>
           ),
           const SizedBox(height: 12),
           ..._shopItems
-              .map((item) => _buildShopItemCard(item as Map<String, dynamic>)),
+              .map((item) =>
+                  _buildShopItemCard(context, item as Map<String, dynamic>)),
         ],
       ),
     );
   }
 
-  Widget _buildCoinInfoBanner() {
+  Widget _buildCoinInfoBanner(BuildContext context) {
+    final sem = context.colors;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -715,14 +732,14 @@ class _ShopScreenState extends State<ShopScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppColors.coinGold.withValues(alpha: 0.2),
-            AppColors.orangeNeon.withValues(alpha: 0.08),
-            AppColors.bgSecondary,
+            sem.gold.withValues(alpha: 0.2),
+            sem.warning.withValues(alpha: 0.08),
+            sem.card,
           ],
         ),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: AppColors.coinGold.withValues(alpha: 0.38),
+          color: sem.gold.withValues(alpha: 0.38),
         ),
         boxShadow: [
           BoxShadow(
@@ -738,14 +755,14 @@ class _ShopScreenState extends State<ShopScreen>
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.info_outline_rounded,
-                  color: AppColors.coinGold, size: 20),
+              Icon(Icons.info_outline_rounded,
+                  color: sem.gold, size: 20),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   '${CurrencyLabels.gtuShort} kiếm được qua học tập. Hoàn thành bài học, nhiệm vụ và thành tựu để nhận thêm!',
                   style: AppTextStyles.caption
-                      .copyWith(color: AppColors.textSecondary),
+                      .copyWith(color: sem.textSecondary),
                 ),
               ),
             ],
@@ -756,15 +773,15 @@ class _ShopScreenState extends State<ShopScreen>
             icon: const Icon(Icons.diamond_rounded, size: 20),
             label: const Text('Mua kim cương'),
             style: FilledButton.styleFrom(
-              backgroundColor: AppColors.primaryLight.withValues(alpha: 0.28),
-              foregroundColor: AppColors.primaryLight,
+              backgroundColor: sem.brand.withValues(alpha: 0.28),
+              foregroundColor: sem.brand,
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
               elevation: 2,
-              shadowColor: AppColors.primaryLight.withValues(alpha: 0.35),
+              shadowColor: sem.brand.withValues(alpha: 0.35),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
                 side: BorderSide(
-                  color: AppColors.primaryLight.withValues(alpha: 0.55),
+                  color: sem.brand.withValues(alpha: 0.55),
                 ),
               ),
             ),
@@ -774,7 +791,8 @@ class _ShopScreenState extends State<ShopScreen>
     );
   }
 
-  Widget _buildShopItemCard(Map<String, dynamic> item) {
+  Widget _buildShopItemCard(BuildContext context, Map<String, dynamic> item) {
+    final sem = context.colors;
     final name = item['name'] as String? ?? '';
     final desc = item['description'] as String? ?? '';
     final price = item['price'] as int? ?? 0;
@@ -782,10 +800,10 @@ class _ShopScreenState extends State<ShopScreen>
     final iconName = item['icon'] as String? ?? '';
     final category = item['category'] as String? ?? '';
 
-    final categoryColor = _getCategoryColor(category);
-    final iconFg = categoryColor == AppColors.textSecondary
-        ? AppColors.primaryLight
-        : Colors.white;
+    final categoryColor = _getCategoryColor(context, category);
+    final iconFg = categoryColor == sem.textSecondary
+        ? sem.brand
+        : sem.textOnBrand;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -796,7 +814,7 @@ class _ShopScreenState extends State<ShopScreen>
           end: Alignment.bottomRight,
           colors: [
             categoryColor.withValues(alpha: 0.12),
-            AppColors.bgSecondary,
+            sem.card,
           ],
         ),
         border: Border.all(
@@ -831,11 +849,11 @@ class _ShopScreenState extends State<ShopScreen>
                       colors: [
                         categoryColor.withValues(alpha: 0.45),
                         categoryColor.withValues(alpha: 0.15),
-                        AppColors.bgTertiary,
+                        sem.cardMuted,
                       ],
                     ),
                     border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.12),
+                      color: sem.textOnBrand.withValues(alpha: 0.12),
                     ),
                     boxShadow: [
                       BoxShadow(
@@ -855,12 +873,12 @@ class _ShopScreenState extends State<ShopScreen>
                     children: [
                       Text(name,
                           style: AppTextStyles.labelLarge.copyWith(
-                              color: AppColors.textPrimary,
+                              color: sem.textPrimary,
                               fontWeight: FontWeight.w600)),
                       const SizedBox(height: 2),
                       Text(desc,
                           style: AppTextStyles.caption
-                              .copyWith(color: AppColors.textSecondary)),
+                              .copyWith(color: sem.textSecondary)),
                     ],
                   ),
                 ),
@@ -877,17 +895,17 @@ class _ShopScreenState extends State<ShopScreen>
                               end: Alignment.bottomCenter,
                               colors: [
                                 const Color(0xFFFFE8A8),
-                                AppColors.coinGold,
+                                sem.gold,
                                 const Color(0xFFC99500),
                               ],
                             )
                           : null,
-                      color: canAfford ? null : AppColors.bgTertiary,
+                      color: canAfford ? null : sem.cardMuted,
                       borderRadius: BorderRadius.circular(22),
                       border: Border.all(
                         color: canAfford
                             ? const Color(0xFFFFF0C8).withValues(alpha: 0.65)
-                            : const Color(0x332D363D),
+                            : sem.border.withValues(alpha: 0.65),
                       ),
                       boxShadow: canAfford
                           ? [
@@ -912,7 +930,7 @@ class _ShopScreenState extends State<ShopScreen>
                           style: TextStyle(
                             color: canAfford
                                 ? Colors.black87
-                                : AppColors.textTertiary,
+                                : sem.textTertiary,
                             fontWeight: FontWeight.bold,
                             fontSize: 14,
                           ),
@@ -929,9 +947,10 @@ class _ShopScreenState extends State<ShopScreen>
     );
   }
 
-  Widget _buildInventoryTab() {
+  Widget _buildInventoryTab(BuildContext context) {
+    final sem = context.colors;
     return RefreshIndicator(
-      color: AppColors.purpleNeon,
+      color: sem.brand,
       onRefresh: _loadData,
       child: _inventory.isEmpty
           ? ListView(
@@ -947,13 +966,13 @@ class _ShopScreenState extends State<ShopScreen>
                           shape: BoxShape.circle,
                           gradient: RadialGradient(
                             colors: [
-                              AppColors.purpleNeon.withValues(alpha: 0.35),
-                              AppColors.bgSecondary,
+                              sem.brand.withValues(alpha: 0.35),
+                              sem.card,
                             ],
                           ),
                           border: Border.all(
                             color:
-                                AppColors.purpleNeon.withValues(alpha: 0.35),
+                                sem.brand.withValues(alpha: 0.35),
                           ),
                           boxShadow: [
                             BoxShadow(
@@ -966,14 +985,14 @@ class _ShopScreenState extends State<ShopScreen>
                         child: Icon(
                           Icons.inventory_2_rounded,
                           size: 52,
-                          color: AppColors.purpleNeon.withValues(alpha: 0.95),
+                          color: sem.brand.withValues(alpha: 0.95),
                         ),
                       ),
                       const SizedBox(height: 20),
                       Text(
                         'Kho đồ trống',
                         style: AppTextStyles.h4.copyWith(
-                          color: AppColors.textPrimary,
+                          color: sem.textPrimary,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
@@ -984,7 +1003,7 @@ class _ShopScreenState extends State<ShopScreen>
                           'Mua vật phẩm từ cửa hàng để thấy ở đây',
                           textAlign: TextAlign.center,
                           style: AppTextStyles.bodySmall.copyWith(
-                            color: AppColors.textTertiary,
+                            color: sem.textTertiary,
                             height: 1.4,
                           ),
                         ),
@@ -999,10 +1018,11 @@ class _ShopScreenState extends State<ShopScreen>
               children: [
                 if (_activeEffects['xpBoost'] == true)
                   _buildActiveEffectBanner('Boost XP x2 đang hoạt động!',
-                      Icons.auto_awesome_rounded, AppColors.orangeNeon),
+                      Icons.auto_awesome_rounded, sem.warning),
                 const SizedBox(height: 8),
                 ..._inventory.map((entry) =>
-                    _buildInventoryItemCard(entry as Map<String, dynamic>)),
+                    _buildInventoryItemCard(
+                        context, entry as Map<String, dynamic>)),
               ],
             ),
     );
@@ -1055,7 +1075,9 @@ class _ShopScreenState extends State<ShopScreen>
     );
   }
 
-  Widget _buildInventoryItemCard(Map<String, dynamic> entry) {
+  Widget _buildInventoryItemCard(
+      BuildContext context, Map<String, dynamic> entry) {
+    final sem = context.colors;
     final item = entry['item'] as Map<String, dynamic>? ?? {};
     final quantity = entry['quantity'] as int? ?? 0;
     final isActive = entry['isActive'] as bool? ?? false;
@@ -1063,10 +1085,10 @@ class _ShopScreenState extends State<ShopScreen>
     final desc = item['description'] as String? ?? '';
     final iconName = item['icon'] as String? ?? '';
     final category = item['category'] as String? ?? '';
-    final categoryColor = _getCategoryColor(category);
-    final iconFg = categoryColor == AppColors.textSecondary
-        ? AppColors.primaryLight
-        : Colors.white;
+    final categoryColor = _getCategoryColor(context, category);
+    final iconFg = categoryColor == sem.textSecondary
+        ? sem.brand
+        : sem.textOnBrand;
 
     if (quantity <= 0 && !isActive) return const SizedBox.shrink();
 
@@ -1079,7 +1101,7 @@ class _ShopScreenState extends State<ShopScreen>
           end: Alignment.bottomRight,
           colors: [
             categoryColor.withValues(alpha: isActive ? 0.14 : 0.08),
-            AppColors.bgSecondary,
+            sem.card,
           ],
         ),
         border: Border.all(
@@ -1108,11 +1130,11 @@ class _ShopScreenState extends State<ShopScreen>
                   colors: [
                     categoryColor.withValues(alpha: 0.5),
                     categoryColor.withValues(alpha: 0.18),
-                    AppColors.bgTertiary,
+                    sem.cardMuted,
                   ],
                 ),
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.1),
+                  color: sem.textOnBrand.withValues(alpha: 0.1),
                 ),
                 boxShadow: [
                   BoxShadow(
@@ -1134,7 +1156,7 @@ class _ShopScreenState extends State<ShopScreen>
                     children: [
                       Text(name,
                           style: AppTextStyles.labelLarge.copyWith(
-                              color: AppColors.textPrimary,
+                              color: sem.textPrimary,
                               fontWeight: FontWeight.w600)),
                       if (isActive) ...[
                         const SizedBox(width: 8),
@@ -1144,9 +1166,9 @@ class _ShopScreenState extends State<ShopScreen>
                           decoration: BoxDecoration(
                               color: categoryColor,
                               borderRadius: BorderRadius.circular(10)),
-                          child: const Text('Active',
+                          child: Text('Active',
                               style: TextStyle(
-                                  color: Colors.white,
+                                  color: sem.textOnBrand,
                                   fontSize: 10,
                                   fontWeight: FontWeight.bold)),
                         ),
@@ -1156,7 +1178,7 @@ class _ShopScreenState extends State<ShopScreen>
                   const SizedBox(height: 2),
                   Text(desc,
                       style: AppTextStyles.caption
-                          .copyWith(color: AppColors.textSecondary)),
+                          .copyWith(color: sem.textSecondary)),
                 ],
               ),
             ),
@@ -1165,7 +1187,7 @@ class _ShopScreenState extends State<ShopScreen>
               children: [
                 Text('x$quantity',
                     style: AppTextStyles.numberMedium
-                        .copyWith(color: AppColors.textPrimary)),
+                        .copyWith(color: sem.textPrimary)),
                 if (quantity > 0)
                   GestureDetector(
                     onTap: () => _useItem(entry),
@@ -1177,22 +1199,22 @@ class _ShopScreenState extends State<ShopScreen>
                         borderRadius: BorderRadius.circular(14),
                         gradient: LinearGradient(
                           colors: [
-                            AppColors.primaryLight.withValues(alpha: 0.95),
-                            AppColors.purpleNeon.withValues(alpha: 0.85),
+                            sem.brand.withValues(alpha: 0.95),
+                            sem.brandStrong.withValues(alpha: 0.85),
                           ],
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.purpleNeon.withValues(alpha: 0.35),
+                            color: sem.brand.withValues(alpha: 0.35),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
                         ],
                       ),
-                      child: const Text(
+                      child: Text(
                         'Dùng',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: sem.textOnBrand,
                           fontWeight: FontWeight.w800,
                           fontSize: 12,
                         ),
@@ -1224,20 +1246,21 @@ class _ShopScreenState extends State<ShopScreen>
     }
   }
 
-  Color _getCategoryColor(String category) {
+  Color _getCategoryColor(BuildContext context, String category) {
+    final sem = context.colors;
     switch (category) {
       case 'boost':
-        return AppColors.orangeNeon;
+        return sem.warning;
       case 'protection':
-        return AppColors.primaryLight;
+        return sem.info;
       case 'consumable':
-        return AppColors.purpleNeon;
+        return sem.brand;
       case 'mystery':
-        return AppColors.pinkNeon;
+        return sem.brandStrong;
       case 'cosmetic':
-        return AppColors.coinGold;
+        return sem.gold;
       default:
-        return AppColors.textSecondary;
+        return sem.textSecondary;
     }
   }
 }

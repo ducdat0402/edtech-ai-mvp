@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'level_palette.dart';
+
 /// Gamistu — "Luminal Scholar" palette (`mobile/DESIGN.md`).
 /// Giữ tên biến cũ (`bgPrimary`, `purpleNeon`, …) để tránh phá widget hiện có.
 class AppColors {
@@ -83,55 +85,37 @@ class AppColors {
     Color(0xFF38BDF8),
   ];
 
-  static const Color levelNewbie = Color(0xFF41E184);
-  static const Color levelStudent = Color(0xFF38BDF8);
-  static const Color levelScholar = Color(0xFF6366F1);
-  static const Color levelExpert = Color(0xFF7354F5);
-  static const Color levelMaster = Color(0xFFF59E0B);
-  static const Color levelLegend = Color(0xFFEF4444);
-  static const Color levelProdigy = Color(0xFFFFD647);
+  /// Tier level — implementation [LevelPalette] (alias tương thích).
+  static const Color levelNewbie = LevelPalette.levelNewbie;
+  static const Color levelStudent = LevelPalette.levelStudent;
+  static const Color levelScholar = LevelPalette.levelScholar;
+  static const Color levelExpert = LevelPalette.levelExpert;
+  static const Color levelMaster = LevelPalette.levelMaster;
+  static const Color levelLegend = LevelPalette.levelLegend;
+  static const Color levelProdigy = LevelPalette.levelProdigy;
 
-  static Color getLevelColor(int level) {
-    if (level <= 5) return levelNewbie;
-    if (level <= 10) return levelStudent;
-    if (level <= 20) return levelScholar;
-    if (level <= 35) return levelExpert;
-    if (level <= 50) return levelMaster;
-    if (level <= 75) return levelLegend;
-    return levelProdigy;
-  }
+  static Color getLevelColor(int level) => LevelPalette.getLevelColor(level);
 
-  static List<Color> getLevelGradient(int level) {
-    if (level <= 5) {
-      return [levelNewbie, const Color(0xFF22C55E)];
-    } else if (level <= 10) {
-      return [levelStudent, const Color(0xFF0EA5E9)];
-    } else if (level <= 20) {
-      return [levelScholar, const Color(0xFF4F46E5)];
-    } else if (level <= 35) {
-      return [levelExpert, const Color(0xFF5B21B6)];
-    } else if (level <= 50) {
-      return [levelMaster, const Color(0xFFD97706)];
-    } else if (level <= 75) {
-      return [levelLegend, const Color(0xFFDC2626)];
-    } else {
-      return [levelProdigy, const Color(0xFFF59E0B)];
-    }
-  }
+  static List<Color> getLevelGradient(int level) =>
+      LevelPalette.getLevelGradient(level);
 
-  /// Gradient bậc đã hạ bão hòa — dùng thanh profile / LevelCard (khớp dialog danh hiệu).
-  static List<Color> getLevelGradientMuted(int level) {
-    return getLevelGradient(level).map(tierAccentMuted).toList();
-  }
+  static List<Color> getLevelGradientMuted(int level, Color towardSurface) =>
+      LevelPalette.getLevelGradientMuted(level, towardSurface);
 
-  /// Hạ bão hòa màu bậc so với nền graphite (dialog danh hiệu — phương án A).
-  static Color tierAccentMuted(Color tier) =>
-      Color.lerp(tier, bgSecondary, 0.45)!;
+  static Color tierAccentMuted(Color tier, Color towardSurface) =>
+      LevelPalette.tierAccentMuted(tier, towardSurface);
 
-  /// Icon theo bậc: hàng hiện tại rõ hơn; hàng khóa gợn tier nhưng không chói.
-  static Color tierIconTint(Color tier, {required bool isCurrent}) {
-    final m = tierAccentMuted(tier);
-    if (isCurrent) return m;
-    return Color.lerp(m, textTertiary, 0.42)!;
-  }
+  /// [mutedText] — vd. `context.colors.textTertiary` (light/dark).
+  static Color tierIconTint(
+    Color tier, {
+    required bool isCurrent,
+    required Color towardSurface,
+    required Color mutedText,
+  }) =>
+      LevelPalette.tierIconTint(
+        tier,
+        isCurrent: isCurrent,
+        towardSurface: towardSurface,
+        mutedText: mutedText,
+      );
 }

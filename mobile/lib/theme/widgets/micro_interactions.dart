@@ -133,7 +133,8 @@ class _PulseAnimationState extends State<PulseAnimation>
 /// Glow animation widget
 class GlowAnimation extends StatefulWidget {
   final Widget child;
-  final Color glowColor;
+  /// null → màu brand theo theme.
+  final Color? glowColor;
   final Duration duration;
   final double maxBlur;
   final double minBlur;
@@ -141,7 +142,7 @@ class GlowAnimation extends StatefulWidget {
   const GlowAnimation({
     super.key,
     required this.child,
-    this.glowColor = AppColors.purpleNeon,
+    this.glowColor,
     this.duration = const Duration(milliseconds: 1500),
     this.maxBlur = 20,
     this.minBlur = 5,
@@ -175,6 +176,7 @@ class _GlowAnimationState extends State<GlowAnimation>
 
   @override
   Widget build(BuildContext context) {
+    final glow = widget.glowColor ?? context.colors.brand;
     return AnimatedBuilder(
       animation: _animation,
       builder: (context, child) {
@@ -182,7 +184,7 @@ class _GlowAnimationState extends State<GlowAnimation>
           decoration: BoxDecoration(
             boxShadow: [
               BoxShadow(
-                color: widget.glowColor.withValues(alpha: 0.6),
+                color: glow.withValues(alpha: 0.6),
                 blurRadius: _animation.value,
                 spreadRadius: _animation.value / 4,
               ),
@@ -431,6 +433,7 @@ class _XPGainAnimationState extends State<XPGainAnimation>
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
@@ -448,7 +451,7 @@ class _XPGainAnimationState extends State<XPGainAnimation>
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.xpGold.withValues(alpha: 0.5),
+                      color: t.gold.withValues(alpha: 0.5),
                       blurRadius: 10,
                     ),
                   ],
@@ -456,13 +459,14 @@ class _XPGainAnimationState extends State<XPGainAnimation>
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.star_rounded,
-                        color: Colors.white, size: 20),
+                    Icon(Icons.star_rounded,
+                        color: t.textOnBrand, size: 20),
                     const SizedBox(width: 6),
                     Text(
                       '+${widget.amount} XP',
                       style: AppTextStyles.labelMedium.copyWith(
-                          color: Colors.white, fontWeight: FontWeight.bold),
+                          color: t.textOnBrand,
+                          fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
@@ -535,6 +539,8 @@ class _CoinGainAnimationState extends State<CoinGainAnimation>
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
+    final onGold = Theme.of(context).colorScheme.onSecondary;
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
@@ -548,12 +554,12 @@ class _CoinGainAnimationState extends State<CoinGainAnimation>
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                      colors: [AppColors.coinGold, AppColors.coinShadow]),
+                  gradient: LinearGradient(
+                      colors: [t.gold, const Color(0xFFB45309)]),
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.coinGold.withValues(alpha: 0.5),
+                      color: t.gold.withValues(alpha: 0.5),
                       blurRadius: 10,
                     ),
                   ],
@@ -566,7 +572,7 @@ class _CoinGainAnimationState extends State<CoinGainAnimation>
                     Text(
                       CurrencyLabels.rewardShort(widget.amount),
                       style: AppTextStyles.labelMedium.copyWith(
-                          color: Colors.white, fontWeight: FontWeight.bold),
+                          color: onGold, fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),

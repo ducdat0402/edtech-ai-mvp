@@ -259,8 +259,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
       showDialog(
         context: context,
-        builder: (ctx) => AlertDialog(
-          backgroundColor: AppColors.bgSecondary,
+        builder: (ctx) {
+          final sem = ctx.colors;
+          return AlertDialog(
+          backgroundColor: sem.card,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: const Row(
@@ -276,7 +278,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Text(
                 'Chúc mừng! Bạn đạt hạng #$rank tuần $week',
                 style: AppTextStyles.bodyMedium
-                    .copyWith(color: AppColors.textPrimary),
+                    .copyWith(color: sem.textPrimary),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
@@ -304,7 +306,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   padding: const EdgeInsets.only(top: 8),
                   child: Text('và ${rewards.length - 1} phần thưởng khác...',
                       style: AppTextStyles.caption
-                          .copyWith(color: AppColors.textSecondary)),
+                          .copyWith(color: sem.textSecondary)),
                 ),
             ],
           ),
@@ -321,7 +323,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: const Text('Tuyệt vời!'),
             ),
           ],
-        ),
+        );
+        },
       );
     } catch (_) {}
   }
@@ -329,9 +332,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final hasData = !_isLoading && _error == null && _dashboardData != null;
+    final sem = context.colors;
 
     return Scaffold(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: context.colors.bg,
       appBar: null,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -342,12 +346,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
               _headerCollapseT,
             ),
           if (_isRefreshing && hasData)
-            const SizedBox(
+            SizedBox(
               height: 3,
               child: LinearProgressIndicator(
                 minHeight: 3,
-                backgroundColor: AppColors.bgTertiary,
-                color: AppColors.primaryLight,
+                backgroundColor: sem.cardMuted,
+                color: Color.lerp(sem.brand, sem.textOnBrand, 0.55)!,
               ),
             ),
           Expanded(
@@ -436,7 +440,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final displayName = (rawName != null && rawName.trim().isNotEmpty)
         ? rawName.trim()
         : 'Bạn học';
-    final levelColor = AppColors.tierAccentMuted(AppColors.getLevelColor(level));
+    final sem = context.colors;
+    final levelColor =
+        LevelPalette.tierAccentMuted(LevelPalette.getLevelColor(level), sem.card);
     final coins = stats['totalCoins'] ?? stats['coins'] ?? 0;
     final diamonds = stats['totalDiamonds'] ?? stats['diamonds'] ?? 0;
     final streak = stats['currentStreak'] ?? stats['streak'] ?? 0;
@@ -445,11 +451,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
       key: _levelCardKey,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          gradient: AppGradients.forLevelMuted(level),
+          gradient: AppGradients.forLevelMuted(level, surface: sem.card),
           borderRadius:
               const BorderRadius.vertical(bottom: Radius.circular(18)),
           border: Border.all(
-            color: AppColors.xpGold.withValues(alpha: 0.12),
+            color: sem.gold.withValues(alpha: 0.12),
             width: 1,
           ),
           boxShadow: [
@@ -459,7 +465,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               offset: const Offset(0, 4),
             ),
             BoxShadow(
-              color: AppColors.purpleNeon.withValues(alpha: 0.08),
+              color: sem.brand.withValues(alpha: 0.08),
               blurRadius: 22,
               offset: const Offset(0, 8),
             ),
@@ -551,8 +557,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     showDialog(
       context: context,
-      builder: (context) => Dialog(
-        backgroundColor: AppColors.bgSecondary,
+      builder: (dialogContext) {
+        final sem = dialogContext.colors;
+        final brandHi = Color.lerp(sem.brand, sem.textOnBrand, 0.55)!;
+        return Dialog(
+        backgroundColor: sem.card,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: ConstrainedBox(
           constraints: BoxConstraints(
@@ -566,13 +575,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.bolt_rounded,
-                        color: AppColors.primaryLight, size: 26),
+                    Icon(Icons.bolt_rounded, color: brandHi, size: 26),
                     const SizedBox(width: 8),
                     Text(
                       'Kinh nghiệm',
                       style: AppTextStyles.h3.copyWith(
-                        color: AppColors.textPrimary,
+                        color: sem.textPrimary,
                       ),
                     ),
                   ],
@@ -581,9 +589,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppColors.bgTertiary,
+                    color: sem.cardMuted,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0x332D363D)),
+                    border: Border.all(color: sem.border.withValues(alpha: 0.65)),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -591,7 +599,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       Text(
                         'Tổng XP: $totalXP',
                         style: AppTextStyles.bodyMedium.copyWith(
-                          color: AppColors.textPrimary,
+                          color: sem.textPrimary,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -599,7 +607,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       Text(
                         'Tiến độ lên cấp ${currentLevel + 1}: $currentXP / $xpForNextLevel · ${(progress * 100).toStringAsFixed(1)}%',
                         style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.textSecondary,
+                          color: sem.textSecondary,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -608,23 +616,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         child: LinearProgressIndicator(
                           value: progress,
                           minHeight: 6,
-                          backgroundColor: AppColors.bgTertiary,
-                          valueColor: const AlwaysStoppedAnimation<Color>(
-                            AppColors.successNeon,
-                          ),
+                          backgroundColor: sem.cardMuted,
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(sem.success),
                         ),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         'Level hiện tại: $currentLevel',
                         style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.textSecondary,
+                          color: sem.textSecondary,
                         ),
                       ),
                       Text(
                         'Danh hiệu: $titleName',
                         style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.textPrimary,
+                          color: sem.textPrimary,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -641,42 +648,69 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     Text(
                       'Danh hiệu theo cấp',
                       style: AppTextStyles.h3.copyWith(
-                        color: AppColors.textPrimary,
+                        color: sem.textPrimary,
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 16),
-                _buildLevelTitleRow('Người mới', '1 - 5', Icons.emoji_people,
-                    AppColors.levelNewbie, currentLevel >= 1 && currentLevel <= 5),
-                _buildLevelTitleRow('Học viên', '6 - 10', Icons.school,
-                    AppColors.levelStudent, currentLevel >= 6 && currentLevel <= 10),
-                _buildLevelTitleRow('Sinh viên', '11 - 20', Icons.menu_book,
-                    AppColors.levelScholar, currentLevel >= 11 && currentLevel <= 20),
-                _buildLevelTitleRow('Chuyên gia', '21 - 35', Icons.psychology,
-                    AppColors.levelExpert, currentLevel >= 21 && currentLevel <= 35),
+                _buildLevelTitleRow(
+                    'Người mới',
+                    '1 - 5',
+                    Icons.emoji_people,
+                    LevelPalette.levelNewbie,
+                    currentLevel >= 1 && currentLevel <= 5,
+                    sem),
+                _buildLevelTitleRow(
+                    'Học viên',
+                    '6 - 10',
+                    Icons.school,
+                    LevelPalette.levelStudent,
+                    currentLevel >= 6 && currentLevel <= 10,
+                    sem),
+                _buildLevelTitleRow(
+                    'Sinh viên',
+                    '11 - 20',
+                    Icons.menu_book,
+                    LevelPalette.levelScholar,
+                    currentLevel >= 11 && currentLevel <= 20,
+                    sem),
+                _buildLevelTitleRow(
+                    'Chuyên gia',
+                    '21 - 35',
+                    Icons.psychology,
+                    LevelPalette.levelExpert,
+                    currentLevel >= 21 && currentLevel <= 35,
+                    sem),
                 _buildLevelTitleRow(
                     'Bậc thầy',
                     '36 - 50',
                     Icons.workspace_premium,
-                    AppColors.levelMaster,
-                    currentLevel >= 36 && currentLevel <= 50),
+                    LevelPalette.levelMaster,
+                    currentLevel >= 36 && currentLevel <= 50,
+                    sem),
                 _buildLevelTitleRow(
                     'Huyền thoại',
                     '51 - 75',
                     Icons.auto_awesome,
-                    AppColors.levelLegend,
-                    currentLevel >= 51 && currentLevel <= 75),
-                _buildLevelTitleRow('Thần đồng', '76+', Icons.diamond,
-                    AppColors.levelProdigy, currentLevel >= 76),
+                    LevelPalette.levelLegend,
+                    currentLevel >= 51 && currentLevel <= 75,
+                    sem),
+                _buildLevelTitleRow(
+                    'Thần đồng',
+                    '76+',
+                    Icons.diamond,
+                    LevelPalette.levelProdigy,
+                    currentLevel >= 76,
+                    sem),
                 const SizedBox(height: 12),
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: const Text(
+                    child: Text(
                       'Đóng',
-                      style: TextStyle(color: AppColors.primaryLight),
+                      style: TextStyle(color: brandHi),
                     ),
                   ),
                 ),
@@ -684,23 +718,36 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ),
         ),
-      ),
+      );
+      },
     );
   }
 
-  Widget _buildLevelTitleRow(String title, String levelRange, IconData icon,
-      Color tierColor, bool isCurrent) {
-    final muted = AppColors.tierAccentMuted(tierColor);
+  Widget _buildLevelTitleRow(
+    String title,
+    String levelRange,
+    IconData icon,
+    Color tierColor,
+    bool isCurrent,
+    SemanticColors sem,
+  ) {
+    final brandHi = Color.lerp(sem.brand, sem.textOnBrand, 0.55)!;
+    final muted = LevelPalette.tierAccentMuted(tierColor, sem.card);
     final leftBar =
         isCurrent ? muted : muted.withValues(alpha: 0.42);
-    final iconTint = AppColors.tierIconTint(tierColor, isCurrent: isCurrent);
+    final iconTint = LevelPalette.tierIconTint(
+      tierColor,
+      isCurrent: isCurrent,
+      towardSurface: sem.card,
+      mutedText: sem.textTertiary,
+    );
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
-        color: isCurrent ? AppColors.bgTertiary : AppColors.surfaceContainerLow,
+        color: isCurrent ? sem.cardMuted : sem.cardOverlay,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0x332D363D)),
+        border: Border.all(color: sem.border.withValues(alpha: 0.65)),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(10),
@@ -737,14 +784,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 fontWeight: isCurrent
                                     ? FontWeight.w600
                                     : FontWeight.w500,
-                                color: AppColors.textPrimary,
+                                color: sem.textPrimary,
                               ),
                             ),
                             const SizedBox(height: 2),
                             Text(
                               'Cấp $levelRange',
                               style: AppTextStyles.labelSmall.copyWith(
-                                color: AppColors.textSecondary,
+                                color: sem.textSecondary,
                               ),
                             ),
                           ],
@@ -755,16 +802,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: AppColors.primaryLight.withValues(alpha: 0.12),
+                            color: brandHi.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                              color: AppColors.primaryLight.withValues(alpha: 0.35),
+                              color: brandHi.withValues(alpha: 0.35),
                             ),
                           ),
                           child: Text(
                             'Hiện tại',
                             style: AppTextStyles.labelSmall.copyWith(
-                              color: AppColors.primaryLight,
+                              color: brandHi,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -781,6 +828,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildMotivationCard(Map<String, dynamic> data) {
+    final sem = context.colors;
+    final brandHi = Color.lerp(sem.brand, sem.textOnBrand, 0.55)!;
     final quote = data['quote'] as String? ?? '';
     final author = data['quoteAuthor'] as String? ?? '';
     final body = data['body'] as String? ?? '';
@@ -794,18 +843,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppColors.purpleNeon.withValues(alpha: 0.06),
-            AppColors.bgSecondary,
-            AppColors.surfaceContainerLow.withValues(alpha: 0.92),
+            sem.brand.withValues(alpha: 0.06),
+            sem.card,
+            sem.cardOverlay.withValues(alpha: 0.92),
           ],
           stops: const [0.0, 0.42, 1.0],
         ),
         border: Border.all(
-          color: AppColors.primaryLight.withValues(alpha: 0.14),
+          color: brandHi.withValues(alpha: 0.14),
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.purpleNeon.withValues(alpha: 0.04),
+            color: sem.brand.withValues(alpha: 0.04),
             blurRadius: 14,
             offset: const Offset(0, 6),
           ),
@@ -819,7 +868,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: Icon(
               Icons.format_quote_rounded,
               size: 96,
-              color: AppColors.purpleNeon.withValues(alpha: 0.04),
+              color: sem.brand.withValues(alpha: 0.04),
             ),
           ),
           Padding(
@@ -840,22 +889,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                             colors: [
-                              AppColors.primaryLight.withValues(alpha: 0.55),
-                              AppColors.purpleNeon.withValues(alpha: 0.45),
+                              brandHi.withValues(alpha: 0.55),
+                              sem.brand.withValues(alpha: 0.45),
                             ],
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color:
-                                  AppColors.purpleNeon.withValues(alpha: 0.12),
+                              color: sem.brand.withValues(alpha: 0.12),
                               blurRadius: 8,
                               offset: const Offset(0, 3),
                             ),
                           ],
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.auto_awesome_rounded,
-                          color: Colors.white,
+                          color: sem.textOnBrand,
                           size: 23,
                         ),
                       ),
@@ -864,7 +912,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         child: Text(
                           body,
                           style: AppTextStyles.bodyMedium.copyWith(
-                            color: AppColors.textPrimary,
+                            color: sem.textPrimary,
                             height: 1.5,
                             fontWeight: FontWeight.w500,
                           ),
@@ -887,8 +935,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               begin: Alignment.topCenter,
                               end: Alignment.bottomCenter,
                               colors: [
-                                AppColors.successNeon.withValues(alpha: 0.45),
-                                AppColors.purpleNeon.withValues(alpha: 0.38),
+                                sem.success.withValues(alpha: 0.45),
+                                sem.brand.withValues(alpha: 0.38),
                               ],
                             ),
                           ),
@@ -901,7 +949,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               Text(
                                 '"$quote"',
                                 style: AppTextStyles.bodyLarge.copyWith(
-                                  color: AppColors.textPrimary,
+                                  color: sem.textPrimary,
                                   fontStyle: FontStyle.italic,
                                   height: 1.5,
                                   fontWeight: FontWeight.w500,
@@ -914,7 +962,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   child: Text(
                                     '— $author',
                                     style: AppTextStyles.caption.copyWith(
-                                      color: AppColors.textTertiary,
+                                      color: sem.textTertiary,
                                       fontWeight: FontWeight.w600,
                                       letterSpacing: 0.2,
                                     ),
@@ -991,7 +1039,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('$e'),
-          backgroundColor: AppColors.errorNeon,
+          backgroundColor: context.colors.error,
         ),
       );
     }
@@ -1012,15 +1060,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
         await api.claimQuest(questParticipationId);
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Row(
               children: [
-                Icon(Icons.celebration, color: Colors.white),
-                SizedBox(width: 8),
-                Text('Đã nhận phần thưởng!'),
+                Icon(Icons.celebration, color: context.colors.textOnBrand),
+                const SizedBox(width: 8),
+                Text(
+                  'Đã nhận phần thưởng!',
+                  style: TextStyle(
+                    color: context.colors.textOnBrand,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ],
             ),
-            backgroundColor: AppColors.successNeon,
+            backgroundColor: context.colors.success,
           ),
         );
         await _loadDashboard();
@@ -1029,7 +1083,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Lỗi: $e'),
-            backgroundColor: AppColors.errorNeon,
+            backgroundColor: context.colors.error,
           ),
         );
       }
@@ -1041,6 +1095,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildContinueLearningSection(Map<String, dynamic>? data) {
+    final sem = context.colors;
+    final brandHi = Color.lerp(sem.brand, sem.textOnBrand, 0.55)!;
     final lessons = (data?['nextFreeLessons'] as List<dynamic>? ?? const [])
         .whereType<Map>()
         .map((e) => Map<String, dynamic>.from(e))
@@ -1070,20 +1126,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: AppColors.purpleNeon.withValues(alpha: 0.11),
+          color: sem.brand.withValues(alpha: 0.11),
         ),
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            AppColors.bgSecondary,
-            AppColors.bgSecondary.withValues(alpha: 0.92),
-            AppColors.surfaceContainerLow.withValues(alpha: 0.85),
+            sem.card,
+            sem.card.withValues(alpha: 0.92),
+            sem.cardOverlay.withValues(alpha: 0.85),
           ],
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.purpleNeon.withValues(alpha: 0.03),
+            color: sem.brand.withValues(alpha: 0.03),
             blurRadius: 16,
             offset: const Offset(0, 6),
           ),
@@ -1114,21 +1170,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                           colors: [
-                            AppColors.primaryLight.withValues(alpha: 0.5),
-                            AppColors.purpleNeon.withValues(alpha: 0.42),
+                            brandHi.withValues(alpha: 0.5),
+                            sem.brand.withValues(alpha: 0.42),
                           ],
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.purpleNeon.withValues(alpha: 0.1),
+                            color: sem.brand.withValues(alpha: 0.1),
                             blurRadius: 8,
                             offset: const Offset(0, 3),
                           ),
                         ],
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.auto_stories_rounded,
-                        color: Colors.white,
+                        color: sem.textOnBrand,
                         size: 22,
                       ),
                     ),
@@ -1147,16 +1203,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         vertical: 5,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.xpGold.withValues(alpha: 0.12),
+                        color: sem.gold.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
-                          color: AppColors.xpGold.withValues(alpha: 0.28),
+                          color: sem.gold.withValues(alpha: 0.28),
                         ),
                       ),
                       child: Text(
                         remainingText,
                         style: AppTextStyles.caption.copyWith(
-                          color: AppColors.xpGold,
+                          color: sem.gold,
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0.2,
@@ -1174,10 +1230,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       vertical: 8,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.surfaceContainerLow,
+                      color: sem.cardOverlay,
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
-                        color: AppColors.primaryLight.withValues(alpha: 0.12),
+                        color: brandHi.withValues(alpha: 0.12),
                       ),
                     ),
                     child: Row(
@@ -1185,7 +1241,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         Icon(
                           Icons.menu_book_rounded,
                           size: 16,
-                          color: AppColors.primaryLight.withValues(alpha: 0.95),
+                          color: brandHi.withValues(alpha: 0.95),
                         ),
                         const SizedBox(width: 8),
                         Expanded(
@@ -1194,7 +1250,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: AppTextStyles.labelSmall.copyWith(
-                              color: AppColors.textSecondary,
+                              color: sem.textSecondary,
                               fontWeight: FontWeight.w600,
                               fontSize: 13,
                               height: 1.25,
@@ -1214,7 +1270,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: Text(
                 'Bạn chưa có bài phù hợp để tiếp tục ngay.',
                 style: AppTextStyles.bodySmall
-                    .copyWith(color: AppColors.textSecondary),
+                    .copyWith(color: sem.textSecondary),
               ),
             )
           else
@@ -1245,6 +1301,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     required bool isLast,
     required VoidCallback onTap,
   }) {
+    final sem = context.colors;
+    final brandHi = Color.lerp(sem.brand, sem.textOnBrand, 0.55)!;
     final title = (lesson['title'] as String?) ?? 'Bài học';
     final isLocked = (lesson['isLocked'] as bool?) ?? false;
     final diamondCost = (lesson['diamondCost'] as num?)?.toInt();
@@ -1258,9 +1316,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  AppColors.successNeon.withValues(alpha: 0.1),
-                  AppColors.bgTertiary,
-                  AppColors.surfaceContainerLow.withValues(alpha: 0.9),
+                  sem.success.withValues(alpha: 0.1),
+                  sem.cardMuted,
+                  sem.cardOverlay.withValues(alpha: 0.9),
                 ],
                 stops: const [0.0, 0.45, 1.0],
               )
@@ -1268,9 +1326,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  AppColors.purpleNeon.withValues(alpha: 0.12),
-                  AppColors.bgTertiary,
-                  AppColors.surfaceContainerLow.withValues(alpha: 0.95),
+                  sem.brand.withValues(alpha: 0.12),
+                  sem.cardMuted,
+                  sem.cardOverlay.withValues(alpha: 0.95),
                 ],
                 stops: const [0.0, 0.5, 1.0],
               ));
@@ -1278,8 +1336,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final borderColor = isLocked
         ? const Color(0x442D363D)
         : (isFirst
-            ? AppColors.successNeon.withValues(alpha: 0.28)
-            : AppColors.purpleNeon.withValues(alpha: 0.24));
+            ? sem.success.withValues(alpha: 0.28)
+            : sem.brand.withValues(alpha: 0.24));
 
     return Padding(
       padding: EdgeInsets.only(bottom: isLast ? 0 : 12),
@@ -1292,15 +1350,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
               gradient: accentGradient,
-              color: accentGradient == null ? AppColors.bgTertiary : null,
+              color: accentGradient == null ? sem.cardMuted : null,
               border: Border.all(color: borderColor),
               boxShadow: isLocked
                   ? null
                   : [
                       BoxShadow(
-                        color: (isFirst
-                                ? AppColors.successNeon
-                                : AppColors.purpleNeon)
+                        color: (isFirst ? sem.success : sem.brand)
                             .withValues(alpha: 0.06),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
@@ -1328,20 +1384,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       begin: Alignment.topCenter,
                                       end: Alignment.bottomCenter,
                                       colors: [
-                                        AppColors.successNeon
-                                            .withValues(alpha: 0.55),
-                                        AppColors.successNeon
-                                            .withValues(alpha: 0.28),
+                                        sem.success.withValues(alpha: 0.55),
+                                        sem.success.withValues(alpha: 0.28),
                                       ],
                                     )
                                   : LinearGradient(
                                       begin: Alignment.topCenter,
                                       end: Alignment.bottomCenter,
                                       colors: [
-                                        AppColors.primaryLight
-                                            .withValues(alpha: 0.45),
-                                        AppColors.purpleNeon
-                                            .withValues(alpha: 0.38),
+                                        brandHi.withValues(alpha: 0.45),
+                                        sem.brand.withValues(alpha: 0.38),
                                       ],
                                     ),
                             ),
@@ -1353,7 +1405,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           maxLines: 3,
                           overflow: TextOverflow.ellipsis,
                           style: AppTextStyles.bodyBold.copyWith(
-                            color: AppColors.textPrimary,
+                            color: sem.textPrimary,
                             height: 1.35,
                             fontSize: 15,
                           ),
@@ -1364,12 +1416,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           if (isLocked)
-                            const Padding(
-                              padding: EdgeInsets.only(bottom: 4),
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 4),
                               child: Icon(
                                 Icons.lock_rounded,
                                 size: 16,
-                                color: AppColors.textTertiary,
+                                color: sem.textTertiary,
                               ),
                             ),
                           Container(
@@ -1386,14 +1438,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       begin: Alignment.topLeft,
                                       end: Alignment.bottomRight,
                                       colors: [
-                                        AppColors.primaryLight
-                                            .withValues(alpha: 0.75),
-                                        AppColors.purpleNeon
-                                            .withValues(alpha: 0.65),
+                                        brandHi.withValues(alpha: 0.75),
+                                        sem.brand.withValues(alpha: 0.65),
                                       ],
                                     ),
                               color: isLocked
-                                  ? AppColors.bgSecondary
+                                  ? sem.card
                                   : null,
                               border: Border.all(
                                 color: isLocked
@@ -1404,7 +1454,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   ? null
                                   : [
                                       BoxShadow(
-                                        color: AppColors.purpleNeon
+                                        color: sem.brand
                                             .withValues(alpha: 0.14),
                                         blurRadius: 6,
                                         offset: const Offset(0, 2),
@@ -1417,8 +1467,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 fontWeight: FontWeight.w800,
                                 fontSize: 11,
                                 color: isLocked
-                                    ? AppColors.textTertiary
-                                    : Colors.white.withValues(alpha: 0.95),
+                                    ? sem.textTertiary
+                                    : sem.textOnBrand.withValues(alpha: 0.95),
                                 letterSpacing: 0.35,
                               ),
                             ),
@@ -1437,13 +1487,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ),
                         decoration: BoxDecoration(
                           color: isLocked
-                              ? AppColors.bgSecondary.withValues(alpha: 0.6)
-                              : AppColors.xpGold.withValues(alpha: 0.1),
+                              ? sem.card.withValues(alpha: 0.6)
+                              : sem.gold.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
                             color: isLocked
                                 ? const Color(0x332D363D)
-                                : AppColors.xpGold.withValues(alpha: 0.28),
+                                : sem.gold.withValues(alpha: 0.28),
                           ),
                         ),
                         child: Row(
@@ -1453,16 +1503,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               Icons.bolt_rounded,
                               size: 15,
                               color: isLocked
-                                  ? AppColors.textTertiary
-                                  : AppColors.xpGold,
+                                  ? sem.textTertiary
+                                  : sem.gold,
                             ),
                             const SizedBox(width: 4),
                             Text(
                               '+$expReward XP',
                               style: AppTextStyles.caption.copyWith(
                                 color: isLocked
-                                    ? AppColors.textTertiary
-                                    : AppColors.xpGold,
+                                    ? sem.textTertiary
+                                    : sem.gold,
                                 fontSize: 12,
                                 fontWeight: FontWeight.w800,
                               ),
@@ -1475,7 +1525,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         Text(
                           '$diamondCost 💎',
                           style: AppTextStyles.caption.copyWith(
-                            color: AppColors.textTertiary,
+                            color: sem.textTertiary,
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
                           ),
@@ -1523,25 +1573,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
       return s == 'active';
     }).length;
 
+    final sem = context.colors;
+    final brandHi = Color.lerp(sem.brand, sem.textOnBrand, 0.55)!;
+
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: AppColors.purpleNeon.withValues(alpha: 0.11),
+          color: sem.brand.withValues(alpha: 0.11),
         ),
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            AppColors.bgSecondary,
-            AppColors.bgSecondary.withValues(alpha: 0.92),
-            AppColors.surfaceContainerLow.withValues(alpha: 0.85),
+            sem.card,
+            sem.card.withValues(alpha: 0.92),
+            sem.cardOverlay.withValues(alpha: 0.85),
           ],
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.purpleNeon.withValues(alpha: 0.03),
+            color: sem.brand.withValues(alpha: 0.03),
             blurRadius: 16,
             offset: const Offset(0, 6),
           ),
@@ -1572,21 +1625,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                           colors: [
-                            AppColors.successNeon.withValues(alpha: 0.5),
-                            AppColors.purpleNeon.withValues(alpha: 0.42),
+                            sem.success.withValues(alpha: 0.5),
+                            sem.brand.withValues(alpha: 0.42),
                           ],
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.successNeon.withValues(alpha: 0.1),
+                            color: sem.success.withValues(alpha: 0.1),
                             blurRadius: 8,
                             offset: const Offset(0, 3),
                           ),
                         ],
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.emoji_events_rounded,
-                        color: Colors.white,
+                        color: sem.textOnBrand,
                         size: 22,
                       ),
                     ),
@@ -1606,16 +1659,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           vertical: 5,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.cyanNeon.withValues(alpha: 0.06),
+                          color: sem.info.withValues(alpha: 0.06),
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(
-                            color: AppColors.primaryLight.withValues(alpha: 0.14),
+                            color: brandHi.withValues(alpha: 0.14),
                           ),
                         ),
                         child: Text(
                           '$activeQuestCount đang làm',
                           style: AppTextStyles.caption.copyWith(
-                            color: AppColors.textSecondary,
+                            color: sem.textSecondary,
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 0.15,
@@ -1628,7 +1681,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Text(
                   'Hoàn thành để nhận thêm ${CurrencyLabels.gtuCoin} và XP.',
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
+                    color: sem.textSecondary,
                     height: 1.4,
                   ),
                 ),
@@ -1641,7 +1694,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: Text(
                 'Không có nhiệm vụ hôm nay.',
                 style: AppTextStyles.bodySmall
-                    .copyWith(color: AppColors.textSecondary),
+                    .copyWith(color: sem.textSecondary),
               ),
             )
           else
@@ -1711,10 +1764,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceContainerLow.withValues(alpha: 0.9),
+                  color: sem.cardOverlay.withValues(alpha: 0.9),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: AppColors.xpGold.withValues(alpha: 0.2),
+                    color: sem.gold.withValues(alpha: 0.2),
                   ),
                 ),
                 child: Row(
@@ -1722,14 +1775,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     Icon(
                       Icons.redeem_rounded,
                       size: 20,
-                      color: AppColors.xpGold.withValues(alpha: 0.95),
+                      color: sem.gold.withValues(alpha: 0.95),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
                         'Phần thưởng khi xong',
                         style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.textSecondary,
+                          color: sem.textSecondary,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -1744,16 +1797,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.coinGold.withValues(alpha: 0.1),
+                            color: sem.gold.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                              color: AppColors.coinGold.withValues(alpha: 0.28),
+                              color: sem.gold.withValues(alpha: 0.28),
                             ),
                           ),
                           child: Text(
                             CurrencyLabels.rewardShort(sumCoins.toInt()),
                             style: AppTextStyles.caption.copyWith(
-                              color: AppColors.coinGold,
+                              color: sem.gold,
                               fontWeight: FontWeight.w800,
                               fontSize: 12,
                             ),
@@ -1765,25 +1818,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.xpGold.withValues(alpha: 0.1),
+                            color: sem.gold.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                              color: AppColors.xpGold.withValues(alpha: 0.28),
+                              color: sem.gold.withValues(alpha: 0.28),
                             ),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.bolt_rounded,
                                 size: 14,
-                                color: AppColors.xpGold,
+                                color: sem.gold,
                               ),
                               const SizedBox(width: 2),
                               Text(
                                 '+${sumXP.toInt()} XP',
                                 style: AppTextStyles.caption.copyWith(
-                                  color: AppColors.xpGold,
+                                  color: sem.gold,
                                   fontWeight: FontWeight.w800,
                                   fontSize: 12,
                                 ),
@@ -1818,6 +1871,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     required int? coinReward,
     required bool isLast,
   }) {
+    final sem = context.colors;
+    final brandHi = Color.lerp(sem.brand, sem.textOnBrand, 0.55)!;
     final participationId = questWrapper['id'] as String?;
 
     final Gradient? cardGradient;
@@ -1827,7 +1882,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     if (isClaimed) {
       cardGradient = null;
-      cardColor = AppColors.bgTertiary;
+      cardColor = sem.cardMuted;
       borderColor = const Color(0x442D363D);
       cardShadow = null;
     } else if (canClaim) {
@@ -1835,17 +1890,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: [
-          AppColors.successNeon.withValues(alpha: 0.14),
-          AppColors.bgTertiary,
-          AppColors.surfaceContainerLow.withValues(alpha: 0.95),
+          sem.success.withValues(alpha: 0.14),
+          sem.cardMuted,
+          sem.cardOverlay.withValues(alpha: 0.95),
         ],
         stops: const [0.0, 0.55, 1.0],
       );
       cardColor = null;
-      borderColor = AppColors.successNeon.withValues(alpha: 0.35);
+      borderColor = sem.success.withValues(alpha: 0.35);
       cardShadow = [
         BoxShadow(
-          color: AppColors.successNeon.withValues(alpha: 0.08),
+          color: sem.success.withValues(alpha: 0.08),
           blurRadius: 10,
           offset: const Offset(0, 4),
         ),
@@ -1855,17 +1910,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: [
-          AppColors.cyanNeon.withValues(alpha: 0.05),
-          AppColors.bgTertiary,
-          AppColors.surfaceContainerLow.withValues(alpha: 0.95),
+          sem.info.withValues(alpha: 0.05),
+          sem.cardMuted,
+          sem.cardOverlay.withValues(alpha: 0.95),
         ],
         stops: const [0.0, 0.45, 1.0],
       );
       cardColor = null;
-      borderColor = AppColors.purpleNeon.withValues(alpha: 0.22);
+      borderColor = sem.brand.withValues(alpha: 0.22);
       cardShadow = [
         BoxShadow(
-          color: AppColors.purpleNeon.withValues(alpha: 0.05),
+          color: sem.brand.withValues(alpha: 0.05),
           blurRadius: 10,
           offset: const Offset(0, 4),
         ),
@@ -1918,8 +1973,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 begin: Alignment.topCenter,
                                 end: Alignment.bottomCenter,
                                 colors: [
-                                  AppColors.successNeon.withValues(alpha: 0.5),
-                                  AppColors.purpleNeon.withValues(alpha: 0.42),
+                                  sem.success.withValues(alpha: 0.5),
+                                  sem.brand.withValues(alpha: 0.42),
                                 ],
                               ),
                             ),
@@ -1931,11 +1986,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: isCompleted || isClaimed
-                              ? AppColors.successNeon.withValues(alpha: 0.14)
-                              : AppColors.bgSecondary.withValues(alpha: 0.8),
+                              ? sem.success.withValues(alpha: 0.14)
+                              : sem.card.withValues(alpha: 0.8),
                           border: Border.all(
                             color: isCompleted || isClaimed
-                                ? AppColors.successNeon.withValues(alpha: 0.45)
+                                ? sem.success.withValues(alpha: 0.45)
                                 : const Color(0x552D363D),
                           ),
                         ),
@@ -1948,8 +2003,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     : Icons.radio_button_unchecked_rounded,
                             size: 15,
                             color: isCompleted || isClaimed
-                                ? AppColors.successNeon.withValues(alpha: 0.85)
-                                : AppColors.textTertiary,
+                                ? sem.success.withValues(alpha: 0.85)
+                                : sem.textTertiary,
                           ),
                         ),
                       ),
@@ -1966,12 +2021,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   vertical: 3,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: AppColors.primaryLight
-                                      .withValues(alpha: 0.08),
+                                  color: brandHi.withValues(alpha: 0.08),
                                   borderRadius: BorderRadius.circular(6),
                                   border: Border.all(
-                                    color: AppColors.primaryLight
-                                        .withValues(alpha: 0.2),
+                                    color: brandHi.withValues(alpha: 0.2),
                                   ),
                                 ),
                                 child: Text(
@@ -1979,7 +2032,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: AppTextStyles.caption.copyWith(
-                                    color: AppColors.primaryLight,
+                                    color: brandHi,
                                     fontWeight: FontWeight.w700,
                                     fontSize: 10,
                                   ),
@@ -1993,10 +2046,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 fontSize: 14,
                                 height: 1.35,
                                 color: isClaimed
-                                    ? AppColors.textTertiary
+                                    ? sem.textTertiary
                                     : (isCompleted || canClaim
-                                        ? AppColors.textPrimary
-                                        : AppColors.textSecondary),
+                                        ? sem.textPrimary
+                                        : sem.textSecondary),
                               ),
                               maxLines: 3,
                               overflow: TextOverflow.ellipsis,
@@ -2014,12 +2067,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                         vertical: 4,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: AppColors.coinGold
-                                            .withValues(alpha: 0.1),
+                                        color: sem.gold.withValues(alpha: 0.1),
                                         borderRadius: BorderRadius.circular(8),
                                         border: Border.all(
-                                          color: AppColors.coinGold
-                                              .withValues(alpha: 0.28),
+                                          color: sem.gold.withValues(alpha: 0.28),
                                         ),
                                       ),
                                       child: Text(
@@ -2027,7 +2078,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                           coinReward.toInt(),
                                         ),
                                         style: AppTextStyles.caption.copyWith(
-                                          color: AppColors.coinGold,
+                                          color: sem.gold,
                                           fontSize: 11,
                                           fontWeight: FontWeight.w700,
                                         ),
@@ -2040,28 +2091,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                         vertical: 4,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: AppColors.xpGold
-                                            .withValues(alpha: 0.1),
+                                        color: sem.gold.withValues(alpha: 0.1),
                                         borderRadius: BorderRadius.circular(8),
                                         border: Border.all(
-                                          color: AppColors.xpGold
-                                              .withValues(alpha: 0.28),
+                                          color: sem.gold.withValues(alpha: 0.28),
                                         ),
                                       ),
                                       child: Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          const Icon(
+                                          Icon(
                                             Icons.bolt_rounded,
                                             size: 13,
-                                            color: AppColors.xpGold,
+                                            color: sem.gold,
                                           ),
                                           const SizedBox(width: 2),
                                           Text(
                                             '+${xpReward.toInt()} XP',
                                             style:
                                                 AppTextStyles.caption.copyWith(
-                                              color: AppColors.xpGold,
+                                              color: sem.gold,
                                               fontSize: 11,
                                               fontWeight: FontWeight.w700,
                                             ),
@@ -2092,7 +2141,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           border: Border.all(
                             color: const Color(0x332D363D),
                           ),
-                          color: AppColors.bgSecondary,
+                          color: sem.card,
                         ),
                         alignment: Alignment.centerLeft,
                         child: LinearProgressIndicator(
@@ -2100,7 +2149,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           minHeight: 10,
                           backgroundColor: Colors.transparent,
                           valueColor: AlwaysStoppedAnimation<Color>(
-                            AppColors.successNeon.withValues(alpha: 0.75),
+                            sem.success.withValues(alpha: 0.75),
                           ),
                         ),
                       ),
@@ -2109,7 +2158,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     Text(
                       '${progressNum.toInt()} / ${targetNum.toInt()} hoàn thành',
                       style: AppTextStyles.caption.copyWith(
-                        color: AppColors.textTertiary,
+                        color: sem.textTertiary,
                         fontSize: 12,
                       ),
                     ),
@@ -2127,6 +2176,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     required bool canClaim,
     required bool isClaimed,
   }) {
+    final sem = context.colors;
+    final brandHi = Color.lerp(sem.brand, sem.textOnBrand, 0.55)!;
     final label = _questPrimaryCtaLabel(canClaim, isClaimed);
     if (isClaimed) {
       return Container(
@@ -2135,7 +2186,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 10),
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: AppColors.bgSecondary,
+          color: sem.card,
           borderRadius: BorderRadius.circular(999),
           border: Border.all(color: const Color(0x552D363D)),
         ),
@@ -2146,7 +2197,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             style: AppTextStyles.labelSmall.copyWith(
               fontWeight: FontWeight.w700,
               fontSize: 11,
-              color: AppColors.textTertiary,
+              color: sem.textTertiary,
             ),
             textAlign: TextAlign.center,
           ),
@@ -2160,11 +2211,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 14),
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: AppColors.successNeon.withValues(alpha: 0.88),
+          color: sem.success.withValues(alpha: 0.88),
           borderRadius: BorderRadius.circular(999),
           boxShadow: [
             BoxShadow(
-              color: AppColors.successNeon.withValues(alpha: 0.18),
+              color: sem.success.withValues(alpha: 0.18),
               blurRadius: 6,
               offset: const Offset(0, 2),
             ),
@@ -2196,13 +2247,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppColors.primaryLight.withValues(alpha: 0.75),
-            AppColors.purpleNeon.withValues(alpha: 0.65),
+            brandHi.withValues(alpha: 0.75),
+            sem.brand.withValues(alpha: 0.65),
           ],
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.purpleNeon.withValues(alpha: 0.14),
+            color: sem.brand.withValues(alpha: 0.14),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -2215,7 +2266,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           style: AppTextStyles.labelSmall.copyWith(
             fontWeight: FontWeight.w800,
             fontSize: 11,
-            color: Colors.white.withValues(alpha: 0.95),
+            color: sem.textOnBrand.withValues(alpha: 0.95),
             letterSpacing: 0.35,
           ),
           textAlign: TextAlign.center,
@@ -2368,6 +2419,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   // ignore: unused_element
   Widget _buildSubjectsSection(String title, List<dynamic> subjects) {
+    final sem = context.colors;
     final totalCount = subjects.length + (_isContributor ? 1 : 0);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -2378,7 +2430,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             const Spacer(),
             // Search button
             IconButton(
-              icon: const Icon(Icons.search, color: AppColors.textSecondary),
+              icon: Icon(Icons.search, color: sem.textSecondary),
               tooltip: 'Tìm môn học',
               onPressed: () => _showSubjectSearchDialog(subjects),
             ),
@@ -2388,13 +2440,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 onTap: () => context.push('/contributor/my-contributions'),
                 child: Row(
                   children: [
-                    const Icon(Icons.list_alt,
-                        size: 16, color: AppColors.contributorBlue),
+                    Icon(Icons.list_alt, size: 16, color: sem.info),
                     const SizedBox(width: 4),
                     Text(
                       'Đóng góp',
-                      style: AppTextStyles.caption
-                          .copyWith(color: AppColors.contributorBlue),
+                      style: AppTextStyles.caption.copyWith(color: sem.info),
                     ),
                   ],
                 ),
@@ -2634,16 +2684,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildAddSubjectCard() {
+    final sem = context.colors;
     return Container(
       width: 160,
       margin: const EdgeInsets.only(right: 12),
       child: Card(
         elevation: 0,
-        color: AppColors.contributorBlue.withValues(alpha: 0.08),
+        color: sem.info.withValues(alpha: 0.08),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
           side: BorderSide(
-            color: AppColors.contributorBlue.withValues(alpha: 0.3),
+            color: sem.info.withValues(alpha: 0.3),
             width: 1.5,
             strokeAlign: BorderSide.strokeAlignInside,
           ),
@@ -2661,17 +2712,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppColors.contributorBlue.withValues(alpha: 0.15),
+                    color: sem.info.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.add,
-                      size: 28, color: AppColors.contributorBlue),
+                  child: Icon(Icons.add, size: 28, color: sem.info),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Thêm môn học',
                   style: AppTextStyles.labelMedium.copyWith(
-                    color: AppColors.contributorBlue,
+                    color: sem.info,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -2679,7 +2729,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Text(
                   'Đóng góp mới',
                   style: AppTextStyles.caption.copyWith(
-                    color: AppColors.contributorBlue.withValues(alpha: 0.7),
+                    color: sem.info.withValues(alpha: 0.7),
                   ),
                 ),
               ],

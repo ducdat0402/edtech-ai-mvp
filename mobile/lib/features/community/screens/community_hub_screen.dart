@@ -34,8 +34,9 @@ class _CommunityHubScreenState extends State<CommunityHubScreen>
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -50,16 +51,16 @@ class _CommunityHubScreenState extends State<CommunityHubScreen>
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    AppColors.orangeNeon.withValues(alpha: 0.45),
-                    AppColors.orangeNeon.withValues(alpha: 0.08),
+                    t.gold.withValues(alpha: 0.45),
+                    t.gold.withValues(alpha: 0.08),
                   ],
                 ),
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.1),
+                  color: t.textOnBrand.withValues(alpha: 0.1),
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.orangeNeon.withValues(alpha: 0.22),
+                    color: t.gold.withValues(alpha: 0.22),
                     blurRadius: 10,
                     offset: const Offset(0, 2),
                   ),
@@ -69,7 +70,7 @@ class _CommunityHubScreenState extends State<CommunityHubScreen>
                 _outer.index == 0
                     ? Icons.groups_rounded
                     : Icons.people_rounded,
-                color: AppColors.orangeNeon,
+                color: t.gold,
                 size: 22,
               ),
             ),
@@ -78,7 +79,7 @@ class _CommunityHubScreenState extends State<CommunityHubScreen>
               child: Text(
                 _outer.index == 0 ? 'Cộng đồng' : 'Bạn bè',
                 style: AppTextStyles.h4.copyWith(
-                  color: AppColors.textPrimary,
+                  color: t.textPrimary,
                   fontWeight: FontWeight.w800,
                   letterSpacing: -0.3,
                 ),
@@ -97,12 +98,12 @@ class _CommunityHubScreenState extends State<CommunityHubScreen>
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    AppColors.orangeNeon.withValues(alpha: 0.14),
-                    AppColors.bgSecondary,
+                    t.gold.withValues(alpha: 0.14),
+                    t.card,
                   ],
                 ),
                 border: Border.all(
-                  color: AppColors.orangeNeon.withValues(alpha: 0.28),
+                  color: t.gold.withValues(alpha: 0.28),
                 ),
                 boxShadow: [
                   BoxShadow(
@@ -121,20 +122,20 @@ class _CommunityHubScreenState extends State<CommunityHubScreen>
                   borderRadius: BorderRadius.circular(13),
                   gradient: LinearGradient(
                     colors: [
-                      AppColors.purpleNeon.withValues(alpha: 0.42),
-                      AppColors.purpleNeon.withValues(alpha: 0.14),
+                      t.brand.withValues(alpha: 0.42),
+                      t.brand.withValues(alpha: 0.14),
                     ],
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.purpleNeon.withValues(alpha: 0.25),
+                      color: t.brand.withValues(alpha: 0.25),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
                   ],
                 ),
-                labelColor: Colors.white,
-                unselectedLabelColor: AppColors.textSecondary,
+                labelColor: t.textOnBrand,
+                unselectedLabelColor: t.textSecondary,
                 labelStyle: AppTextStyles.labelMedium.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
@@ -158,11 +159,11 @@ class _CommunityHubScreenState extends State<CommunityHubScreen>
       ),
       body: TabBarView(
         controller: _outer,
-        children: const [
-          CommunityFeedTab(),
+        children: [
+          const CommunityFeedTab(),
           Material(
-            color: AppColors.bgPrimary,
-            child: FriendsConnectionsPanel(),
+            color: Theme.of(context).scaffoldBackgroundColor,
+            child: const FriendsConnectionsPanel(),
           ),
         ],
       ),

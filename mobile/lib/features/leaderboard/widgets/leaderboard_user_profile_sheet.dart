@@ -37,6 +37,7 @@ class LeaderboardUserAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final sem = context.colors;
     final initials = leaderboardInitials(displayName);
     final url = ApiConfig.absoluteMediaUrl(imageUrl?.trim());
     final hasUrl = url.isNotEmpty;
@@ -52,12 +53,12 @@ class LeaderboardUserAvatar extends StatelessWidget {
                 url,
                 fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) => ColoredBox(
-                  color: AppColors.bgTertiary,
+                  color: sem.cardMuted,
                   child: Center(
                     child: Text(
                       initials,
                       style: AppTextStyles.labelLarge.copyWith(
-                        color: AppColors.purpleNeon,
+                        color: sem.brand,
                         fontWeight: FontWeight.bold,
                         fontSize: inner * 0.32,
                       ),
@@ -66,12 +67,12 @@ class LeaderboardUserAvatar extends StatelessWidget {
                 ),
               )
             : ColoredBox(
-                color: AppColors.bgTertiary,
+                color: sem.cardMuted,
                 child: Center(
                   child: Text(
                     initials,
                     style: AppTextStyles.labelLarge.copyWith(
-                      color: AppColors.purpleNeon,
+                      color: sem.brand,
                       fontWeight: FontWeight.bold,
                       fontSize: inner * 0.32,
                     ),
@@ -95,14 +96,14 @@ class LeaderboardUserAvatar extends StatelessWidget {
           )
         : CircleAvatar(
             radius: size / 2,
-            backgroundColor: AppColors.purpleNeon.withValues(alpha: 0.25),
+            backgroundColor: sem.brand.withValues(alpha: 0.25),
             backgroundImage: hasUrl ? NetworkImage(url) : null,
             child: hasUrl
                 ? null
                 : Text(
                     initials,
                     style: AppTextStyles.labelLarge.copyWith(
-                      color: AppColors.purpleNeon,
+                      color: sem.brand,
                       fontWeight: FontWeight.bold,
                       fontSize: size * 0.32,
                     ),
@@ -205,14 +206,17 @@ class _LeaderboardUserProfileSheetBodyState
 
   @override
   Widget build(BuildContext context) {
+    final sem = context.colors;
+    final brandHi = Color.lerp(sem.brand, Colors.white, 0.55)!;
     final bottom = MediaQuery.paddingOf(context).bottom;
     return Container(
       margin: const EdgeInsets.only(top: 24),
       padding: EdgeInsets.fromLTRB(20, 12, 20, 20 + bottom),
-      decoration: const BoxDecoration(
-        color: AppColors.bgSecondary,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        border: Border(top: BorderSide(color: Color(0x332D363D))),
+      decoration: BoxDecoration(
+        color: sem.card,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        border: Border(
+            top: BorderSide(color: sem.border.withValues(alpha: 0.65))),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -221,7 +225,7 @@ class _LeaderboardUserProfileSheetBodyState
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: AppColors.textTertiary.withValues(alpha: 0.5),
+              color: sem.textTertiary.withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -247,7 +251,7 @@ class _LeaderboardUserProfileSheetBodyState
                               widget.nameHint ??
                               'Người chơi'),
                       style: AppTextStyles.h4
-                          .copyWith(color: AppColors.textPrimary),
+                          .copyWith(color: sem.textPrimary),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -256,7 +260,7 @@ class _LeaderboardUserProfileSheetBodyState
                       Text(
                         'Hạng #${widget.rankHint}',
                         style: AppTextStyles.labelMedium
-                            .copyWith(color: AppColors.purpleNeon),
+                            .copyWith(color: sem.brand),
                       ),
                     ],
                     if (widget.sourceLabel != null &&
@@ -265,7 +269,7 @@ class _LeaderboardUserProfileSheetBodyState
                       Text(
                         widget.sourceLabel!,
                         style: AppTextStyles.caption
-                            .copyWith(color: AppColors.textTertiary),
+                            .copyWith(color: sem.textTertiary),
                       ),
                     ],
                   ],
@@ -273,8 +277,7 @@ class _LeaderboardUserProfileSheetBodyState
               ),
               IconButton(
                 onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.close_rounded,
-                    color: AppColors.textSecondary),
+                icon: Icon(Icons.close_rounded, color: sem.textSecondary),
               ),
             ],
           ),
@@ -283,12 +286,11 @@ class _LeaderboardUserProfileSheetBodyState
             Text(
               'Không tải được hồ sơ',
               style:
-                  AppTextStyles.bodySmall.copyWith(color: AppColors.errorNeon),
+                  AppTextStyles.bodySmall.copyWith(color: sem.error),
             ),
             TextButton(
               onPressed: _load,
-              style:
-                  TextButton.styleFrom(foregroundColor: AppColors.purpleNeon),
+              style: TextButton.styleFrom(foregroundColor: sem.brand),
               child: const Text('Thử lại'),
             ),
           ],
@@ -301,8 +303,8 @@ class _LeaderboardUserProfileSheetBodyState
           ],
           if (_loading) ...[
             const SizedBox(height: 24),
-            const Center(
-              child: CircularProgressIndicator(color: AppColors.primaryLight),
+            Center(
+              child: CircularProgressIndicator(color: brandHi),
             ),
           ],
         ],
@@ -319,6 +321,8 @@ class _StatGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final sem = context.colors;
+    final brandHi = Color.lerp(sem.brand, Colors.white, 0.55)!;
     final totalXP = _asInt(data['totalXP']);
     final coins = _asInt(data['coins']);
     final diamonds = _asInt(data['diamonds']);
@@ -343,20 +347,19 @@ class _StatGrid extends StatelessWidget {
           spacing: 10,
           runSpacing: 10,
           children: [
-            _chip(Icons.star_rounded, AppColors.xpGold, 'Tổng XP', '$totalXP'),
-            _chip(null, AppColors.coinGold, CurrencyLabels.gtuCoin, '$coins',
+            _chip(sem, Icons.star_rounded, sem.gold, 'Tổng XP', '$totalXP'),
+            _chip(sem, null, sem.gold, CurrencyLabels.gtuCoin, '$coins',
                 iconWidget: const GtuCoinIcon(size: 18)),
-            _chip(Icons.diamond_rounded, AppColors.primaryLight, 'Kim cương',
+            _chip(sem, Icons.diamond_rounded, sem.info, 'Kim cương',
                 '$diamonds'),
-            _chip(Icons.trending_up_rounded, AppColors.primaryLight, 'Cấp',
-                '$level'),
-            _chip(Icons.local_fire_department_rounded, AppColors.streakOrange,
+            _chip(sem, Icons.trending_up_rounded, brandHi, 'Cấp', '$level'),
+            _chip(sem, Icons.local_fire_department_rounded, sem.warning,
                 'Chuỗi', '$streak'),
             if (maxStreak > 0)
-              _chip(Icons.emoji_events_rounded, AppColors.orangeNeon,
+              _chip(sem, Icons.emoji_events_rounded, sem.warning,
                   'Chuỗi tối đa', '$maxStreak'),
             if (weekly > 0)
-              _chip(Icons.calendar_view_week_rounded, AppColors.purpleNeon,
+              _chip(sem, Icons.calendar_view_week_rounded, sem.brand,
                   'XP tuần này', '$weekly'),
           ],
         ),
@@ -365,15 +368,14 @@ class _StatGrid extends StatelessWidget {
           Text(
             'Tham gia: ${DateFormat.yMMMd().format(joined)}',
             style:
-                AppTextStyles.caption.copyWith(color: AppColors.textTertiary),
+                AppTextStyles.caption.copyWith(color: sem.textTertiary),
           ),
         ],
         if (data['role'] == 'contributor' || data['role'] == 'admin') ...[
           const SizedBox(height: 8),
           Text(
             data['role'] == 'admin' ? 'Quản trị viên' : 'Cộng tác viên',
-            style: AppTextStyles.labelSmall
-                .copyWith(color: AppColors.primaryLight),
+            style: AppTextStyles.labelSmall.copyWith(color: brandHi),
           ),
         ],
       ],
@@ -386,15 +388,21 @@ class _StatGrid extends StatelessWidget {
     return int.tryParse(v?.toString() ?? '') ?? fallback;
   }
 
-  Widget _chip(IconData? icon, Color color, String label, String value,
-      {Widget? iconWidget}) {
+  Widget _chip(
+    SemanticColors sem,
+    IconData? icon,
+    Color color,
+    String label,
+    String value, {
+    Widget? iconWidget,
+  }) {
     assert(icon != null || iconWidget != null);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: AppColors.bgTertiary,
+        color: sem.cardMuted,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0x332D363D)),
+        border: Border.all(color: sem.border.withValues(alpha: 0.65)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -408,12 +416,12 @@ class _StatGrid extends StatelessWidget {
               Text(
                 label,
                 style: AppTextStyles.caption
-                    .copyWith(color: AppColors.textTertiary, fontSize: 10),
+                    .copyWith(color: sem.textTertiary, fontSize: 10),
               ),
               Text(
                 value,
                 style: AppTextStyles.labelLarge
-                    .copyWith(color: AppColors.textPrimary),
+                    .copyWith(color: sem.textPrimary),
               ),
             ],
           ),

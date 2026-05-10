@@ -144,30 +144,30 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
     final subjectName =
         _subjectData?['name'] ?? widget.subjectName ?? 'Môn học';
     return Scaffold(
-      backgroundColor: AppColors.contributorBgPrimary,
+      backgroundColor: context.colors.bg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(
           subjectName,
-          style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+          style: AppTextStyles.h4.copyWith(color: context.colors.textPrimary),
         ),
-        leading: const AppBarLeadingBackAndHome(
-          iconColor: AppColors.textSecondary,
+        leading: AppBarLeadingBackAndHome(
+          iconColor: context.colors.textSecondary,
         ),
         leadingWidth: 112,
         automaticallyImplyLeading: false,
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh_rounded,
-                color: AppColors.primaryLight),
+            icon: Icon(Icons.refresh_rounded,
+                color: context.colors.brandStrong),
             onPressed: _loadData,
           ),
         ],
       ),
       body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: AppColors.primaryLight))
+          ? Center(
+              child: CircularProgressIndicator(color: context.colors.brandStrong))
           : _error != null
               ? _buildError()
               : _buildMindMap(),
@@ -181,20 +181,20 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline_rounded,
-                size: 48, color: AppColors.errorNeon),
+            Icon(Icons.error_outline_rounded,
+                size: 48, color: context.colors.error),
             const SizedBox(height: 16),
             Text(
               'Lỗi: $_error',
               textAlign: TextAlign.center,
               style: AppTextStyles.bodyMedium
-                  .copyWith(color: AppColors.textSecondary),
+                  .copyWith(color: context.colors.textSecondary),
             ),
             const SizedBox(height: 16),
             TextButton(
               onPressed: _loadData,
               style: TextButton.styleFrom(
-                foregroundColor: AppColors.contributorBlueLight,
+                foregroundColor: context.colors.brandStrong,
               ),
               child: const Text('Thử lại'),
             ),
@@ -303,10 +303,10 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
           margin: const EdgeInsets.only(left: 20),
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: AppColors.orangeNeon.withValues(alpha: 0.1),
+            color: context.colors.warning.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-                color: AppColors.orangeNeon.withValues(alpha: 0.4), width: 1.5),
+                color: context.colors.warning.withValues(alpha: 0.4), width: 1.5),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -315,25 +315,25 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.warning_amber_rounded,
-                      color: AppColors.orangeNeon, size: 20),
+                  Icon(Icons.warning_amber_rounded,
+                      color: context.colors.warning, size: 20),
                   const SizedBox(width: 8),
                   Flexible(
                     child: Text(
                       'Bài học chưa phân loại (${orphanNodes.length})',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.orangeNeon,
+                        color: context.colors.warning,
                       ),
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 4),
-              const Text(
+              Text(
                 'Các bài này không thuộc Topic nào, không hiển thị cho người học.',
-                style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                style: TextStyle(fontSize: 11, color: context.colors.textSecondary),
               ),
               const SizedBox(height: 8),
               ...orphanNodes.map((n) {
@@ -345,14 +345,14 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.article_outlined,
-                          color: AppColors.primaryLight, size: 16),
+                      Icon(Icons.article_outlined,
+                          color: context.colors.brandStrong, size: 16),
                       const SizedBox(width: 6),
                       Flexible(
                         child: Text(
                           title,
                           style: AppTextStyles.labelSmall
-                              .copyWith(color: AppColors.textPrimary),
+                              .copyWith(color: context.colors.textPrimary),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -367,11 +367,11 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
                         child: Container(
                           padding: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
-                            color: AppColors.errorNeon.withValues(alpha: 0.12),
+                            color: context.colors.error.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(6),
                           ),
-                          child: const Icon(Icons.more_vert,
-                              color: AppColors.errorNeon, size: 16),
+                          child: Icon(Icons.more_vert,
+                              color: context.colors.error, size: 16),
                         ),
                       ),
                     ],
@@ -673,6 +673,7 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
     VoidCallback? onEdit,
   }) {
     final color = _levelColors[3];
+    final on = context.colors.textOnBrand;
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -682,7 +683,7 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
           color: color,
           borderRadius: BorderRadius.circular(10),
           border:
-              Border.all(color: Colors.white.withValues(alpha: 0.3), width: 2),
+              Border.all(color: on.withValues(alpha: 0.3), width: 2),
           boxShadow: [
             BoxShadow(
               color: color.withValues(alpha: 0.25),
@@ -694,13 +695,13 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.article, size: 14, color: Colors.white),
+            Icon(Icons.article, size: 14, color: on),
             const SizedBox(width: 6),
             Flexible(
               child: Text(
                 label,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: on,
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                   height: 1.3,
@@ -710,19 +711,18 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
               ),
             ),
             const SizedBox(width: 6),
-            // X/4 badge
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
                 color: completedCount > 0
-                    ? Colors.white.withValues(alpha: 0.35)
-                    : Colors.white.withValues(alpha: 0.2),
+                    ? on.withValues(alpha: 0.35)
+                    : on.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
                 '$completedCount/4',
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: on,
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
                 ),
@@ -732,7 +732,7 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
             Icon(
               isExpanded ? Icons.expand_less : Icons.expand_more,
               size: 16,
-              color: Colors.white.withValues(alpha: 0.7),
+              color: on.withValues(alpha: 0.7),
             ),
             if (onEdit != null) ...[
               const SizedBox(width: 3),
@@ -741,10 +741,10 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
                 child: Container(
                   padding: const EdgeInsets.all(3),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.25),
+                    color: on.withValues(alpha: 0.25),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.edit, size: 13, color: Colors.white),
+                  child: Icon(Icons.edit, size: 13, color: on),
                 ),
               ),
             ],
@@ -761,17 +761,18 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
     required bool isActive,
     VoidCallback? onAction,
   }) {
-    const activeColor = AppColors.contributorBlue;
+    final activeColor = context.colors.info;
+    final on = context.colors.textOnBrand;
     return GestureDetector(
       onTap: onAction,
       child: Container(
         constraints: const BoxConstraints(maxWidth: 190),
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
         decoration: BoxDecoration(
-          color: isActive ? activeColor : AppColors.contributorBgSecondary,
+          color: isActive ? activeColor : context.colors.card,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: isActive ? activeColor : const Color(0x332D363D),
+            color: isActive ? activeColor : context.colors.border.withValues(alpha: 0.65),
             width: 1.5,
           ),
           boxShadow: isActive
@@ -789,14 +790,14 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
             Icon(
               icon,
               size: 14,
-              color: isActive ? Colors.white : AppColors.textTertiary,
+              color: isActive ? on : context.colors.textTertiary,
             ),
             const SizedBox(width: 6),
             Flexible(
               child: Text(
                 label,
                 style: TextStyle(
-                  color: isActive ? Colors.white : AppColors.textSecondary,
+                  color: isActive ? on : context.colors.textSecondary,
                   fontSize: 11,
                   fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
                 ),
@@ -805,19 +806,18 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
               ),
             ),
             const SizedBox(width: 6),
-            // Active: edit icon | Inactive: add icon
             Container(
               padding: const EdgeInsets.all(2),
               decoration: BoxDecoration(
                 color: isActive
-                    ? Colors.white.withValues(alpha: 0.25)
-                    : AppColors.bgTertiary,
+                    ? on.withValues(alpha: 0.25)
+                    : context.colors.cardMuted,
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 isActive ? Icons.edit : Icons.add,
                 size: 12,
-                color: isActive ? Colors.white : AppColors.contributorBlueLight,
+                color: isActive ? on : context.colors.brandStrong,
               ),
             ),
           ],
@@ -857,6 +857,7 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
   }) {
     final color = _levelColors[level.clamp(0, _levelColors.length - 1)];
     final icon = _levelIcons[level.clamp(0, _levelIcons.length - 1)];
+    final on = context.colors.textOnBrand;
     final maxWidth = level == 0
         ? 220.0
         : level == 4
@@ -876,12 +877,12 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
         constraints: BoxConstraints(maxWidth: maxWidth),
         padding: EdgeInsets.symmetric(horizontal: horizPad, vertical: vertPad),
         decoration: BoxDecoration(
-          color: level == 4 ? AppColors.contributorBgSecondary : color,
+          color: level == 4 ? context.colors.card : color,
           borderRadius: BorderRadius.circular(level <= 1 ? 14 : 10),
           border: Border.all(
             color: level == 4
-                ? const Color(0x332D363D)
-                : Colors.white.withValues(alpha: 0.3),
+                ? context.colors.border.withValues(alpha: 0.65)
+                : on.withValues(alpha: 0.3),
             width: level == 4 ? 1.5 : 2,
           ),
           boxShadow: [
@@ -897,13 +898,13 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
           children: [
             Icon(icon,
                 size: level <= 1 ? 18 : 14,
-                color: level == 4 ? AppColors.primaryLight : Colors.white),
+                color: level == 4 ? context.colors.brandStrong : on),
             const SizedBox(width: 6),
             Flexible(
               child: Text(
                 label,
                 style: TextStyle(
-                  color: level == 4 ? AppColors.textPrimary : Colors.white,
+                  color: level == 4 ? context.colors.textPrimary : on,
                   fontSize: fontSize,
                   fontWeight: level <= 1 ? FontWeight.bold : FontWeight.w500,
                   height: 1.3,
@@ -918,14 +919,14 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
                 padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                 decoration: BoxDecoration(
                   color: level == 4
-                      ? AppColors.primaryLight.withValues(alpha: 0.15)
-                      : Colors.white.withValues(alpha: 0.25),
+                      ? context.colors.brandStrong.withValues(alpha: 0.15)
+                      : on.withValues(alpha: 0.25),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   '$childCount',
                   style: TextStyle(
-                    color: level == 4 ? AppColors.primaryLight : Colors.white,
+                    color: level == 4 ? context.colors.brandStrong : on,
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
                   ),
@@ -938,8 +939,8 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
                 isExpanded ? Icons.expand_less : Icons.expand_more,
                 size: 16,
                 color: level == 4
-                    ? AppColors.textTertiary
-                    : Colors.white.withValues(alpha: 0.7),
+                    ? context.colors.textTertiary
+                    : on.withValues(alpha: 0.7),
               ),
             ],
             // Edit button (pencil icon)
@@ -951,18 +952,17 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
                   padding: const EdgeInsets.all(3),
                   decoration: BoxDecoration(
                     color: level == 4
-                        ? AppColors.primaryLight.withValues(alpha: 0.12)
-                        : Colors.white.withValues(alpha: 0.25),
+                        ? context.colors.brandStrong.withValues(alpha: 0.12)
+                        : on.withValues(alpha: 0.25),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(Icons.edit,
                       size: 13,
                       color:
-                          level == 4 ? AppColors.primaryLight : Colors.white),
+                          level == 4 ? context.colors.brandStrong : on),
                 ),
               ),
             ],
-            // Add button (+ icon)
             if (onAdd != null) ...[
               const SizedBox(width: 3),
               GestureDetector(
@@ -971,14 +971,14 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
                   padding: const EdgeInsets.all(3),
                   decoration: BoxDecoration(
                     color: level == 4
-                        ? AppColors.primaryLight.withValues(alpha: 0.12)
-                        : Colors.white.withValues(alpha: 0.25),
+                        ? context.colors.brandStrong.withValues(alpha: 0.12)
+                        : on.withValues(alpha: 0.25),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(Icons.add,
                       size: 13,
                       color:
-                          level == 4 ? AppColors.primaryLight : Colors.white),
+                          level == 4 ? context.colors.brandStrong : on),
                 ),
               ),
             ],
@@ -992,7 +992,7 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
     return Container(
       width: 32,
       height: 2,
-      color: AppColors.textTertiary.withValues(alpha: 0.45),
+      color: context.colors.textTertiary.withValues(alpha: 0.45),
     );
   }
 
@@ -1005,6 +1005,8 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
           isFirst: index == 0,
           isLast: index == total - 1,
           isSingle: total == 1,
+          lineColor:
+              context.colors.textTertiary.withValues(alpha: 0.45),
         ),
       ),
     );
@@ -1016,10 +1018,10 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: AppColors.contributorBgSecondary,
+          color: context.colors.card,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: const Color(0x332D363D),
+            color: context.colors.border.withValues(alpha: 0.65),
             width: 1.5,
             strokeAlign: BorderSide.strokeAlignInside,
           ),
@@ -1027,12 +1029,12 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.add, size: 14, color: AppColors.contributorBlue),
+            Icon(Icons.add, size: 14, color: context.colors.info),
             const SizedBox(width: 4),
             Text(
               label,
-              style: const TextStyle(
-                color: AppColors.contributorBlue,
+              style: TextStyle(
+                color: context.colors.info,
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
               ),
@@ -1199,7 +1201,7 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Lỗi tải nội dung: $e'),
-          backgroundColor: AppColors.errorNeon,
+          backgroundColor: context.colors.error,
         ),
       );
     }
@@ -1211,7 +1213,7 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
     HapticFeedback.lightImpact();
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.contributorBgSecondary,
+      backgroundColor: context.colors.card,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -1224,8 +1226,8 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
             children: [
               Row(
                 children: [
-                  const Icon(Icons.extension,
-                      color: AppColors.contributorBlueLight, size: 22),
+                  Icon(Icons.extension,
+                      color: context.colors.brandStrong, size: 22),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Column(
@@ -1233,15 +1235,15 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
                       children: [
                         Text(
                           typeLabel,
-                          style: const TextStyle(
+                          style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary),
+                              color: context.colors.textPrimary),
                         ),
                         Text(
                           nodeData['title'] as String? ?? 'Bài học',
-                          style: const TextStyle(
-                              fontSize: 12, color: AppColors.textSecondary),
+                          style: TextStyle(
+                              fontSize: 12, color: context.colors.textSecondary),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -1253,26 +1255,26 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
               const SizedBox(height: 16),
               Divider(
                   height: 1,
-                  color: AppColors.borderPrimary.withValues(alpha: 0.6)),
+                  color: context.colors.border.withValues(alpha: 0.6)),
               const SizedBox(height: 8),
               // Edit content
               ListTile(
                 leading: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: AppColors.contributorBlue.withValues(alpha: 0.18),
+                    color: context.colors.info.withValues(alpha: 0.18),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(Icons.edit_outlined,
-                      color: AppColors.contributorBlueLight, size: 22),
+                  child: Icon(Icons.edit_outlined,
+                      color: context.colors.brandStrong, size: 22),
                 ),
-                title: const Text('Sửa nội dung',
+                title: Text('Sửa nội dung',
                     style: TextStyle(
                         fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary)),
-                subtitle: const Text('Chỉnh sửa nội dung bài học (cần duyệt)',
+                        color: context.colors.textPrimary)),
+                subtitle: Text('Chỉnh sửa nội dung bài học (cần duyệt)',
                     style: TextStyle(
-                        fontSize: 12, color: AppColors.textSecondary)),
+                        fontSize: 12, color: context.colors.textSecondary)),
                 onTap: () {
                   Navigator.pop(ctx);
                   _editLessonType(nodeId, typeKey, nodeData);
@@ -1283,19 +1285,19 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
                 leading: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: AppColors.purpleNeon.withValues(alpha: 0.18),
+                    color: context.colors.brand.withValues(alpha: 0.18),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(Icons.history,
-                      color: AppColors.primaryLight, size: 22),
+                  child: Icon(Icons.history,
+                      color: context.colors.brandStrong, size: 22),
                 ),
-                title: const Text('Lịch sử chỉnh sửa',
+                title: Text('Lịch sử chỉnh sửa',
                     style: TextStyle(
                         fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary)),
-                subtitle: const Text('Xem các phiên bản trước đó',
+                        color: context.colors.textPrimary)),
+                subtitle: Text('Xem các phiên bản trước đó',
                     style: TextStyle(
-                        fontSize: 12, color: AppColors.textSecondary)),
+                        fontSize: 12, color: context.colors.textSecondary)),
                 onTap: () {
                   Navigator.pop(ctx);
                   Navigator.of(context).push(
@@ -1373,7 +1375,7 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.contributorBgSecondary,
+      backgroundColor: context.colors.card,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -1399,18 +1401,18 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
                       children: [
                         Text(
                           typeLabel,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12,
-                            color: AppColors.textTertiary,
+                            color: context.colors.textTertiary,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
                         Text(
                           currentName,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary,
+                            color: context.colors.textPrimary,
                           ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
@@ -1423,30 +1425,30 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
               const SizedBox(height: 20),
               Divider(
                   height: 1,
-                  color: AppColors.borderPrimary.withValues(alpha: 0.6)),
+                  color: context.colors.border.withValues(alpha: 0.6)),
               const SizedBox(height: 8),
               // Edit option
               ListTile(
                 leading: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: AppColors.contributorBlue.withValues(alpha: 0.18),
+                    color: context.colors.info.withValues(alpha: 0.18),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(Icons.edit_outlined,
-                      color: AppColors.contributorBlueLight, size: 22),
+                  child: Icon(Icons.edit_outlined,
+                      color: context.colors.brandStrong, size: 22),
                 ),
                 title: Text(
                   'Sửa tên $typeLabel',
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
+                  style: TextStyle(
+                    color: context.colors.textPrimary,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                subtitle: const Text(
+                subtitle: Text(
                   'Đề xuất đổi tên (cần duyệt)',
                   style:
-                      TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                      TextStyle(fontSize: 12, color: context.colors.textSecondary),
                 ),
                 onTap: () {
                   Navigator.pop(ctx);
@@ -1463,23 +1465,23 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
                 leading: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: AppColors.errorNeon.withValues(alpha: 0.15),
+                    color: context.colors.error.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(Icons.delete_outline,
-                      color: AppColors.errorNeon, size: 22),
+                  child: Icon(Icons.delete_outline,
+                      color: context.colors.error, size: 22),
                 ),
                 title: Text(
                   'Xóa $typeLabel',
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
+                  style: TextStyle(
+                    color: context.colors.textPrimary,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                subtitle: const Text(
+                subtitle: Text(
                   'Đề xuất xóa (cần duyệt)',
                   style:
-                      TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                      TextStyle(fontSize: 12, color: context.colors.textSecondary),
                 ),
                 onTap: () {
                   Navigator.pop(ctx);
@@ -1516,45 +1518,45 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.contributorBgSecondary,
+        backgroundColor: context.colors.card,
         surfaceTintColor: Colors.transparent,
         title: Text('Sửa tên $typeLabel',
-            style: const TextStyle(color: AppColors.textPrimary)),
+            style: TextStyle(color: context.colors.textPrimary)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: nameController,
-              style: const TextStyle(color: AppColors.textPrimary),
+              style: TextStyle(color: context.colors.textPrimary),
               decoration: InputDecoration(
                 labelText: 'Tên mới',
                 hintText: 'Nhập tên mới cho $typeLabel',
-                labelStyle: const TextStyle(color: AppColors.textSecondary),
+                labelStyle: TextStyle(color: context.colors.textSecondary),
                 hintStyle: TextStyle(
-                    color: AppColors.textTertiary.withValues(alpha: 0.9)),
+                    color: context.colors.textTertiary.withValues(alpha: 0.9)),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
                 filled: true,
-                fillColor: AppColors.bgTertiary,
+                fillColor: context.colors.cardMuted,
               ),
               autofocus: true,
             ),
             const SizedBox(height: 12),
             TextField(
               controller: reasonController,
-              style: const TextStyle(color: AppColors.textPrimary),
+              style: TextStyle(color: context.colors.textPrimary),
               decoration: InputDecoration(
                 labelText: 'Lý do (tùy chọn)',
                 hintText: 'Tại sao muốn đổi tên?',
-                labelStyle: const TextStyle(color: AppColors.textSecondary),
+                labelStyle: TextStyle(color: context.colors.textSecondary),
                 hintStyle: TextStyle(
-                    color: AppColors.textTertiary.withValues(alpha: 0.9)),
+                    color: context.colors.textTertiary.withValues(alpha: 0.9)),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
                 filled: true,
-                fillColor: AppColors.bgTertiary,
+                fillColor: context.colors.cardMuted,
               ),
               maxLines: 2,
             ),
@@ -1562,21 +1564,21 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: AppColors.warningNeon.withValues(alpha: 0.12),
+                color: context.colors.warning.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
-                    color: AppColors.warningNeon.withValues(alpha: 0.35)),
+                    color: context.colors.warning.withValues(alpha: 0.35)),
               ),
-              child: const Row(
+              child: Row(
                 children: [
                   Icon(Icons.info_outline,
-                      size: 16, color: AppColors.warningNeon),
+                      size: 16, color: context.colors.warning),
                   SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       'Đề xuất sẽ được gửi cho Admin duyệt',
                       style:
-                          TextStyle(fontSize: 12, color: AppColors.warningNeon),
+                          TextStyle(fontSize: 12, color: context.colors.warning),
                     ),
                   ),
                 ],
@@ -1587,13 +1589,13 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Hủy',
-                style: TextStyle(color: AppColors.textSecondary)),
+            child: Text('Hủy',
+                style: TextStyle(color: context.colors.textSecondary)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.contributorBlue,
-              foregroundColor: Colors.white,
+              backgroundColor: context.colors.info,
+              foregroundColor: context.colors.textOnBrand,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -1602,9 +1604,9 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
               final newName = nameController.text.trim();
               if (newName.isEmpty || newName == currentName) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
+                  SnackBar(
                     content: Text('Vui lòng nhập tên mới khác tên hiện tại'),
-                    backgroundColor: AppColors.bgTertiary,
+                    backgroundColor: context.colors.cardMuted,
                     behavior: SnackBarBehavior.floating,
                   ),
                 );
@@ -1642,14 +1644,14 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.contributorBgSecondary,
+        backgroundColor: context.colors.card,
         surfaceTintColor: Colors.transparent,
         title: Row(
           children: [
-            const Icon(Icons.warning_amber_rounded, color: AppColors.errorNeon),
+            Icon(Icons.warning_amber_rounded, color: context.colors.error),
             const SizedBox(width: 8),
             Text('Xóa $typeLabel',
-                style: const TextStyle(color: AppColors.textPrimary)),
+                style: TextStyle(color: context.colors.textPrimary)),
           ],
         ),
         content: Column(
@@ -1658,22 +1660,22 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.errorNeon.withValues(alpha: 0.08),
+                color: context.colors.error.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(
-                    color: AppColors.errorNeon.withValues(alpha: 0.28)),
+                    color: context.colors.error.withValues(alpha: 0.28)),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.delete_outline,
-                      color: AppColors.errorNeon, size: 20),
+                  Icon(Icons.delete_outline,
+                      color: context.colors.error, size: 20),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       'Bạn đang đề xuất xóa $typeLabel "$currentName"',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.w500,
-                        color: AppColors.textPrimary,
+                        color: context.colors.textPrimary,
                       ),
                     ),
                   ),
@@ -1683,18 +1685,18 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
             const SizedBox(height: 16),
             TextField(
               controller: reasonController,
-              style: const TextStyle(color: AppColors.textPrimary),
+              style: TextStyle(color: context.colors.textPrimary),
               decoration: InputDecoration(
                 labelText: 'Lý do xóa *',
                 hintText: 'Vui lòng cho biết lý do xóa',
-                labelStyle: const TextStyle(color: AppColors.textSecondary),
+                labelStyle: TextStyle(color: context.colors.textSecondary),
                 hintStyle: TextStyle(
-                    color: AppColors.textTertiary.withValues(alpha: 0.9)),
+                    color: context.colors.textTertiary.withValues(alpha: 0.9)),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
                 filled: true,
-                fillColor: AppColors.bgTertiary,
+                fillColor: context.colors.cardMuted,
               ),
               maxLines: 3,
             ),
@@ -1702,21 +1704,21 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: AppColors.warningNeon.withValues(alpha: 0.12),
+                color: context.colors.warning.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
-                    color: AppColors.warningNeon.withValues(alpha: 0.35)),
+                    color: context.colors.warning.withValues(alpha: 0.35)),
               ),
-              child: const Row(
+              child: Row(
                 children: [
                   Icon(Icons.info_outline,
-                      size: 16, color: AppColors.warningNeon),
+                      size: 16, color: context.colors.warning),
                   SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       'Đề xuất xóa sẽ được Admin xem xét và duyệt',
                       style:
-                          TextStyle(fontSize: 12, color: AppColors.warningNeon),
+                          TextStyle(fontSize: 12, color: context.colors.warning),
                     ),
                   ),
                 ],
@@ -1727,13 +1729,13 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Hủy',
-                style: TextStyle(color: AppColors.textSecondary)),
+            child: Text('Hủy',
+                style: TextStyle(color: context.colors.textSecondary)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.errorNeon,
-              foregroundColor: Colors.white,
+              backgroundColor: context.colors.error,
+              foregroundColor: Theme.of(context).colorScheme.onError,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -1742,9 +1744,9 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
               final reason = reasonController.text.trim();
               if (reason.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
+                  SnackBar(
                     content: Text('Vui lòng nhập lý do xóa'),
-                    backgroundColor: AppColors.bgTertiary,
+                    backgroundColor: context.colors.cardMuted,
                     behavior: SnackBarBehavior.floating,
                   ),
                 );
@@ -1783,9 +1785,9 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
       );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text('Đã gửi đề xuất sửa tên thành công!'),
-            backgroundColor: AppColors.successNeon,
+            backgroundColor: context.colors.success,
           ),
         );
       }
@@ -1794,7 +1796,7 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Lỗi: $e'),
-            backgroundColor: AppColors.errorNeon,
+            backgroundColor: context.colors.error,
           ),
         );
       }
@@ -1817,9 +1819,9 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
       );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text('Đã gửi đề xuất xóa thành công!'),
-            backgroundColor: AppColors.successNeon,
+            backgroundColor: context.colors.success,
           ),
         );
       }
@@ -1828,7 +1830,7 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Lỗi: $e'),
-            backgroundColor: AppColors.errorNeon,
+            backgroundColor: context.colors.error,
           ),
         );
       }
@@ -1841,17 +1843,19 @@ class _TreeLinePainter extends CustomPainter {
   final bool isFirst;
   final bool isLast;
   final bool isSingle;
+  final Color lineColor;
 
   _TreeLinePainter({
     required this.isFirst,
     required this.isLast,
     this.isSingle = false,
+    required this.lineColor,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = AppColors.textTertiary.withValues(alpha: 0.45)
+      ..color = lineColor
       ..strokeWidth = 1.5
       ..style = PaintingStyle.stroke;
 

@@ -86,18 +86,19 @@ class _RewardsHistoryScreenState extends State<RewardsHistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: tokens.bg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(
           'Lịch sử phần thưởng',
-          style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+          style: AppTextStyles.h4.copyWith(color: tokens.textPrimary),
         ),
         actions: [
           PopupMenuButton<String>(
-            icon: const Icon(Icons.filter_list, color: AppColors.textSecondary),
+            icon: Icon(Icons.filter_list, color: tokens.textSecondary),
             onSelected: _onSourceFilterChanged,
             itemBuilder: (context) => [
               const PopupMenuItem(
@@ -113,15 +114,15 @@ class _RewardsHistoryScreenState extends State<RewardsHistoryScreen> {
             ],
           ),
           IconButton(
-            icon: const Icon(Icons.refresh, color: AppColors.textSecondary),
+            icon: Icon(Icons.refresh, color: tokens.textSecondary),
             onPressed: () => _loadHistory(),
             tooltip: 'Làm mới',
           ),
         ],
       ),
       body: _isLoading && _transactions.isEmpty
-          ? const Center(
-              child: CircularProgressIndicator(color: AppColors.primaryLight))
+          ? Center(
+              child: CircularProgressIndicator(color: tokens.brand))
           : _error != null
               ? AppErrorWidget(
                   message: _error!,
@@ -134,38 +135,41 @@ class _RewardsHistoryScreenState extends State<RewardsHistoryScreen> {
                       message: 'Bạn chưa nhận được phần thưởng nào',
                     )
                   : RefreshIndicator(
+                      color: tokens.brand,
                       onRefresh: () => _loadHistory(),
                       child: ListView.builder(
                         padding: const EdgeInsets.all(16),
                         itemCount: _transactions.length + (_hasMore ? 1 : 0),
                         itemBuilder: (context, index) {
                           if (index == _transactions.length) {
-                            return _buildLoadMoreButton();
+                            return _buildLoadMoreButton(context);
                           }
-                          return _buildTransactionCard(_transactions[index]);
+                          return _buildTransactionCard(
+                              context, _transactions[index]);
                         },
                       ),
                     ),
     );
   }
 
-  Widget _buildLoadMoreButton() {
+  Widget _buildLoadMoreButton(BuildContext context) {
+    final tokens = context.colors;
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Center(
         child: ElevatedButton(
           onPressed: _isLoading ? null : () => _loadHistory(loadMore: true),
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.purpleNeon,
-            foregroundColor: Colors.white,
+            backgroundColor: tokens.brand,
+            foregroundColor: tokens.onBrand,
           ),
           child: _isLoading
-              ? const SizedBox(
+              ? SizedBox(
                   width: 20,
                   height: 20,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    color: Colors.white,
+                    color: tokens.textOnBrand,
                   ),
                 )
               : const Text('Tải thêm'),
@@ -174,7 +178,9 @@ class _RewardsHistoryScreenState extends State<RewardsHistoryScreen> {
     );
   }
 
-  Widget _buildTransactionCard(Map<String, dynamic> transaction) {
+  Widget _buildTransactionCard(
+      BuildContext context, Map<String, dynamic> transaction) {
+    final tokens = context.colors;
     final source = transaction['source'] as String? ?? '';
     final sourceName = transaction['sourceName'] as String? ?? '';
     final xp = transaction['xp'] as int? ?? 0;
@@ -186,12 +192,12 @@ class _RewardsHistoryScreenState extends State<RewardsHistoryScreen> {
     final hasRewards = xp > 0 || coins > 0 || shards.isNotEmpty;
 
     return Card(
-      color: AppColors.bgSecondary,
+      color: tokens.card,
       elevation: 0,
       margin: const EdgeInsets.only(bottom: 12),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: Color(0x332D363D)),
+        side: BorderSide(color: tokens.border),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -209,14 +215,14 @@ class _RewardsHistoryScreenState extends State<RewardsHistoryScreen> {
                         sourceName.isNotEmpty ? sourceName : sourceLabel,
                         style: AppTextStyles.labelLarge.copyWith(
                           fontSize: 16,
-                          color: AppColors.textPrimary,
+                          color: tokens.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         sourceLabel,
                         style: AppTextStyles.caption
-                            .copyWith(color: AppColors.textTertiary),
+                            .copyWith(color: tokens.textTertiary),
                       ),
                     ],
                   ),
@@ -225,13 +231,13 @@ class _RewardsHistoryScreenState extends State<RewardsHistoryScreen> {
                   Text(
                     _formatDate(createdAt),
                     style: AppTextStyles.caption
-                        .copyWith(color: AppColors.textTertiary),
+                        .copyWith(color: tokens.textTertiary),
                   ),
               ],
             ),
             if (hasRewards) ...[
               const SizedBox(height: 12),
-              const Divider(color: Color(0x332D363D)),
+              Divider(color: tokens.divider),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 12,
@@ -241,19 +247,19 @@ class _RewardsHistoryScreenState extends State<RewardsHistoryScreen> {
                     _buildRewardChip(
                       icon: Icons.star,
                       label: '$xp XP',
-                      color: AppColors.xpGold,
+                      color: tokens.gold,
                     ),
                   if (coins > 0)
                     _buildRewardChip(
                       label: CurrencyLabels.balanceVerbose(coins),
-                      color: AppColors.orangeNeon,
+                      color: tokens.warning,
                       iconWidget: const GtuCoinIcon(size: 16),
                     ),
                   ...shards.entries.map(
                     (entry) => _buildRewardChip(
                       icon: Icons.diamond,
                       label: '${entry.value} ${_formatShardName(entry.key)}',
-                      color: AppColors.primaryLight,
+                      color: tokens.info,
                     ),
                   ),
                 ],

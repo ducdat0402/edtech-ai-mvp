@@ -51,31 +51,27 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppColors.bgSecondary,
+        backgroundColor: t.card,
         leading: const AppBarLeadingBackAndHome(),
         leadingWidth: 112,
         automaticallyImplyLeading: false,
-        title: const Text('Tin nhắn',
-            style: TextStyle(color: AppColors.textPrimary)),
-        iconTheme: const IconThemeData(color: AppColors.textPrimary),
+        title: Text('Tin nhắn', style: TextStyle(color: t.textPrimary)),
+        iconTheme: IconThemeData(color: t.textPrimary),
       ),
       body: _loading
-          ? const Center(
-              child: CircularProgressIndicator(color: AppColors.purpleNeon))
+          ? Center(child: CircularProgressIndicator(color: t.brand))
           : _error != null
               ? Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.error_outline,
-                          color: AppColors.errorNeon, size: 48),
+                      Icon(Icons.error_outline, color: t.error, size: 48),
                       const SizedBox(height: 16),
-                      Text(_error!,
-                          style:
-                              const TextStyle(color: AppColors.textSecondary)),
+                      Text(_error!, style: TextStyle(color: t.textSecondary)),
                       const SizedBox(height: 16),
                       ElevatedButton(
                           onPressed: _load, child: const Text('Thử lại')),
@@ -91,7 +87,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
                     )
                   : RefreshIndicator(
                       onRefresh: _load,
-                      color: AppColors.purpleNeon,
+                      color: t.brand,
                       child: ListView.builder(
                         padding: const EdgeInsets.all(16),
                         itemCount: _conversations.length,
@@ -107,6 +103,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
   }
 
   Widget _buildConversationTile(Map<String, dynamic> c) {
+    final t = context.colors;
     final peerId = c['peerId'] as String? ?? '';
     final peerName = c['peerName'] as String? ?? 'User';
     final last = c['lastMessage'] as Map<String, dynamic>?;
@@ -115,25 +112,24 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
+        color: t.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0x332D363D)),
+        border: Border.all(color: t.border),
       ),
       child: ListTile(
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         leading: CircleAvatar(
-          backgroundColor: AppColors.purpleNeon.withValues(alpha: 0.2),
+          backgroundColor: t.brand.withValues(alpha: 0.2),
           child: Text(
             peerName.isNotEmpty ? peerName[0].toUpperCase() : '?',
-            style: const TextStyle(
-                color: AppColors.purpleNeon, fontWeight: FontWeight.bold),
+            style: TextStyle(color: t.brand, fontWeight: FontWeight.bold),
           ),
         ),
         title: Text(
           peerName,
           style: TextStyle(
-            color: AppColors.textPrimary,
+            color: t.textPrimary,
             fontWeight: unread > 0 ? FontWeight.bold : FontWeight.w500,
           ),
         ),
@@ -142,24 +138,23 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
                 last['content'] as String? ?? '',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                    color: AppColors.textSecondary, fontSize: 13),
+                style: TextStyle(color: t.textSecondary, fontSize: 13),
               )
-            : const Text(
+            : Text(
                 'Nhắn tin...',
-                style: TextStyle(color: AppColors.textTertiary, fontSize: 13),
+                style: TextStyle(color: t.textTertiary, fontSize: 13),
               ),
         trailing: unread > 0
             ? Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.purpleNeon,
+                  color: t.brand,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   unread > 99 ? '99+' : '$unread',
-                  style: const TextStyle(
-                      color: Colors.white,
+                  style: TextStyle(
+                      color: t.textOnBrand,
                       fontSize: 12,
                       fontWeight: FontWeight.bold),
                 ),

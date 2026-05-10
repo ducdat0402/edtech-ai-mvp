@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'colors.dart';
+import 'level_palette.dart';
 
 /// Gamified Learning App - Gradient System
 class AppGradients {
@@ -191,7 +192,7 @@ class AppGradients {
 
   /// Get gradient based on level
   static LinearGradient forLevel(int level) {
-    final colors = AppColors.getLevelGradient(level);
+    final colors = LevelPalette.getLevelGradient(level);
     return LinearGradient(
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
@@ -199,9 +200,9 @@ class AppGradients {
     );
   }
 
-  /// Gradient bậc đã hạ bão hòa — thanh profile dashboard, tránh xanh/neon chói trên nền tối.
-  static LinearGradient forLevelMuted(int level) {
-    final colors = AppColors.getLevelGradientMuted(level);
+  /// Gradient bậc đã hạ bão hòa — blend về [surface] (vd. `context.colors.card`).
+  static LinearGradient forLevelMuted(int level, {required Color surface}) {
+    final colors = LevelPalette.getLevelGradientMuted(level, surface);
     return LinearGradient(
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,

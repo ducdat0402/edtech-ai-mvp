@@ -184,12 +184,13 @@ class _EndQuizScreenState extends State<EndQuizScreen>
   // SUBMISSION
   // ═══════════════════════════════════════════════════════════════════
   Future<void> _submitQuiz() async {
+    final t = context.colors;
     final unansweredCount = _questions.length - _selectedAnswers.length;
     if (unansweredCount > 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Còn $unansweredCount câu hỏi chưa trả lời'),
-          backgroundColor: AppColors.warningNeon,
+          backgroundColor: t.warning,
           behavior: SnackBarBehavior.floating,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -275,7 +276,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Lỗi: $e'),
-            backgroundColor: AppColors.errorNeon,
+            backgroundColor: t.error,
           ),
         );
       }
@@ -492,7 +493,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
                     Text(
                       'Số từ hiện tại: $words (tối thiểu 40)',
                       style: AppTextStyles.caption
-                          .copyWith(color: AppColors.textTertiary),
+                          .copyWith(color: context.colors.textTertiary),
                     ),
                   ],
                 ),
@@ -549,7 +550,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
                 ? 'Điểm giao tiếp: $totalScore. $feedback'
                 : 'Đã lưu bài giảng lại. Điểm giao tiếp: $totalScore.',
           ),
-          backgroundColor: AppColors.successNeon,
+          backgroundColor: context.colors.success,
           duration: const Duration(seconds: 4),
         ),
       );
@@ -559,7 +560,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Không gửi được bài giảng lại: $e'),
-          backgroundColor: AppColors.errorNeon,
+          backgroundColor: context.colors.error,
         ),
       );
     }
@@ -677,6 +678,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
   }
 
   void _generateConfettiParticles() {
+    final t = context.colors;
     _confettiParticles.clear();
     for (int i = 0; i < 30; i++) {
       _confettiParticles.add(_ConfettiParticle(
@@ -692,12 +694,12 @@ class _EndQuizScreenState extends State<EndQuizScreen>
           Icons.workspace_premium,
         ][_random.nextInt(5)],
         color: [
-          AppColors.purpleNeon,
-          AppColors.pinkNeon,
-          AppColors.orangeNeon,
-          AppColors.primaryLight,
-          AppColors.successNeon,
-          AppColors.xpGold,
+          t.brand,
+          t.error,
+          t.warning,
+          t.info,
+          t.success,
+          t.gold,
         ][_random.nextInt(6)],
       ));
     }
@@ -709,7 +711,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: context.colors.bg,
       body: SafeArea(
         child: _showResults ? _buildResultsView() : _buildQuizView(),
       ),
@@ -726,8 +728,8 @@ class _EndQuizScreenState extends State<EndQuizScreen>
       return Center(
         child: Text(
           'Không có câu hỏi',
-          style:
-              AppTextStyles.bodyLarge.copyWith(color: AppColors.textSecondary),
+          style: AppTextStyles.bodyLarge
+              .copyWith(color: context.colors.textSecondary),
         ),
       );
     }
@@ -735,6 +737,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
   }
 
   Widget _buildLoadingState() {
+    final t = context.colors;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -746,17 +749,17 @@ class _EndQuizScreenState extends State<EndQuizScreen>
               shape: BoxShape.circle,
               gradient: RadialGradient(
                 colors: [
-                  AppColors.purpleNeon.withValues(alpha: 0.3),
+                  t.brand.withValues(alpha: 0.3),
                   Colors.transparent,
                 ],
               ),
             ),
-            child: const Center(
+            child: Center(
               child: SizedBox(
                 width: 40,
                 height: 40,
                 child: CircularProgressIndicator(
-                  color: AppColors.purpleNeon,
+                  color: t.brand,
                   strokeWidth: 3,
                 ),
               ),
@@ -765,14 +768,12 @@ class _EndQuizScreenState extends State<EndQuizScreen>
           const SizedBox(height: 24),
           Text(
             'Đang tải câu hỏi...',
-            style:
-                AppTextStyles.bodyLarge.copyWith(color: AppColors.textPrimary),
+            style: AppTextStyles.bodyLarge.copyWith(color: t.textPrimary),
           ),
           const SizedBox(height: 8),
           Text(
             widget.title,
-            style: AppTextStyles.bodyMedium
-                .copyWith(color: AppColors.textSecondary),
+            style: AppTextStyles.bodyMedium.copyWith(color: t.textSecondary),
           ),
         ],
       ),
@@ -780,6 +781,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
   }
 
   Widget _buildErrorState() {
+    final t = context.colors;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -790,21 +792,19 @@ class _EndQuizScreenState extends State<EndQuizScreen>
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.errorNeon.withValues(alpha: 0.1),
+                color: t.error.withValues(alpha: 0.1),
               ),
-              child: const Icon(Icons.error_outline,
-                  size: 48, color: AppColors.errorNeon),
+              child: Icon(Icons.error_outline, size: 48, color: t.error),
             ),
             const SizedBox(height: 24),
             Text(
               'Đã xảy ra lỗi',
-              style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary),
+              style: AppTextStyles.h3.copyWith(color: t.textPrimary),
             ),
             const SizedBox(height: 8),
             Text(
               _error ?? '',
-              style: AppTextStyles.bodyMedium
-                  .copyWith(color: AppColors.textSecondary),
+              style: AppTextStyles.bodyMedium.copyWith(color: t.textSecondary),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -837,6 +837,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
   }
 
   Widget _buildQuizContent() {
+    final t = context.colors;
     final question = _questions[_currentQuestionIndex] as Map<String, dynamic>;
     final optionTexts = _getOptionTexts(question);
     final selectedIdx = _selectedAnswers[_currentQuestionIndex];
@@ -870,7 +871,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
                     Text(
                       'Câu ${_currentQuestionIndex + 1}/${_questions.length}',
                       style: AppTextStyles.labelMedium.copyWith(
-                        color: AppColors.purpleNeon,
+                        color: t.brand,
                         fontWeight: FontWeight.w600,
                         letterSpacing: 1,
                       ),
@@ -881,7 +882,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
                     Text(
                       (question['question'] ?? '').toString(),
                       style: AppTextStyles.bodyLarge.copyWith(
-                        color: AppColors.textPrimary,
+                        color: t.textPrimary,
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
                         height: 1.6,
@@ -914,6 +915,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
   }
 
   Widget _buildQuizHeader(double progress) {
+    final t = context.colors;
     return Container(
       padding: const EdgeInsets.fromLTRB(8, 8, 20, 16),
       child: Column(
@@ -925,12 +927,11 @@ class _EndQuizScreenState extends State<EndQuizScreen>
                 icon: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: AppColors.bgSecondary,
+                    color: t.card,
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: const Color(0x332D363D)),
+                    border: Border.all(color: t.border),
                   ),
-                  child: const Icon(Icons.close,
-                      color: AppColors.textPrimary, size: 20),
+                  child: Icon(Icons.close, color: t.textPrimary, size: 20),
                 ),
                 onPressed: () => context.pop(),
               ),
@@ -939,7 +940,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
                 child: Text(
                   widget.title,
                   style: AppTextStyles.labelLarge.copyWith(
-                    color: AppColors.textPrimary,
+                    color: t.textPrimary,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -950,20 +951,19 @@ class _EndQuizScreenState extends State<EndQuizScreen>
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: AppColors.bgSecondary,
+                  color: t.card,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: const Color(0x332D363D)),
+                  border: Border.all(color: t.border),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.flag_rounded,
-                        size: 14, color: AppColors.purpleNeon),
+                    Icon(Icons.flag_rounded, size: 14, color: t.brand),
                     const SizedBox(width: 4),
                     Text(
                       '$_passingScore%',
                       style: AppTextStyles.labelMedium
-                          .copyWith(color: AppColors.purpleNeon),
+                          .copyWith(color: t.brand),
                     ),
                   ],
                 ),
@@ -979,7 +979,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
                 Container(
                   height: 6,
                   decoration: BoxDecoration(
-                    color: AppColors.bgTertiary,
+                    color: t.cardMuted,
                     borderRadius: BorderRadius.circular(3),
                   ),
                 ),
@@ -989,16 +989,16 @@ class _EndQuizScreenState extends State<EndQuizScreen>
                   height: 6,
                   width: (MediaQuery.of(context).size.width - 64) * progress,
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
+                    gradient: LinearGradient(
                       colors: [
-                        AppColors.purpleNeon,
-                        AppColors.pinkNeon,
+                        t.brand,
+                        t.error,
                       ],
                     ),
                     borderRadius: BorderRadius.circular(3),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.purpleNeon.withValues(alpha: 0.5),
+                        color: t.brand.withValues(alpha: 0.5),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
@@ -1019,6 +1019,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
     required String text,
     required bool isSelected,
   }) {
+    final t = context.colors;
     return GestureDetector(
       onTap: () => _selectAnswer(index),
       child: AnimatedContainer(
@@ -1028,17 +1029,17 @@ class _EndQuizScreenState extends State<EndQuizScreen>
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.purpleNeon.withValues(alpha: 0.1)
-              : AppColors.bgSecondary,
+              ? t.brand.withValues(alpha: 0.1)
+              : t.card,
           border: Border.all(
-            color: isSelected ? AppColors.purpleNeon : const Color(0x332D363D),
+            color: isSelected ? t.brand : t.border,
             width: isSelected ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(16),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: AppColors.purpleNeon.withValues(alpha: 0.2),
+                    color: t.brand.withValues(alpha: 0.2),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -1054,16 +1055,16 @@ class _EndQuizScreenState extends State<EndQuizScreen>
               height: 38,
               decoration: BoxDecoration(
                 gradient: isSelected
-                    ? const LinearGradient(
-                        colors: [AppColors.purpleNeon, AppColors.pinkNeon],
+                    ? LinearGradient(
+                        colors: [t.brand, t.error],
                       )
                     : null,
-                color: isSelected ? null : AppColors.bgTertiary,
+                color: isSelected ? null : t.cardMuted,
                 borderRadius: BorderRadius.circular(10),
                 boxShadow: isSelected
                     ? [
                         BoxShadow(
-                          color: AppColors.purpleNeon.withValues(alpha: 0.4),
+                          color: t.brand.withValues(alpha: 0.4),
                           blurRadius: 8,
                         ),
                       ]
@@ -1073,7 +1074,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
                 child: Text(
                   label,
                   style: AppTextStyles.labelLarge.copyWith(
-                    color: isSelected ? Colors.white : AppColors.textSecondary,
+                    color: isSelected ? t.textOnBrand : t.textSecondary,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -1086,8 +1087,8 @@ class _EndQuizScreenState extends State<EndQuizScreen>
                 text,
                 style: AppTextStyles.bodyMedium.copyWith(
                   color: isSelected
-                      ? AppColors.textPrimary
-                      : AppColors.textSecondary,
+                      ? t.textPrimary
+                      : t.textSecondary,
                   fontSize: 15,
                 ),
               ),
@@ -1096,13 +1097,13 @@ class _EndQuizScreenState extends State<EndQuizScreen>
             if (isSelected)
               Container(
                 padding: const EdgeInsets.all(4),
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [AppColors.purpleNeon, AppColors.pinkNeon],
+                    colors: [t.brand, t.error],
                   ),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.check, color: Colors.white, size: 16),
+                child: Icon(Icons.check, color: t.textOnBrand, size: 16),
               ),
           ],
         ),
@@ -1111,14 +1112,15 @@ class _EndQuizScreenState extends State<EndQuizScreen>
   }
 
   Widget _buildNavigationBar(bool isLastQuestion, bool allAnswered) {
+    final t = context.colors;
     final bool canGoBack = _currentQuestionIndex > 0;
 
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
-        border: const Border(
-          top: BorderSide(color: Color(0x332D363D)),
+        color: t.card,
+        border: Border(
+          top: BorderSide(color: t.border),
         ),
         boxShadow: [
           BoxShadow(
@@ -1150,10 +1152,10 @@ class _EndQuizScreenState extends State<EndQuizScreen>
                     onPressed: _isSubmitting ? null : _submitQuiz,
                     isLoading: _isSubmitting,
                     icon: Icons.check_rounded,
-                    gradient: const LinearGradient(
-                      colors: [AppColors.purpleNeon, AppColors.pinkNeon],
+                    gradient: LinearGradient(
+                      colors: [t.brand, t.error],
                     ),
-                    glowColor: AppColors.purpleNeon,
+                    glowColor: t.brand,
                   )
                 : GamingButton(
                     text: isLastQuestion ? 'Nộp bài' : 'Câu sau',
@@ -1214,6 +1216,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
 
   Widget _buildResultHeader(
       bool passed, int score, int correctCount, int totalQuestions) {
+    final t = context.colors;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(24, 32, 24, 28),
@@ -1222,9 +1225,8 @@ class _EndQuizScreenState extends State<EndQuizScreen>
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            (passed ? AppColors.successNeon : AppColors.errorNeon)
-                .withValues(alpha: 0.15),
-            AppColors.bgPrimary,
+            (passed ? t.success : t.error).withValues(alpha: 0.15),
+            t.bg,
           ],
         ),
       ),
@@ -1250,9 +1252,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
                         Text(
                           '$animatedScore',
                           style: AppTextStyles.numberXLarge.copyWith(
-                            color: passed
-                                ? AppColors.successNeon
-                                : AppColors.errorNeon,
+                            color: passed ? t.success : t.error,
                             fontSize: 44,
                           ),
                         ),
@@ -1260,8 +1260,8 @@ class _EndQuizScreenState extends State<EndQuizScreen>
                           '%',
                           style: AppTextStyles.labelLarge.copyWith(
                             color: (passed
-                                    ? AppColors.successNeon
-                                    : AppColors.errorNeon)
+                                    ? t.success
+                                    : t.error)
                                 .withValues(alpha: 0.7),
                           ),
                         ),
@@ -1278,7 +1278,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
           Text(
             passed ? 'Đạt' : 'Chưa đạt',
             style: AppTextStyles.h2.copyWith(
-              color: passed ? AppColors.successNeon : AppColors.errorNeon,
+              color: passed ? t.success : t.error,
               letterSpacing: 2,
             ),
           ),
@@ -1288,26 +1288,26 @@ class _EndQuizScreenState extends State<EndQuizScreen>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             decoration: BoxDecoration(
-              color: AppColors.bgSecondary,
+              color: t.card,
               borderRadius: BorderRadius.circular(25),
               border: Border.all(
-                color: (passed ? AppColors.successNeon : AppColors.errorNeon)
+                color: (passed ? t.success : t.error)
                     .withValues(alpha: 0.3),
               ),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(
+                Icon(
                   Icons.check_circle,
                   size: 18,
-                  color: AppColors.successNeon,
+                  color: t.success,
                 ),
                 const SizedBox(width: 8),
                 Text(
                   '$correctCount/$totalQuestions câu đúng',
                   style: AppTextStyles.labelLarge
-                      .copyWith(color: AppColors.textPrimary),
+                      .copyWith(color: t.textPrimary),
                 ),
               ],
             ),
@@ -1318,18 +1318,19 @@ class _EndQuizScreenState extends State<EndQuizScreen>
   }
 
   Widget _buildResultItem(Map<String, dynamic> result, int index) {
+    final t = context.colors;
     final isCorrect = result['isCorrect'] as bool;
     final explanation = (result['explanation'] ?? '').toString();
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
+        color: t.card,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isCorrect
-              ? AppColors.successNeon.withValues(alpha: 0.3)
-              : AppColors.errorNeon.withValues(alpha: 0.3),
+              ? t.success.withValues(alpha: 0.3)
+              : t.error.withValues(alpha: 0.3),
         ),
       ),
       child: Theme(
@@ -1340,27 +1341,26 @@ class _EndQuizScreenState extends State<EndQuizScreen>
           leading: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: (isCorrect ? AppColors.successNeon : AppColors.errorNeon)
-                  .withValues(alpha: 0.15),
+              color: (isCorrect ? t.success : t.error).withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(
               isCorrect ? Icons.check_rounded : Icons.close_rounded,
-              color: isCorrect ? AppColors.successNeon : AppColors.errorNeon,
+              color: isCorrect ? t.success : t.error,
               size: 20,
             ),
           ),
           title: Text(
             'Câu ${index + 1}',
             style:
-                AppTextStyles.labelLarge.copyWith(color: AppColors.textPrimary),
+                AppTextStyles.labelLarge.copyWith(color: t.textPrimary),
           ),
           subtitle: Text(
             isCorrect
                 ? 'Đúng'
                 : 'Sai — Đáp án: ${result['correctAnswer'] ?? ''}',
             style: AppTextStyles.bodySmall.copyWith(
-              color: isCorrect ? AppColors.successNeon : AppColors.errorNeon,
+              color: isCorrect ? t.success : t.error,
             ),
           ),
           children: [
@@ -1373,7 +1373,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
                   Text(
                     (result['question'] ?? '').toString(),
                     style: AppTextStyles.bodyMedium
-                        .copyWith(color: AppColors.textPrimary),
+                        .copyWith(color: t.textPrimary),
                   ),
 
                   // User's answer vs correct answer
@@ -1382,13 +1382,13 @@ class _EndQuizScreenState extends State<EndQuizScreen>
                     _buildAnswerComparison(
                       'Bạn chọn',
                       (result['selectedAnswer'] ?? '').toString(),
-                      AppColors.errorNeon,
+                      t.error,
                     ),
                     const SizedBox(height: 6),
                     _buildAnswerComparison(
                       'Đáp án',
                       (result['correctAnswer'] ?? '').toString(),
-                      AppColors.successNeon,
+                      t.success,
                     ),
                   ],
 
@@ -1399,24 +1399,23 @@ class _EndQuizScreenState extends State<EndQuizScreen>
                       width: double.infinity,
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: AppColors.primaryLight.withValues(alpha: 0.08),
+                        color: t.brand.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                            color:
-                                AppColors.primaryLight.withValues(alpha: 0.2)),
+                            color: t.brand.withValues(alpha: 0.2)),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
                             children: [
-                              const Icon(Icons.lightbulb_outline,
-                                  size: 16, color: AppColors.primaryLight),
+                              Icon(Icons.lightbulb_outline,
+                                  size: 16, color: t.brand),
                               const SizedBox(width: 6),
                               Text(
                                 'Giải thích',
                                 style: AppTextStyles.labelMedium
-                                    .copyWith(color: AppColors.primaryLight),
+                                    .copyWith(color: t.brand),
                               ),
                             ],
                           ),
@@ -1424,7 +1423,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
                           Text(
                             explanation,
                             style: AppTextStyles.bodySmall
-                                .copyWith(color: AppColors.textSecondary),
+                                .copyWith(color: t.textSecondary),
                           ),
                         ],
                       ),
@@ -1459,7 +1458,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
           child: Text(
             answer,
             style:
-                AppTextStyles.bodySmall.copyWith(color: AppColors.textPrimary),
+                AppTextStyles.bodySmall.copyWith(color: context.colors.textPrimary),
           ),
         ),
       ],
@@ -1467,12 +1466,13 @@ class _EndQuizScreenState extends State<EndQuizScreen>
   }
 
   Widget _buildResultActions(bool passed) {
+    final t = context.colors;
     return Container(
       padding: const EdgeInsets.all(20),
-      decoration: const BoxDecoration(
-        color: AppColors.bgSecondary,
+      decoration: BoxDecoration(
+        color: t.card,
         border: Border(
-          top: BorderSide(color: Color(0x332D363D)),
+          top: BorderSide(color: t.border),
         ),
       ),
       child: Column(
@@ -1500,15 +1500,15 @@ class _EndQuizScreenState extends State<EndQuizScreen>
                 width: double.infinity,
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.bgTertiary.withValues(alpha: 0.35),
+                  color: t.cardMuted.withValues(alpha: 0.35),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0x332D363D)),
+                  border: Border.all(color: t.border),
                 ),
                 child: Text(
                   'Điểm giao tiếp: ${(_communicationResult?['totalScore'] ?? 0)}'
                   '${(_communicationResult?['feedbackShort'] is String && (_communicationResult?['feedbackShort'] as String).isNotEmpty) ? '\n${_communicationResult?['feedbackShort']}' : ''}',
                   style: AppTextStyles.bodySmall
-                      .copyWith(color: AppColors.textSecondary),
+                      .copyWith(color: t.textSecondary),
                 ),
               ),
             if (_isSubmittingCommunication)
@@ -1565,7 +1565,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
                     text: 'Hoàn thành',
                     onPressed: _finishLessonTypeAndReturnToPicker,
                     gradient: AppGradients.success,
-                    glowColor: AppColors.successNeon,
+                    glowColor: t.success,
                     icon: Icons.emoji_events_rounded,
                   ),
                 ),
@@ -1577,6 +1577,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
   }
 
   Widget _buildRewardSummary() {
+    final t = context.colors;
     final totalRewards = _rewardData?['totalRewards'] as Map<String, dynamic>?;
     final rewards = _rewardData?['rewards'] as List<dynamic>?;
     final lessonCompleted = _rewardData?['lessonCompleted'] == true;
@@ -1597,12 +1598,12 @@ class _EndQuizScreenState extends State<EndQuizScreen>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColors.xpGold.withValues(alpha: 0.1),
-            AppColors.successNeon.withValues(alpha: 0.1),
+            t.gold.withValues(alpha: 0.1),
+            t.success.withValues(alpha: 0.1),
           ],
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.xpGold.withValues(alpha: 0.3)),
+        border: Border.all(color: t.gold.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1610,12 +1611,12 @@ class _EndQuizScreenState extends State<EndQuizScreen>
           // Header
           Row(
             children: [
-              const Icon(Icons.auto_awesome, size: 20, color: AppColors.xpGold),
+              Icon(Icons.auto_awesome, size: 20, color: t.gold),
               const SizedBox(width: 8),
               Text(
                 'Phần thưởng',
                 style: AppTextStyles.labelLarge.copyWith(
-                  color: AppColors.xpGold,
+                  color: t.gold,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -1631,19 +1632,18 @@ class _EndQuizScreenState extends State<EndQuizScreen>
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: AppColors.xpGold.withValues(alpha: 0.15),
+                    color: t.gold.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.star_rounded,
-                          size: 16, color: AppColors.xpGold),
+                      Icon(Icons.star_rounded, size: 16, color: t.gold),
                       const SizedBox(width: 4),
                       Text(
                         '+$totalXp XP',
                         style: AppTextStyles.labelMedium.copyWith(
-                          color: AppColors.xpGold,
+                          color: t.gold,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -1657,7 +1657,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: AppColors.orangeNeon.withValues(alpha: 0.15),
+                    color: t.warning.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
@@ -1669,7 +1669,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
                         CurrencyLabels.rewardShort(
                             (totalCoins as num).toInt()),
                         style: AppTextStyles.labelMedium.copyWith(
-                          color: AppColors.orangeNeon,
+                          color: t.warning,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -1688,13 +1688,13 @@ class _EndQuizScreenState extends State<EndQuizScreen>
               children: [
                 if (lessonCompleted)
                   _buildCompletionBadge(
-                      'Bài học', Icons.check_circle, AppColors.successNeon),
+                      'Bài học', Icons.check_circle, t.success),
                 if (topicCompleted)
                   _buildCompletionBadge(
-                      'Topic', Icons.topic_rounded, AppColors.primaryLight),
+                      'Topic', Icons.topic_rounded, t.brand),
                 if (domainCompleted)
                   _buildCompletionBadge(
-                      'Domain', Icons.domain_rounded, AppColors.purpleNeon),
+                      'Domain', Icons.domain_rounded, t.info),
               ],
             ),
           ],
@@ -1713,7 +1713,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
                 child: Text(
                   '${_getLevelLabel(level)}: $name (+$xp XP, ${CurrencyLabels.rewardShort((coins as num).toInt())})',
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
+                    color: t.textSecondary,
                     fontSize: 12,
                   ),
                 ),
@@ -1823,6 +1823,8 @@ class _ScoreCirclePainter extends CustomPainter {
 
   _ScoreCirclePainter({required this.progress, required this.passed});
 
+  SemanticColors get _t => SemanticColors.dark;
+
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
@@ -1831,7 +1833,7 @@ class _ScoreCirclePainter extends CustomPainter {
 
     // Background track
     final bgPaint = Paint()
-      ..color = AppColors.bgTertiary
+      ..color = _t.cardMuted
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round;
@@ -1840,12 +1842,12 @@ class _ScoreCirclePainter extends CustomPainter {
     // Score arc with gradient
     if (progress > 0) {
       final rect = Rect.fromCircle(center: center, radius: radius);
-      final gradientShader = const SweepGradient(
+      final gradientShader = SweepGradient(
         startAngle: -pi / 2,
         endAngle: 3 * pi / 2,
         colors: [
-          AppColors.purpleNeon,
-          AppColors.pinkNeon,
+          SemanticColors.dark.brand,
+          SemanticColors.dark.error,
         ],
         transform: GradientRotation(-pi / 2),
       ).createShader(rect);
@@ -1865,7 +1867,7 @@ class _ScoreCirclePainter extends CustomPainter {
       );
 
       // Glow effect at the end of the arc
-      final glowColor = passed ? AppColors.successNeon : AppColors.pinkNeon;
+      final glowColor = passed ? _t.success : _t.error;
       final endAngle = -pi / 2 + 2 * pi * progress;
       final glowX = center.dx + radius * cos(endAngle);
       final glowY = center.dy + radius * sin(endAngle);

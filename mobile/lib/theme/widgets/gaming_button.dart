@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../colors.dart';
 import '../gradients.dart';
+import '../semantic_colors.dart';
 import '../text_styles.dart';
 
 /// Cyberpunk-style gradient button with glow effect
@@ -36,8 +36,14 @@ class _GamingButtonState extends State<GamingButton> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final tokens = context.colors;
     final gradient = widget.gradient ?? AppGradients.primary;
-    final glowColor = widget.glowColor ?? AppColors.pinkNeon;
+    final glowColor = widget.glowColor ??
+        (tokens.aiGradient.length > 1 ? tokens.aiGradient[1] : tokens.brand);
+    final disabledBg = tokens.cardMuted;
+    final disabledFg =
+        isDark ? tokens.textTertiary.withValues(alpha: 0.72) : tokens.textTertiary;
 
     return GestureDetector(
       onTapDown: (_) {
@@ -53,10 +59,13 @@ class _GamingButtonState extends State<GamingButton> {
         width: widget.width,
         height: widget.height,
         decoration: BoxDecoration(
-          gradient: widget.onPressed != null ? gradient : null,
-          color: widget.onPressed == null ? AppColors.bgTertiary : null,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: widget.onPressed != null
+          gradient:
+              widget.onPressed != null && isDark ? gradient : null,
+          color: widget.onPressed == null
+              ? disabledBg
+              : (isDark ? null : tokens.brand),
+          borderRadius: BorderRadius.circular(isDark ? 12 : 999),
+          boxShadow: widget.onPressed != null && isDark
               ? [
                   BoxShadow(
                     color: glowColor.withValues(alpha: _isPressed ? 0.3 : 0.5),
@@ -65,36 +74,50 @@ class _GamingButtonState extends State<GamingButton> {
                     offset: const Offset(0, 4),
                   ),
                 ]
-              : null,
+              : (widget.onPressed != null
+                  ? [
+                      BoxShadow(
+                        color: tokens.brand.withValues(alpha: 0.25),
+                        blurRadius: 14,
+                        offset: const Offset(0, 6),
+                      ),
+                    ]
+                  : null),
         ),
         child: Material(
           color: Colors.transparent,
           child: InkWell(
             onTap: widget.isLoading ? null : widget.onPressed,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(isDark ? 12 : 999),
             child: Center(
               child: widget.isLoading
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 24,
                       height: 24,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                            tokens.textOnBrand),
                       ),
                     )
                   : Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         if (widget.icon != null) ...[
-                          Icon(widget.icon, color: Colors.white, size: 20),
+                          Icon(widget.icon,
+                              color: tokens.textOnBrand, size: 20),
                           const SizedBox(width: 8),
                         ],
                         Text(
-                          widget.text.toUpperCase(),
+                          isDark
+                              ? widget.text.toUpperCase()
+                              : widget.text,
                           style: AppTextStyles.button.copyWith(
                             color: widget.onPressed != null
-                                ? Colors.white
-                                : AppColors.textDisabled,
+                                ? tokens.textOnBrand
+                                : disabledFg,
+                            fontWeight:
+                                isDark ? FontWeight.w600 : FontWeight.w700,
                           ),
                         ),
                       ],
@@ -135,7 +158,8 @@ class _GamingButtonOutlinedState extends State<GamingButtonOutlined> {
 
   @override
   Widget build(BuildContext context) {
-    final borderColor = widget.borderColor ?? AppColors.cyanNeon;
+    final tokens = context.colors;
+    final borderColor = widget.borderColor ?? tokens.info;
 
     return GestureDetector(
       onTapDown: (_) {

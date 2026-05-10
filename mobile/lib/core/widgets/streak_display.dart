@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../theme/semantic_colors.dart';
+
 class StreakDisplay extends StatelessWidget {
   final int streak;
   final int consecutivePerfect;
@@ -23,6 +25,7 @@ class StreakDisplay extends StatelessWidget {
   }
 
   Widget _buildFullView(BuildContext context) {
+    final on = context.colors.textOnBrand;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -45,24 +48,23 @@ class StreakDisplay extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // Streak number with flame icon
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const Icon(
+              Icon(
                 Icons.local_fire_department,
                 size: 48,
-                color: Colors.white,
+                color: on,
               ),
               const SizedBox(width: 12),
               Text(
                 '$streak',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 56,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  shadows: [
+                  color: on,
+                  shadows: const [
                     Shadow(
                       color: Colors.black26,
                       blurRadius: 10,
@@ -73,11 +75,11 @@ class StreakDisplay extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Chuỗi ngày',
             style: TextStyle(
               fontSize: 18,
-              color: Colors.white,
+              color: on,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -86,7 +88,7 @@ class StreakDisplay extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
+                color: on.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
@@ -100,8 +102,8 @@ class StreakDisplay extends StatelessWidget {
                   const SizedBox(width: 6),
                   Text(
                     '$consecutivePerfect Perfect Days',
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: on,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -164,6 +166,7 @@ class StreakDisplay extends StatelessWidget {
   }
 
   Widget _buildWeeklyCalendar(BuildContext context) {
+    final on = context.colors.textOnBrand;
     final now = DateTime.now();
     final weekDays = <Widget>[];
 
@@ -174,7 +177,6 @@ class StreakDisplay extends StatelessWidget {
           date.weekday == DateTime.saturday || date.weekday == DateTime.sunday;
       final isToday = date.day == now.day && date.month == now.month;
 
-      // Check if this day has progress
       final dateKey =
           '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
       final hasProgress = weeklyProgress?[dateKey] == true;
@@ -187,7 +189,7 @@ class StreakDisplay extends StatelessWidget {
                 dayName,
                 style: TextStyle(
                   fontSize: 10,
-                  color: Colors.white.withValues(alpha: 0.8),
+                  color: on.withValues(alpha: 0.8),
                   fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
                 ),
               ),
@@ -200,16 +202,15 @@ class StreakDisplay extends StatelessWidget {
                       ? (isWeekend
                           ? Colors.yellow.shade400
                           : Colors.blue.shade400)
-                      : Colors.white.withValues(alpha: 0.2),
+                      : on.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
-                  border: isToday
-                      ? Border.all(color: Colors.white, width: 2)
-                      : null,
+                  border:
+                      isToday ? Border.all(color: on, width: 2) : null,
                 ),
                 child: hasProgress
-                    ? const Icon(
+                    ? Icon(
                         Icons.check,
-                        color: Colors.white,
+                        color: on,
                         size: 20,
                       )
                     : null,
@@ -223,11 +224,11 @@ class StreakDisplay extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'This Week',
           style: TextStyle(
             fontSize: 14,
-            color: Colors.white,
+            color: on,
             fontWeight: FontWeight.w500,
           ),
         ),

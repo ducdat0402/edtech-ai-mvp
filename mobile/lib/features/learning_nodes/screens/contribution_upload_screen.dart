@@ -42,8 +42,10 @@ class _ContributionUploadScreenState extends State<ContributionUploadScreen> {
 
   bool get _isVideo => widget.format == 'video';
 
-  Color get _accentColor =>
-      _isVideo ? AppColors.purpleNeon : AppColors.primaryLight;
+  Color _accentColor(BuildContext context) {
+    final t = context.colors;
+    return _isVideo ? t.brand : t.gold;
+  }
 
   @override
   void dispose() {
@@ -54,14 +56,15 @@ class _ContributionUploadScreenState extends State<ContributionUploadScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: t.bg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(
           _isVideo ? 'Đóng góp Video' : 'Đóng góp Hình ảnh',
-          style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+          style: AppTextStyles.h4.copyWith(color: t.textPrimary),
         ),
         leading: const AppBarLeadingBackAndHome(),
         leadingWidth: 112,
@@ -98,12 +101,14 @@ class _ContributionUploadScreenState extends State<ContributionUploadScreen> {
   }
 
   Widget _buildHeaderInfo() {
+    final t = context.colors;
+    final accent = _accentColor(context);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
+        color: t.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0x332D363D)),
+        border: Border.all(color: t.border),
       ),
       child: Row(
         children: [
@@ -111,12 +116,12 @@ class _ContributionUploadScreenState extends State<ContributionUploadScreen> {
             width: 56,
             height: 56,
             decoration: BoxDecoration(
-              color: _accentColor.withValues(alpha: 0.15),
+              color: accent.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Icon(
               _isVideo ? Icons.videocam_rounded : Icons.image_rounded,
-              color: _accentColor,
+              color: accent,
               size: 28,
             ),
           ),
@@ -131,7 +136,7 @@ class _ContributionUploadScreenState extends State<ContributionUploadScreen> {
                           ? 'Video cần đóng góp'
                           : 'Hình ảnh cần đóng góp'),
                   style: AppTextStyles.labelLarge
-                      .copyWith(color: AppColors.textPrimary),
+                      .copyWith(color: t.textPrimary),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -140,13 +145,14 @@ class _ContributionUploadScreenState extends State<ContributionUploadScreen> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    gradient: AppGradients.xpBar,
+                    gradient: LinearGradient(colors: t.heroGradient),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     'Phần thưởng: +50 XP, +30 ${CurrencyLabels.gtuShort}',
                     style: AppTextStyles.caption.copyWith(
-                        color: Colors.white, fontWeight: FontWeight.w600),
+                        color: t.textOnBrand,
+                        fontWeight: FontWeight.w600),
                   ),
                 ),
               ],
@@ -158,6 +164,7 @@ class _ContributionUploadScreenState extends State<ContributionUploadScreen> {
   }
 
   Widget _buildContributionGuide() {
+    final t = context.colors;
     final guide = widget.contributionGuide!;
     final suggestedContent = guide['suggestedContent'] as String?;
     final rawRequirements = guide['requirements'];
@@ -172,9 +179,9 @@ class _ContributionUploadScreenState extends State<ContributionUploadScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
+        color: t.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.borderPrimary),
+        border: Border.all(color: t.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -184,42 +191,42 @@ class _ContributionUploadScreenState extends State<ContributionUploadScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppColors.xpGold.withValues(alpha: 0.15),
+                  color: t.gold.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.lightbulb_rounded,
-                    color: AppColors.xpGold, size: 20),
+                child:
+                    Icon(Icons.lightbulb_rounded, color: t.gold, size: 20),
               ),
               const SizedBox(width: 12),
               Text('Hướng dẫn đóng góp',
                   style: AppTextStyles.labelLarge
-                      .copyWith(color: AppColors.textPrimary)),
+                      .copyWith(color: t.textPrimary)),
             ],
           ),
           const SizedBox(height: 16),
           if (suggestedContent != null) ...[
             Text(suggestedContent,
                 style: AppTextStyles.bodyMedium
-                    .copyWith(color: AppColors.textSecondary, height: 1.5)),
+                    .copyWith(color: t.textSecondary, height: 1.5)),
             const SizedBox(height: 16),
           ],
           if (requirements != null && requirements.isNotEmpty) ...[
             Text('Yêu cầu:',
                 style: AppTextStyles.labelMedium
-                    .copyWith(color: AppColors.textPrimary)),
+                    .copyWith(color: t.textPrimary)),
             const SizedBox(height: 8),
             ...requirements.map((req) => Padding(
                   padding: const EdgeInsets.only(bottom: 6),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(Icons.check_circle_rounded,
-                          color: AppColors.successNeon, size: 18),
+                      Icon(Icons.check_circle_rounded,
+                          color: t.success, size: 18),
                       const SizedBox(width: 8),
                       Expanded(
                           child: Text(req.toString(),
                               style: AppTextStyles.bodySmall
-                                  .copyWith(color: AppColors.textSecondary))),
+                                  .copyWith(color: t.textSecondary))),
                     ],
                   ),
                 )),
@@ -232,13 +239,13 @@ class _ContributionUploadScreenState extends State<ContributionUploadScreen> {
                     child: _buildInfoChip(
                         Icons.signal_cellular_alt_rounded,
                         _getDifficultyText(difficulty),
-                        AppColors.primaryLight)),
+                        t.brand)),
               if (difficulty != null && estimatedTime != null)
                 const SizedBox(width: 12),
               if (estimatedTime != null)
                 Expanded(
                     child: _buildInfoChip(Icons.schedule_rounded, estimatedTime,
-                        AppColors.successNeon)),
+                        t.success)),
             ],
           ),
         ],
@@ -268,15 +275,17 @@ class _ContributionUploadScreenState extends State<ContributionUploadScreen> {
   }
 
   Widget _buildFilePicker() {
+    final t = context.colors;
+    final accent = _accentColor(context);
     return GestureDetector(
       onTap: _pickFile,
       child: Container(
         height: 200,
         decoration: BoxDecoration(
-          color: AppColors.bgSecondary,
+          color: t.card,
           borderRadius: BorderRadius.circular(16),
           border:
-              Border.all(color: _accentColor.withValues(alpha: 0.3), width: 2),
+              Border.all(color: accent.withValues(alpha: 0.3), width: 2),
         ),
         child: _selectedFile == null
             ? Column(
@@ -286,14 +295,14 @@ class _ContributionUploadScreenState extends State<ContributionUploadScreen> {
                     width: 64,
                     height: 64,
                     decoration: BoxDecoration(
-                      color: _accentColor.withValues(alpha: 0.15),
+                      color: accent.withValues(alpha: 0.15),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
                       _isVideo
                           ? Icons.video_library_rounded
                           : Icons.add_photo_alternate_rounded,
-                      color: _accentColor,
+                      color: accent,
                       size: 32,
                     ),
                   ),
@@ -302,8 +311,7 @@ class _ContributionUploadScreenState extends State<ContributionUploadScreen> {
                     _isVideo
                         ? 'Chọn video từ thư viện'
                         : 'Chọn hình ảnh từ thư viện',
-                    style:
-                        AppTextStyles.labelLarge.copyWith(color: _accentColor),
+                    style: AppTextStyles.labelLarge.copyWith(color: accent),
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -311,7 +319,7 @@ class _ContributionUploadScreenState extends State<ContributionUploadScreen> {
                         ? 'Hỗ trợ: MP4, MOV, AVI (tối đa 100MB)'
                         : 'Hỗ trợ: JPG, PNG, GIF (tối đa 10MB)',
                     style: AppTextStyles.bodySmall
-                        .copyWith(color: AppColors.textTertiary),
+                        .copyWith(color: t.textTertiary),
                   ),
                 ],
               )
@@ -320,14 +328,14 @@ class _ContributionUploadScreenState extends State<ContributionUploadScreen> {
                 children: [
                   Container(
                     decoration: BoxDecoration(
-                      color: AppColors.bgTertiary,
+                      color: t.cardMuted,
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: Center(
                       child: Icon(
                           _isVideo ? Icons.movie_rounded : Icons.image_rounded,
                           size: 64,
-                          color: AppColors.textTertiary),
+                          color: t.textTertiary),
                     ),
                   ),
                   Positioned(
@@ -337,10 +345,11 @@ class _ContributionUploadScreenState extends State<ContributionUploadScreen> {
                       onTap: () => setState(() => _selectedFile = null),
                       child: Container(
                         padding: const EdgeInsets.all(6),
-                        decoration: const BoxDecoration(
-                            color: AppColors.errorNeon, shape: BoxShape.circle),
-                        child: const Icon(Icons.close,
-                            color: Colors.white, size: 16),
+                        decoration: BoxDecoration(
+                            color: t.error, shape: BoxShape.circle),
+                        child: Icon(Icons.close,
+                            color: Theme.of(context).colorScheme.onError,
+                            size: 16),
                       ),
                     ),
                   ),
@@ -351,6 +360,7 @@ class _ContributionUploadScreenState extends State<ContributionUploadScreen> {
   }
 
   Widget _buildPreview() {
+    final t = context.colors;
     final fileName = _selectedFile!.path.split('/').last;
     final fileSize = _selectedFile!.lengthSync();
     final fileSizeMB = (fileSize / (1024 * 1024)).toStringAsFixed(2);
@@ -358,9 +368,9 @@ class _ContributionUploadScreenState extends State<ContributionUploadScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.successNeon.withValues(alpha: 0.1),
+        color: t.success.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.successNeon.withValues(alpha: 0.3)),
+        border: Border.all(color: t.success.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -368,12 +378,12 @@ class _ContributionUploadScreenState extends State<ContributionUploadScreen> {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: AppColors.successNeon.withValues(alpha: 0.2),
+              color: t.success.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
                 _isVideo ? Icons.video_file_rounded : Icons.image_rounded,
-                color: AppColors.successNeon),
+                color: t.success),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -382,40 +392,42 @@ class _ContributionUploadScreenState extends State<ContributionUploadScreen> {
               children: [
                 Text(fileName,
                     style: AppTextStyles.labelMedium
-                        .copyWith(color: AppColors.textPrimary),
+                        .copyWith(color: t.textPrimary),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis),
                 const SizedBox(height: 4),
                 Text('$fileSizeMB MB',
                     style: AppTextStyles.caption
-                        .copyWith(color: AppColors.textSecondary)),
+                        .copyWith(color: t.textSecondary)),
               ],
             ),
           ),
-          const Icon(Icons.check_circle_rounded, color: AppColors.successNeon),
+          Icon(Icons.check_circle_rounded, color: t.success),
         ],
       ),
     );
   }
 
   Widget _buildDescriptionFields() {
+    final t = context.colors;
+    final accent = _accentColor(context);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
+        color: t.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0x332D363D)),
+        border: Border.all(color: t.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.edit_note_rounded, color: _accentColor, size: 24),
+              Icon(Icons.edit_note_rounded, color: accent, size: 24),
               const SizedBox(width: 8),
               Text('Thông tin đóng góp',
                   style: AppTextStyles.labelLarge
-                      .copyWith(color: AppColors.textPrimary)),
+                      .copyWith(color: t.textPrimary)),
             ],
           ),
           const SizedBox(height: 16),
@@ -433,21 +445,20 @@ class _ContributionUploadScreenState extends State<ContributionUploadScreen> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.primaryLight.withValues(alpha: 0.1),
+              color: t.brand.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
-                  color: AppColors.primaryLight.withValues(alpha: 0.25)),
+                  color: t.brand.withValues(alpha: 0.25)),
             ),
             child: Row(
               children: [
-                const Icon(Icons.info_outline_rounded,
-                    color: AppColors.primaryLight, size: 20),
+                Icon(Icons.info_outline_rounded, color: t.brand, size: 20),
                 const SizedBox(width: 8),
                 Expanded(
                     child: Text(
                         'Đóng góp sẽ được lưu lịch sử và có thể so sánh phiên bản khi admin duyệt.',
                         style: AppTextStyles.caption
-                            .copyWith(color: AppColors.primaryLight))),
+                            .copyWith(color: t.brand))),
               ],
             ),
           ),
@@ -458,54 +469,58 @@ class _ContributionUploadScreenState extends State<ContributionUploadScreen> {
 
   Widget _buildTextField(TextEditingController controller, String label,
       String hint, int maxLines) {
+    final t = context.colors;
+    final accent = _accentColor(context);
     return TextField(
       controller: controller,
       maxLines: maxLines,
-      style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary),
+      style: AppTextStyles.bodyMedium.copyWith(color: t.textPrimary),
       decoration: InputDecoration(
         labelText: label,
         labelStyle:
-            AppTextStyles.labelMedium.copyWith(color: AppColors.textSecondary),
+            AppTextStyles.labelMedium.copyWith(color: t.textSecondary),
         hintText: hint,
         hintStyle:
-            AppTextStyles.bodySmall.copyWith(color: AppColors.textTertiary),
+            AppTextStyles.bodySmall.copyWith(color: t.textTertiary),
         border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0x332D363D))),
+            borderSide: BorderSide(color: t.border)),
         enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0x332D363D))),
+            borderSide: BorderSide(color: t.border)),
         focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: _accentColor, width: 2)),
+            borderSide: BorderSide(color: accent, width: 2)),
         filled: true,
-        fillColor: AppColors.bgTertiary,
+        fillColor: t.cardMuted,
       ),
     );
   }
 
   Widget _buildErrorMessage() {
+    final t = context.colors;
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.errorNeon.withValues(alpha: 0.1),
+        color: t.error.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.errorNeon.withValues(alpha: 0.3)),
+        border: Border.all(color: t.error.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
-          const Icon(Icons.error_rounded, color: AppColors.errorNeon),
+          Icon(Icons.error_rounded, color: t.error),
           const SizedBox(width: 8),
           Expanded(
               child: Text(_error!,
                   style: AppTextStyles.bodySmall
-                      .copyWith(color: AppColors.errorNeon))),
+                      .copyWith(color: t.error))),
         ],
       ),
     );
   }
 
   Widget _buildSubmitButton() {
+    final t = context.colors;
     return SizedBox(
       width: double.infinity,
       child: GamingButton(
@@ -517,11 +532,8 @@ class _ContributionUploadScreenState extends State<ContributionUploadScreen> {
         onPressed:
             _selectedFile != null && !_isUploading ? _submitContribution : null,
         isLoading: _isUploading,
-        gradient: _isVideo
-            ? AppGradients.primary
-            : const LinearGradient(
-                colors: [AppColors.primaryLight, AppColors.successNeon]),
-        glowColor: _accentColor,
+        gradient: LinearGradient(colors: t.heroGradient),
+        glowColor: _accentColor(context),
         icon: Icons.cloud_upload_rounded,
       ),
     );
@@ -596,11 +608,12 @@ class _ContributionUploadScreenState extends State<ContributionUploadScreen> {
       setState(() => _uploadProgress = 1.0);
 
       if (mounted) {
+        final t = context.colors;
         await showDialog(
           context: context,
           barrierDismissible: false,
           builder: (context) => AlertDialog(
-            backgroundColor: AppColors.bgSecondary,
+            backgroundColor: t.card,
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             content: Column(
@@ -610,21 +623,21 @@ class _ContributionUploadScreenState extends State<ContributionUploadScreen> {
                   width: 80,
                   height: 80,
                   decoration: BoxDecoration(
-                      color: AppColors.successNeon.withValues(alpha: 0.15),
+                      color: t.success.withValues(alpha: 0.15),
                       shape: BoxShape.circle),
-                  child: const Icon(Icons.check_circle_rounded,
-                      color: AppColors.successNeon, size: 48),
+                  child: Icon(Icons.check_circle_rounded,
+                      color: t.success, size: 48),
                 ),
                 const SizedBox(height: 16),
                 Text('Gửi thành công!',
                     style: AppTextStyles.h4
-                        .copyWith(color: AppColors.textPrimary)),
+                        .copyWith(color: t.textPrimary)),
                 const SizedBox(height: 8),
                 Text(
                     'Đóng góp của bạn đang được xem xét.\nBạn sẽ nhận phần thưởng khi được duyệt.',
                     textAlign: TextAlign.center,
                     style: AppTextStyles.bodyMedium
-                        .copyWith(color: AppColors.textSecondary)),
+                        .copyWith(color: t.textSecondary)),
                 const SizedBox(height: 24),
                 SizedBox(
                   width: double.infinity,
@@ -634,8 +647,8 @@ class _ContributionUploadScreenState extends State<ContributionUploadScreen> {
                       Navigator.pop(context);
                       Navigator.pop(context, true);
                     },
-                    gradient: AppGradients.success,
-                    glowColor: AppColors.successNeon,
+                    gradient: LinearGradient(colors: [t.success, t.brand]),
+                    glowColor: t.success,
                   ),
                 ),
               ],

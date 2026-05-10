@@ -56,29 +56,32 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
 
     final ok = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.bgSecondary,
-        title: Text('Gỡ chặn?',
-            style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
-        content: Text(
-          'Bạn sẽ có thể gửi lời mời kết bạn và nhắn tin với $name.',
-          style:
-              AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Hủy',
-                style: TextStyle(color: AppColors.textTertiary)),
+      builder: (ctx) {
+        final t = ctx.colors;
+        return AlertDialog(
+          backgroundColor: t.card,
+          title: Text('Gỡ chặn?',
+              style: AppTextStyles.h4.copyWith(color: t.textPrimary)),
+          content: Text(
+            'Bạn sẽ có thể gửi lời mời kết bạn và nhắn tin với $name.',
+            style:
+                AppTextStyles.bodyMedium.copyWith(color: t.textSecondary),
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Gỡ chặn',
-                style: TextStyle(
-                    color: AppColors.successNeon, fontWeight: FontWeight.bold)),
-          ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text('Hủy',
+                  style: TextStyle(color: t.textTertiary)),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text('Gỡ chặn',
+                  style: TextStyle(
+                      color: t.success, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        );
+      },
     );
     if (ok != true || !mounted) return;
 
@@ -87,10 +90,11 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
       final api = Provider.of<ApiService>(context, listen: false);
       await api.unblockUser(id);
       if (!mounted) return;
+      final tokens = context.colors;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Đã gỡ chặn $name'),
-          backgroundColor: AppColors.successNeon.withValues(alpha: 0.9),
+          backgroundColor: tokens.success.withValues(alpha: 0.9),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -104,7 +108,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Lỗi: $e'),
-          backgroundColor: AppColors.errorNeon,
+          backgroundColor: context.colors.error,
         ),
       );
     }
@@ -130,27 +134,29 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: tokens.bg,
       appBar: AppBar(
-        backgroundColor: AppColors.bgSecondary,
+        backgroundColor: tokens.card,
+        surfaceTintColor: Colors.transparent,
         leading: const AppBarLeadingBackAndHome(),
         leadingWidth: 112,
         automaticallyImplyLeading: false,
         title: Text('Đã chặn',
-            style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
-        iconTheme: const IconThemeData(color: AppColors.textPrimary),
+            style: AppTextStyles.h4.copyWith(color: tokens.textPrimary)),
+        iconTheme: IconThemeData(color: tokens.textPrimary),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh_rounded,
-                color: AppColors.textSecondary),
+            icon: Icon(Icons.refresh_rounded,
+                color: tokens.textSecondary),
             onPressed: _loading ? null : _load,
           ),
         ],
       ),
       body: _loading
-          ? const Center(
-              child: CircularProgressIndicator(color: AppColors.purpleNeon))
+          ? Center(
+              child: CircularProgressIndicator(color: tokens.brand))
           : _error != null
               ? Center(
                   child: Padding(
@@ -158,13 +164,13 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.error_outline,
-                            color: AppColors.errorNeon, size: 48),
+                        Icon(Icons.error_outline,
+                            color: tokens.error, size: 48),
                         const SizedBox(height: 16),
                         Text(_error!,
                             textAlign: TextAlign.center,
                             style: AppTextStyles.bodyMedium
-                                .copyWith(color: AppColors.textSecondary)),
+                                .copyWith(color: tokens.textSecondary)),
                         const SizedBox(height: 16),
                         FilledButton(
                           onPressed: _load,
@@ -182,7 +188,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                           'Những tài khoản bạn chặn từ danh sách bạn bè sẽ hiển thị ở đây.',
                     )
                   : RefreshIndicator(
-                      color: AppColors.purpleNeon,
+                      color: tokens.brand,
                       onRefresh: _load,
                       child: ListView.builder(
                         padding: const EdgeInsets.all(16),
@@ -199,21 +205,21 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                           return Container(
                             margin: const EdgeInsets.only(bottom: 12),
                             decoration: BoxDecoration(
-                              color: AppColors.bgSecondary,
+                              color: tokens.card,
                               borderRadius: BorderRadius.circular(16),
                               border:
-                                  Border.all(color: const Color(0x332D363D)),
+                                  Border.all(color: tokens.border),
                             ),
                             child: ListTile(
                               contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 16, vertical: 8),
                               leading: CircleAvatar(
                                 backgroundColor:
-                                    AppColors.errorNeon.withValues(alpha: 0.2),
+                                    tokens.error.withValues(alpha: 0.2),
                                 child: Text(
                                   _initials(name),
-                                  style: const TextStyle(
-                                    color: AppColors.errorNeon,
+                                  style: TextStyle(
+                                    color: tokens.error,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -221,30 +227,30 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                               title: Text(
                                 name,
                                 style: AppTextStyles.labelLarge
-                                    .copyWith(color: AppColors.textPrimary),
+                                    .copyWith(color: tokens.textPrimary),
                               ),
                               subtitle: blockedLabel != null
                                   ? Text(
                                       'Chặn lúc $blockedLabel',
                                       style: AppTextStyles.caption.copyWith(
-                                          color: AppColors.textTertiary),
+                                          color: tokens.textTertiary),
                                     )
                                   : null,
                               trailing: busy
-                                  ? const SizedBox(
+                                  ? SizedBox(
                                       width: 28,
                                       height: 28,
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2,
-                                        color: AppColors.purpleNeon,
+                                        color: tokens.brand,
                                       ),
                                     )
                                   : TextButton(
                                       onPressed: () => _confirmUnblock(user),
-                                      child: const Text(
+                                      child: Text(
                                         'Gỡ chặn',
                                         style: TextStyle(
-                                          color: AppColors.successNeon,
+                                          color: tokens.success,
                                           fontWeight: FontWeight.w600,
                                         ),
                                       ),

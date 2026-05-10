@@ -177,12 +177,13 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   }
 
   void _showMessageActions(BuildContext context, Map<String, dynamic> msg) {
+    final t = context.colors;
     final senderId = msg['senderId'] as String? ?? '';
     final isMe =
         _myUserId != null ? senderId == _myUserId : senderId != widget.peerId;
     showModalBottomSheet<void>(
       context: context,
-      backgroundColor: AppColors.bgSecondary,
+      backgroundColor: t.card,
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
       builder: (ctx) => SafeArea(
@@ -190,10 +191,8 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading:
-                  const Icon(Icons.reply_rounded, color: AppColors.purpleNeon),
-              title: const Text('Trả lời',
-                  style: TextStyle(color: AppColors.textPrimary)),
+              leading: Icon(Icons.reply_rounded, color: t.brand),
+              title: Text('Trả lời', style: TextStyle(color: t.textPrimary)),
               onTap: () {
                 Navigator.pop(ctx);
                 setState(() {
@@ -207,10 +206,9 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
             ),
             if (isMe)
               ListTile(
-                leading: const Icon(Icons.delete_outline_rounded,
-                    color: AppColors.pinkNeon),
-                title: const Text('Xóa tin nhắn',
-                    style: TextStyle(color: AppColors.textPrimary)),
+                leading: Icon(Icons.delete_outline_rounded, color: t.error),
+                title:
+                    Text('Xóa tin nhắn', style: TextStyle(color: t.textPrimary)),
                 onTap: () {
                   Navigator.pop(ctx);
                   _confirmDelete(msg['id'] as String);
@@ -223,36 +221,36 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   }
 
   void _confirmDelete(String messageId) {
+    final api = Provider.of<ApiService>(context, listen: false);
     showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.bgSecondary,
-        title: const Text('Xóa tin nhắn?',
-            style: TextStyle(color: AppColors.textPrimary)),
-        content: const Text('Tin nhắn sẽ bị xóa vĩnh viễn.',
-            style: TextStyle(color: AppColors.textSecondary)),
+      builder: (ctx) {
+        final t = ctx.colors;
+        return AlertDialog(
+        backgroundColor: t.card,
+        title: Text('Xóa tin nhắn?', style: TextStyle(color: t.textPrimary)),
+        content: Text('Tin nhắn sẽ bị xóa vĩnh viễn.',
+            style: TextStyle(color: t.textSecondary)),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
               child: const Text('Hủy')),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child:
-                const Text('Xóa', style: TextStyle(color: AppColors.pinkNeon)),
+            child: Text('Xóa', style: TextStyle(color: t.error)),
           ),
         ],
-      ),
+      );
+      },
     ).then((ok) async {
       if (ok != true) return;
       try {
-        await Provider.of<ApiService>(context, listen: false)
-            .deleteDmMessage(messageId);
-        if (mounted) {
-          setState(() {
-            _messages = _messages.where((m) => m['id'] != messageId).toList();
-            if (_replyTo?['id'] == messageId) _replyTo = null;
-          });
-        }
+        await api.deleteDmMessage(messageId);
+        if (!mounted) return;
+        setState(() {
+          _messages = _messages.where((m) => m['id'] != messageId).toList();
+          if (_replyTo?['id'] == messageId) _replyTo = null;
+        });
       } catch (_) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -267,24 +265,22 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppColors.bgSecondary,
+        backgroundColor: t.card,
         leading: const AppBarLeadingBackAndHome(),
         leadingWidth: 112,
         automaticallyImplyLeading: false,
-        title: Text(widget.peerName,
-            style: const TextStyle(color: AppColors.textPrimary)),
-        iconTheme: const IconThemeData(color: AppColors.textPrimary),
+        title: Text(widget.peerName, style: TextStyle(color: t.textPrimary)),
+        iconTheme: IconThemeData(color: t.textPrimary),
       ),
       body: Column(
         children: [
           Expanded(
             child: _loading
-                ? const Center(
-                    child:
-                        CircularProgressIndicator(color: AppColors.purpleNeon))
+                ? Center(child: CircularProgressIndicator(color: t.brand))
                 : ListView.builder(
                     controller: _scrollController,
                     reverse: true,
@@ -298,9 +294,8 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                           child: Center(
                             child: TextButton(
                               onPressed: _loadMore,
-                              child: const Text('Tải thêm',
-                                  style:
-                                      TextStyle(color: AppColors.purpleNeon)),
+                              child: Text('Tải thêm',
+                                  style: TextStyle(color: t.brand)),
                             ),
                           ),
                         );
@@ -311,43 +306,41 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                   ),
           ),
           if (_typingUserId != null)
-            const Padding(
-              padding: EdgeInsets.only(left: 16, bottom: 4),
+            Padding(
+              padding: const EdgeInsets.only(left: 16, bottom: 4),
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text('đang gõ...',
-                    style:
-                        TextStyle(color: AppColors.textTertiary, fontSize: 12)),
+                    style: TextStyle(color: t.textTertiary, fontSize: 12)),
               ),
             ),
           Container(
-            color: AppColors.bgSecondary,
+            color: t.card,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (_replyTo != null)
                   Container(
                     padding: const EdgeInsets.fromLTRB(12, 8, 8, 4),
-                    color: AppColors.bgTertiary.withValues(alpha: 0.5),
+                    color: t.cardMuted.withValues(alpha: 0.5),
                     child: Row(
                       children: [
-                        const Icon(Icons.reply_rounded,
-                            size: 18, color: AppColors.purpleNeon),
+                        Icon(Icons.reply_rounded, size: 18, color: t.brand),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
                             (_replyTo!['content'] as String? ?? '').length > 50
                                 ? '${(_replyTo!['content'] as String).substring(0, 50)}...'
                                 : (_replyTo!['content'] as String? ?? ''),
-                            style: const TextStyle(
-                                color: AppColors.textSecondary, fontSize: 12),
+                            style: TextStyle(
+                                color: t.textSecondary, fontSize: 12),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         IconButton(
                           icon: const Icon(Icons.close, size: 20),
-                          color: AppColors.textTertiary,
+                          color: t.textTertiary,
                           onPressed: () => setState(() => _replyTo = null),
                         ),
                       ],
@@ -365,7 +358,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                             _showEmojiBar
                                 ? Icons.keyboard_rounded
                                 : Icons.emoji_emotions_outlined,
-                            color: AppColors.purpleNeon,
+                            color: t.brand,
                           ),
                           onPressed: () =>
                               setState(() => _showEmojiBar = !_showEmojiBar),
@@ -374,13 +367,12 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                           child: TextField(
                             controller: _textController,
                             style:
-                                const TextStyle(color: AppColors.textPrimary),
+                                TextStyle(color: t.textPrimary),
                             decoration: InputDecoration(
                               hintText: 'Nhắn tin...',
-                              hintStyle: const TextStyle(
-                                  color: AppColors.textTertiary),
+                              hintStyle: TextStyle(color: t.textTertiary),
                               filled: true,
-                              fillColor: AppColors.bgTertiary,
+                              fillColor: t.cardMuted,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(24),
                                 borderSide: BorderSide.none,
@@ -394,10 +386,10 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                         const SizedBox(width: 8),
                         IconButton.filled(
                           onPressed: _send,
-                          icon: const Icon(Icons.send_rounded,
-                              color: Colors.white),
+                          icon: Icon(Icons.send_rounded,
+                              color: t.textOnBrand),
                           style: IconButton.styleFrom(
-                            backgroundColor: AppColors.purpleNeon,
+                            backgroundColor: t.brand,
                           ),
                         ),
                       ],
@@ -413,6 +405,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   }
 
   Widget _buildMessageBubble(Map<String, dynamic> msg) {
+    final t = context.colors;
     final senderId = msg['senderId'] as String? ?? '';
     final content = msg['content'] as String? ?? '';
     final createdAt = msg['createdAt'] as String?;
@@ -433,8 +426,8 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
               maxWidth: MediaQuery.of(context).size.width * 0.75),
           decoration: BoxDecoration(
             color: isMe
-                ? AppColors.purpleNeon.withValues(alpha: 0.3)
-                : AppColors.bgTertiary,
+                ? t.brand.withValues(alpha: 0.3)
+                : t.cardMuted,
             borderRadius: BorderRadius.only(
               topLeft: const Radius.circular(16),
               topRight: const Radius.circular(16),
@@ -443,8 +436,8 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
             ),
             border: Border.all(
               color: isMe
-                  ? AppColors.purpleNeon.withValues(alpha: 0.5)
-                  : const Color(0x332D363D),
+                  ? t.brand.withValues(alpha: 0.5)
+                  : t.border,
             ),
           ),
           child: Column(
@@ -457,7 +450,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                   decoration: BoxDecoration(
                     border: Border(
                         left: BorderSide(
-                            color: AppColors.purpleNeon.withValues(alpha: 0.6),
+                            color: t.brand.withValues(alpha: 0.6),
                             width: 3)),
                   ),
                   child: Align(
@@ -466,8 +459,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                       replyContent.length > 50
                           ? '${replyContent.substring(0, 50)}...'
                           : replyContent,
-                      style: const TextStyle(
-                          color: AppColors.textSecondary, fontSize: 12),
+                      style: TextStyle(color: t.textSecondary, fontSize: 12),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -476,15 +468,13 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
               ],
               Text(
                 content,
-                style:
-                    const TextStyle(color: AppColors.textPrimary, fontSize: 15),
+                style: TextStyle(color: t.textPrimary, fontSize: 15),
               ),
               if (createdAt != null) ...[
                 const SizedBox(height: 4),
                 Text(
                   _formatTime(createdAt),
-                  style: const TextStyle(
-                      color: AppColors.textTertiary, fontSize: 10),
+                  style: TextStyle(color: t.textTertiary, fontSize: 10),
                 ),
               ],
             ],

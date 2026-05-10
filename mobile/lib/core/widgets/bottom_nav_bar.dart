@@ -2,9 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
-import 'package:edtech_mobile/theme/colors.dart';
+import 'package:edtech_mobile/theme/semantic_colors.dart';
 import 'package:edtech_mobile/theme/text_styles.dart';
 
+/// Bottom nav theo bộ mockup Gamistu (light) — vẫn hoạt động trong dark mode.
+///
+/// Tabs:
+/// 0. Trang chủ → /dashboard
+/// 1. Thư viện → /library
+/// 2. Cộng đồng → /friends
+/// 3. Profile → /profile (Cửa hàng / Quests / Leaderboard nằm bên trong)
 class BottomNavBar extends StatefulWidget {
   final int currentIndex;
 
@@ -48,43 +55,47 @@ class _BottomNavBarState extends State<BottomNavBar> {
         context.go('/friends');
         break;
       case 3:
-        context.go('/shop');
+        context.go('/profile');
         break;
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final tokens = context.colors;
     return Material(
       color: Colors.transparent,
       child: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              const Color(0xFF1E2830),
-              AppColors.bgSecondary,
-              AppColors.bgSecondary,
-            ],
-            stops: const [0.0, 0.35, 1.0],
-          ),
+          gradient: isDark
+              ? LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    const Color(0xFF1E2830),
+                    tokens.card,
+                    tokens.card,
+                  ],
+                  stops: const [0.0, 0.35, 1.0],
+                )
+              : null,
+          color: isDark ? null : tokens.card,
           border: Border(
             top: BorderSide(
-              color: AppColors.purpleNeon.withValues(alpha: 0.28),
+              color: isDark
+                  ? tokens.brand.withValues(alpha: 0.28)
+                  : tokens.border,
               width: 1,
             ),
           ),
           boxShadow: [
             BoxShadow(
-              color: AppColors.purpleNeon.withValues(alpha: 0.14),
-              blurRadius: 18,
-              offset: const Offset(0, -8),
-            ),
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.55),
-              blurRadius: 14,
-              offset: const Offset(0, -4),
+              color: isDark
+                  ? tokens.brand.withValues(alpha: 0.14)
+                  : tokens.shadowColor,
+              blurRadius: isDark ? 18 : 22,
+              offset: const Offset(0, -6),
             ),
           ],
         ),
@@ -98,9 +109,9 @@ class _BottomNavBarState extends State<BottomNavBar> {
                 Expanded(
                   child: _NavEntry(
                     selected: widget.currentIndex == 0,
-                    label: 'Tổng quan',
-                    icon: Icons.dashboard_outlined,
-                    activeIcon: Icons.dashboard_rounded,
+                    label: 'Trang chủ',
+                    icon: Icons.home_outlined,
+                    activeIcon: Icons.home_rounded,
                     onTap: () => _onItemTapped(context, 0),
                   ),
                 ),
@@ -126,9 +137,9 @@ class _BottomNavBarState extends State<BottomNavBar> {
                 Expanded(
                   child: _NavEntry(
                     selected: widget.currentIndex == 3,
-                    label: 'Cửa hàng',
-                    icon: Icons.storefront_outlined,
-                    activeIcon: Icons.storefront_rounded,
+                    label: 'Profile',
+                    icon: Icons.person_outline_rounded,
+                    activeIcon: Icons.person_rounded,
                     onTap: () => _onItemTapped(context, 3),
                   ),
                 ),
@@ -160,10 +171,15 @@ class _NavEntry extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final iconColor =
-        selected ? Colors.white : AppColors.textTertiary.withValues(alpha: 0.9);
-    final labelColor =
-        selected ? Colors.white : AppColors.textTertiary.withValues(alpha: 0.88);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final tokens = context.colors;
+
+    final iconColor = selected
+        ? (isDark ? tokens.textOnBrand : tokens.brand)
+        : (isDark
+            ? tokens.textTertiary.withValues(alpha: 0.9)
+            : tokens.textTertiary);
+    final labelColor = iconColor;
 
     Widget iconWidget = Icon(
       selected ? activeIcon : icon,
@@ -173,14 +189,14 @@ class _NavEntry extends StatelessWidget {
 
     if (badgeCount > 0) {
       iconWidget = Badge(
-        backgroundColor: AppColors.purpleNeon,
+        backgroundColor: tokens.brand,
         alignment: const Alignment(0.55, -0.65),
         label: Text(
           badgeCount > 9 ? '9+' : '$badgeCount',
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 9,
             fontWeight: FontWeight.w800,
-            color: Colors.white,
+            color: tokens.textOnBrand,
           ),
         ),
         child: iconWidget,
@@ -192,33 +208,34 @@ class _NavEntry extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(18),
-        splashColor: AppColors.purpleNeon.withValues(alpha: 0.2),
-        highlightColor: AppColors.purpleNeon.withValues(alpha: 0.08),
+        splashColor: tokens.brand.withValues(alpha: 0.18),
+        highlightColor: tokens.brand.withValues(alpha: 0.08),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 220),
           curve: Curves.easeOutCubic,
           padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
-            gradient: selected
+            gradient: selected && isDark
                 ? LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      AppColors.purpleNeon.withValues(alpha: 0.55),
-                      AppColors.purpleNeon.withValues(alpha: 0.22),
+                      tokens.brand.withValues(alpha: 0.55),
+                      tokens.brand.withValues(alpha: 0.22),
                     ],
                   )
                 : null,
+            color: selected && !isDark ? tokens.brandSoft : null,
             border: Border.all(
-              color: selected
-                  ? AppColors.primaryLight.withValues(alpha: 0.35)
+              color: selected && isDark
+                  ? tokens.brand.withValues(alpha: 0.45)
                   : Colors.transparent,
             ),
-            boxShadow: selected
+            boxShadow: selected && isDark
                 ? [
                     BoxShadow(
-                      color: AppColors.purpleNeon.withValues(alpha: 0.35),
+                      color: tokens.brand.withValues(alpha: 0.35),
                       blurRadius: 10,
                       offset: const Offset(0, 3),
                     ),

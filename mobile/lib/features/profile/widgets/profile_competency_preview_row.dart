@@ -68,6 +68,7 @@ class ProfileCompetencyPreviewRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.colors;
     final data = competenciesData;
     final learningMap =
         extractMetricValues(data == null ? null : data['learningMetrics']);
@@ -83,7 +84,7 @@ class ProfileCompetencyPreviewRow extends StatelessWidget {
           child: _PreviewCard(
             title: 'Năng lực học tập',
             subtitle: 'Chạm để xem chi tiết',
-            color: AppColors.primaryLight,
+            color: tokens.brand,
             bgSecondary: bgSecondary,
             borderColor: borderColor,
             normalizedValues: learningV,
@@ -95,7 +96,7 @@ class ProfileCompetencyPreviewRow extends StatelessWidget {
           child: _PreviewCard(
             title: 'Năng lực con người',
             subtitle: 'Chạm để xem chi tiết',
-            color: AppColors.orangeNeon,
+            color: tokens.gold,
             bgSecondary: bgSecondary,
             borderColor: borderColor,
             normalizedValues: humanV,
@@ -128,6 +129,7 @@ class _PreviewCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tertiary = context.colors.textTertiary;
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -163,7 +165,7 @@ class _PreviewCard extends StatelessWidget {
                   subtitle,
                   textAlign: TextAlign.center,
                   style: AppTextStyles.caption.copyWith(
-                    color: AppColors.textTertiary,
+                    color: tertiary,
                     fontSize: 10,
                   ),
                 ),
@@ -173,6 +175,7 @@ class _PreviewCard extends StatelessWidget {
                   child: _MiniRadarChart(
                     color: color,
                     borderColor: borderColor,
+                    tertiaryLabel: tertiary,
                     normalizedValues: normalizedValues,
                   ),
                 ),
@@ -189,11 +192,13 @@ class _MiniRadarChart extends StatelessWidget {
   const _MiniRadarChart({
     required this.color,
     required this.borderColor,
+    required this.tertiaryLabel,
     required this.normalizedValues,
   });
 
   final Color color;
   final Color borderColor;
+  final Color tertiaryLabel;
   final List<double> normalizedValues;
 
   @override
@@ -215,7 +220,7 @@ class _MiniRadarChart extends StatelessWidget {
           color: borderColor.withValues(alpha: 0.28),
         ),
         ticksTextStyle: AppTextStyles.caption.copyWith(
-          color: AppColors.textTertiary,
+          color: tertiaryLabel,
           fontSize: 8,
         ),
         titleTextStyle: AppTextStyles.caption.copyWith(

@@ -47,6 +47,7 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
       try {
         final access = await apiService.checkNodeAccess(widget.nodeId);
         if (access['canAccess'] != true) {
+          if (!mounted) return;
           final subjectId =
               (access['nodeInfo'] as Map?)?.cast<String, dynamic>()['subjectId']
                   as String?;
@@ -67,6 +68,7 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
       } catch (_) {
         // If access-check fails, DO NOT fall through (would allow bypass).
         // Force the unlock sheet; it already has user-friendly error states.
+        if (!mounted) return;
         final opened = await LessonUnlockSheet.show(
           context: context,
           api: apiService,
@@ -146,6 +148,7 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
       'contentVersionHistory': contentVersionHistory,
     }).then((_) async {
       if (!mounted) return;
+      final t = context.colors;
       final apiService = Provider.of<ApiService>(context, listen: false);
       await _loadData();
       if (!mounted) return;
@@ -158,7 +161,7 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
             content: const Text(
               'Bạn cần hoàn thành đủ 4 dạng bài trong bài này để được tính 1 streak.',
             ),
-            backgroundColor: AppColors.orangeNeon.withValues(alpha: 0.9),
+            backgroundColor: t.warning.withValues(alpha: 0.9),
             duration: const Duration(seconds: 4),
           ),
         );
@@ -168,8 +171,9 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: t.bg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -178,15 +182,13 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
         automaticallyImplyLeading: false,
         title: Text(
           widget.title,
-          style:
-              AppTextStyles.labelLarge.copyWith(color: AppColors.textPrimary),
+          style: AppTextStyles.labelLarge.copyWith(color: t.textPrimary),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
       ),
       body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: AppColors.primaryLight))
+          ? Center(child: CircularProgressIndicator(color: t.brand))
           : _error != null
               ? _buildErrorState()
               : _contents.isEmpty
@@ -196,15 +198,16 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
   }
 
   Widget _buildErrorState() {
+    final t = context.colors;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.error_outline, size: 48, color: AppColors.errorNeon),
+          Icon(Icons.error_outline, size: 48, color: t.error),
           const SizedBox(height: 16),
           Text('Lỗi: $_error',
               style: AppTextStyles.bodyMedium
-                  .copyWith(color: AppColors.textSecondary),
+                  .copyWith(color: t.textSecondary),
               textAlign: TextAlign.center),
           const SizedBox(height: 16),
           GamingButton(
@@ -224,6 +227,7 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
   }
 
   Widget _buildEmptyState() {
+    final t = context.colors;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -234,21 +238,21 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.purpleNeon.withValues(alpha: 0.1),
+                color: t.brand.withValues(alpha: 0.1),
               ),
-              child: const Icon(Icons.school_outlined,
-                  size: 48, color: AppColors.purpleNeon),
+              child:
+                  Icon(Icons.school_outlined, size: 48, color: t.brand),
             ),
             const SizedBox(height: 24),
             Text(
               'Chưa có dạng bài học nào',
-              style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary),
+              style: AppTextStyles.h3.copyWith(color: t.textPrimary),
             ),
             const SizedBox(height: 8),
             Text(
               'Bài học này chưa có nội dung. Vui lòng quay lại sau.',
               style: AppTextStyles.bodyMedium
-                  .copyWith(color: AppColors.textSecondary),
+                  .copyWith(color: t.textSecondary),
               textAlign: TextAlign.center,
             ),
           ],
@@ -294,24 +298,24 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
   }
 
   Widget _buildStreakHintBanner() {
+    final t = context.colors;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.orangeNeon.withValues(alpha: 0.12),
+        color: t.warning.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.orangeNeon.withValues(alpha: 0.35)),
+        border: Border.all(color: t.warning.withValues(alpha: 0.35)),
       ),
       child: Row(
         children: [
-          const Icon(Icons.local_fire_department_rounded,
-              color: AppColors.orangeNeon, size: 24),
+          Icon(Icons.local_fire_department_rounded, color: t.warning, size: 24),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               'Hoàn thành đủ 4 dạng bài trong bài này để được tính 1 streak.',
               style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textPrimary,
+                color: t.textPrimary,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -322,25 +326,25 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
   }
 
   Widget _buildProgressHeader(int completed, int total) {
+    final t = context.colors;
     final progress = total > 0 ? completed / total : 0.0;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColors.purpleNeon.withValues(alpha: 0.1),
-            AppColors.primaryLight.withValues(alpha: 0.1),
+            t.brand.withValues(alpha: 0.1),
+            t.gold.withValues(alpha: 0.1),
           ],
         ),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.purpleNeon.withValues(alpha: 0.2)),
+        border: Border.all(color: t.brand.withValues(alpha: 0.2)),
       ),
       child: Column(
         children: [
           Row(
             children: [
-              const Icon(Icons.school_rounded,
-                  color: AppColors.purpleNeon, size: 24),
+              Icon(Icons.school_rounded, color: t.brand, size: 24),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -349,7 +353,7 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
                     Text(
                       'Tiến độ bài học',
                       style: AppTextStyles.labelLarge.copyWith(
-                        color: AppColors.textPrimary,
+                        color: t.textPrimary,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -357,7 +361,7 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
                     Text(
                       '$completed/$total dạng bài đã hoàn thành',
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.textSecondary,
+                        color: t.textSecondary,
                       ),
                     ),
                   ],
@@ -369,16 +373,16 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
                     const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 decoration: BoxDecoration(
                   color: _isLessonComplete
-                      ? AppColors.successNeon.withValues(alpha: 0.15)
-                      : AppColors.purpleNeon.withValues(alpha: 0.15),
+                      ? t.success.withValues(alpha: 0.15)
+                      : t.brand.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
                   '${(progress * 100).round()}%',
                   style: AppTextStyles.labelLarge.copyWith(
                     color: _isLessonComplete
-                        ? AppColors.successNeon
-                        : AppColors.purpleNeon,
+                        ? t.success
+                        : t.brand,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -391,11 +395,11 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
             borderRadius: BorderRadius.circular(4),
             child: LinearProgressIndicator(
               value: progress,
-              backgroundColor: AppColors.bgTertiary,
+              backgroundColor: t.cardMuted,
               valueColor: AlwaysStoppedAnimation(
                 _isLessonComplete
-                    ? AppColors.successNeon
-                    : AppColors.purpleNeon,
+                    ? t.success
+                    : t.brand,
               ),
               minHeight: 8,
             ),
@@ -406,6 +410,7 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
   }
 
   Widget _buildLessonTypeCard(Map<String, dynamic> content, int index) {
+    final t = context.colors;
     final type = content['lessonType'] as String;
     final isCompleted = _completedTypes.contains(type);
     final info = _getTypeInfo(type);
@@ -416,12 +421,12 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
         margin: const EdgeInsets.only(bottom: 14),
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          color: AppColors.bgSecondary,
+          color: t.card,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
             color: isCompleted
-                ? AppColors.successNeon.withValues(alpha: 0.4)
-                : const Color(0x332D363D),
+                ? t.success.withValues(alpha: 0.4)
+                : t.border,
             width: isCompleted ? 2 : 1,
           ),
           boxShadow: [
@@ -441,7 +446,7 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: isCompleted
-                      ? [AppColors.successNeon, const Color(0xFF2DD4BF)]
+                      ? [t.success, t.info]
                       : [
                           info['color'] as Color,
                           (info['color'] as Color).withValues(alpha: 0.7)
@@ -451,7 +456,7 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
               ),
               child: Icon(
                 isCompleted ? Icons.check_rounded : info['icon'] as IconData,
-                color: Colors.white,
+                color: context.colors.textOnBrand,
                 size: 26,
               ),
             ),
@@ -465,7 +470,7 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
                   Text(
                     info['label'] as String,
                     style: AppTextStyles.labelLarge.copyWith(
-                      color: AppColors.textPrimary,
+                      color: t.textPrimary,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -474,8 +479,8 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
                     isCompleted ? 'Đã hoàn thành' : 'Nhấn để bắt đầu',
                     style: AppTextStyles.bodySmall.copyWith(
                       color: isCompleted
-                          ? AppColors.successNeon
-                          : AppColors.textSecondary,
+                          ? t.success
+                          : t.textSecondary,
                     ),
                   ),
                 ],
@@ -486,7 +491,7 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
             Icon(
               Icons.chevron_right_rounded,
               color:
-                  isCompleted ? AppColors.successNeon : AppColors.textSecondary,
+                  isCompleted ? t.success : t.textSecondary,
               size: 24,
             ),
           ],
@@ -496,18 +501,19 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
   }
 
   Widget _buildCompletionBanner() {
+    final t = context.colors;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColors.successNeon.withValues(alpha: 0.15),
-            AppColors.primaryLight.withValues(alpha: 0.15),
+            t.success.withValues(alpha: 0.15),
+            t.gold.withValues(alpha: 0.15),
           ],
         ),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.successNeon.withValues(alpha: 0.3)),
+        border: Border.all(color: t.success.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -515,10 +521,10 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppColors.successNeon.withValues(alpha: 0.2),
+              color: t.success.withValues(alpha: 0.2),
             ),
-            child: const Icon(Icons.emoji_events_rounded,
-                color: AppColors.successNeon, size: 28),
+            child:
+                Icon(Icons.emoji_events_rounded, color: t.success, size: 28),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -528,7 +534,7 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
                 Text(
                   'Bài học đã hoàn thành!',
                   style: AppTextStyles.labelLarge.copyWith(
-                    color: AppColors.successNeon,
+                    color: t.success,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -536,7 +542,7 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
                 Text(
                   'Bạn đã hoàn thành tất cả dạng bài trong bài học này.',
                   style: AppTextStyles.bodySmall
-                      .copyWith(color: AppColors.textSecondary),
+                      .copyWith(color: t.textSecondary),
                 ),
               ],
             ),
@@ -576,7 +582,7 @@ class _LessonTypesOverviewScreenState extends State<LessonTypesOverviewScreen> {
         return {
           'label': type,
           'icon': Icons.school_outlined,
-          'color': AppColors.purpleNeon,
+          'color': context.colors.brand,
         };
     }
   }

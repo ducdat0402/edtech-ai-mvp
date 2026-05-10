@@ -64,8 +64,8 @@ class TutorialHelper {
       colorShadow: Colors.black,
       opacityShadow: 0.85,
       textSkip: 'BỎ QUA',
-      textStyleSkip: const TextStyle(
-        color: Colors.white70,
+      textStyleSkip: TextStyle(
+        color: context.colors.textOnBrand.withValues(alpha: 0.7),
         fontSize: 14,
         fontWeight: FontWeight.w500,
       ),
@@ -114,21 +114,22 @@ class _TutorialContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColors.purpleNeon.withValues(alpha: 0.2),
-            AppColors.cyanNeon.withValues(alpha: 0.1),
+            t.brand.withValues(alpha: 0.2),
+            t.info.withValues(alpha: 0.1),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: AppColors.purpleNeon.withValues(alpha: 0.4),
+          color: t.brand.withValues(alpha: 0.4),
           width: 1.5,
         ),
       ),
@@ -143,13 +144,13 @@ class _TutorialContent extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.cyanNeon.withValues(alpha: 0.2),
+                  color: t.info.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   stepLabel!,
-                  style: const TextStyle(
-                    color: AppColors.cyanNeon,
+                  style: TextStyle(
+                    color: t.info,
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
                   ),
@@ -159,14 +160,14 @@ class _TutorialContent extends StatelessWidget {
           Row(
             children: [
               if (icon != null) ...[
-                Icon(icon, color: AppColors.purpleNeon, size: 22),
+                Icon(icon, color: t.brand, size: 22),
                 const SizedBox(width: 8),
               ],
               Expanded(
                 child: Text(
                   title,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: t.textOnBrand,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
@@ -178,7 +179,7 @@ class _TutorialContent extends StatelessWidget {
           Text(
             description,
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.85),
+              color: t.textOnBrand.withValues(alpha: 0.85),
               fontSize: 13,
               height: 1.4,
             ),
@@ -192,25 +193,25 @@ class _TutorialContent extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [AppColors.purpleNeon, AppColors.cyanNeon],
+                  gradient: LinearGradient(
+                    colors: [t.brand, t.info],
                   ),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       'Tiếp',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: t.textOnBrand,
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    SizedBox(width: 4),
+                    const SizedBox(width: 4),
                     Icon(Icons.arrow_forward_rounded,
-                        color: Colors.white, size: 16),
+                        color: t.textOnBrand, size: 16),
                   ],
                 ),
               ),

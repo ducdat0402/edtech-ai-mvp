@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:edtech_mobile/theme/colors.dart';
+import 'package:edtech_mobile/theme/semantic_colors.dart';
 
 /// Hàng nút **Quay lại** + **Trang chủ** (dashboard) trên AppBar.
 ///
@@ -20,7 +20,7 @@ class AppBarLeadingBackAndHome extends StatelessWidget {
   final VoidCallback? onHome;
   final bool showHome;
 
-  /// Mặc định [AppColors.textPrimary]; dùng khi AppBar nền sáng.
+  /// Mặc định màu icon theo theme ([SemanticColors.textPrimary]); dùng khi AppBar nền sáng.
   final Color? iconColor;
 
   void _defaultBack(BuildContext context) {
@@ -50,7 +50,10 @@ class AppBarLeadingBackAndHome extends StatelessWidget {
     final nav = Navigator.of(context);
     final go = GoRouter.of(context);
     final showBack = nav.canPop() || go.canPop();
-    final c = iconColor ?? AppColors.textPrimary;
+    final themed = Theme.of(context).appBarTheme.iconTheme?.color ??
+        Theme.of(context).iconTheme.color ??
+        context.colors.textPrimary;
+    final c = iconColor ?? themed;
 
     if (!showHome && !showBack) {
       return const SizedBox.shrink();

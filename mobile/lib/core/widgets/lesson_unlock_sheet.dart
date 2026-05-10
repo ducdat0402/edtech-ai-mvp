@@ -39,7 +39,7 @@ class LessonUnlockSheet {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Không tải được trạng thái mở bài: $e'),
-            backgroundColor: AppColors.errorNeon,
+            backgroundColor: context.colors.error,
           ),
         );
       }
@@ -51,11 +51,12 @@ class LessonUnlockSheet {
 
     final opened = await showModalBottomSheet<bool>(
       context: context,
-      backgroundColor: AppColors.bgSecondary,
+      backgroundColor: context.colors.card,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) {
+        final d = ctx.colors;
         var busy = false;
         String? resultMsg;
         return StatefulBuilder(
@@ -69,14 +70,14 @@ class LessonUnlockSheet {
                 Text(
                   title,
                   style:
-                      AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+                      AppTextStyles.h4.copyWith(color: d.textPrimary),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Mỗi ngày bạn có 2 bài miễn phí trên toàn bộ môn.',
                   style: AppTextStyles.bodyMedium
-                      .copyWith(color: AppColors.textSecondary),
+                      .copyWith(color: d.textSecondary),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
@@ -87,19 +88,19 @@ class LessonUnlockSheet {
                           ? 'Suất miễn phí hôm nay: còn $remainingFree.'
                           : 'Hôm nay đã dùng hết 2 suất miễn phí.',
                   style: AppTextStyles.caption
-                      .copyWith(color: AppColors.cyanNeon, fontSize: 12),
+                      .copyWith(color: d.info, fontSize: 12),
                 ),
                 if (!hasFreeSlot && !accessLoadFailed) ...[
                   if (subjectType == 'community')
                     Text(
                       '${CurrencyLabels.gtuCoin} hiện có: $userCoins',
                       style: AppTextStyles.caption.copyWith(
-                          color: AppColors.textTertiary, fontSize: 11),
+                          color: d.textTertiary, fontSize: 11),
                     ),
                   Text(
                     'Kim cương hiện có: $userDiamonds 💎',
                     style: AppTextStyles.caption.copyWith(
-                        color: AppColors.textTertiary, fontSize: 11),
+                        color: d.textTertiary, fontSize: 11),
                   ),
                 ],
                 if (resultMsg != null) ...[
@@ -107,7 +108,7 @@ class LessonUnlockSheet {
                   Text(
                     resultMsg!,
                     style: AppTextStyles.caption
-                        .copyWith(color: AppColors.successNeon, fontSize: 12),
+                        .copyWith(color: d.success, fontSize: 12),
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -238,7 +239,7 @@ class LessonUnlockSheet {
       if (!ctx.mounted) return;
       final msg = _extractErrorMessage(e);
       ScaffoldMessenger.of(ctx).showSnackBar(
-        SnackBar(content: Text(msg), backgroundColor: AppColors.errorNeon),
+        SnackBar(content: Text(msg), backgroundColor: ctx.colors.error),
       );
     }
   }

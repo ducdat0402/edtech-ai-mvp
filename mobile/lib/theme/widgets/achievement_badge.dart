@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../colors.dart';
 import '../gradients.dart';
+import '../semantic_colors.dart';
 import '../text_styles.dart';
 
 /// Achievement badge with rainbow glow effect
@@ -24,6 +24,7 @@ class AchievementBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
     return GestureDetector(
       onTap: onTap,
       child: Column(
@@ -36,11 +37,11 @@ class AchievementBadge extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: isUnlocked ? AppGradients.achievementRainbow : null,
-              color: isUnlocked ? null : AppColors.bgTertiary,
+              color: isUnlocked ? null : t.cardMuted,
               boxShadow: isUnlocked
                   ? [
                       BoxShadow(
-                        color: AppColors.purpleNeon.withValues(alpha: 0.6),
+                        color: t.brand.withValues(alpha: 0.6),
                         blurRadius: 20,
                         spreadRadius: 2,
                       ),
@@ -51,14 +52,13 @@ class AchievementBadge extends StatelessWidget {
               margin: const EdgeInsets.all(3),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color:
-                    isUnlocked ? AppColors.bgSecondary : AppColors.bgTertiary,
+                color: isUnlocked ? t.card : t.cardMuted,
               ),
               child: Center(
                 child: isUnlocked
-                    ? Icon(icon, color: Colors.white, size: size * 0.45)
+                    ? Icon(icon, color: t.textPrimary, size: size * 0.45)
                     : Icon(Icons.lock,
-                        color: AppColors.textDisabled, size: size * 0.35),
+                        color: t.textTertiary, size: size * 0.35),
               ),
             ),
           ),
@@ -67,8 +67,7 @@ class AchievementBadge extends StatelessWidget {
           Text(
             title,
             style: AppTextStyles.labelMedium.copyWith(
-              color:
-                  isUnlocked ? AppColors.textPrimary : AppColors.textTertiary,
+              color: isUnlocked ? t.textPrimary : t.textTertiary,
               fontWeight: FontWeight.w600,
             ),
             textAlign: TextAlign.center,
@@ -80,9 +79,7 @@ class AchievementBadge extends StatelessWidget {
             Text(
               subtitle!,
               style: AppTextStyles.caption.copyWith(
-                color: isUnlocked
-                    ? AppColors.textSecondary
-                    : AppColors.textDisabled,
+                color: isUnlocked ? t.textSecondary : t.textTertiary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -118,21 +115,22 @@ class AchievementCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
+        color: t.card,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isUnlocked
-              ? AppColors.purpleNeon.withValues(alpha: 0.5)
-              : AppColors.borderPrimary,
+              ? t.brand.withValues(alpha: 0.5)
+              : t.border,
           width: isUnlocked ? 2 : 1,
         ),
         boxShadow: isUnlocked
             ? [
                 BoxShadow(
-                  color: AppColors.purpleNeon.withValues(alpha: 0.2),
+                  color: t.brand.withValues(alpha: 0.2),
                   blurRadius: 12,
                 ),
               ]
@@ -147,20 +145,18 @@ class AchievementCard extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: isUnlocked ? AppGradients.achievementRainbow : null,
-              color: isUnlocked ? null : AppColors.bgTertiary,
+              color: isUnlocked ? null : t.cardMuted,
             ),
             child: Container(
               margin: const EdgeInsets.all(2),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color:
-                    isUnlocked ? AppColors.bgSecondary : AppColors.bgTertiary,
+                color: isUnlocked ? t.card : t.cardMuted,
               ),
               child: Center(
                 child: isUnlocked
-                    ? Icon(icon, color: Colors.white, size: 28)
-                    : const Icon(Icons.lock,
-                        color: AppColors.textDisabled, size: 24),
+                    ? Icon(icon, color: t.textPrimary, size: 28)
+                    : Icon(Icons.lock, color: t.textTertiary, size: 24),
               ),
             ),
           ),
@@ -173,9 +169,7 @@ class AchievementCard extends StatelessWidget {
                 Text(
                   title,
                   style: AppTextStyles.bodyBold.copyWith(
-                    color: isUnlocked
-                        ? AppColors.textPrimary
-                        : AppColors.textSecondary,
+                    color: isUnlocked ? t.textPrimary : t.textSecondary,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -190,7 +184,7 @@ class AchievementCard extends StatelessWidget {
                   Text(
                     'Unlocked $unlockedDate',
                     style: AppTextStyles.caption.copyWith(
-                      color: AppColors.successGlow,
+                      color: t.success,
                     ),
                   ),
                 ],
@@ -203,9 +197,8 @@ class AchievementCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(4),
                           child: LinearProgressIndicator(
                             value: progress,
-                            backgroundColor: AppColors.bgTertiary,
-                            valueColor: const AlwaysStoppedAnimation(
-                                AppColors.purpleNeon),
+                            backgroundColor: t.cardMuted,
+                            valueColor: AlwaysStoppedAnimation(t.brand),
                             minHeight: 4,
                           ),
                         ),
@@ -240,16 +233,17 @@ class RankBadge extends StatelessWidget {
     this.size = 40,
   });
 
-  Color get _color {
+  /// Medal accent; ranks 1–3 only show emoji in UI, but kept for consistency.
+  Color _accent(SemanticColors t) {
     switch (rank) {
       case 1:
-        return AppColors.rankGold;
+        return t.gold;
       case 2:
-        return AppColors.rankSilver;
+        return const Color(0xFFC0C0C0);
       case 3:
-        return AppColors.rankBronze;
+        return const Color(0xFFCD7F32);
       default:
-        return AppColors.textTertiary;
+        return t.textTertiary;
     }
   }
 
@@ -272,19 +266,21 @@ class RankBadge extends StatelessWidget {
       return Text(_emoji, style: TextStyle(fontSize: size * 0.7));
     }
 
+    final t = context.colors;
+    final accent = _accent(t);
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: AppColors.bgTertiary,
-        border: Border.all(color: _color, width: 2),
+        color: t.cardMuted,
+        border: Border.all(color: accent, width: 2),
       ),
       child: Center(
         child: Text(
           '#$rank',
           style: AppTextStyles.labelSmall.copyWith(
-            color: _color,
+            color: accent,
             fontWeight: FontWeight.w700,
           ),
         ),

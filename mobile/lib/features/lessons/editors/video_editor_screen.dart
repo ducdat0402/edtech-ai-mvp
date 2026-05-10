@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:edtech_mobile/theme/colors.dart';
+import 'package:edtech_mobile/theme/theme.dart';
 import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'quiz_editor_screen.dart';
 
@@ -165,41 +165,44 @@ class _VideoEditorScreenState extends State<VideoEditorScreen> {
     );
   }
 
-  InputDecoration _inputDecoration(String label, {String? hintText}) {
+  InputDecoration _inputDecoration(BuildContext context, String label,
+      {String? hintText}) {
+    final sem = context.colors;
     return InputDecoration(
       labelText: label,
       hintText: hintText,
-      hintStyle: const TextStyle(color: AppColors.textTertiary, fontSize: 13),
-      labelStyle: const TextStyle(color: AppColors.textSecondary),
+      hintStyle: TextStyle(color: sem.textTertiary, fontSize: 13),
+      labelStyle: TextStyle(color: sem.textSecondary),
       filled: true,
-      fillColor: AppColors.bgSecondary,
+      fillColor: sem.card,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0x332D363D)),
+        borderSide: BorderSide(color: sem.border.withValues(alpha: 0.65)),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0x332D363D)),
+        borderSide: BorderSide(color: sem.border.withValues(alpha: 0.65)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.purpleNeon),
+        borderSide: BorderSide(color: sem.brand),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final sem = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppColors.bgSecondary,
+        backgroundColor: sem.card,
         leading: const AppBarLeadingBackAndHome(),
         leadingWidth: 112,
         automaticallyImplyLeading: false,
         title: Text(
           widget.isEditMode ? 'Sửa bài Video' : 'Tạo bài Video',
-          style: const TextStyle(color: AppColors.textPrimary, fontSize: 18),
+          style: TextStyle(color: sem.textPrimary, fontSize: 18),
         ),
         elevation: 0,
       ),
@@ -216,8 +219,9 @@ class _VideoEditorScreenState extends State<VideoEditorScreen> {
                     // Title
                     TextFormField(
                       controller: _titleController,
-                      style: const TextStyle(color: AppColors.textPrimary),
-                      decoration: _inputDecoration('Tiêu đề bài học'),
+                      style: TextStyle(color: sem.textPrimary),
+                      decoration:
+                          _inputDecoration(context, 'Tiêu đề bài học'),
                       validator: (v) =>
                           v == null || v.trim().isEmpty ? 'Nhập tiêu đề' : null,
                     ),
@@ -226,8 +230,8 @@ class _VideoEditorScreenState extends State<VideoEditorScreen> {
                     // Description
                     TextFormField(
                       controller: _descriptionController,
-                      style: const TextStyle(color: AppColors.textPrimary),
-                      decoration: _inputDecoration('Mô tả'),
+                      style: TextStyle(color: sem.textPrimary),
+                      decoration: _inputDecoration(context, 'Mô tả'),
                       maxLines: 3,
                       validator: (v) =>
                           v == null || v.trim().isEmpty ? 'Nhập mô tả' : null,
@@ -237,8 +241,9 @@ class _VideoEditorScreenState extends State<VideoEditorScreen> {
                     // Video URL
                     TextFormField(
                       controller: _videoUrlController,
-                      style: const TextStyle(color: AppColors.textPrimary),
+                      style: TextStyle(color: sem.textPrimary),
                       decoration: _inputDecoration(
+                        context,
                         'URL Video',
                         hintText: 'YouTube, Vimeo, hoặc link trực tiếp',
                       ),
@@ -259,8 +264,9 @@ class _VideoEditorScreenState extends State<VideoEditorScreen> {
                     // Summary
                     TextFormField(
                       controller: _summaryController,
-                      style: const TextStyle(color: AppColors.textPrimary),
-                      decoration: _inputDecoration('Tóm tắt nội dung'),
+                      style: TextStyle(color: sem.textPrimary),
+                      decoration:
+                          _inputDecoration(context, 'Tóm tắt nội dung'),
                       maxLines: 5,
                     ),
                     const SizedBox(height: 24),
@@ -269,22 +275,21 @@ class _VideoEditorScreenState extends State<VideoEditorScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
+                        Text(
                           'Nội dung chính',
                           style: TextStyle(
-                            color: AppColors.textPrimary,
+                            color: sem.textPrimary,
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         TextButton.icon(
                           onPressed: _addKeyPoint,
-                          icon: const Icon(Icons.add,
-                              color: AppColors.purpleNeon),
-                          label: const Text(
+                          icon: Icon(Icons.add, color: sem.brand),
+                          label: Text(
                             'Thêm nội dung chính',
                             style: TextStyle(
-                                color: AppColors.purpleNeon, fontSize: 13),
+                                color: sem.brand, fontSize: 13),
                           ),
                         ),
                       ],
@@ -292,16 +297,16 @@ class _VideoEditorScreenState extends State<VideoEditorScreen> {
                     const SizedBox(height: 8),
 
                     ...List.generate(_keyPoints.length, (index) {
-                      return _buildKeyPointCard(index);
+                      return _buildKeyPointCard(context, index);
                     }),
 
                     const SizedBox(height: 24),
 
                     // Keywords section
-                    const Text(
+                    Text(
                       'Từ khóa',
                       style: TextStyle(
-                        color: AppColors.textPrimary,
+                        color: sem.textPrimary,
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
@@ -314,17 +319,17 @@ class _VideoEditorScreenState extends State<VideoEditorScreen> {
                         Expanded(
                           child: TextFormField(
                             controller: _keywordController,
-                            style:
-                                const TextStyle(color: AppColors.textPrimary),
-                            decoration: _inputDecoration('Thêm từ khóa'),
+                            style: TextStyle(color: sem.textPrimary),
+                            decoration:
+                                _inputDecoration(context, 'Thêm từ khóa'),
                             onFieldSubmitted: (_) => _addKeyword(),
                           ),
                         ),
                         const SizedBox(width: 8),
                         IconButton(
                           onPressed: _addKeyword,
-                          icon: const Icon(Icons.add_circle,
-                              color: AppColors.purpleNeon, size: 32),
+                          icon: Icon(Icons.add_circle,
+                              color: sem.brand, size: 32),
                         ),
                       ],
                     ),
@@ -339,13 +344,13 @@ class _VideoEditorScreenState extends State<VideoEditorScreen> {
                           return Chip(
                             label: Text(
                               _keywords[i],
-                              style:
-                                  const TextStyle(color: AppColors.textPrimary),
+                              style: TextStyle(color: sem.textPrimary),
                             ),
-                            backgroundColor: AppColors.bgTertiary,
-                            side: const BorderSide(color: Color(0x332D363D)),
-                            deleteIcon: const Icon(Icons.close,
-                                size: 16, color: AppColors.textSecondary),
+                            backgroundColor: sem.cardMuted,
+                            side: BorderSide(
+                                color: sem.border.withValues(alpha: 0.65)),
+                            deleteIcon: Icon(Icons.close,
+                                size: 16, color: sem.textSecondary),
                             onDeleted: () => _removeKeyword(i),
                           );
                         }),
@@ -361,17 +366,18 @@ class _VideoEditorScreenState extends State<VideoEditorScreen> {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16),
-              decoration: const BoxDecoration(
-                color: AppColors.bgSecondary,
+              decoration: BoxDecoration(
+                color: sem.card,
                 border: Border(
-                  top: BorderSide(color: Color(0x332D363D)),
+                  top: BorderSide(
+                      color: sem.border.withValues(alpha: 0.65)),
                 ),
               ),
               child: ElevatedButton(
                 onPressed: _navigateToQuizEditor,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.purpleNeon,
-                  foregroundColor: Colors.white,
+                  backgroundColor: sem.brand,
+                  foregroundColor: sem.onBrand,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -389,16 +395,18 @@ class _VideoEditorScreenState extends State<VideoEditorScreen> {
     );
   }
 
-  Widget _buildKeyPointCard(int index) {
+  Widget _buildKeyPointCard(BuildContext context, int index) {
     final kp = _keyPoints[index];
+    final sem = context.colors;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
+        color: sem.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0x332D363D)),
+        border: Border.all(
+            color: sem.border.withValues(alpha: 0.65)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -409,26 +417,27 @@ class _VideoEditorScreenState extends State<VideoEditorScreen> {
             children: [
               Text(
                 'Nội dung ${index + 1}',
-                style: const TextStyle(
-                  color: AppColors.purpleNeon,
+                style: TextStyle(
+                  color: sem.brand,
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.delete_outline,
-                    color: AppColors.errorNeon, size: 20),
+                icon: Icon(Icons.delete_outline,
+                    color: sem.error, size: 20),
                 onPressed: () => _removeKeyPoint(index),
               ),
             ],
           ),
-          const Divider(color: Color(0x332D363D), height: 16),
+          Divider(
+              color: sem.border.withValues(alpha: 0.65), height: 16),
 
           // Title
           TextFormField(
             controller: kp.titleController,
-            style: const TextStyle(color: AppColors.textPrimary),
-            decoration: _inputDecoration('Tiêu đề'),
+            style: TextStyle(color: sem.textPrimary),
+            decoration: _inputDecoration(context, 'Tiêu đề'),
             validator: (v) =>
                 v == null || v.trim().isEmpty ? 'Nhập tiêu đề' : null,
           ),
@@ -437,8 +446,8 @@ class _VideoEditorScreenState extends State<VideoEditorScreen> {
           // Description
           TextFormField(
             controller: kp.descriptionController,
-            style: const TextStyle(color: AppColors.textPrimary),
-            decoration: _inputDecoration('Mô tả (tuỳ chọn)'),
+            style: TextStyle(color: sem.textPrimary),
+            decoration: _inputDecoration(context, 'Mô tả (tuỳ chọn)'),
             maxLines: 2,
           ),
           const SizedBox(height: 10),
@@ -446,8 +455,9 @@ class _VideoEditorScreenState extends State<VideoEditorScreen> {
           // Timestamp
           TextFormField(
             controller: kp.timestampController,
-            style: const TextStyle(color: AppColors.textPrimary),
-            decoration: _inputDecoration('Timestamp (giây, tuỳ chọn)'),
+            style: TextStyle(color: sem.textPrimary),
+            decoration:
+                _inputDecoration(context, 'Timestamp (giây, tuỳ chọn)'),
             keyboardType: TextInputType.number,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           ),

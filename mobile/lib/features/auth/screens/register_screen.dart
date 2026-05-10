@@ -66,7 +66,6 @@ class _RegisterScreenState extends State<RegisterScreen>
 
       if (result['success'] == true) {
         if (mounted) {
-          // Sau khi đăng ký lần đầu, chuyển sang onboarding chatbot
           context.go('/onboarding');
         }
       } else {
@@ -101,7 +100,7 @@ class _RegisterScreenState extends State<RegisterScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -125,15 +124,10 @@ class _RegisterScreenState extends State<RegisterScreen>
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Header
                       _buildHeader(),
                       const SizedBox(height: 32),
-
-                      // Register Card
                       _buildRegisterCard(),
                       const SizedBox(height: 24),
-
-                      // Login Link
                       _buildLoginLink(),
                     ],
                   ),
@@ -147,6 +141,7 @@ class _RegisterScreenState extends State<RegisterScreen>
   }
 
   Widget _buildHeader() {
+    final tokens = context.colors;
     return Column(
       children: [
         SizedBox(
@@ -162,7 +157,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.purpleNeon.withValues(alpha: 0.2),
+                      color: tokens.brand.withValues(alpha: 0.2),
                       blurRadius: 28,
                       offset: const Offset(0, 10),
                     ),
@@ -182,14 +177,18 @@ class _RegisterScreenState extends State<RegisterScreen>
         ),
         const SizedBox(height: 16),
         ShaderMask(
-          shaderCallback: (bounds) => AppGradients.primary.createShader(
+          shaderCallback: (bounds) => LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: tokens.heroGradient,
+          ).createShader(
             Rect.fromLTWH(0, 0, bounds.width, bounds.height),
           ),
           blendMode: BlendMode.srcIn,
           child: Text(
             'Tham gia Gamistu',
             style: AppTextStyles.h2.copyWith(
-              color: Colors.white,
+              color: tokens.textOnBrand,
               letterSpacing: 0.2,
             ),
             textAlign: TextAlign.center,
@@ -199,7 +198,7 @@ class _RegisterScreenState extends State<RegisterScreen>
         Text(
           'Bắt đầu hành trình học tập của bạn',
           style: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.textSecondary,
+            color: tokens.textSecondary,
           ),
           textAlign: TextAlign.center,
         ),
@@ -208,15 +207,16 @@ class _RegisterScreenState extends State<RegisterScreen>
   }
 
   Widget _buildRegisterCard() {
+    final tokens = context.colors;
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
+        color: tokens.card,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0x332D363D)),
+        border: Border.all(color: tokens.border),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.35),
+            color: tokens.shadowColor,
             blurRadius: 28,
             offset: const Offset(0, 14),
           ),
@@ -225,7 +225,6 @@ class _RegisterScreenState extends State<RegisterScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Full Name Field
           _buildTextField(
             controller: _fullNameController,
             label: 'Họ và tên',
@@ -239,8 +238,6 @@ class _RegisterScreenState extends State<RegisterScreen>
             },
           ),
           const SizedBox(height: 16),
-
-          // Email Field
           _buildTextField(
             controller: _emailController,
             label: 'Email',
@@ -258,8 +255,6 @@ class _RegisterScreenState extends State<RegisterScreen>
             },
           ),
           const SizedBox(height: 16),
-
-          // Password Field
           _buildTextField(
             controller: _passwordController,
             label: 'Mật khẩu',
@@ -269,7 +264,7 @@ class _RegisterScreenState extends State<RegisterScreen>
             suffixIcon: IconButton(
               icon: Icon(
                 _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                color: AppColors.textTertiary,
+                color: tokens.textTertiary,
               ),
               onPressed: () {
                 setState(() {
@@ -288,30 +283,28 @@ class _RegisterScreenState extends State<RegisterScreen>
             },
           ),
           const SizedBox(height: 24),
-
-          // Error Message
           if (_errorMessage != null) ...[
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.errorNeon.withValues(alpha: 0.1),
+                color: tokens.error.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                    color: AppColors.errorNeon.withValues(alpha: 0.3)),
+                border:
+                    Border.all(color: tokens.error.withValues(alpha: 0.3)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.error_outline,
-                          color: AppColors.errorNeon, size: 20),
+                      Icon(Icons.error_outline,
+                          color: tokens.error, size: 20),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           _errorMessage!,
                           style: AppTextStyles.bodySmall.copyWith(
-                            color: AppColors.errorNeon,
+                            color: tokens.error,
                           ),
                         ),
                       ),
@@ -325,7 +318,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                         child: Text(
                           'Đăng nhập ngay →',
                           style: AppTextStyles.bodySmall.copyWith(
-                            color: AppColors.primaryLight,
+                            color: tokens.brand,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -336,19 +329,14 @@ class _RegisterScreenState extends State<RegisterScreen>
             ),
             const SizedBox(height: 16),
           ],
-
-          // Register Button
           GamingButton(
             text: 'Đăng ký',
             onPressed: _isLoading ? null : _handleRegister,
             isLoading: _isLoading,
-            glowColor: AppColors.primaryLight,
+            glowColor: tokens.brand,
             icon: Icons.check_rounded,
           ),
-
           const SizedBox(height: 16),
-
-          // Benefits
           _buildBenefits(),
         ],
       ),
@@ -365,13 +353,14 @@ class _RegisterScreenState extends State<RegisterScreen>
     Widget? suffixIcon,
     String? Function(String?)? validator,
   }) {
+    final tokens = context.colors;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
           style: AppTextStyles.labelMedium.copyWith(
-            color: AppColors.textSecondary,
+            color: tokens.textSecondary,
           ),
         ),
         const SizedBox(height: 8),
@@ -380,40 +369,39 @@ class _RegisterScreenState extends State<RegisterScreen>
           keyboardType: keyboardType,
           obscureText: obscureText,
           style: AppTextStyles.bodyLarge.copyWith(
-            color: AppColors.textPrimary,
+            color: tokens.textPrimary,
           ),
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textTertiary,
+              color: tokens.textTertiary,
             ),
-            prefixIcon: Icon(icon, color: AppColors.textTertiary, size: 20),
+            prefixIcon: Icon(icon, color: tokens.textTertiary, size: 20),
             suffixIcon: suffixIcon,
             filled: true,
-            fillColor: AppColors.bgOverlay,
+            fillColor: tokens.cardOverlay,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0x332D363D)),
+              borderSide: BorderSide(color: tokens.border),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: AppColors.purpleNeon.withValues(alpha: 0.45),
+                color: tokens.brand.withValues(alpha: 0.45),
                 width: 1,
               ),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.errorNeon),
+              borderSide: BorderSide(color: tokens.error),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide:
-                  const BorderSide(color: AppColors.errorNeon, width: 2),
+              borderSide: BorderSide(color: tokens.error, width: 2),
             ),
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -425,6 +413,7 @@ class _RegisterScreenState extends State<RegisterScreen>
   }
 
   Widget _buildBenefits() {
+    final tokens = context.colors;
     final benefits = [
       {'icon': Icons.school_rounded, 'text': 'Học tập cá nhân hóa'},
       {'icon': Icons.emoji_events_rounded, 'text': 'Nhận phần thưởng'},
@@ -434,9 +423,9 @@ class _RegisterScreenState extends State<RegisterScreen>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.bgTertiary.withValues(alpha: 0.5),
+        color: tokens.cardMuted,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.borderPrimary),
+        border: Border.all(color: tokens.border),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -445,14 +434,14 @@ class _RegisterScreenState extends State<RegisterScreen>
             children: [
               Icon(
                 benefit['icon'] as IconData,
-                color: AppColors.purpleNeon,
+                color: tokens.brand,
                 size: 24,
               ),
               const SizedBox(height: 4),
               Text(
                 benefit['text'] as String,
                 style: AppTextStyles.caption.copyWith(
-                  color: AppColors.textSecondary,
+                  color: tokens.textSecondary,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -464,13 +453,14 @@ class _RegisterScreenState extends State<RegisterScreen>
   }
 
   Widget _buildLoginLink() {
+    final tokens = context.colors;
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
           'Đã có tài khoản? ',
           style: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.textSecondary,
+            color: tokens.textSecondary,
           ),
         ),
         GestureDetector(
@@ -478,7 +468,7 @@ class _RegisterScreenState extends State<RegisterScreen>
           child: Text(
             'Đăng nhập',
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.primaryLight,
+              color: tokens.brand,
               fontWeight: FontWeight.w600,
             ),
           ),

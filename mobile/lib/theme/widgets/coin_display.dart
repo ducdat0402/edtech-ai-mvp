@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:edtech_mobile/core/constants/currency_labels.dart';
-import '../colors.dart';
+import '../semantic_colors.dart';
 import '../text_styles.dart';
 import 'gtu_coin_icon.dart';
 
@@ -30,6 +30,7 @@ class CoinDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
     return GestureDetector(
       onTap: onTap,
       child: Row(
@@ -45,7 +46,7 @@ class CoinDisplay extends StatelessWidget {
                 formattedCoins,
                 style: compact
                     ? AppTextStyles.numberSmall
-                        .copyWith(color: AppColors.coinGold)
+                        .copyWith(color: t.gold)
                     : AppTextStyles.coinDisplay,
               ),
               if (showLabel && !compact)
@@ -74,13 +75,14 @@ class CoinDisplayLarge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
+        color: t.card,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: AppColors.coinGold.withValues(alpha: 0.3),
+          color: t.gold.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -170,6 +172,7 @@ class _CoinGainIndicatorState extends State<CoinGainIndicator>
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
     return SlideTransition(
       position: _slideAnimation,
       child: FadeTransition(
@@ -182,7 +185,7 @@ class _CoinGainIndicatorState extends State<CoinGainIndicator>
             Text(
               '+${widget.amount}',
               style: AppTextStyles.numberSmall.copyWith(
-                color: AppColors.coinGold,
+                color: t.gold,
                 fontWeight: FontWeight.w700,
               ),
             ),

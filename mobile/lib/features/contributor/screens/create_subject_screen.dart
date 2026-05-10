@@ -46,7 +46,7 @@ class _CreateSubjectScreenState extends State<CreateSubjectScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Lỗi: $e'),
-          backgroundColor: AppColors.errorNeon,
+          backgroundColor: context.colors.error,
         ),
       );
     } finally {
@@ -59,7 +59,7 @@ class _CreateSubjectScreenState extends State<CreateSubjectScreen> {
       context: context,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.contributorBgSecondary,
+        backgroundColor: context.colors.card,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -67,26 +67,26 @@ class _CreateSubjectScreenState extends State<CreateSubjectScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.contributorBlue.withValues(alpha: 0.15),
+                color: context.colors.info.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.check_circle_outline,
-                color: AppColors.contributorBlue,
+                color: context.colors.info,
                 size: 48,
               ),
             ),
             const SizedBox(height: 16),
             Text(
               'Đã gửi yêu cầu!',
-              style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+              style: AppTextStyles.h4.copyWith(color: context.colors.textPrimary),
             ),
             const SizedBox(height: 8),
             Text(
               'Môn học "${_nameController.text.trim()}" đang chờ Admin duyệt. Bạn sẽ được thông báo khi có kết quả.',
               textAlign: TextAlign.center,
               style: AppTextStyles.bodyMedium
-                  .copyWith(color: AppColors.textSecondary),
+                  .copyWith(color: context.colors.textSecondary),
             ),
           ],
         ),
@@ -96,9 +96,9 @@ class _CreateSubjectScreenState extends State<CreateSubjectScreen> {
               Navigator.of(ctx).pop();
               context.push('/contributor/my-contributions');
             },
-            child: const Text(
+            child: Text(
               'Xem đóng góp',
-              style: TextStyle(color: AppColors.contributorBlue),
+              style: TextStyle(color: context.colors.info),
             ),
           ),
           TextButton(
@@ -106,9 +106,9 @@ class _CreateSubjectScreenState extends State<CreateSubjectScreen> {
               Navigator.of(ctx).pop();
               context.pop(true);
             },
-            child: const Text(
+            child: Text(
               'Quay lại',
-              style: TextStyle(color: AppColors.textSecondary),
+              style: TextStyle(color: context.colors.textSecondary),
             ),
           ),
         ],
@@ -119,13 +119,13 @@ class _CreateSubjectScreenState extends State<CreateSubjectScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.contributorBgPrimary,
+      backgroundColor: context.colors.bg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(
           'Tạo Môn Học Mới',
-          style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+          style: AppTextStyles.h4.copyWith(color: context.colors.textPrimary),
         ),
         leading: const AppBarLeadingBackAndHome(),
         leadingWidth: 112,
@@ -181,21 +181,21 @@ class _CreateSubjectScreenState extends State<CreateSubjectScreen> {
                 child: ElevatedButton(
                   onPressed: _isSubmitting ? null : _handleSubmit,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.contributorBlue,
-                    foregroundColor: Colors.white,
+                    backgroundColor: context.colors.info,
+                    foregroundColor: context.colors.textOnBrand,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
                     disabledBackgroundColor:
-                        AppColors.contributorBlue.withValues(alpha: 0.5),
+                        context.colors.info.withValues(alpha: 0.5),
                   ),
                   child: _isSubmitting
-                      ? const SizedBox(
+                      ? SizedBox(
                           width: 24,
                           height: 24,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            color: Colors.white,
+                            color: context.colors.textOnBrand,
                           ),
                         )
                       : Row(
@@ -206,7 +206,7 @@ class _CreateSubjectScreenState extends State<CreateSubjectScreen> {
                             Text(
                               'Gửi yêu cầu duyệt',
                               style: AppTextStyles.labelLarge.copyWith(
-                                color: Colors.white,
+                                color: context.colors.textOnBrand,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -226,21 +226,21 @@ class _CreateSubjectScreenState extends State<CreateSubjectScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.contributorBlue.withValues(alpha: 0.1),
+        color: context.colors.info.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(14),
         border:
-            Border.all(color: AppColors.contributorBlue.withValues(alpha: 0.3)),
+            Border.all(color: context.colors.info.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
-          const Icon(Icons.info_outline,
-              color: AppColors.contributorBlue, size: 24),
+          Icon(Icons.info_outline,
+              color: context.colors.info, size: 24),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               'Môn học bạn tạo sẽ được gửi đến Admin để duyệt. Sau khi được duyệt, môn học sẽ xuất hiện trong danh sách cho tất cả người dùng.',
               style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.contributorBlueLight,
+                color: context.colors.brandStrong,
               ),
             ),
           ),
@@ -253,7 +253,7 @@ class _CreateSubjectScreenState extends State<CreateSubjectScreen> {
     return Text(
       text,
       style: AppTextStyles.labelLarge.copyWith(
-        color: AppColors.textPrimary,
+        color: context.colors.textPrimary,
         fontWeight: FontWeight.w600,
       ),
     );
@@ -269,29 +269,29 @@ class _CreateSubjectScreenState extends State<CreateSubjectScreen> {
       controller: controller,
       validator: validator,
       maxLines: maxLines,
-      style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary),
+      style: AppTextStyles.bodyMedium.copyWith(color: context.colors.textPrimary),
       decoration: InputDecoration(
         hintText: hint,
         hintStyle:
-            AppTextStyles.bodyMedium.copyWith(color: AppColors.textTertiary),
+            AppTextStyles.bodyMedium.copyWith(color: context.colors.textTertiary),
         filled: true,
-        fillColor: AppColors.contributorBgSecondary,
+        fillColor: context.colors.card,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.contributorBorder),
+          borderSide: BorderSide(color: context.colors.border),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.contributorBorder),
+          borderSide: BorderSide(color: context.colors.border),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide:
-              const BorderSide(color: AppColors.contributorBlue, width: 2),
+              BorderSide(color: context.colors.info, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.errorNeon),
+          borderSide: BorderSide(color: context.colors.error),
         ),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -340,13 +340,13 @@ class _CreateSubjectScreenState extends State<CreateSubjectScreen> {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.contributorBlue.withValues(alpha: 0.15)
-              : AppColors.contributorBgSecondary,
+              ? context.colors.info.withValues(alpha: 0.15)
+              : context.colors.card,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: isSelected
-                ? AppColors.contributorBlue
-                : AppColors.contributorBorder,
+                ? context.colors.info
+                : context.colors.border,
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -355,8 +355,8 @@ class _CreateSubjectScreenState extends State<CreateSubjectScreen> {
             Icon(
               icon,
               color: isSelected
-                  ? AppColors.contributorBlue
-                  : AppColors.textTertiary,
+                  ? context.colors.info
+                  : context.colors.textTertiary,
               size: 28,
             ),
             const SizedBox(height: 8),
@@ -364,8 +364,8 @@ class _CreateSubjectScreenState extends State<CreateSubjectScreen> {
               label,
               style: AppTextStyles.labelMedium.copyWith(
                 color: isSelected
-                    ? AppColors.contributorBlue
-                    : AppColors.textSecondary,
+                    ? context.colors.info
+                    : context.colors.textSecondary,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
             ),
@@ -373,7 +373,7 @@ class _CreateSubjectScreenState extends State<CreateSubjectScreen> {
             Text(
               subtitle,
               style: AppTextStyles.caption.copyWith(
-                color: AppColors.textTertiary,
+                color: context.colors.textTertiary,
               ),
               textAlign: TextAlign.center,
             ),

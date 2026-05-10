@@ -117,7 +117,7 @@ class _LoginScreenState extends State<LoginScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -155,6 +155,7 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   Widget _buildLogo() {
+    final tokens = context.colors;
     return Column(
       children: [
         SizedBox(
@@ -172,7 +173,7 @@ class _LoginScreenState extends State<LoginScreen>
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.purpleNeon.withValues(alpha: 0.22),
+                        color: tokens.brand.withValues(alpha: 0.22),
                         blurRadius: 32,
                         spreadRadius: 0,
                         offset: const Offset(0, 12),
@@ -194,14 +195,18 @@ class _LoginScreenState extends State<LoginScreen>
         ),
         const SizedBox(height: 20),
         ShaderMask(
-          shaderCallback: (bounds) => AppGradients.primary.createShader(
+          shaderCallback: (bounds) => LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: tokens.heroGradient,
+          ).createShader(
             Rect.fromLTWH(0, 0, bounds.width, bounds.height),
           ),
           blendMode: BlendMode.srcIn,
           child: Text(
             'GAMISTU',
             style: AppTextStyles.h1.copyWith(
-              color: Colors.white,
+              color: tokens.textOnBrand,
               fontSize: 34,
               letterSpacing: 6,
             ),
@@ -211,7 +216,7 @@ class _LoginScreenState extends State<LoginScreen>
         Text(
           'Học cá nhân hóa, tinh tế',
           style: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.textSecondary,
+            color: tokens.textSecondary,
           ),
           textAlign: TextAlign.center,
         ),
@@ -220,15 +225,16 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   Widget _buildLoginCard() {
+    final tokens = context.colors;
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
+        color: tokens.card,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0x332D363D)),
+        border: Border.all(color: tokens.border),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.35),
+            color: tokens.shadowColor,
             blurRadius: 28,
             offset: const Offset(0, 14),
           ),
@@ -237,18 +243,17 @@ class _LoginScreenState extends State<LoginScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Section Title
           Row(
             children: [
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppColors.purpleNeon.withValues(alpha: 0.12),
+                  color: tokens.brand.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.login_rounded,
-                  color: AppColors.primaryLight,
+                  color: tokens.brand,
                   size: 20,
                 ),
               ),
@@ -256,15 +261,13 @@ class _LoginScreenState extends State<LoginScreen>
               Text(
                 'Đăng nhập',
                 style: AppTextStyles.h4.copyWith(
-                  color: AppColors.textPrimary,
+                  color: tokens.textPrimary,
                   letterSpacing: 0.5,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 24),
-
-          // Email Field
           _buildTextField(
             controller: _emailController,
             label: 'Email',
@@ -282,8 +285,6 @@ class _LoginScreenState extends State<LoginScreen>
             },
           ),
           const SizedBox(height: 16),
-
-          // Password Field
           _buildTextField(
             controller: _passwordController,
             label: 'Mật khẩu',
@@ -293,7 +294,7 @@ class _LoginScreenState extends State<LoginScreen>
             suffixIcon: IconButton(
               icon: Icon(
                 _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                color: AppColors.textTertiary,
+                color: tokens.textTertiary,
               ),
               onPressed: () {
                 setState(() {
@@ -312,27 +313,25 @@ class _LoginScreenState extends State<LoginScreen>
             },
           ),
           const SizedBox(height: 24),
-
-          // Error Message
           if (_errorMessage != null) ...[
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.errorNeon.withValues(alpha: 0.1),
+                color: tokens.error.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                    color: AppColors.errorNeon.withValues(alpha: 0.3)),
+                    color: tokens.error.withValues(alpha: 0.3)),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.error_outline,
-                      color: AppColors.errorNeon, size: 20),
+                  Icon(Icons.error_outline,
+                      color: tokens.error, size: 20),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       _errorMessage!,
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.errorNeon,
+                        color: tokens.error,
                       ),
                     ),
                   ),
@@ -341,14 +340,12 @@ class _LoginScreenState extends State<LoginScreen>
             ),
             const SizedBox(height: 16),
           ],
-
-          // Login Button
           GamingButton(
             text: 'Đăng nhập',
             onPressed: _isLoading ? null : _handleLogin,
             isLoading: _isLoading,
             icon: Icons.arrow_forward_rounded,
-            glowColor: AppColors.primaryLight,
+            glowColor: tokens.brand,
           ),
         ],
       ),
@@ -365,13 +362,14 @@ class _LoginScreenState extends State<LoginScreen>
     Widget? suffixIcon,
     String? Function(String?)? validator,
   }) {
+    final tokens = context.colors;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
           style: AppTextStyles.labelMedium.copyWith(
-            color: AppColors.textSecondary,
+            color: tokens.textSecondary,
           ),
         ),
         const SizedBox(height: 8),
@@ -380,40 +378,39 @@ class _LoginScreenState extends State<LoginScreen>
           keyboardType: keyboardType,
           obscureText: obscureText,
           style: AppTextStyles.bodyLarge.copyWith(
-            color: AppColors.textPrimary,
+            color: tokens.textPrimary,
           ),
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textTertiary,
+              color: tokens.textTertiary,
             ),
-            prefixIcon: Icon(icon, color: AppColors.textTertiary, size: 20),
+            prefixIcon: Icon(icon, color: tokens.textTertiary, size: 20),
             suffixIcon: suffixIcon,
             filled: true,
-            fillColor: AppColors.bgOverlay,
+            fillColor: tokens.cardOverlay,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0x332D363D)),
+              borderSide: BorderSide(color: tokens.border),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: AppColors.purpleNeon.withValues(alpha: 0.45),
+                color: tokens.brand.withValues(alpha: 0.45),
                 width: 1,
               ),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.errorNeon),
+              borderSide: BorderSide(color: tokens.error),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide:
-                  const BorderSide(color: AppColors.errorNeon, width: 2),
+              borderSide: BorderSide(color: tokens.error, width: 2),
             ),
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -469,8 +466,6 @@ class _LoginScreenState extends State<LoginScreen>
         return;
       }
 
-      // Mobile: không gọi signOut/disconnect ngay trước signIn — dễ khiến Play Services
-      // treo vô hạn sau khi user chọn tài khoản. Đổi tài khoản: đăng xuất trong app.
       final googleSignIn = GoogleSignIn(
         scopes: ['email', 'profile'],
         serverClientId: ApiConstants.googleServerClientId,
@@ -509,7 +504,6 @@ class _LoginScreenState extends State<LoginScreen>
 
       await authService.warmUpBackendConnection();
 
-      // Không bọc .timeout ngoài: googleLogin đã có retry + receiveTimeout từng request trong AuthService.
       final result = await authService.googleLogin(idToken: idToken);
       if (kDebugMode) {
         debugPrint(
@@ -542,39 +536,54 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   Widget _buildGoogleSignIn() {
+    final tokens = context.colors;
     return GestureDetector(
       onTap: _isGoogleLoading ? null : _handleGoogleSignIn,
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
-          color: AppColors.bgSecondary,
+          color: tokens.card,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: const Color(0x33474554)),
+          border: Border.all(color: tokens.border),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (_isGoogleLoading)
-              const SizedBox(
+              SizedBox(
                 width: 20,
                 height: 20,
                 child: CircularProgressIndicator(
-                    strokeWidth: 2, color: AppColors.textPrimary),
+                    strokeWidth: 2, color: tokens.textPrimary),
               )
             else ...[
-              const Text(
-                'G',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+              Container(
+                width: 24,
+                height: 24,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: [
+                      const Color(0xFF4285F4),
+                      const Color(0xFF34A853),
+                    ],
+                  ),
+                ),
+                child: Text(
+                  'G',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: tokens.textOnBrand,
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
               Text(
                 'Đăng nhập bằng Google',
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.textPrimary,
+                  color: tokens.textPrimary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -586,13 +595,14 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   Widget _buildForgotPasswordLink() {
+    final tokens = context.colors;
     return Center(
       child: GestureDetector(
         onTap: () => context.push('/forgot-password'),
         child: Text(
           'Quên mật khẩu?',
           style: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.purpleNeon,
+            color: tokens.brand,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -601,13 +611,14 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   Widget _buildRegisterLink() {
+    final tokens = context.colors;
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
           'Chưa có tài khoản? ',
           style: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.textSecondary,
+            color: tokens.textSecondary,
           ),
         ),
         GestureDetector(
@@ -615,7 +626,7 @@ class _LoginScreenState extends State<LoginScreen>
           child: Text(
             'Đăng ký ngay',
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.primaryLight,
+              color: tokens.brand,
               fontWeight: FontWeight.w600,
             ),
           ),

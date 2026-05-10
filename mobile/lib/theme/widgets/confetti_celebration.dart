@@ -23,6 +23,7 @@ class ConfettiCelebration extends StatefulWidget {
 class _ConfettiCelebrationState extends State<ConfettiCelebration> {
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
     return Stack(
       children: [
         widget.child,
@@ -39,13 +40,13 @@ class _ConfettiCelebrationState extends State<ConfettiCelebration> {
             numberOfParticles: 50,
             gravity: 0.2,
             shouldLoop: false,
-            colors: const [
-              AppColors.purpleNeon,
-              AppColors.pinkNeon,
-              AppColors.orangeNeon,
-              AppColors.cyanNeon,
-              AppColors.successNeon,
-              AppColors.xpGold,
+            colors: [
+              t.brand,
+              t.aiGradient.length > 1 ? t.aiGradient[1] : t.brandSoft,
+              t.warning,
+              t.info,
+              t.success,
+              t.gold,
             ],
             createParticlePath: _drawStar,
           ),
@@ -205,6 +206,7 @@ class _LevelUpCelebrationState extends State<LevelUpCelebration>
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
     return Stack(
       children: [
         // Dialog
@@ -218,7 +220,7 @@ class _LevelUpCelebrationState extends State<LevelUpCelebration>
                   margin: const EdgeInsets.all(32),
                   padding: const EdgeInsets.all(32),
                   decoration: BoxDecoration(
-                    color: AppColors.bgSecondary,
+                    color: t.card,
                     borderRadius: BorderRadius.circular(24),
                     border: Border.all(
                         color: widget.levelColor.withValues(alpha: 0.5),
@@ -252,8 +254,8 @@ class _LevelUpCelebrationState extends State<LevelUpCelebration>
                             ),
                           ],
                         ),
-                        child: const Icon(Icons.emoji_events_rounded,
-                            size: 48, color: Colors.white),
+                        child: Icon(Icons.emoji_events_rounded,
+                            size: 48, color: context.colors.textOnBrand),
                       ),
                       const SizedBox(height: 24),
 
@@ -262,8 +264,9 @@ class _LevelUpCelebrationState extends State<LevelUpCelebration>
                         shaderCallback: (bounds) =>
                             AppGradients.primary.createShader(bounds),
                         child: Text('LEVEL UP!',
-                            style: AppTextStyles.h1
-                                .copyWith(color: Colors.white, fontSize: 28)),
+                            style: AppTextStyles.h1.copyWith(
+                                color: context.colors.textOnBrand,
+                                fontSize: 28)),
                       ),
                       const SizedBox(height: 16),
 
@@ -330,10 +333,10 @@ class _LevelUpCelebrationState extends State<LevelUpCelebration>
             shouldLoop: true,
             colors: [
               widget.levelColor,
-              AppColors.purpleNeon,
-              AppColors.pinkNeon,
-              AppColors.xpGold,
-              AppColors.cyanNeon,
+              t.brand,
+              t.aiGradient.length > 1 ? t.aiGradient[1] : t.brandSoft,
+              t.gold,
+              t.info,
             ],
           ),
         ),
@@ -433,6 +436,7 @@ class _AchievementUnlockedCelebrationState
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
     return Stack(
       children: [
         Center(
@@ -447,7 +451,7 @@ class _AchievementUnlockedCelebrationState
                     margin: const EdgeInsets.all(32),
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      color: AppColors.bgSecondary,
+                      color: t.card,
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
                           color: widget.color.withValues(alpha: 0.5), width: 2),
@@ -479,8 +483,9 @@ class _AchievementUnlockedCelebrationState
                                   blurRadius: 15)
                             ],
                           ),
-                          child:
-                              Icon(widget.icon, size: 40, color: Colors.white),
+                          child: Icon(widget.icon,
+                              size: 40,
+                              color: context.colors.textOnBrand),
                         ),
                         const SizedBox(height: 20),
 
@@ -491,12 +496,12 @@ class _AchievementUnlockedCelebrationState
                         const SizedBox(height: 8),
                         Text(widget.title,
                             style: AppTextStyles.h3
-                                .copyWith(color: AppColors.textPrimary),
+                                .copyWith(color: t.textPrimary),
                             textAlign: TextAlign.center),
                         const SizedBox(height: 8),
                         Text(widget.description,
                             style: AppTextStyles.bodySmall
-                                .copyWith(color: AppColors.textSecondary),
+                                .copyWith(color: t.textSecondary),
                             textAlign: TextAlign.center),
 
                         // Rewards
@@ -510,7 +515,7 @@ class _AchievementUnlockedCelebrationState
                                     icon: Icons.star_rounded,
                                     value: '+${widget.xpReward}',
                                     label: 'XP',
-                                    color: AppColors.xpGold),
+                                    color: t.gold),
                               if (widget.xpReward > 0 && widget.coinReward > 0)
                                 const SizedBox(width: 16),
                               if (widget.coinReward > 0)
@@ -518,7 +523,7 @@ class _AchievementUnlockedCelebrationState
                                     iconWidget: const GtuCoinIcon(size: 20),
                                     value: '+${widget.coinReward}',
                                     label: CurrencyLabels.gtuCoin,
-                                    color: AppColors.coinGold),
+                                    color: t.gold),
                             ],
                           ),
                         ],
@@ -559,9 +564,9 @@ class _AchievementUnlockedCelebrationState
             shouldLoop: false,
             colors: [
               widget.color,
-              AppColors.purpleNeon,
-              AppColors.pinkNeon,
-              AppColors.xpGold
+              t.brand,
+              t.aiGradient.length > 1 ? t.aiGradient[1] : t.brandSoft,
+              t.gold,
             ],
           ),
         ),

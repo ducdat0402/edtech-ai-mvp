@@ -214,29 +214,31 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: t.bg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
         title: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                gradient: AppGradients.primary,
+                gradient: LinearGradient(colors: t.heroGradient),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child:
-                  const Icon(Icons.quiz_rounded, color: Colors.white, size: 20),
+              child: Icon(Icons.quiz_rounded,
+                  color: t.textOnBrand, size: 20),
             ),
             const SizedBox(width: 12),
             Text('Placement Test',
-                style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
+                style: AppTextStyles.h4.copyWith(color: t.textPrimary)),
           ],
         ),
-        leading: const AppBarLeadingBackAndHome(
-          iconColor: AppColors.textSecondary,
+        leading: AppBarLeadingBackAndHome(
+          iconColor: t.textSecondary,
         ),
         leadingWidth: 112,
         automaticallyImplyLeading: false,
@@ -252,6 +254,7 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
   }
 
   Widget _buildLoadingState() {
+    final t = context.colors;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -259,23 +262,22 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              gradient: AppGradients.primary,
+              gradient: LinearGradient(colors: t.heroGradient),
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.purpleNeon.withValues(alpha: 0.4),
+                  color: t.brand.withValues(alpha: 0.4),
                   blurRadius: 20,
                 ),
               ],
             ),
-            child:
-                const CircularProgressIndicator(color: AppColors.primaryLight),
+            child: CircularProgressIndicator(color: t.textOnBrand),
           ),
           const SizedBox(height: 24),
           Text(
             'Đang chuẩn bị bài test...',
             style: AppTextStyles.bodyLarge
-                .copyWith(color: AppColors.textSecondary),
+                .copyWith(color: t.textSecondary),
           ),
         ],
       ),
@@ -283,6 +285,7 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
   }
 
   Widget _buildErrorState() {
+    final t = context.colors;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -292,22 +295,22 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: AppColors.errorNeon.withValues(alpha: 0.15),
+                color: t.error.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.error_outline_rounded,
-                  size: 48, color: AppColors.errorNeon),
+              child: Icon(Icons.error_outline_rounded,
+                  size: 48, color: t.error),
             ),
             const SizedBox(height: 24),
             Text(
               'Có lỗi xảy ra',
-              style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary),
+              style: AppTextStyles.h3.copyWith(color: t.textPrimary),
             ),
             const SizedBox(height: 8),
             Text(
               _error ?? '',
               style: AppTextStyles.bodyMedium
-                  .copyWith(color: AppColors.textSecondary),
+                  .copyWith(color: t.textSecondary),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -323,10 +326,11 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
   }
 
   Widget _buildNoQuestionState() {
+    final t = context.colors;
     return Center(
       child: Text(
         'Không có câu hỏi',
-        style: AppTextStyles.bodyLarge.copyWith(color: AppColors.textSecondary),
+        style: AppTextStyles.bodyLarge.copyWith(color: t.textSecondary),
       ),
     );
   }
@@ -372,6 +376,7 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
   }
 
   Widget _buildProgressHeader() {
+    final t = context.colors;
     final progress = _currentQuestionNumber / _totalQuestions;
 
     return Container(
@@ -379,12 +384,12 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColors.purpleNeon.withValues(alpha: 0.15),
-            AppColors.pinkNeon.withValues(alpha: 0.1)
+            t.brand.withValues(alpha: 0.15),
+            t.aiGradient.last.withValues(alpha: 0.1),
           ],
         ),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0x332D363D)),
+        border: Border.all(color: t.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -394,18 +399,19 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
             children: [
               Text(
                 'Câu $_currentQuestionNumber / $_totalQuestions',
-                style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+                style: AppTextStyles.h4.copyWith(color: t.textPrimary),
               ),
               Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  gradient: AppGradients.primary,
+                  gradient: LinearGradient(colors: t.heroGradient),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   '${(progress * 100).toInt()}%',
-                  style: AppTextStyles.labelSmall.copyWith(color: Colors.white),
+                  style: AppTextStyles.labelSmall
+                      .copyWith(color: t.textOnBrand),
                 ),
               ),
             ],
@@ -416,7 +422,7 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
               Container(
                 height: 8,
                 decoration: BoxDecoration(
-                  color: AppColors.bgTertiary,
+                  color: t.cardMuted,
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
@@ -427,11 +433,11 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
                 child: Container(
                   height: 8,
                   decoration: BoxDecoration(
-                    gradient: AppGradients.primary,
+                    gradient: LinearGradient(colors: t.heroGradient),
                     borderRadius: BorderRadius.circular(4),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.purpleNeon.withValues(alpha: 0.5),
+                        color: t.brand.withValues(alpha: 0.5),
                         blurRadius: 8,
                       ),
                     ],
@@ -446,29 +452,30 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
   }
 
   Widget _buildLoadingNextQuestion() {
+    final t = context.colors;
     return Container(
       padding: const EdgeInsets.all(16),
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: AppColors.warningNeon.withValues(alpha: 0.1),
+        color: t.warning.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.warningNeon.withValues(alpha: 0.3)),
+        border: Border.all(color: t.warning.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
-          const SizedBox(
+          SizedBox(
             width: 20,
             height: 20,
             child: CircularProgressIndicator(
               strokeWidth: 2,
-              color: AppColors.warningNeon,
+              color: t.warning,
             ),
           ),
           const SizedBox(width: 12),
           Text(
             'Đang tải câu hỏi tiếp theo...',
             style:
-                AppTextStyles.bodyMedium.copyWith(color: AppColors.warningNeon),
+                AppTextStyles.bodyMedium.copyWith(color: t.warning),
           ),
         ],
       ),
@@ -476,12 +483,13 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
   }
 
   Widget _buildQuestionCard() {
+    final t = context.colors;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
+        color: t.card,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0x332D363D)),
+        border: Border.all(color: t.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -490,7 +498,7 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
           Text(
             _currentQuestion!['question'] ?? 'Question',
             style: AppTextStyles.bodyLarge.copyWith(
-              color: AppColors.textPrimary,
+              color: t.textPrimary,
               fontSize: 18,
               height: 1.5,
             ),
@@ -508,6 +516,7 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
   }
 
   Widget _buildOptionCard(int index) {
+    final t = context.colors;
     final option = (_currentQuestion!['options'] as List)[index];
     final isSelected = _selectedAnswer == index;
     final optionLetters = ['A', 'B', 'C', 'D', 'E', 'F'];
@@ -525,17 +534,19 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            gradient: isSelected ? AppGradients.primary : null,
-            color: isSelected ? null : AppColors.bgTertiary,
+            gradient: isSelected
+                ? LinearGradient(colors: t.heroGradient)
+                : null,
+            color: isSelected ? null : t.cardMuted,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: isSelected ? Colors.transparent : const Color(0x332D363D),
+              color: isSelected ? Colors.transparent : t.border,
               width: 2,
             ),
             boxShadow: isSelected
                 ? [
                     BoxShadow(
-                      color: AppColors.purpleNeon.withValues(alpha: 0.3),
+                      color: t.brand.withValues(alpha: 0.3),
                       blurRadius: 12,
                     ),
                   ]
@@ -548,8 +559,8 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
                 height: 36,
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? Colors.white.withValues(alpha: 0.2)
-                      : AppColors.bgSecondary,
+                      ? t.textOnBrand.withValues(alpha: 0.2)
+                      : t.card,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Center(
@@ -557,7 +568,7 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
                     optionLetters[index],
                     style: AppTextStyles.labelLarge.copyWith(
                       color:
-                          isSelected ? Colors.white : AppColors.textSecondary,
+                          isSelected ? t.textOnBrand : t.textSecondary,
                     ),
                   ),
                 ),
@@ -567,7 +578,7 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
                 child: Text(
                   option.toString(),
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: isSelected ? Colors.white : AppColors.textPrimary,
+                    color: isSelected ? t.textOnBrand : t.textPrimary,
                     fontWeight:
                         isSelected ? FontWeight.w600 : FontWeight.normal,
                   ),
@@ -577,11 +588,11 @@ class _PlacementTestScreenState extends State<PlacementTestScreen>
                 Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
+                    color: t.textOnBrand.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.check_rounded,
-                      size: 16, color: Colors.white),
+                  child: Icon(Icons.check_rounded,
+                      size: 16, color: t.textOnBrand),
                 ),
             ],
           ),

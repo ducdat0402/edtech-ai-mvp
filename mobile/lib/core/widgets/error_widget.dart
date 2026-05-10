@@ -17,6 +17,7 @@ class AppErrorWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -26,13 +27,13 @@ class AppErrorWidget extends StatelessWidget {
             Icon(
               icon ?? Icons.error_outline,
               size: 64,
-              color: AppColors.errorNeon,
+              color: t.error,
             ),
             const SizedBox(height: 16),
             if (title != null) ...[
               Text(
                 title!,
-                style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+                style: AppTextStyles.h4.copyWith(color: t.textPrimary),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
@@ -40,7 +41,7 @@ class AppErrorWidget extends StatelessWidget {
             Text(
               message,
               style: AppTextStyles.bodyMedium
-                  .copyWith(color: AppColors.textSecondary),
+                  .copyWith(color: t.textSecondary),
               textAlign: TextAlign.center,
             ),
             if (onRetry != null) ...[

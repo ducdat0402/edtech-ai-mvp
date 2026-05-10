@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../colors.dart';
 import '../gradients.dart';
+import '../semantic_colors.dart';
 import '../text_styles.dart';
 
 /// Animated XP progress bar with glow effect
@@ -26,6 +26,7 @@ class XPBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -45,7 +46,7 @@ class XPBar extends StatelessWidget {
                     child: Text(
                       'LV $level',
                       style: AppTextStyles.labelMedium.copyWith(
-                        color: Colors.white,
+                        color: t.textOnBrand,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -60,7 +61,7 @@ class XPBar extends StatelessWidget {
               Text(
                 '${(progress * 100).toStringAsFixed(1)}%',
                 style: AppTextStyles.labelMedium.copyWith(
-                  color: AppColors.xpGold,
+                  color: t.gold,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -74,7 +75,7 @@ class XPBar extends StatelessWidget {
             Container(
               height: height,
               decoration: BoxDecoration(
-                color: AppColors.bgTertiary,
+                color: t.cardMuted,
                 borderRadius: BorderRadius.circular(height / 2),
               ),
             ),
@@ -91,7 +92,7 @@ class XPBar extends StatelessWidget {
                   boxShadow: showGlow
                       ? [
                           BoxShadow(
-                            color: AppColors.xpGold.withValues(alpha: 0.6),
+                            color: t.gold.withValues(alpha: 0.6),
                             blurRadius: 8,
                             spreadRadius: 0,
                           ),
@@ -122,6 +123,7 @@ class XPBarMini extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
     return SizedBox(
       width: width,
       child: Stack(
@@ -129,7 +131,7 @@ class XPBarMini extends StatelessWidget {
           Container(
             height: height,
             decoration: BoxDecoration(
-              color: AppColors.bgTertiary,
+              color: t.cardMuted,
               borderRadius: BorderRadius.circular(height / 2),
             ),
           ),

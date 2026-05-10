@@ -5,7 +5,11 @@ import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 
-/// Môn **cộng đồng** mà user đã có bài được ghi công + tỉ lệ A/B (dashboard.contributorStats).
+/// "Hành trình của tôi" — tab Đóng góp (mockup MT-02).
+///
+/// Hai tab ở header (Đang học / Đóng góp). Tab "Đang học" mở
+/// `/profile/journey`. Tab "Đóng góp" hiển thị các môn cộng đồng kèm
+/// progress gold + lịch sử đóng góp.
 class MyCommunityContributionsScreen extends StatefulWidget {
   const MyCommunityContributionsScreen({super.key});
 
@@ -18,13 +22,15 @@ class _MyCommunityContributionsScreenState
     extends State<MyCommunityContributionsScreen> {
   static const String _helpText =
       'Cách đọc số liệu:\n\n'
-      '• Tổng quan môn: trong toàn bộ bài học của môn, có bao nhiêu bài đã được ghi nhận người đóng góp cộng đồng.\n'
-      '• Phần của bạn: trong nhóm bài đã ghi nhận đóng góp ở trên, có bao nhiêu bài ghi tên bạn.\n\n'
-      'Bạn bấm vào từng môn để xem chi tiết dạng mind-map.';
+      '• Tổng đóng góp: tổng số bài bạn đã được ghi nhận trong tất cả môn.\n'
+      '• Tỉ lệ duyệt: phần trăm bài bạn gửi mà đã được duyệt.\n\n'
+      'Nhấn vào từng môn để xem chi tiết các bài bạn đã đóng góp.';
 
   bool _loading = true;
   String? _error;
   List<Map<String, dynamic>> _items = [];
+  int _totalContributions = 0;
+  int _approvalPercent = 0;
 
   @override
   void initState() {
@@ -49,9 +55,34 @@ class _MyCommunityContributionsScreenState
         final mine = (st['myCreditedNodes'] as num?)?.toInt() ?? 0;
         return mine > 0;
       }).toList();
+
+      var total = 0;
+      for (final s in filtered) {
+        final st = s['contributorStats'];
+        if (st is Map) {
+          total += (st['myCreditedNodes'] as num?)?.toInt() ?? 0;
+        }
+      }
+
+      var approval = 0;
+      var totalSubjectNodes = 0;
+      var totalCreditedNodes = 0;
+      for (final s in filtered) {
+        final st = s['contributorStats'];
+        if (st is Map) {
+          totalSubjectNodes += (st['nodesWithContributor'] as num?)?.toInt() ?? 0;
+          totalCreditedNodes += (st['myCreditedNodes'] as num?)?.toInt() ?? 0;
+        }
+      }
+      if (totalSubjectNodes > 0) {
+        approval = ((totalCreditedNodes * 100) ~/ totalSubjectNodes).clamp(0, 100);
+      }
+
       if (!mounted) return;
       setState(() {
         _items = filtered;
+        _totalContributions = total;
+        _approvalPercent = approval;
         _loading = false;
       });
     } catch (e) {
@@ -65,95 +96,181 @@ class _MyCommunityContributionsScreenState
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.contributorBgPrimary,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: const AppBarLeadingBackAndHome(),
-        leadingWidth: 112,
-        automaticallyImplyLeading: false,
-        title: Text(
-          'Đóng góp của tôi',
-          style: AppTextStyles.labelLarge.copyWith(color: AppColors.textPrimary),
-        ),
-        actions: [
-          IconButton(
-            tooltip: 'Cách đọc số liệu',
-            onPressed: _showHowToReadDialog,
-            icon: const Icon(Icons.help_outline_rounded),
-            color: AppColors.contributorBlue,
+      backgroundColor: tokens.bg,
+      body: NestedScrollView(
+        headerSliverBuilder: (context, innerScrolled) => [
+          SliverAppBar(
+            pinned: true,
+            stretch: true,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            leadingWidth: 112,
+            leading: const AppBarLeadingBackAndHome(),
+            automaticallyImplyLeading: false,
+            actions: [
+              IconButton(
+                tooltip: 'Cách đọc số liệu',
+                onPressed: _showHowToReadDialog,
+                icon: const Icon(Icons.help_outline_rounded),
+                color: tokens.textOnBrand,
+              ),
+              const SizedBox(width: 4),
+            ],
+            expandedHeight: 220,
+            flexibleSpace: FlexibleSpaceBar(
+              background: BrandHeader(
+                bottomCornerRadius: 32,
+                padding: const EdgeInsets.fromLTRB(20, 60, 20, 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Hành trình của tôi',
+                      style: AppTextStyles.h2.copyWith(
+                        color: tokens.textOnBrand,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    SectionTabSwitcher(
+                      tabs: const [
+                        SectionTabItem(
+                          label: 'Đang học',
+                          icon: Icons.school_rounded,
+                        ),
+                        SectionTabItem(
+                          label: 'Đóng góp',
+                          icon: Icons.volunteer_activism_rounded,
+                        ),
+                      ],
+                      selectedIndex: 1,
+                      onChanged: (i) {
+                        if (i == 0) {
+                          context.push('/profile/journey');
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
-          const SizedBox(width: 4),
         ],
+        body: RefreshIndicator(
+          color: tokens.brand,
+          onRefresh: _load,
+          child: _buildBody(tokens),
+        ),
       ),
-      body: RefreshIndicator(
-        color: AppColors.contributorBlue,
-        onRefresh: _load,
-        child: _loading
-            ? ListView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                children: const [
-                  SizedBox(height: 120),
-                  Center(
-                    child: CircularProgressIndicator(color: AppColors.contributorBlue),
-                  ),
-                ],
-              )
-            : _error != null
-                ? ListView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.all(24),
-                    children: [
-                      Text(
-                        _error!,
-                        style: AppTextStyles.bodyMedium
-                            .copyWith(color: AppColors.textSecondary),
-                      ),
-                      const SizedBox(height: 16),
-                      FilledButton(
-                        onPressed: _load,
-                        child: const Text('Thử lại'),
-                      ),
-                    ],
-                  )
-                : _items.isEmpty
-                    ? ListView(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        padding: const EdgeInsets.fromLTRB(24, 48, 24, 24),
-                        children: [
-                          Icon(
-                            Icons.volunteer_activism_outlined,
-                            size: 56,
-                            color: AppColors.textTertiary.withValues(alpha: 0.6),
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Chưa có môn cộng đồng nào ghi nhận đóng góp của bạn',
-                            textAlign: TextAlign.center,
-                            style: AppTextStyles.h4
-                                .copyWith(color: AppColors.textPrimary),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Khi bài bạn gửi được duyệt và hệ thống gắn tên bạn là người đóng góp trên bài đó, môn tương ứng sẽ hiện ở đây kèm số liệu dễ đọc.',
-                            textAlign: TextAlign.center,
-                            style: AppTextStyles.bodyMedium
-                                .copyWith(color: AppColors.textSecondary, height: 1.4),
-                          ),
-                        ],
-                      )
-                    : ListView(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-                        children: [
-                          for (var i = 0; i < _items.length; i++) ...[
-                            if (i > 0) const SizedBox(height: 10),
-                            _buildSubjectTile(_items[i]),
-                          ],
-                        ],
-                      ),
-      ),
+    );
+  }
+
+  Widget _buildBody(SemanticColors tokens) {
+    if (_loading) {
+      return ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: [
+          const SizedBox(height: 80),
+          Center(child: CircularProgressIndicator(color: tokens.brand)),
+        ],
+      );
+    }
+    if (_error != null) {
+      return ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(24),
+        children: [
+          Text(
+            _error!,
+            style: AppTextStyles.bodyMedium.copyWith(color: tokens.textSecondary),
+          ),
+          const SizedBox(height: 16),
+          FilledButton(
+            onPressed: _load,
+            child: const Text('Thử lại'),
+          ),
+        ],
+      );
+    }
+
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: _SummaryStatCard(
+                icon: Icons.menu_book_rounded,
+                label: 'Tổng đóng góp',
+                value: '$_totalContributions',
+                color: tokens.brand,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _SummaryStatCard(
+                icon: Icons.verified_rounded,
+                label: 'Tỉ lệ duyệt',
+                value: '$_approvalPercent%',
+                color: tokens.gold,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 18),
+        Text(
+          'Đóng góp theo môn',
+          style: AppTextStyles.h3.copyWith(
+            color: tokens.textPrimary,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        const SizedBox(height: 10),
+        if (_items.isEmpty)
+          _EmptySubjectsCard(tokens: tokens)
+        else
+          for (var i = 0; i < _items.length; i++) ...[
+            if (i > 0) const SizedBox(height: 10),
+            _buildSubjectTile(_items[i]),
+          ],
+      ],
+    );
+  }
+
+  Widget _buildSubjectTile(Map<String, dynamic> s) {
+    final id = (s['id'] ?? '').toString();
+    final name = (s['name'] ?? 'Môn học').toString();
+    final st = s['contributorStats'];
+    final Map<String, dynamic> m =
+        st is Map ? Map<String, dynamic>.from(st) : {};
+    final total = (m['totalNodes'] as num?)?.toInt() ?? 0;
+    final withCc = (m['nodesWithContributor'] as num?)?.toInt() ?? 0;
+    final mine = (m['myCreditedNodes'] as num?)?.toInt() ?? 0;
+    final myPct = m['mySharePercent'] as int?;
+    final mySharePercent =
+        (myPct ?? (withCc == 0 ? 0 : ((mine * 100) ~/ withCc))).clamp(0, 100);
+    final accent = _accentForSubject(name);
+
+    final ratio = total == 0 ? 0.0 : (mine / total).clamp(0.0, 1.0);
+    final progressLabel =
+        total == 0 ? '$mine bài' : '$mine/$total bài';
+
+    return SubjectListTile(
+      name: name,
+      subtitle: 'Đóng góp đã ghi: $mine bài • Tỷ lệ trong nhóm: $mySharePercent%',
+      leadingIcon: _iconForSubject(name),
+      leadingColor: accent,
+      actionLabel: 'Tiếp tục',
+      progressValue: ratio,
+      progressLabel: progressLabel,
+      onTap: id.isEmpty
+          ? () {}
+          : () => context.push(
+                '/contributor/mind-map?subjectId=$id&subjectName=${Uri.encodeComponent(name)}',
+              ),
     );
   }
 
@@ -163,13 +280,7 @@ class _MyCommunityContributionsScreenState
       builder: (context) {
         return AlertDialog(
           title: const Text('Cách đọc số liệu'),
-          content: Text(
-            _helpText,
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textSecondary,
-              height: 1.4,
-            ),
-          ),
+          content: const Text(_helpText),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -220,189 +331,106 @@ class _MyCommunityContributionsScreenState
       return const Color(0xFF2E7BEA);
     }
     if (n.contains('bóng') || n.contains('thể')) return const Color(0xFF26A96D);
-    return AppColors.contributorBlue;
+    return const Color(0xFF6B46C1);
   }
+}
 
-  Widget _buildProgressRow({
-    required String label,
-    required int percent,
-    required Color color,
-  }) {
-    final clamped = percent.clamp(0, 100);
-    return Column(
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: Text(
+class _SummaryStatCard extends StatelessWidget {
+  const _SummaryStatCard({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.colors;
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: tokens.card,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: tokens.border),
+        boxShadow: [
+          BoxShadow(
+            color: tokens.shadowColor,
+            blurRadius: 14,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: color, size: 18),
+              const SizedBox(width: 6),
+              Text(
                 label,
-                style: AppTextStyles.caption.copyWith(
-                  color: AppColors.textTertiary,
+                style: AppTextStyles.labelLarge.copyWith(
+                  color: tokens.textSecondary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
-            ),
-            Text(
-              '$clamped%',
-              style: AppTextStyles.caption.copyWith(
-                color: color,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 4),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(999),
-          child: LinearProgressIndicator(
-            minHeight: 7,
-            value: clamped / 100,
-            backgroundColor: AppColors.textTertiary.withValues(alpha: 0.22),
-            valueColor: AlwaysStoppedAnimation<Color>(color),
-          ),
-        ),
-      ],
-    );
-  }
-
-  String _sentenceToanMon(int total, int withCc, int ccPct) {
-    if (total <= 0) {
-      return 'Chưa có dữ liệu tổng số bài trong môn.';
-    }
-    if (withCc <= 0) {
-      return 'Trong $total bài học của môn, hiện chưa có bài nào được ghi nhận người đóng góp cộng đồng.';
-    }
-    return 'Trong $total bài học của môn, có $withCc bài đã được ghi nhận do cộng đồng đóng góp '
-        '(tương đương khoảng $ccPct% số bài trong môn).';
-  }
-
-  String _sentencePhanBan(int mine, int withCc, int? myPct) {
-    if (withCc <= 0) {
-      return 'Chưa có nhóm bài nào được ghi nhận đóng góp để so sánh phần của bạn.';
-    }
-    if (myPct != null) {
-      return 'Trong $withCc bài đã ghi nhận đóng góp ở trên, có $mine bài ghi tên bạn '
-          '(tương đương khoảng $myPct% trong nhóm bài đó).';
-    }
-    return 'Bạn được ghi nhận trên $mine bài trong môn này.';
-  }
-
-  Widget _buildSubjectTile(Map<String, dynamic> s) {
-    final id = (s['id'] ?? '').toString();
-    final name = (s['name'] ?? 'Môn học').toString();
-    final st = s['contributorStats'];
-    final Map<String, dynamic> m =
-        st is Map ? Map<String, dynamic>.from(st) : {};
-    final total = (m['totalNodes'] as num?)?.toInt() ?? 0;
-    final withCc = (m['nodesWithContributor'] as num?)?.toInt() ?? 0;
-    final ccPct = (m['communityPercent'] as num?)?.toInt() ?? 0;
-    final mine = (m['myCreditedNodes'] as num?)?.toInt() ?? 0;
-    final myPct = m['mySharePercent'] as int?;
-    final accent = _accentForSubject(name);
-    final mySharePercent = (myPct ?? (withCc == 0 ? 0 : ((mine * 100) ~/ withCc)))
-        .clamp(0, 100);
-
-    return Material(
-      color: AppColors.contributorBgSecondary,
-      borderRadius: BorderRadius.circular(14),
-      child: InkWell(
-        onTap: id.isEmpty
-            ? null
-            : () => context.push(
-                  '/contributor/mind-map?subjectId=$id&subjectName=${Uri.encodeComponent(name)}',
-                ),
-        borderRadius: BorderRadius.circular(14),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 34,
-                    height: 34,
-                    decoration: BoxDecoration(
-                      color: accent.withValues(alpha: 0.16),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Icon(
-                      _iconForSubject(name),
-                      size: 18,
-                      color: accent,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      name,
-                      style: AppTextStyles.labelLarge
-                          .copyWith(color: AppColors.textPrimary),
-                    ),
-                  ),
-                  const Icon(
-                    Icons.chevron_right_rounded,
-                    color: AppColors.textTertiary,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Row(
-                children: [
-                  Text(
-                    'Tổng quan môn',
-                    style: AppTextStyles.caption.copyWith(
-                      color: AppColors.contributorBlue,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.2,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Text(
-                _sentenceToanMon(total, withCc, ccPct),
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.textSecondary,
-                  height: 1.4,
-                ),
-              ),
-              const SizedBox(height: 8),
-              _buildProgressRow(
-                label: 'Mức ghi nhận cộng đồng',
-                percent: ccPct,
-                color: accent,
-              ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Text(
-                    'Phần của bạn',
-                    style: AppTextStyles.caption.copyWith(
-                      color: AppColors.contributorBlue,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.2,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Text(
-                _sentencePhanBan(mine, withCc, myPct),
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.textSecondary,
-                  height: 1.4,
-                ),
-              ),
-              const SizedBox(height: 8),
-              _buildProgressRow(
-                label: 'Tỷ lệ phần của bạn',
-                percent: mySharePercent,
-                color: AppColors.contributorBlue,
-              ),
             ],
           ),
-        ),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            style: AppTextStyles.h2.copyWith(
+              color: color,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EmptySubjectsCard extends StatelessWidget {
+  const _EmptySubjectsCard({required this.tokens});
+  final SemanticColors tokens;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 32, 20, 32),
+      decoration: BoxDecoration(
+        color: tokens.card,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: tokens.border),
+      ),
+      child: Column(
+        children: [
+          Icon(
+            Icons.volunteer_activism_outlined,
+            size: 48,
+            color: tokens.textTertiary,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Chưa có môn cộng đồng nào ghi nhận đóng góp của bạn',
+            textAlign: TextAlign.center,
+            style: AppTextStyles.h4.copyWith(color: tokens.textPrimary),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Khi bài bạn gửi được duyệt và hệ thống gắn tên bạn là người đóng góp, môn tương ứng sẽ hiện ở đây.',
+            textAlign: TextAlign.center,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: tokens.textSecondary,
+              height: 1.4,
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -153,7 +153,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Lỗi khi duyệt: $e'),
-            backgroundColor: AppColors.errorNeon,
+            backgroundColor: context.colors.error,
           ),
         );
       }
@@ -170,11 +170,11 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Hủy'),
+            child: Text('Hủy'),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.errorNeon),
+            style: TextButton.styleFrom(foregroundColor: context.colors.error),
             child: const Text('Từ chối'),
           ),
         ],
@@ -190,7 +190,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Lỗi khi từ chối: $e'),
-              backgroundColor: AppColors.errorNeon,
+              backgroundColor: context.colors.error,
             ),
           );
         }
@@ -236,9 +236,9 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
       await apiService.approvePendingContribution(id);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
               content: Text('Đã duyệt đóng góp!'),
-              backgroundColor: AppColors.successNeon),
+              backgroundColor: context.colors.success),
         );
         _loadPendingContributions();
       }
@@ -246,7 +246,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text('Lỗi: $e'), backgroundColor: AppColors.errorNeon),
+              content: Text('Lỗi: $e'), backgroundColor: context.colors.error),
         );
       }
     }
@@ -296,7 +296,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -322,26 +322,26 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                        color: AppColors.textTertiary,
+                        color: context.colors.textTertiary,
                         borderRadius: BorderRadius.circular(2)),
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Row(
                       children: [
-                        const Icon(Icons.compare_arrows,
-                            color: AppColors.orangeNeon),
+                        Icon(Icons.compare_arrows,
+                            color: context.colors.warning),
                         const SizedBox(width: 8),
-                        const Expanded(
+                        Expanded(
                           child: Text('Chi tiết bài học đóng góp',
                               style: TextStyle(
-                                  color: AppColors.textPrimary,
+                                  color: context.colors.textPrimary,
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold)),
                         ),
                         IconButton(
-                            icon: const Icon(Icons.close,
-                                color: AppColors.textSecondary),
+                            icon: Icon(Icons.close,
+                                color: context.colors.textSecondary),
                             onPressed: () => Navigator.pop(context)),
                       ],
                     ),
@@ -356,10 +356,10 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: AppColors.bgSecondary,
+                            color: context.colors.card,
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                                color: AppColors.successNeon
+                                color: context.colors.success
                                     .withValues(alpha: 0.3)),
                           ),
                           child: Column(
@@ -369,26 +369,26 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 10, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: AppColors.successNeon
+                                  color: context.colors.success
                                       .withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: const Text('Đóng góp mới',
+                                child: Text('Đóng góp mới',
                                     style: TextStyle(
-                                        color: AppColors.successNeon,
+                                        color: context.colors.success,
                                         fontSize: 12,
                                         fontWeight: FontWeight.bold)),
                               ),
                               const SizedBox(height: 12),
                               Text(title,
-                                  style: const TextStyle(
-                                      color: AppColors.textPrimary,
+                                  style: TextStyle(
+                                      color: context.colors.textPrimary,
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold)),
                               const SizedBox(height: 4),
                               Text(description,
-                                  style: const TextStyle(
-                                      color: AppColors.textSecondary,
+                                  style: TextStyle(
+                                      color: context.colors.textSecondary,
                                       fontSize: 13)),
                               const SizedBox(height: 8),
                               // Lesson type
@@ -396,13 +396,13 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 8, vertical: 3),
                                 decoration: BoxDecoration(
-                                  color: AppColors.purpleNeon
+                                  color: context.colors.brand
                                       .withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(_getLessonTypeLabel(lessonType),
-                                    style: const TextStyle(
-                                        color: AppColors.purpleNeon,
+                                    style: TextStyle(
+                                        color: context.colors.brand,
                                         fontSize: 12)),
                               ),
                               const SizedBox(height: 12),
@@ -411,12 +411,12 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                               const SizedBox(height: 8),
                               Row(
                                 children: [
-                                  const Icon(Icons.quiz_outlined,
-                                      color: AppColors.orangeNeon, size: 16),
+                                  Icon(Icons.quiz_outlined,
+                                      color: context.colors.warning, size: 16),
                                   const SizedBox(width: 6),
                                   Text('Quiz cuối bài: $quizCount câu hỏi',
-                                      style: const TextStyle(
-                                          color: AppColors.textSecondary,
+                                      style: TextStyle(
+                                          color: context.colors.textSecondary,
                                           fontSize: 13)),
                                 ],
                               ),
@@ -428,20 +428,20 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: AppColors.bgTertiary,
+                            color: context.colors.cardMuted,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(color: const Color(0x332D363D)),
                           ),
-                          child: const Row(
+                          child: Row(
                             children: [
                               Icon(Icons.info_outline,
-                                  color: AppColors.textTertiary, size: 18),
+                                  color: context.colors.textTertiary, size: 18),
                               SizedBox(width: 8),
                               Expanded(
                                 child: Text(
                                     'Nhấn "Xem trước bài học" để xem bài học này sẽ hiển thị như thế nào với người học.',
                                     style: TextStyle(
-                                        color: AppColors.textSecondary,
+                                        color: context.colors.textSecondary,
                                         fontSize: 13)),
                               ),
                             ],
@@ -508,11 +508,11 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
       padding: const EdgeInsets.only(bottom: 4),
       child: Row(
         children: [
-          Icon(icon, color: AppColors.textTertiary, size: 16),
+          Icon(icon, color: context.colors.textTertiary, size: 16),
           const SizedBox(width: 6),
           Text(text,
-              style: const TextStyle(
-                  color: AppColors.textSecondary, fontSize: 13)),
+              style: TextStyle(
+                  color: context.colors.textSecondary, fontSize: 13)),
         ],
       ),
     );
@@ -523,28 +523,29 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
       context: context,
       builder: (ctx) {
         final controller = TextEditingController();
+        final d = ctx.colors;
         return AlertDialog(
-          backgroundColor: AppColors.bgSecondary,
+          backgroundColor: d.card,
           title: Text('Từ chối đóng góp',
-              style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
+              style: AppTextStyles.h4.copyWith(color: d.textPrimary)),
           content: TextField(
             controller: controller,
-            style: const TextStyle(color: AppColors.textPrimary),
-            decoration: const InputDecoration(
+            style: TextStyle(color: d.textPrimary),
+            decoration: InputDecoration(
               hintText: 'Lý do từ chối (không bắt buộc)',
-              hintStyle: TextStyle(color: AppColors.textTertiary),
+              hintStyle: TextStyle(color: d.textTertiary),
             ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(null),
-              child: const Text('Hủy',
-                  style: TextStyle(color: AppColors.textSecondary)),
+              child: Text('Hủy',
+                  style: TextStyle(color: d.textSecondary)),
             ),
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(controller.text),
-              child: const Text('Từ chối',
-                  style: TextStyle(color: AppColors.errorNeon)),
+              child: Text('Từ chối',
+                  style: TextStyle(color: d.error)),
             ),
           ],
         );
@@ -553,14 +554,15 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
     if (reason == null) return;
 
     try {
+      if (!mounted) return;
       final apiService = Provider.of<ApiService>(context, listen: false);
       await apiService.rejectPendingContribution(id,
           note: reason.isNotEmpty ? reason : null);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
               content: Text('Đã từ chối đóng góp'),
-              backgroundColor: AppColors.orangeNeon),
+              backgroundColor: context.colors.warning),
         );
         _loadPendingContributions();
       }
@@ -568,7 +570,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text('Lỗi: $e'), backgroundColor: AppColors.errorNeon),
+              content: Text('Lỗi: $e'), backgroundColor: context.colors.error),
         );
       }
     }
@@ -577,7 +579,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -589,22 +591,26 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                gradient: AppGradients.primary,
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: List<Color>.from(context.colors.heroGradient),
+                ),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(Icons.admin_panel_settings_rounded,
-                  color: Colors.white, size: 20),
+              child: Icon(Icons.admin_panel_settings_rounded,
+                  color: context.colors.textOnBrand, size: 20),
             ),
             const SizedBox(width: 12),
             Text('Admin Panel',
-                style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
+                style: AppTextStyles.h4.copyWith(color: context.colors.textPrimary)),
           ],
         ),
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: AppColors.primaryLight,
-          labelColor: AppColors.primaryLight,
-          unselectedLabelColor: AppColors.textSecondary,
+          indicatorColor: context.colors.brandStrong,
+          labelColor: context.colors.brandStrong,
+          unselectedLabelColor: context.colors.textSecondary,
           labelStyle: AppTextStyles.labelMedium,
           isScrollable: true,
           tabs: const [
@@ -617,8 +623,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh_rounded,
-                color: AppColors.textSecondary),
+            icon: Icon(Icons.refresh_rounded,
+                color: context.colors.textSecondary),
             onPressed: () {
               if (_tabController.index == 0) {
                 _loadPendingEdits();
@@ -651,8 +657,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
 
   Widget _buildPendingEditsTab() {
     return _isLoading
-        ? const Center(
-            child: CircularProgressIndicator(color: AppColors.purpleNeon))
+        ? Center(
+            child: CircularProgressIndicator(color: context.colors.brand))
         : _error != null
             ? Center(
                 child: Column(
@@ -661,16 +667,16 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                     Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: AppColors.errorNeon.withValues(alpha: 0.15),
+                        color: context.colors.error.withValues(alpha: 0.15),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.error_outline_rounded,
-                          size: 48, color: AppColors.errorNeon),
+                      child: Icon(Icons.error_outline_rounded,
+                          size: 48, color: context.colors.error),
                     ),
                     const SizedBox(height: 16),
                     Text('Lỗi: $_error',
                         style: AppTextStyles.bodyMedium
-                            .copyWith(color: AppColors.textSecondary)),
+                            .copyWith(color: context.colors.textSecondary)),
                     const SizedBox(height: 16),
                     GamingButton(
                         text: 'Thử lại',
@@ -688,22 +694,22 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                           padding: const EdgeInsets.all(20),
                           decoration: BoxDecoration(
                             color:
-                                AppColors.successNeon.withValues(alpha: 0.15),
+                                context.colors.success.withValues(alpha: 0.15),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.check_circle_outline_rounded,
-                              size: 48, color: AppColors.successNeon),
+                          child: Icon(Icons.check_circle_outline_rounded,
+                              size: 48, color: context.colors.success),
                         ),
                         const SizedBox(height: 16),
                         Text('Không có đóng góp nào cần duyệt',
                             style: AppTextStyles.bodyLarge
-                                .copyWith(color: AppColors.textSecondary)),
+                                .copyWith(color: context.colors.textSecondary)),
                       ],
                     ),
                   )
                 : RefreshIndicator(
                     onRefresh: _loadPendingEdits,
-                    color: AppColors.primaryLight,
+                    color: context.colors.brandStrong,
                     child: ListView.builder(
                       padding: const EdgeInsets.all(16),
                       itemCount: _pendingEdits.length,
@@ -720,8 +726,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
 
   Widget _buildPendingContributionsTab() {
     if (_isLoadingContributions) {
-      return const Center(
-          child: CircularProgressIndicator(color: AppColors.primaryLight));
+      return Center(
+          child: CircularProgressIndicator(color: context.colors.brandStrong));
     }
     if (_pendingContributions.isEmpty) {
       return Center(
@@ -729,18 +735,18 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.check_circle_outline,
-                size: 64, color: AppColors.successNeon.withValues(alpha: 0.3)),
+                size: 64, color: context.colors.success.withValues(alpha: 0.3)),
             const SizedBox(height: 16),
             Text('Không có đóng góp nào chờ duyệt',
                 style: AppTextStyles.bodyMedium
-                    .copyWith(color: AppColors.textSecondary)),
+                    .copyWith(color: context.colors.textSecondary)),
           ],
         ),
       );
     }
     return RefreshIndicator(
       onRefresh: _loadPendingContributions,
-      color: AppColors.primaryLight,
+      color: context.colors.brandStrong,
       child: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: _pendingContributions.length,
@@ -772,27 +778,27 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
     switch (type) {
       case 'subject':
         typeIcon = Icons.school;
-        typeColor = AppColors.contributorBlue;
+        typeColor = context.colors.info;
         typeLabel = 'Môn học';
         break;
       case 'domain':
         typeIcon = Icons.folder;
-        typeColor = AppColors.primaryLight;
+        typeColor = context.colors.brandStrong;
         typeLabel = 'Domain';
         break;
       case 'topic':
         typeIcon = Icons.topic;
-        typeColor = AppColors.purpleNeon;
+        typeColor = context.colors.brand;
         typeLabel = 'Topic';
         break;
       case 'lesson':
         typeIcon = Icons.article;
-        typeColor = AppColors.successNeon;
+        typeColor = context.colors.success;
         typeLabel = 'Bài học';
         break;
       default:
         typeIcon = Icons.help;
-        typeColor = AppColors.textSecondary;
+        typeColor = context.colors.textSecondary;
         typeLabel = type;
     }
 
@@ -803,32 +809,32 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
     switch (action) {
       case 'edit':
         actionIcon = Icons.edit_outlined;
-        actionColor = AppColors.primaryLight;
+        actionColor = context.colors.brandStrong;
         actionLabel = 'Sửa';
         break;
       case 'delete':
         actionIcon = Icons.delete_outline;
-        actionColor = AppColors.errorNeon;
+        actionColor = context.colors.error;
         actionLabel = 'Xóa';
         break;
       default: // create
         actionIcon = Icons.add_circle_outline;
-        actionColor = AppColors.successNeon;
+        actionColor = context.colors.success;
         actionLabel = 'Tạo mới';
     }
 
     // Border color based on action
     final borderColor = action == 'delete'
-        ? AppColors.errorNeon.withValues(alpha: 0.4)
+        ? context.colors.error.withValues(alpha: 0.4)
         : action == 'edit'
-            ? AppColors.primaryLight.withValues(alpha: 0.4)
+            ? context.colors.brandStrong.withValues(alpha: 0.4)
             : typeColor.withValues(alpha: 0.3);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(16),
         border:
             Border.all(color: borderColor, width: action == 'delete' ? 1.5 : 1),
@@ -880,7 +886,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                 Text(
                   _formatContributionDate(createdAt),
                   style: AppTextStyles.caption
-                      .copyWith(color: AppColors.textTertiary),
+                      .copyWith(color: context.colors.textTertiary),
                 ),
             ],
           ),
@@ -914,7 +920,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                       contextDescription,
                       style: AppTextStyles.bodySmall.copyWith(
                         fontWeight: FontWeight.w600,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                         height: 1.4,
                       ),
                     ),
@@ -928,7 +934,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
           // Title
           Text(title,
               style: AppTextStyles.labelLarge.copyWith(
-                  color: AppColors.textPrimary, fontWeight: FontWeight.bold)),
+                  color: context.colors.textPrimary, fontWeight: FontWeight.bold)),
 
           // Description / Reason
           if (description.isNotEmpty) ...[
@@ -940,7 +946,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                       ? 'Lý do: $description'
                       : description,
               style: AppTextStyles.bodySmall
-                  .copyWith(color: AppColors.textSecondary),
+                  .copyWith(color: context.colors.textSecondary),
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
             ),
@@ -950,14 +956,14 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
           const SizedBox(height: 10),
           Row(
             children: [
-              const Icon(Icons.person_outline,
-                  size: 14, color: AppColors.textTertiary),
+              Icon(Icons.person_outline,
+                  size: 14, color: context.colors.textTertiary),
               const SizedBox(width: 4),
               Expanded(
                 child: Text(
                   contributorName.toString(),
                   style: AppTextStyles.caption
-                      .copyWith(color: AppColors.textTertiary),
+                      .copyWith(color: context.colors.textTertiary),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -970,7 +976,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: AppColors.bgTertiary,
+                color: context.colors.cardMuted,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Column(
@@ -988,11 +994,11 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: () => _previewLessonContribution(data),
-                    icon: const Icon(Icons.visibility_outlined, size: 18),
-                    label: const Text('Xem trước bài học'),
+                    icon: Icon(Icons.visibility_outlined, size: 18),
+                    label: Text('Xem trước bài học'),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.primaryLight,
-                      side: const BorderSide(color: AppColors.primaryLight),
+                      foregroundColor: context.colors.brandStrong,
+                      side: BorderSide(color: context.colors.brandStrong),
                       padding: const EdgeInsets.symmetric(vertical: 10),
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10)),
@@ -1003,11 +1009,11 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: () => _showLessonComparisonForAdmin(data, title),
-                    icon: const Icon(Icons.compare_arrows_outlined, size: 18),
-                    label: const Text('So sánh'),
+                    icon: Icon(Icons.compare_arrows_outlined, size: 18),
+                    label: Text('So sánh'),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.orangeNeon,
-                      side: const BorderSide(color: AppColors.orangeNeon),
+                      foregroundColor: context.colors.warning,
+                      side: BorderSide(color: context.colors.warning),
                       padding: const EdgeInsets.symmetric(vertical: 10),
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10)),
@@ -1025,12 +1031,12 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: () => _rejectContribution(id),
-                  icon: const Icon(Icons.close, size: 18),
-                  label: const Text('Từ chối'),
+                  icon: Icon(Icons.close, size: 18),
+                  label: Text('Từ chối'),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.errorNeon,
+                    foregroundColor: context.colors.error,
                     side: BorderSide(
-                        color: AppColors.errorNeon.withValues(alpha: 0.5)),
+                        color: context.colors.error.withValues(alpha: 0.5)),
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10)),
@@ -1046,9 +1052,9 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                   label: Text(action == 'delete' ? 'Duyệt xóa' : 'Duyệt'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: action == 'delete'
-                        ? AppColors.errorNeon
-                        : AppColors.successNeon,
-                    foregroundColor: Colors.white,
+                        ? context.colors.error
+                        : context.colors.success,
+                    foregroundColor: context.colors.textOnBrand,
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10)),
@@ -1073,7 +1079,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
       }
       if (data['newName'] != null) {
         rows.add(_buildHighlightDataRow(
-            'Tên mới', data['newName'], AppColors.primaryLight));
+            'Tên mới', data['newName'], context.colors.brandStrong));
       }
       if (data['subjectName'] != null) {
         rows.add(_buildDataRow('Môn học', data['subjectName']));
@@ -1085,7 +1091,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
       // Show what will be deleted
       if (data['entityName'] != null) {
         rows.add(_buildHighlightDataRow(
-            'Sẽ xóa', data['entityName'], AppColors.errorNeon));
+            'Sẽ xóa', data['entityName'], context.colors.error));
       }
       if (data['subjectName'] != null) {
         rows.add(_buildDataRow('Trong môn', data['subjectName']));
@@ -1116,7 +1122,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
       // New lesson type info
       if (data['lessonType'] != null) {
         rows.add(_buildHighlightDataRow('Dạng bài',
-            _getLessonTypeLabel(data['lessonType']), AppColors.purpleNeon));
+            _getLessonTypeLabel(data['lessonType']), context.colors.brand));
         // Show content stats
         final lessonData = data['lessonData'] as Map<String, dynamic>? ?? {};
         switch (data['lessonType']) {
@@ -1157,7 +1163,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
         children: [
           Text('$label: ',
               style: AppTextStyles.caption
-                  .copyWith(color: AppColors.textTertiary)),
+                  .copyWith(color: context.colors.textTertiary)),
           Expanded(
             child: Text(
               value,
@@ -1179,10 +1185,10 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
         children: [
           Text('$label: ',
               style: AppTextStyles.caption
-                  .copyWith(color: AppColors.textTertiary)),
+                  .copyWith(color: context.colors.textTertiary)),
           Text(value,
               style: AppTextStyles.caption.copyWith(
-                  color: AppColors.textSecondary, fontWeight: FontWeight.w600)),
+                  color: context.colors.textSecondary, fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -1246,7 +1252,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
-      color: AppColors.bgSecondary,
+      color: context.colors.card,
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
@@ -1258,7 +1264,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                   child: Text(
                     title,
                     style: AppTextStyles.labelLarge.copyWith(
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                     ),
                   ),
                 ),
@@ -1269,7 +1275,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
             Text(
               'Người gửi: $contributorName',
               style: AppTextStyles.caption.copyWith(
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
             ),
             if (createdAt != null && createdAt.isNotEmpty) ...[
@@ -1277,7 +1283,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
               Text(
                 'Tạo lúc: ${_formatDate(createdAt)}',
                 style: AppTextStyles.caption.copyWith(
-                  color: AppColors.textTertiary,
+                  color: context.colors.textTertiary,
                 ),
               ),
             ],
@@ -1298,12 +1304,12 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: () => _rejectContribution(contributionId),
-                      icon: const Icon(Icons.close, size: 18),
-                      label: const Text('Từ chối'),
+                      icon: Icon(Icons.close, size: 18),
+                      label: Text('Từ chối'),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.errorNeon,
+                        foregroundColor: context.colors.error,
                         side: BorderSide(
-                          color: AppColors.errorNeon.withValues(alpha: 0.5),
+                          color: context.colors.error.withValues(alpha: 0.5),
                         ),
                       ),
                     ),
@@ -1312,11 +1318,11 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                   Expanded(
                     child: ElevatedButton.icon(
                       onPressed: () => _approveContribution(contributionId),
-                      icon: const Icon(Icons.check, size: 18),
-                      label: const Text('Duyệt'),
+                      icon: Icon(Icons.check, size: 18),
+                      label: Text('Duyệt'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.successNeon,
-                        foregroundColor: Colors.white,
+                        backgroundColor: context.colors.success,
+                        foregroundColor: context.colors.textOnBrand,
                       ),
                     ),
                   ),
@@ -1392,13 +1398,13 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                       Text(
                         'Bài học: $contentTitle',
                         style: AppTextStyles.caption
-                            .copyWith(color: AppColors.textSecondary),
+                            .copyWith(color: context.colors.textSecondary),
                       ),
                       if (createdAt != null)
                         Text(
                           'Ngày: ${_formatDate(createdAt)}',
                           style: AppTextStyles.caption
-                              .copyWith(color: AppColors.textTertiary),
+                              .copyWith(color: context.colors.textTertiary),
                         ),
                     ],
                   ),
@@ -1407,7 +1413,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppColors.orangeNeon.withValues(alpha: 0.15),
+                    color: context.colors.warning.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -1417,7 +1423,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                             ? 'Hình ảnh'
                             : 'Text',
                     style: AppTextStyles.labelSmall.copyWith(
-                      color: AppColors.orangeNeon,
+                      color: context.colors.warning,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -1488,10 +1494,10 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                   width: double.infinity,
                   child: OutlinedButton.icon(
                     onPressed: () => _showComparisonDialog(editId),
-                    icon: const Icon(Icons.compare_arrows, size: 18),
-                    label: const Text('Xem so sánh (Trước/Sau)'),
+                    icon: Icon(Icons.compare_arrows, size: 18),
+                    label: Text('Xem so sánh (Trước/Sau)'),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.primaryLight,
+                      foregroundColor: context.colors.brandStrong,
                       side: const BorderSide(color: Color(0x332D363D)),
                     ),
                   ),
@@ -1502,13 +1508,13 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                     Expanded(
                       child: OutlinedButton.icon(
                         onPressed: () => _rejectEdit(editId),
-                        icon: const Icon(Icons.close, size: 18),
-                        label: const Text('Từ chối'),
+                        icon: Icon(Icons.close, size: 18),
+                        label: Text('Từ chối'),
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.errorNeon,
+                          foregroundColor: context.colors.error,
                           side: BorderSide(
                               color:
-                                  AppColors.errorNeon.withValues(alpha: 0.6)),
+                                  context.colors.error.withValues(alpha: 0.6)),
                         ),
                       ),
                     ),
@@ -1516,11 +1522,11 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                     Expanded(
                       child: ElevatedButton.icon(
                         onPressed: () => _approveEdit(editId),
-                        icon: const Icon(Icons.check, size: 18),
-                        label: const Text('Duyệt'),
+                        icon: Icon(Icons.check, size: 18),
+                        label: Text('Duyệt'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.successNeon,
-                          foregroundColor: Colors.white,
+                          backgroundColor: context.colors.success,
+                          foregroundColor: context.colors.textOnBrand,
                         ),
                       ),
                     ),
@@ -1567,13 +1573,13 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
     Color color;
     if (normalized == 'approved') {
       label = 'Đã duyệt';
-      color = AppColors.successNeon;
+      color = context.colors.success;
     } else if (normalized == 'rejected') {
       label = 'Đã từ chối';
-      color = AppColors.errorNeon;
+      color = context.colors.error;
     } else {
       label = 'Chờ duyệt';
-      color = AppColors.orangeNeon;
+      color = context.colors.warning;
     }
     return Chip(
       label: Text(label),
@@ -1589,9 +1595,9 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
   Widget _buildMetaChip(String text) {
     return Chip(
       label: Text(text),
-      backgroundColor: AppColors.bgTertiary,
+      backgroundColor: context.colors.cardMuted,
       labelStyle:
-          AppTextStyles.labelSmall.copyWith(color: AppColors.textSecondary),
+          AppTextStyles.labelSmall.copyWith(color: context.colors.textSecondary),
       side: const BorderSide(color: Color(0x332D363D)),
     );
   }
@@ -1611,11 +1617,11 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
 
   Widget _buildHistoryTab() {
     return _isLoadingHistory
-        ? const Center(
-            child: CircularProgressIndicator(color: AppColors.primaryLight))
+        ? Center(
+            child: CircularProgressIndicator(color: context.colors.brandStrong))
         : RefreshIndicator(
             onRefresh: _loadEditHistory,
-            color: AppColors.primaryLight,
+            color: context.colors.brandStrong,
             child: _editHistory.isEmpty
                 ? Center(
                     child: Column(
@@ -1659,7 +1665,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      color: AppColors.bgSecondary,
+      color: context.colors.card,
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
@@ -1671,7 +1677,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                   child: Text(
                     title,
                     style: AppTextStyles.labelLarge
-                        .copyWith(color: AppColors.textPrimary),
+                        .copyWith(color: context.colors.textPrimary),
                   ),
                 ),
                 _buildStatusChip(status),
@@ -1681,14 +1687,14 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
             Text(
               'Người gửi: $contributorName',
               style:
-                  AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+                  AppTextStyles.caption.copyWith(color: context.colors.textSecondary),
             ),
             if (reviewedAt != null && reviewedAt.isNotEmpty) ...[
               const SizedBox(height: 4),
               Text(
                 'Duyệt lúc: ${_formatDate(reviewedAt)}',
                 style:
-                    AppTextStyles.caption.copyWith(color: AppColors.textTertiary),
+                    AppTextStyles.caption.copyWith(color: context.colors.textTertiary),
               ),
             ],
             const SizedBox(height: 8),
@@ -1705,7 +1711,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
               Text(
                 'Ghi chú: $reviewNote',
                 style: AppTextStyles.caption
-                    .copyWith(color: AppColors.textSecondary),
+                    .copyWith(color: context.colors.textSecondary),
               ),
             ],
           ],
@@ -1744,37 +1750,37 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
     switch (action) {
       case 'submit':
         actionIcon = Icons.send;
-        actionColor = AppColors.primaryLight;
+        actionColor = context.colors.brandStrong;
         actionText = 'Gửi đóng góp';
         break;
       case 'approve':
         actionIcon = Icons.check_circle;
-        actionColor = AppColors.successNeon;
+        actionColor = context.colors.success;
         actionText = 'Duyệt';
         break;
       case 'reject':
         actionIcon = Icons.cancel;
-        actionColor = AppColors.errorNeon;
+        actionColor = context.colors.error;
         actionText = 'Từ chối';
         break;
       case 'remove':
         actionIcon = Icons.delete;
-        actionColor = AppColors.orangeNeon;
+        actionColor = context.colors.warning;
         actionText = 'Gỡ bài';
         break;
       case 'create':
         actionIcon = Icons.add_circle;
-        actionColor = AppColors.purpleNeon;
+        actionColor = context.colors.brand;
         actionText = 'Tạo mới';
         break;
       case 'update':
         actionIcon = Icons.edit;
-        actionColor = AppColors.primaryLight;
+        actionColor = context.colors.brandStrong;
         actionText = 'Cập nhật';
         break;
       default:
         actionIcon = Icons.info;
-        actionColor = AppColors.textSecondary;
+        actionColor = context.colors.textSecondary;
         actionText = action;
     }
 
@@ -1916,15 +1922,15 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
     if (_isLoadingAnalytics) {
       return RefreshIndicator(
         onRefresh: _loadAnalytics,
-        color: AppColors.purpleNeon,
-        child: const SingleChildScrollView(
-          physics: AlwaysScrollableScrollPhysics(),
-          padding: EdgeInsets.all(16),
+        color: context.colors.brand,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Center(
-                child: CircularProgressIndicator(color: AppColors.purpleNeon),
+                child: CircularProgressIndicator(color: context.colors.brand),
               ),
             ],
           ),
@@ -1934,7 +1940,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
     if (_analyticsData == null) {
       return RefreshIndicator(
         onRefresh: _loadAnalytics,
-        color: AppColors.purpleNeon,
+        color: context.colors.brand,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.all(16),
@@ -1945,17 +1951,17 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                 child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.analytics_outlined,
-                          size: 64, color: AppColors.textTertiary),
+                      Icon(Icons.analytics_outlined,
+                          size: 64, color: context.colors.textTertiary),
                       const SizedBox(height: 16),
                       Text('Không thể tải dữ liệu',
                           style: AppTextStyles.bodyMedium
-                              .copyWith(color: AppColors.textTertiary)),
+                              .copyWith(color: context.colors.textTertiary)),
                       const SizedBox(height: 16),
                       ElevatedButton(
                           onPressed: _loadAnalytics,
                           style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.purpleNeon),
+                              backgroundColor: context.colors.brand),
                           child: const Text('Thử lại')),
                     ]),
               ),
@@ -1973,7 +1979,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
 
     return RefreshIndicator(
       onRefresh: _loadAnalytics,
-      color: AppColors.purpleNeon,
+      color: context.colors.brand,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(16),
@@ -1981,14 +1987,14 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
           _buildPeriodSelector(),
           const SizedBox(height: 16),
           _buildAnalyticsSectionTitle(
-              'User Metrics', Icons.people_rounded, AppColors.purpleNeon),
+              'User Metrics', Icons.people_rounded, context.colors.brand),
           const SizedBox(height: 12),
           _buildUserMetricsCards(users),
           const SizedBox(height: 8),
           _buildRoleDistributionChart(users),
           const SizedBox(height: 24),
           _buildAnalyticsSectionTitle(
-              'Learning Metrics', Icons.school_rounded, AppColors.primaryLight),
+              'Learning Metrics', Icons.school_rounded, context.colors.brandStrong),
           const SizedBox(height: 12),
           _buildLearningMetricsCards(learning),
           const SizedBox(height: 8),
@@ -1999,21 +2005,21 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
           _buildUnlockBySubjectTypeChart(learning),
           const SizedBox(height: 24),
           _buildAnalyticsSectionTitle(
-              'Revenue', Icons.diamond_rounded, AppColors.xpGold),
+              'Revenue', Icons.diamond_rounded, context.colors.gold),
           const SizedBox(height: 12),
           _buildRevenueMetricsCards(revenue),
           const SizedBox(height: 8),
           _buildRevenueByPackageChart(revenue),
           const SizedBox(height: 24),
           _buildAnalyticsSectionTitle('Engagement',
-              Icons.local_fire_department_rounded, AppColors.streakOrange),
+              Icons.local_fire_department_rounded, context.colors.warning),
           const SizedBox(height: 12),
           _buildEngagementMetricsCards(engagement),
           const SizedBox(height: 8),
           _buildStreakDistributionChart(engagement),
           const SizedBox(height: 24),
           _buildAnalyticsSectionTitle(
-              'Content', Icons.library_books_rounded, AppColors.successNeon),
+              'Content', Icons.library_books_rounded, context.colors.success),
           const SizedBox(height: 12),
           _buildContentMetricsCards(content),
           const SizedBox(height: 8),
@@ -2043,18 +2049,26 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
-                gradient: isActive ? AppGradients.purplePink : null,
-                color: isActive ? null : AppColors.bgSecondary,
+                gradient: isActive
+                    ? LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors:
+                            List<Color>.from(context.colors.aiGradient),
+                      )
+                    : null,
+                color: isActive ? null : context.colors.card,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
                     color: isActive
-                        ? AppColors.purpleNeon
+                        ? context.colors.brand
                         : const Color(0x332D363D)),
               ),
               child: Text(label,
                   style: AppTextStyles.labelMedium.copyWith(
-                      color:
-                          isActive ? Colors.white : AppColors.textSecondary)),
+                      color: isActive
+                          ? context.colors.textOnBrand
+                          : context.colors.textSecondary)),
             ),
           ),
         );
@@ -2068,7 +2082,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
       const SizedBox(width: 8),
       Text(title,
           style: AppTextStyles.h4
-              .copyWith(color: AppColors.textPrimary, fontSize: 16)),
+              .copyWith(color: context.colors.textPrimary, fontSize: 16)),
     ]);
   }
 
@@ -2078,20 +2092,20 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-            color: AppColors.bgSecondary,
+            color: context.colors.card,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: const Color(0x332D363D))),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           if (icon != null)
-            Icon(icon, color: color ?? AppColors.textTertiary, size: 18),
+            Icon(icon, color: color ?? context.colors.textTertiary, size: 18),
           if (icon != null) const SizedBox(height: 6),
           Text(value,
               style: AppTextStyles.numberMedium.copyWith(
-                  color: color ?? AppColors.textPrimary, fontSize: 20)),
+                  color: color ?? context.colors.textPrimary, fontSize: 20)),
           const SizedBox(height: 4),
           Text(label,
               style: AppTextStyles.caption
-                  .copyWith(color: AppColors.textTertiary)),
+                  .copyWith(color: context.colors.textTertiary)),
         ]),
       ),
     );
@@ -2101,25 +2115,25 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
     return Column(children: [
       Row(children: [
         _buildAnalyticsStatCard('Tổng users', '${users['totalUsers'] ?? 0}',
-            icon: Icons.people, color: AppColors.purpleNeon),
+            icon: Icons.people, color: context.colors.brand),
         const SizedBox(width: 8),
         _buildAnalyticsStatCard('Mới hôm nay', '${users['newUsersToday'] ?? 0}',
-            icon: Icons.person_add, color: AppColors.successNeon),
+            icon: Icons.person_add, color: context.colors.success),
         const SizedBox(width: 8),
         _buildAnalyticsStatCard(
             'Mới trong kỳ', '${users['newUsersPeriod'] ?? 0}',
-            icon: Icons.trending_up, color: AppColors.primaryLight),
+            icon: Icons.trending_up, color: context.colors.brandStrong),
       ]),
       const SizedBox(height: 8),
       Row(children: [
         _buildAnalyticsStatCard('DAU', '${users['dau'] ?? 0}',
-            icon: Icons.today, color: AppColors.orangeNeon),
+            icon: Icons.today, color: context.colors.warning),
         const SizedBox(width: 8),
         _buildAnalyticsStatCard('MAU', '${users['mau'] ?? 0}',
-            icon: Icons.calendar_month, color: AppColors.pinkNeon),
+            icon: Icons.calendar_month, color: context.colors.brandSoft),
         const SizedBox(width: 8),
         _buildAnalyticsStatCard('Retention', '${users['retentionRate'] ?? 0}%',
-            icon: Icons.replay, color: AppColors.warningNeon),
+            icon: Icons.replay, color: context.colors.warning),
       ]),
     ]);
   }
@@ -2129,14 +2143,14 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
         List<Map<String, dynamic>>.from(users['roleDistribution'] ?? []);
     if (dist.isEmpty) return const SizedBox.shrink();
     final colors = [
-      AppColors.purpleNeon,
-      AppColors.primaryLight,
-      AppColors.orangeNeon
+      context.colors.brand,
+      context.colors.brandStrong,
+      context.colors.warning
     ];
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-          color: AppColors.bgSecondary,
+          color: context.colors.card,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: const Color(0x332D363D))),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -2155,8 +2169,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                       value: count.toDouble(),
                       color: colors[i % colors.length],
                       title: '$count',
-                      titleStyle: const TextStyle(
-                          color: Colors.white,
+                      titleStyle: TextStyle(
+                          color: context.colors.textOnBrand,
                           fontSize: 12,
                           fontWeight: FontWeight.bold),
                       radius: 40);
@@ -2179,7 +2193,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                           const SizedBox(width: 8),
                           Text('${dist[i]['role']}',
                               style: AppTextStyles.bodySmall
-                                  .copyWith(color: AppColors.textSecondary)),
+                                  .copyWith(color: context.colors.textSecondary)),
                         ]));
                   })),
             ])),
@@ -2192,24 +2206,24 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
       Row(children: [
         _buildAnalyticsStatCard(
             'Bài hoàn thành', '${learning['completedNodes'] ?? 0}',
-            icon: Icons.check_circle, color: AppColors.successNeon),
+            icon: Icons.check_circle, color: context.colors.success),
         const SizedBox(width: 8),
         _buildAnalyticsStatCard('Tỉ lệ', '${learning['completionRate'] ?? 0}%',
-            icon: Icons.pie_chart, color: AppColors.primaryLight),
+            icon: Icons.pie_chart, color: context.colors.brandStrong),
         const SizedBox(width: 8),
         _buildAnalyticsStatCard(
             'TB tiến độ', '${learning['avgProgress'] ?? 0}%',
-            icon: Icons.speed, color: AppColors.orangeNeon),
+            icon: Icons.speed, color: context.colors.warning),
       ]),
       const SizedBox(height: 8),
       Row(children: [
         _buildAnalyticsStatCard(
             'Gần đây', '${learning['recentCompletions'] ?? 0}',
-            icon: Icons.new_releases, color: AppColors.warningNeon),
+            icon: Icons.new_releases, color: context.colors.warning),
         const SizedBox(width: 8),
         _buildAnalyticsStatCard(
             'Tổng tiến trình', '${learning['totalProgress'] ?? 0}',
-            icon: Icons.timeline, color: AppColors.purpleNeon),
+            icon: Icons.timeline, color: context.colors.brand),
         const SizedBox(width: 8),
         const Expanded(child: SizedBox()),
       ]),
@@ -2223,7 +2237,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-          color: AppColors.bgSecondary,
+          color: context.colors.card,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: const Color(0x332D363D))),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -2254,8 +2268,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                             return Padding(
                                 padding: const EdgeInsets.only(top: 8),
                                 child: Text(name,
-                                    style: const TextStyle(
-                                        color: AppColors.textTertiary,
+                                    style: TextStyle(
+                                        color: context.colors.textTertiary,
                                         fontSize: 10)));
                           }
                           return const Text('');
@@ -2270,12 +2284,12 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                 return BarChartGroupData(x: i, barRods: [
                   BarChartRodData(
                       toY: total,
-                      color: AppColors.bgTertiary,
+                      color: context.colors.cardMuted,
                       width: 16,
                       borderRadius: BorderRadius.circular(4)),
                   BarChartRodData(
                       toY: completed,
-                      color: AppColors.primaryLight,
+                      color: context.colors.brandStrong,
                       width: 16,
                       borderRadius: BorderRadius.circular(4)),
                 ]);
@@ -2296,15 +2310,15 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
       'diamonds': 'Kim cương',
     };
     final colors = <String, Color>{
-      'free': AppColors.successNeon,
-      'coins': AppColors.orangeNeon,
-      'diamonds': AppColors.primaryLight,
+      'free': context.colors.success,
+      'coins': context.colors.warning,
+      'diamonds': context.colors.brandStrong,
     };
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: const Color(0x332D363D)),
       ),
@@ -2324,10 +2338,10 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                   final count = int.tryParse('${row['count']}') ?? 0;
                   return PieChartSectionData(
                     value: count.toDouble(),
-                    color: colors[key] ?? AppColors.purpleNeon,
+                    color: colors[key] ?? context.colors.brand,
                     title: '$count',
-                    titleStyle: const TextStyle(
-                      color: Colors.white,
+                    titleStyle: TextStyle(
+                      color: context.colors.textOnBrand,
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
                     ),
@@ -2345,7 +2359,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
               final key = (row['method'] ?? '').toString();
               final count = int.tryParse('${row['count']}') ?? 0;
               final label = labels[key] ?? key;
-              final color = colors[key] ?? AppColors.purpleNeon;
+              final color = colors[key] ?? context.colors.brand;
               return Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -2361,7 +2375,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                   Text(
                     '$label: $count',
                     style: AppTextStyles.caption
-                        .copyWith(color: AppColors.textSecondary),
+                        .copyWith(color: context.colors.textSecondary),
                   ),
                 ],
               );
@@ -2384,15 +2398,15 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
       'expert': 'Chuyên gia',
     };
     final colors = <String, Color>{
-      'private': AppColors.purpleNeon,
-      'community': AppColors.successNeon,
-      'expert': AppColors.primaryLight,
+      'private': context.colors.brand,
+      'community': context.colors.success,
+      'expert': context.colors.brandStrong,
     };
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: const Color(0x332D363D)),
       ),
@@ -2405,7 +2419,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
             final key = (row['subjectType'] ?? '').toString();
             final count = int.tryParse('${row['count']}') ?? 0;
             final label = labels[key] ?? key;
-            final color = colors[key] ?? AppColors.textTertiary;
+            final color = colors[key] ?? context.colors.textTertiary;
             return Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: Row(
@@ -2423,7 +2437,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                     child: Text(
                       label,
                       style: AppTextStyles.bodySmall
-                          .copyWith(color: AppColors.textSecondary),
+                          .copyWith(color: context.colors.textSecondary),
                     ),
                   ),
                   Text(
@@ -2452,25 +2466,25 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
     return Column(children: [
       Row(children: [
         _buildAnalyticsStatCard('Doanh thu', '$formattedđ',
-            icon: Icons.monetization_on, color: AppColors.xpGold),
+            icon: Icons.monetization_on, color: context.colors.gold),
         const SizedBox(width: 8),
         _buildAnalyticsStatCard(
             'Diamonds', '${revenue['totalDiamondsSold'] ?? 0}',
-            icon: Icons.diamond, color: AppColors.primaryLight),
+            icon: Icons.diamond, color: context.colors.brandStrong),
         const SizedBox(width: 8),
         _buildAnalyticsStatCard('Giao dịch', '${revenue['paidCount'] ?? 0}',
-            icon: Icons.receipt, color: AppColors.purpleNeon),
+            icon: Icons.receipt, color: context.colors.brand),
       ]),
       const SizedBox(height: 8),
       Row(children: [
         _buildAnalyticsStatCard('Người mua', '${revenue['payingUsers'] ?? 0}',
-            icon: Icons.person, color: AppColors.successNeon),
+            icon: Icons.person, color: context.colors.success),
         const SizedBox(width: 8),
         _buildAnalyticsStatCard('ARPU', '${revenue['arpu'] ?? 0}đ',
-            icon: Icons.trending_up, color: AppColors.orangeNeon),
+            icon: Icons.trending_up, color: context.colors.warning),
         const SizedBox(width: 8),
         _buildAnalyticsStatCard('Gần đây', '${revenue['recentPayments'] ?? 0}',
-            icon: Icons.new_releases, color: AppColors.warningNeon),
+            icon: Icons.new_releases, color: context.colors.warning),
       ]),
     ]);
   }
@@ -2480,15 +2494,15 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
         List<Map<String, dynamic>>.from(revenue['revenueByPackage'] ?? []);
     if (data.isEmpty) return const SizedBox.shrink();
     final colors = [
-      AppColors.xpGold,
-      AppColors.purpleNeon,
-      AppColors.primaryLight,
-      AppColors.pinkNeon
+      context.colors.gold,
+      context.colors.brand,
+      context.colors.brandStrong,
+      context.colors.info,
     ];
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-          color: AppColors.bgSecondary,
+          color: context.colors.card,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: const Color(0x332D363D))),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -2511,10 +2525,10 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                 Expanded(
                     child: Text('${pkg['package']}',
                         style: AppTextStyles.bodySmall
-                            .copyWith(color: AppColors.textSecondary))),
+                            .copyWith(color: context.colors.textSecondary))),
                 Text('$count lượt',
                     style: AppTextStyles.bodySmall
-                        .copyWith(color: AppColors.textTertiary)),
+                        .copyWith(color: context.colors.textTertiary)),
                 const SizedBox(width: 12),
                 Text(
                     '${rev.toInt().toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+$)'), (m) => '${m[1]},')}đ',
@@ -2534,10 +2548,10 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
           (double.tryParse('${engagement['avgStreak']}') ?? 0)
               .toStringAsFixed(1),
           icon: Icons.local_fire_department,
-          color: AppColors.streakOrange),
+          color: context.colors.warning),
       const SizedBox(width: 8),
       _buildAnalyticsStatCard('Chuỗi tối đa', '${engagement['maxStreak'] ?? 0}',
-          icon: Icons.whatshot, color: AppColors.errorNeon),
+          icon: Icons.whatshot, color: context.colors.error),
       const SizedBox(width: 8),
       const Expanded(child: SizedBox()),
     ]);
@@ -2548,16 +2562,16 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
         List<Map<String, dynamic>>.from(engagement['streakDistribution'] ?? []);
     if (data.isEmpty) return const SizedBox.shrink();
     final colors = [
-      AppColors.textTertiary,
-      AppColors.primaryLight,
-      AppColors.successNeon,
-      AppColors.orangeNeon,
-      AppColors.errorNeon
+      context.colors.textTertiary,
+      context.colors.brandStrong,
+      context.colors.success,
+      context.colors.warning,
+      context.colors.error
     ];
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-          color: AppColors.bgSecondary,
+          color: context.colors.card,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: const Color(0x332D363D))),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -2574,8 +2588,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                     value: count.toDouble(),
                     color: colors[i % colors.length],
                     title: '$count',
-                    titleStyle: const TextStyle(
-                        color: Colors.white,
+                    titleStyle: TextStyle(
+                        color: context.colors.textOnBrand,
                         fontSize: 11,
                         fontWeight: FontWeight.bold),
                     radius: 40);
@@ -2596,7 +2610,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                 const SizedBox(width: 4),
                 Text('${data[i]['range']}',
                     style: AppTextStyles.caption
-                        .copyWith(color: AppColors.textSecondary)),
+                        .copyWith(color: context.colors.textSecondary)),
               ]);
             })),
       ]),
@@ -2606,14 +2620,14 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
   Widget _buildContentMetricsCards(Map<String, dynamic> content) {
     return Row(children: [
       _buildAnalyticsStatCard('Tổng môn', '${content['totalSubjects'] ?? 0}',
-          icon: Icons.book, color: AppColors.purpleNeon),
+          icon: Icons.book, color: context.colors.brand),
       const SizedBox(width: 8),
       _buildAnalyticsStatCard('Tổng bài học', '${content['totalNodes'] ?? 0}',
-          icon: Icons.library_books, color: AppColors.primaryLight),
+          icon: Icons.library_books, color: context.colors.brandStrong),
       const SizedBox(width: 8),
       _buildAnalyticsStatCard(
           'Đóng góp mới', '${content['recentContributions'] ?? 0}',
-          icon: Icons.add_circle, color: AppColors.successNeon),
+          icon: Icons.add_circle, color: context.colors.success),
     ]);
   }
 
@@ -2624,7 +2638,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-          color: AppColors.bgSecondary,
+          color: context.colors.card,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: const Color(0x332D363D))),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -2644,12 +2658,12 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                     height: 24,
                     decoration: BoxDecoration(
                       color: i == 0
-                          ? AppColors.xpGold
+                          ? context.colors.gold
                           : i == 1
-                              ? AppColors.rankSilver
+                              ? context.colors.divider
                               : i == 2
-                                  ? AppColors.rankBronze
-                                  : AppColors.bgTertiary,
+                                  ? context.colors.warning
+                                  : context.colors.cardMuted,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Center(
@@ -2657,18 +2671,18 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                             style: TextStyle(
                                 color: i < 3
                                     ? Colors.black
-                                    : AppColors.textSecondary,
+                                    : context.colors.textSecondary,
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold)))),
                 const SizedBox(width: 10),
                 Expanded(
                     child: Text('$name',
                         style: AppTextStyles.bodySmall
-                            .copyWith(color: AppColors.textPrimary),
+                            .copyWith(color: context.colors.textPrimary),
                         overflow: TextOverflow.ellipsis)),
                 Text('$approved/$total',
                     style: AppTextStyles.bodySmall
-                        .copyWith(color: AppColors.successNeon)),
+                        .copyWith(color: context.colors.success)),
               ]));
         }),
       ]),
@@ -2784,11 +2798,11 @@ class _AdminContentEditComparisonViewState
       padding: const EdgeInsets.only(bottom: 4),
       child: Row(
         children: [
-          Icon(icon, color: AppColors.textTertiary, size: 14),
+          Icon(icon, color: context.colors.textTertiary, size: 14),
           const SizedBox(width: 6),
           Text(text,
-              style: const TextStyle(
-                  color: AppColors.textSecondary, fontSize: 12)),
+              style: TextStyle(
+                  color: context.colors.textSecondary, fontSize: 12)),
         ],
       ),
     );
@@ -2799,7 +2813,7 @@ class _AdminContentEditComparisonViewState
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
@@ -2820,24 +2834,24 @@ class _AdminContentEditComparisonViewState
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(
-              color: AppColors.purpleNeon.withValues(alpha: 0.15),
+              color: context.colors.brand.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(6),
             ),
             child: Text(_getLessonTypeLabel(widget.lessonType),
                 style:
-                    const TextStyle(color: AppColors.purpleNeon, fontSize: 12)),
+                    TextStyle(color: context.colors.brand, fontSize: 12)),
           ),
           const SizedBox(height: 10),
           ..._buildStats(data),
           const SizedBox(height: 6),
           Row(
             children: [
-              const Icon(Icons.quiz_outlined,
-                  color: AppColors.orangeNeon, size: 14),
+              Icon(Icons.quiz_outlined,
+                  color: context.colors.warning, size: 14),
               const SizedBox(width: 6),
               Text('Quiz: $quizCount câu hỏi',
-                  style: const TextStyle(
-                      color: AppColors.textSecondary, fontSize: 12)),
+                  style: TextStyle(
+                      color: context.colors.textSecondary, fontSize: 12)),
             ],
           ),
         ],
@@ -2855,24 +2869,24 @@ class _AdminContentEditComparisonViewState
           width: 40,
           height: 4,
           decoration: BoxDecoration(
-              color: AppColors.textTertiary,
+              color: context.colors.textTertiary,
               borderRadius: BorderRadius.circular(2)),
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             children: [
-              const Icon(Icons.compare_arrows, color: AppColors.orangeNeon),
+              Icon(Icons.compare_arrows, color: context.colors.warning),
               const SizedBox(width: 8),
-              const Expanded(
+              Expanded(
                 child: Text('So sánh nội dung chỉnh sửa',
                     style: TextStyle(
-                        color: AppColors.textPrimary,
+                        color: context.colors.textPrimary,
                         fontSize: 18,
                         fontWeight: FontWeight.bold)),
               ),
               IconButton(
-                  icon: const Icon(Icons.close, color: AppColors.textSecondary),
+                  icon: Icon(Icons.close, color: context.colors.textSecondary),
                   onPressed: () => Navigator.pop(context)),
             ],
           ),
@@ -2887,8 +2901,8 @@ class _AdminContentEditComparisonViewState
                   children: [
                     // Title
                     Text(widget.title,
-                        style: const TextStyle(
-                            color: AppColors.textPrimary,
+                        style: TextStyle(
+                            color: context.colors.textPrimary,
                             fontSize: 16,
                             fontWeight: FontWeight.bold)),
                     const SizedBox(height: 16),
@@ -2897,14 +2911,14 @@ class _AdminContentEditComparisonViewState
                     if (_oldLessonData != null) ...[
                       _buildVersionCard(
                         'Phiên bản hiện tại',
-                        AppColors.textTertiary,
+                        context.colors.textTertiary,
                         _oldLessonData!,
                         (_oldEndQuiz?['questions'] as List?)?.length ?? 0,
                       ),
                       const SizedBox(height: 12),
-                      const Center(
+                      Center(
                         child: Icon(Icons.arrow_downward_rounded,
-                            color: AppColors.orangeNeon, size: 28),
+                            color: context.colors.warning, size: 28),
                       ),
                       const SizedBox(height: 12),
                     ],
@@ -2912,7 +2926,7 @@ class _AdminContentEditComparisonViewState
                     // New version
                     _buildVersionCard(
                       'Phiên bản mới (đề xuất)',
-                      AppColors.successNeon,
+                      context.colors.success,
                       widget.newLessonData,
                       (widget.newEndQuiz?['questions'] as List?)?.length ?? 0,
                     ),
@@ -2922,22 +2936,22 @@ class _AdminContentEditComparisonViewState
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: AppColors.bgTertiary,
+                        color: context.colors.cardMuted,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: const Color(0x332D363D)),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.info_outline,
-                              color: AppColors.textTertiary, size: 18),
+                          Icon(Icons.info_outline,
+                              color: context.colors.textTertiary, size: 18),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               _oldLessonData != null
                                   ? 'Nếu duyệt, phiên bản hiện tại sẽ được lưu vào lịch sử và phiên bản mới sẽ thay thế.'
                                   : 'Không tìm thấy nội dung hiện tại. Nếu duyệt, nội dung mới sẽ được tạo.',
-                              style: const TextStyle(
-                                  color: AppColors.textSecondary, fontSize: 13),
+                              style: TextStyle(
+                                  color: context.colors.textSecondary, fontSize: 13),
                             ),
                           ),
                         ],
@@ -3142,6 +3156,7 @@ class _VideoPlayerWidgetState extends State<_VideoPlayerWidget> {
 
       // Check if it's a mobile platform
       final isMobile = !kIsWeb && (Platform.isAndroid || Platform.isIOS);
+      final hi = context.colors.textOnBrand;
 
       return Container(
         height: 200,
@@ -3160,7 +3175,7 @@ class _VideoPlayerWidgetState extends State<_VideoPlayerWidget> {
                   isUnimplementedError
                       ? Icons.video_library_outlined
                       : Icons.error_outline,
-                  color: Colors.white70,
+                  color: hi.withValues(alpha: 0.72),
                   size: 40,
                 ),
                 const SizedBox(height: 6),
@@ -3168,19 +3183,20 @@ class _VideoPlayerWidgetState extends State<_VideoPlayerWidget> {
                   isUnimplementedError
                       ? 'Không thể tải video'
                       : 'Không thể tải video',
-                  style: const TextStyle(
-                      color: Colors.white70,
+                  style: TextStyle(
+                      color: hi.withValues(alpha: 0.72),
                       fontSize: 13,
                       fontWeight: FontWeight.bold),
                   textAlign: TextAlign.center,
                 ),
                 if (_errorMessage != null && !isUnimplementedError) ...[
                   const SizedBox(height: 4),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Text(
                       'URL video không hợp lệ:',
-                      style: TextStyle(color: Colors.white54, fontSize: 10),
+                      style: TextStyle(
+                          color: hi.withValues(alpha: 0.54), fontSize: 10),
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -3196,7 +3212,7 @@ class _VideoPlayerWidgetState extends State<_VideoPlayerWidget> {
                         Container(
                           padding: const EdgeInsets.all(6),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.1),
+                            color: hi.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Row(
@@ -3204,8 +3220,8 @@ class _VideoPlayerWidgetState extends State<_VideoPlayerWidget> {
                               Expanded(
                                 child: Text(
                                   widget.videoUrl,
-                                  style: const TextStyle(
-                                    color: Colors.white70,
+                                  style: TextStyle(
+                                    color: hi.withValues(alpha: 0.72),
                                     fontSize: 9,
                                   ),
                                   overflow: TextOverflow.ellipsis,
@@ -3220,12 +3236,12 @@ class _VideoPlayerWidgetState extends State<_VideoPlayerWidget> {
                           height: 32,
                           child: ElevatedButton.icon(
                             onPressed: _openVideoInBrowser,
-                            icon: const Icon(Icons.open_in_browser, size: 14),
-                            label: const Text('Mở trong trình duyệt',
+                            icon: Icon(Icons.open_in_browser, size: 14),
+                            label: Text('Mở trong trình duyệt',
                                 style: TextStyle(fontSize: 12)),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.purpleNeon,
-                              foregroundColor: Colors.white,
+                              backgroundColor: context.colors.brand,
+                              foregroundColor: hi,
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 12),
                             ),
@@ -3237,12 +3253,13 @@ class _VideoPlayerWidgetState extends State<_VideoPlayerWidget> {
                             height: 28,
                             child: TextButton.icon(
                               onPressed: _initializeVideo,
-                              icon: const Icon(Icons.refresh,
-                                  color: Colors.white70, size: 14),
-                              label: const Text(
+                              icon: Icon(Icons.refresh,
+                                  color: hi.withValues(alpha: 0.72), size: 14),
+                              label: Text(
                                 'Thử lại',
                                 style: TextStyle(
-                                    color: Colors.white70, fontSize: 11),
+                                    color: hi.withValues(alpha: 0.72),
+                                    fontSize: 11),
                               ),
                             ),
                           ),
@@ -3257,11 +3274,12 @@ class _VideoPlayerWidgetState extends State<_VideoPlayerWidget> {
                     height: 28,
                     child: TextButton.icon(
                       onPressed: _initializeVideo,
-                      icon: const Icon(Icons.refresh,
-                          color: Colors.white70, size: 14),
-                      label: const Text(
+                      icon: Icon(Icons.refresh,
+                          color: hi.withValues(alpha: 0.72), size: 14),
+                      label: Text(
                         'Thử lại',
-                        style: TextStyle(color: Colors.white70, fontSize: 11),
+                        style: TextStyle(
+                            color: hi.withValues(alpha: 0.72), fontSize: 11),
                       ),
                     ),
                   ),
@@ -3274,21 +3292,23 @@ class _VideoPlayerWidgetState extends State<_VideoPlayerWidget> {
     }
 
     if (!_isInitialized || _controller == null) {
+      final hi = context.colors.textOnBrand;
       return Container(
         height: 200,
         decoration: BoxDecoration(
           color: Colors.black,
           borderRadius: BorderRadius.circular(8),
         ),
-        child: const Center(
+        child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              CircularProgressIndicator(color: Colors.white),
-              SizedBox(height: 8),
+              CircularProgressIndicator(color: hi),
+              const SizedBox(height: 8),
               Text(
                 'Đang tải video...',
-                style: TextStyle(color: Colors.white70, fontSize: 12),
+                style: TextStyle(
+                    color: hi.withValues(alpha: 0.72), fontSize: 12),
               ),
             ],
           ),
@@ -3310,10 +3330,11 @@ class _VideoPlayerWidgetState extends State<_VideoPlayerWidget> {
           child: VideoProgressIndicator(
             _controller!,
             allowScrubbing: true,
-            colors: const VideoProgressColors(
-              playedColor: AppColors.primaryLight,
-              bufferedColor: AppColors.textTertiary,
-              backgroundColor: Colors.white24,
+            colors: VideoProgressColors(
+              playedColor: context.colors.brandStrong,
+              bufferedColor: context.colors.textTertiary,
+              backgroundColor:
+                  context.colors.textOnBrand.withValues(alpha: 0.24),
             ),
           ),
         ),
@@ -3331,10 +3352,10 @@ class _VideoPlayerWidgetState extends State<_VideoPlayerWidget> {
             color: Colors.transparent,
             child: _controller!.value.isPlaying
                 ? const SizedBox.shrink()
-                : const Icon(
+                : Icon(
                     Icons.play_circle_filled,
                     size: 64,
-                    color: Colors.white70,
+                    color: context.colors.textOnBrand.withValues(alpha: 0.72),
                   ),
           ),
         ),

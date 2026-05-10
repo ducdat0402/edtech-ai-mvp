@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../colors.dart';
 import '../gradients.dart';
+import '../semantic_colors.dart';
 import '../text_styles.dart';
 
 /// Streak counter with fire effect
@@ -18,13 +18,14 @@ class StreakCounter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
     if (compact) {
-      return _buildCompact();
+      return _buildCompact(t);
     }
-    return _buildFull();
+    return _buildFull(t);
   }
 
-  Widget _buildFull() {
+  Widget _buildFull(SemanticColors t) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
@@ -32,7 +33,7 @@ class StreakCounter extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: AppColors.streakOrange.withValues(alpha: 0.5),
+            color: t.warning.withValues(alpha: 0.5),
             blurRadius: 16,
             spreadRadius: 0,
           ),
@@ -50,7 +51,7 @@ class StreakCounter extends StatelessWidget {
               Text(
                 '$streak',
                 style: AppTextStyles.numberMedium.copyWith(
-                  color: Colors.white,
+                  color: t.textOnBrand,
                   fontWeight: FontWeight.w800,
                 ),
               ),
@@ -58,7 +59,7 @@ class StreakCounter extends StatelessWidget {
                 Text(
                   streak == 1 ? 'DAY' : 'DAYS',
                   style: AppTextStyles.labelSmall.copyWith(
-                    color: Colors.white.withValues(alpha: 0.9),
+                    color: t.textOnBrand.withValues(alpha: 0.9),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -69,7 +70,7 @@ class StreakCounter extends StatelessWidget {
     );
   }
 
-  Widget _buildCompact() {
+  Widget _buildCompact(SemanticColors t) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
@@ -77,7 +78,7 @@ class StreakCounter extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppColors.streakOrange.withValues(alpha: 0.4),
+            color: t.warning.withValues(alpha: 0.4),
             blurRadius: 8,
           ),
         ],
@@ -90,7 +91,7 @@ class StreakCounter extends StatelessWidget {
           Text(
             '$streak',
             style: AppTextStyles.labelMedium.copyWith(
-              color: Colors.white,
+              color: t.textOnBrand,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -113,6 +114,7 @@ class StreakDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -120,13 +122,13 @@ class StreakDisplay extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppColors.streakOrange.withValues(alpha: 0.2),
-            AppColors.streakYellow.withValues(alpha: 0.1),
+            t.warning.withValues(alpha: 0.2),
+            t.gold.withValues(alpha: 0.1),
           ],
         ),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: AppColors.streakOrange.withValues(alpha: 0.3),
+          color: t.warning.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -141,7 +143,7 @@ class StreakDisplay extends StatelessWidget {
               gradient: AppGradients.streak,
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.streakOrange.withValues(alpha: 0.6),
+                  color: t.warning.withValues(alpha: 0.6),
                   blurRadius: 24,
                   spreadRadius: 4,
                 ),
@@ -156,13 +158,13 @@ class StreakDisplay extends StatelessWidget {
             '$streak',
             style: AppTextStyles.h1.copyWith(
               fontSize: 48,
-              color: AppColors.streakYellow,
+              color: t.gold,
             ),
           ),
           Text(
             'ngày liên tiếp',
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textSecondary,
+              color: t.textSecondary,
             ),
           ),
           if (maxStreak != null && maxStreak! > streak) ...[
@@ -170,7 +172,7 @@ class StreakDisplay extends StatelessWidget {
             Text(
               'Kỷ lục: $maxStreak ngày',
               style: AppTextStyles.labelSmall.copyWith(
-                color: AppColors.textTertiary,
+                color: t.textTertiary,
               ),
             ),
           ],

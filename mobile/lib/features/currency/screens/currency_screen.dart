@@ -52,8 +52,9 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: tokens.bg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -62,11 +63,11 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
         automaticallyImplyLeading: false,
         title: Text(
           'Tiền tệ & Phần thưởng',
-          style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+          style: AppTextStyles.h4.copyWith(color: tokens.textPrimary),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh, color: AppColors.textSecondary),
+            icon: Icon(Icons.refresh, color: tokens.textSecondary),
             onPressed: _loadCurrency,
             tooltip: 'Làm mới',
           ),
@@ -75,9 +76,7 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
       body: Stack(
         children: [
           _isLoading
-              ? const Center(
-                  child:
-                      CircularProgressIndicator(color: AppColors.primaryLight))
+              ? Center(child: CircularProgressIndicator(color: tokens.brand))
               : _error != null
                   ? AppErrorWidget(
                       message: _error!,
@@ -92,6 +91,7 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
   }
 
   Widget _buildContent() {
+    final tokens = context.colors;
     if (_currencyData == null) {
       return const EmptyStateWidget(
         title: 'Không có dữ liệu tiền tệ',
@@ -119,7 +119,7 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
           _buildCurrencyCard(
             title: CurrencyLabels.gtuCoin,
             value: coins.toString(),
-            color: AppColors.orangeNeon,
+            color: tokens.gold,
             description: 'Kiếm qua học tập, dùng trong Cửa hàng',
             leading: const GtuCoinIcon(size: 32),
           ),
@@ -130,7 +130,7 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
             title: 'Kim cương',
             value: diamonds.toString(),
             icon: Icons.diamond,
-            color: AppColors.primaryLight,
+            color: tokens.brand,
             description: 'Mở khóa nội dung & tính năng AI',
           ),
 
@@ -140,7 +140,7 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
             title: 'Experience Points (XP)',
             value: xp.toString(),
             icon: Icons.star,
-            color: AppColors.xpGold,
+            color: tokens.gold,
             description: 'Điểm kinh nghiệm',
           ),
 
@@ -195,7 +195,7 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 16),
               backgroundColor: Colors.amber.shade700,
-              foregroundColor: Colors.white,
+              foregroundColor: context.colors.textOnBrand,
             ),
           ),
         ],
@@ -204,14 +204,15 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
   }
 
   Widget _buildHeaderCard(int coins, int diamonds, int xp, int streak) {
+    final t = context.colors;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: AppGradients.primary,
+        gradient: LinearGradient(colors: t.heroGradient),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppColors.purpleNeon.withValues(alpha: 0.35),
+            color: t.brand.withValues(alpha: 0.30),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -219,10 +220,10 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
       ),
       child: Column(
         children: [
-          const Text(
+          Text(
             'Tổng quan',
             style: TextStyle(
-              color: Colors.white,
+              color: t.textOnBrand,
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
@@ -247,7 +248,7 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
                 icon: Icons.star,
                 value: xp.toString(),
                 label: 'XP',
-                color: Colors.white,
+                color: t.textOnBrand,
               ),
               _buildStatItem(
                 icon: Icons.local_fire_department,
@@ -270,6 +271,7 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
     required Color color,
   }) {
     assert(icon != null || iconWidget != null);
+    final on = context.colors.textOnBrand;
     return Column(
       children: [
         iconWidget ??
@@ -277,8 +279,8 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
         const SizedBox(height: 8),
         Text(
           value,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: on,
             fontSize: 24,
             fontWeight: FontWeight.bold,
           ),
@@ -286,7 +288,7 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
         Text(
           label,
           style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.9),
+            color: on.withValues(alpha: 0.9),
             fontSize: 12,
           ),
         ),
@@ -302,13 +304,14 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
     required String description,
     Widget? leading,
   }) {
+    final t = context.colors;
     assert(icon != null || leading != null);
     return Card(
-      color: AppColors.bgSecondary,
+      color: t.card,
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: Color(0x332D363D)),
+        side: BorderSide(color: t.border),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -332,14 +335,14 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
                     title,
                     style: AppTextStyles.labelLarge.copyWith(
                       fontSize: 16,
-                      color: AppColors.textPrimary,
+                      color: t.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     description,
                     style: AppTextStyles.caption
-                        .copyWith(color: AppColors.textTertiary),
+                        .copyWith(color: t.textTertiary),
                   ),
                 ],
               ),
@@ -359,37 +362,38 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
   }
 
   Widget _buildShardsSection(Map<String, dynamic> shards) {
+    final t = context.colors;
     final shardEntries = shards.entries.toList();
 
     if (shardEntries.isEmpty) {
       return Card(
-        color: AppColors.bgSecondary,
+        color: t.card,
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: const BorderSide(color: Color(0x332D363D)),
+          side: BorderSide(color: t.border),
         ),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              const Icon(
+              Icon(
                 Icons.diamond_outlined,
                 size: 48,
-                color: AppColors.textTertiary,
+                color: t.textTertiary,
               ),
               const SizedBox(height: 8),
               Text(
                 'Chưa có Shards',
                 style: AppTextStyles.labelLarge.copyWith(
-                  color: AppColors.textSecondary,
+                  color: t.textSecondary,
                 ),
               ),
               const SizedBox(height: 4),
               Text(
                 'Hoàn thành bài học để nhận mảnh!',
                 style: AppTextStyles.caption
-                    .copyWith(color: AppColors.textTertiary),
+                    .copyWith(color: t.textTertiary),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -399,11 +403,11 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
     }
 
     return Card(
-      color: AppColors.bgSecondary,
+      color: t.card,
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: Color(0x332D363D)),
+        side: BorderSide(color: t.border),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -412,12 +416,11 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
           children: [
             Row(
               children: [
-                const Icon(Icons.diamond, color: AppColors.primaryLight),
+                Icon(Icons.diamond, color: t.brand),
                 const SizedBox(width: 8),
                 Text(
                   'Mảnh',
-                  style:
-                      AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+                  style: AppTextStyles.h4.copyWith(color: t.textPrimary),
                 ),
               ],
             ),
@@ -439,36 +442,36 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
   }
 
   Widget _buildShardChip({required String name, required int count}) {
+    final t = context.colors;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
-        color: AppColors.purpleNeon.withValues(alpha: 0.12),
+        color: t.brand.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(20),
-        border:
-            Border.all(color: AppColors.primaryLight.withValues(alpha: 0.35)),
+        border: Border.all(color: t.brand.withValues(alpha: 0.35)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.diamond, size: 20, color: AppColors.primaryLight),
+          Icon(Icons.diamond, size: 20, color: t.brand),
           const SizedBox(width: 8),
           Text(
             _formatShardName(name),
             style: AppTextStyles.labelMedium.copyWith(
-              color: AppColors.textPrimary,
+              color: t.textPrimary,
             ),
           ),
           const SizedBox(width: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
             decoration: BoxDecoration(
-              color: AppColors.purpleNeon,
+              color: t.brand,
               borderRadius: BorderRadius.circular(10),
             ),
             child: Text(
               count.toString(),
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: t.textOnBrand,
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
               ),
@@ -480,19 +483,20 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
   }
 
   Widget _buildInfoCard() {
+    final t = context.colors;
     return Card(
       elevation: 0,
-      color: AppColors.bgSecondary,
+      color: t.card,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: Color(0x332D363D)),
+        side: BorderSide(color: t.border),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Icon(Icons.info_outline, color: AppColors.primaryLight),
+            Icon(Icons.info_outline, color: t.brand),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -501,7 +505,7 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
                   Text(
                     'Cách kiếm phần thưởng',
                     style: AppTextStyles.labelLarge
-                        .copyWith(color: AppColors.textPrimary),
+                        .copyWith(color: t.textPrimary),
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -510,7 +514,7 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
                     '• Kim cương dùng để mở khóa nội dung & AI\n'
                     '• Học đều đặn để tăng chuỗi ngày',
                     style: AppTextStyles.caption
-                        .copyWith(color: AppColors.textSecondary, height: 1.45),
+                        .copyWith(color: t.textSecondary, height: 1.45),
                   ),
                 ],
               ),

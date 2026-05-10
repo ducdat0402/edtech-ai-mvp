@@ -14,6 +14,7 @@ class AiGeneratedNotice extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (!visible) return const SizedBox.shrink();
+    final t = context.colors;
 
     return Container(
       width: double.infinity,
@@ -22,22 +23,22 @@ class AiGeneratedNotice extends StatelessWidget {
         vertical: compact ? 8 : 10,
       ),
       decoration: BoxDecoration(
-        color: AppColors.warningNeon.withValues(alpha: 0.12),
+        color: t.warning.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(12),
         border:
-            Border.all(color: AppColors.warningNeon.withValues(alpha: 0.35)),
+            Border.all(color: t.warning.withValues(alpha: 0.35)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.info_outline_rounded,
-              size: 16, color: AppColors.warningNeon),
+          Icon(Icons.info_outline_rounded,
+              size: 16, color: t.warning),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               'Dữ liệu này được AI tạo ra, có thể còn sai sót. Hãy đóng góp để cộng đồng lớn mạnh thêm.',
               style: AppTextStyles.caption.copyWith(
-                color: AppColors.textPrimary,
+                color: t.textPrimary,
                 fontSize: compact ? 11 : 12,
               ),
             ),

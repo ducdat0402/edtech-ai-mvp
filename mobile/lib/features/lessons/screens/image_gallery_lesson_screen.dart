@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/core/widgets/ai_generated_notice.dart';
 import 'package:edtech_mobile/core/widgets/contributor_credit_button.dart';
-import 'package:edtech_mobile/theme/colors.dart';
+import 'package:edtech_mobile/theme/theme.dart';
 import 'end_quiz_screen.dart';
 import 'fullscreen_image_viewer.dart';
 
@@ -83,20 +83,21 @@ class _ImageGalleryLessonScreenState extends State<ImageGalleryLessonScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
     final totalImages = _images.length;
 
     return Scaffold(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppColors.bgPrimary,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
         leading: const AppBarLeadingBackAndHome(),
         leadingWidth: 112,
         automaticallyImplyLeading: false,
         title: Text(
           widget.title,
-          style: const TextStyle(
-            color: AppColors.textPrimary,
+          style: TextStyle(
+            color: t.textPrimary,
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
@@ -123,13 +124,12 @@ class _ImageGalleryLessonScreenState extends State<ImageGalleryLessonScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.photo_library,
-                        color: AppColors.purpleNeon, size: 18),
+                    Icon(Icons.photo_library, color: t.brand, size: 18),
                     const SizedBox(width: 8),
                     Text(
                       'Hinh ${_currentPage + 1}/$totalImages',
-                      style: const TextStyle(
-                        color: AppColors.purpleNeon,
+                      style: TextStyle(
+                        color: t.brand,
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                       ),
@@ -138,21 +138,21 @@ class _ImageGalleryLessonScreenState extends State<ImageGalleryLessonScreen> {
                 ),
                 if (totalImages > 1) ...[
                   const SizedBox(height: 6),
-                  const Row(
+                  Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
                         kIsWeb ? Icons.touch_app : Icons.swipe,
-                        color: AppColors.textTertiary,
+                        color: t.textTertiary,
                         size: 14,
                       ),
-                      SizedBox(width: 6),
+                      const SizedBox(width: 6),
                       Text(
                         kIsWeb
                             ? 'Dùng nút Trước/Sau để chuyển ảnh'
                             : 'Vuốt trái/phải để xem ảnh tiếp theo',
                         style: TextStyle(
-                          color: AppColors.textTertiary,
+                          color: t.textTertiary,
                           fontSize: 12,
                         ),
                       ),
@@ -171,8 +171,8 @@ class _ImageGalleryLessonScreenState extends State<ImageGalleryLessonScreen> {
                         icon: const Icon(Icons.chevron_left, size: 16),
                         label: const Text('Trước'),
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.textSecondary,
-                          side: const BorderSide(color: Color(0x332D363D)),
+                          foregroundColor: t.textSecondary,
+                          side: BorderSide(color: t.border),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -183,8 +183,8 @@ class _ImageGalleryLessonScreenState extends State<ImageGalleryLessonScreen> {
                         icon: const Icon(Icons.chevron_right, size: 16),
                         label: const Text('Sau'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.purpleNeon,
-                          foregroundColor: Colors.white,
+                          backgroundColor: t.brand,
+                          foregroundColor: t.textOnBrand,
                         ),
                       ),
                     ],
@@ -224,8 +224,8 @@ class _ImageGalleryLessonScreenState extends State<ImageGalleryLessonScreen> {
                     height: 8,
                     decoration: BoxDecoration(
                       color: isActive
-                          ? AppColors.purpleNeon
-                          : AppColors.bgTertiary,
+                          ? t.brand
+                          : t.cardMuted,
                       borderRadius: BorderRadius.circular(4),
                     ),
                   );
@@ -255,8 +255,8 @@ class _ImageGalleryLessonScreenState extends State<ImageGalleryLessonScreen> {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.purpleNeon,
-                  foregroundColor: Colors.white,
+                  backgroundColor: t.brand,
+                  foregroundColor: t.textOnBrand,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
@@ -274,6 +274,7 @@ class _ImageGalleryLessonScreenState extends State<ImageGalleryLessonScreen> {
   }
 
   Widget _buildImagePage(int index, Map<String, dynamic> imageData) {
+    final t = context.colors;
     final imageUrl =
         imageData['imageUrl'] ?? imageData['url'] ?? imageData['image'] ?? '';
     final description = imageData['description'] ?? imageData['caption'] ?? '';
@@ -336,8 +337,8 @@ class _ImageGalleryLessonScreenState extends State<ImageGalleryLessonScreen> {
                             if (title.toString().isNotEmpty)
                               Text(
                                 title.toString(),
-                                style: const TextStyle(
-                                  color: Colors.white,
+                                style: TextStyle(
+                                  color: t.textOnBrand,
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -349,7 +350,8 @@ class _ImageGalleryLessonScreenState extends State<ImageGalleryLessonScreen> {
                               Text(
                                 description.toString(),
                                 style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.9),
+                                  color:
+                                      t.textOnBrand.withValues(alpha: 0.9),
                                   fontSize: 14,
                                 ),
                                 maxLines: 4,
@@ -370,9 +372,9 @@ class _ImageGalleryLessonScreenState extends State<ImageGalleryLessonScreen> {
                         color: Colors.black54,
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.fullscreen,
-                        color: Colors.white,
+                        color: t.textOnBrand,
                         size: 20,
                       ),
                     ),
@@ -390,14 +392,14 @@ class _ImageGalleryLessonScreenState extends State<ImageGalleryLessonScreen> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.bgSecondary,
+                  color: t.card,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0x332D363D)),
+                  border: Border.all(color: t.border),
                 ),
                 child: Text(
                   description.toString(),
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
+                  style: TextStyle(
+                    color: t.textSecondary,
                     fontSize: 14,
                     height: 1.5,
                   ),
@@ -410,22 +412,23 @@ class _ImageGalleryLessonScreenState extends State<ImageGalleryLessonScreen> {
   }
 
   Widget _buildImagePlaceholder() {
+    final t = context.colors;
     return Container(
       height: 350,
       width: double.infinity,
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
+        color: t.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0x332D363D)),
+        border: Border.all(color: t.border),
       ),
-      child: const Column(
+      child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.image_outlined, color: AppColors.textTertiary, size: 64),
-          SizedBox(height: 8),
+          Icon(Icons.image_outlined, color: t.textTertiary, size: 64),
+          const SizedBox(height: 8),
           Text(
             'Không có hình ảnh',
-            style: TextStyle(color: AppColors.textTertiary, fontSize: 14),
+            style: TextStyle(color: t.textTertiary, fontSize: 14),
           ),
         ],
       ),

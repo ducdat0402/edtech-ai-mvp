@@ -73,6 +73,7 @@ class StreakWeekCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
     final weekDays = _getWeekDays();
     const dayLabels = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
 
@@ -81,15 +82,15 @@ class StreakWeekCard extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColors.streakOrange.withValues(alpha: 0.15),
-            AppColors.streakYellow.withValues(alpha: 0.08),
+            t.warning.withValues(alpha: 0.15),
+            t.gold.withValues(alpha: 0.08),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: AppColors.streakOrange.withValues(alpha: 0.35),
+          color: t.warning.withValues(alpha: 0.35),
           width: 1.5,
         ),
       ),
@@ -103,7 +104,7 @@ class StreakWeekCard extends StatelessWidget {
               Text(
                 'CHUỖI NGÀY HỌC',
                 style: AppTextStyles.h4.copyWith(
-                  color: AppColors.streakOrange,
+                  color: t.warning,
                   fontWeight: FontWeight.w800,
                   letterSpacing: 0.5,
                 ),
@@ -114,10 +115,10 @@ class StreakWeekCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
             decoration: BoxDecoration(
-              color: AppColors.bgSecondary.withValues(alpha: 0.6),
+              color: t.card.withValues(alpha: 0.6),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                  color: const Color(0x332D363D).withValues(alpha: 0.55)),
+                  color: t.border.withValues(alpha: 0.55)),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -135,8 +136,8 @@ class StreakWeekCard extends StatelessWidget {
                       dayLabels[i],
                       style: AppTextStyles.caption.copyWith(
                         color: hasFire
-                            ? AppColors.streakOrange
-                            : AppColors.textTertiary,
+                            ? t.warning
+                            : t.textTertiary,
                         fontWeight:
                             hasFire ? FontWeight.w600 : FontWeight.normal,
                       ),
@@ -149,26 +150,26 @@ class StreakWeekCard extends StatelessWidget {
           const SizedBox(height: 20),
           Row(
             children: [
-              const Icon(Icons.local_fire_department_rounded,
-                  color: AppColors.streakOrange, size: 20),
+              Icon(Icons.local_fire_department_rounded,
+                  color: t.warning, size: 20),
               const SizedBox(width: 8),
               Text(
                 'Chuỗi hiện tại: $currentStreak ngày',
                 style: AppTextStyles.labelLarge
-                    .copyWith(color: AppColors.textPrimary),
+                    .copyWith(color: t.textPrimary),
               ),
             ],
           ),
           const SizedBox(height: 8),
           Row(
             children: [
-              const Icon(Icons.emoji_events_rounded,
-                  color: AppColors.streakYellow, size: 20),
+              Icon(Icons.emoji_events_rounded,
+                  color: t.gold, size: 20),
               const SizedBox(width: 8),
               Text(
                 'Chuỗi cao nhất: ${maxStreak > 0 ? maxStreak : currentStreak} ngày',
                 style: AppTextStyles.labelLarge
-                    .copyWith(color: AppColors.textPrimary),
+                    .copyWith(color: t.textPrimary),
               ),
             ],
           ),
@@ -176,10 +177,10 @@ class StreakWeekCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
             decoration: BoxDecoration(
-              color: AppColors.streakOrange.withValues(alpha: 0.12),
+              color: t.warning.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
-                  color: AppColors.streakOrange.withValues(alpha: 0.25)),
+                  color: t.warning.withValues(alpha: 0.25)),
             ),
             child: Row(
               children: [
@@ -189,7 +190,7 @@ class StreakWeekCard extends StatelessWidget {
                   child: Text(
                     'Học hôm nay để giữ chuỗi!',
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.textPrimary,
+                      color: t.textPrimary,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -200,13 +201,13 @@ class StreakWeekCard extends StatelessWidget {
           const SizedBox(height: 12),
           Row(
             children: [
-              const Icon(Icons.schedule_rounded,
-                  color: AppColors.textSecondary, size: 18),
+              Icon(Icons.schedule_rounded,
+                  color: t.textSecondary, size: 18),
               const SizedBox(width: 6),
               Text(
                 'Còn ${_getTimeLeftUntilMidnight()}',
                 style: AppTextStyles.caption
-                    .copyWith(color: AppColors.textSecondary),
+                    .copyWith(color: t.textSecondary),
               ),
             ],
           ),

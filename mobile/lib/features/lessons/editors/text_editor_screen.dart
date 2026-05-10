@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:dio/dio.dart';
-import 'package:edtech_mobile/theme/colors.dart';
+import 'package:edtech_mobile/theme/theme.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'quiz_editor_screen.dart';
@@ -211,10 +211,10 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
 
     if (sectionTitle.length < 5) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
+        SnackBar(
+          content: const Text(
               'Tiêu đề phần quá ngắn. Vui lòng nhập tiêu đề ít nhất 5 ký tự.'),
-          backgroundColor: AppColors.warningNeon,
+          backgroundColor: context.colors.warning,
         ),
       );
       return;
@@ -222,10 +222,10 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
 
     if (sectionContent.length < 20) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
+        SnackBar(
+          content: const Text(
               'Nội dung phần quá ngắn hoặc mơ hồ. Vui lòng bổ sung nội dung để AI tạo ví dụ chính xác hơn.'),
-          backgroundColor: Colors.orange,
+          backgroundColor: context.colors.warning,
         ),
       );
       return;
@@ -263,10 +263,12 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
       } else {
         errorMsg = e.toString();
       }
+      if (!mounted) return;
+      final semErr = context.colors;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(errorMsg),
-          backgroundColor: AppColors.errorNeon,
+          backgroundColor: semErr.error,
         ),
       );
     } finally {
@@ -277,52 +279,57 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
   void _showDiamondInsufficientDialog(String message) {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.bgSecondary,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Row(
-          children: [
-            Text('💎', style: TextStyle(fontSize: 24)),
-            SizedBox(width: 8),
-            Text('Không đủ kim cương',
-                style: TextStyle(color: Colors.white, fontSize: 16)),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(message,
-                style: const TextStyle(
-                    color: AppColors.textSecondary, fontSize: 14)),
-            const SizedBox(height: 12),
-            const Text(
-              'Bạn có thể mua thêm kim cương trong phần Cửa hàng.',
-              style: TextStyle(color: AppColors.textTertiary, fontSize: 13),
+      builder: (ctx) {
+        final sem = ctx.colors;
+        return AlertDialog(
+          backgroundColor: sem.card,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: [
+              const Text('💎', style: TextStyle(fontSize: 24)),
+              const SizedBox(width: 8),
+              Text('Không đủ kim cương',
+                  style:
+                      TextStyle(color: sem.textPrimary, fontSize: 16)),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(message,
+                  style:
+                      TextStyle(color: sem.textSecondary, fontSize: 14)),
+              const SizedBox(height: 12),
+              Text(
+                'Bạn có thể mua thêm kim cương trong phần Cửa hàng.',
+                style: TextStyle(color: sem.textTertiary, fontSize: 13),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text('Đóng',
+                  style: TextStyle(color: sem.textSecondary)),
+            ),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.pop(ctx);
+                Navigator.of(context).pushNamed('/payment');
+              },
+              icon: const Text('💎', style: TextStyle(fontSize: 16)),
+              label: const Text('Mua kim cương'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: sem.brand,
+                foregroundColor: sem.onBrand,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+              ),
             ),
           ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Đóng',
-                style: TextStyle(color: AppColors.textSecondary)),
-          ),
-          ElevatedButton.icon(
-            onPressed: () {
-              Navigator.pop(ctx);
-              Navigator.of(context).pushNamed('/payment');
-            },
-            icon: const Text('💎', style: TextStyle(fontSize: 16)),
-            label: const Text('Mua kim cương'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.purpleNeon,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -377,39 +384,41 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
     );
   }
 
-  InputDecoration _inputDecoration(String label) {
+  InputDecoration _inputDecoration(BuildContext context, String label) {
+    final sem = context.colors;
     return InputDecoration(
       labelText: label,
-      labelStyle: const TextStyle(color: AppColors.textSecondary),
+      labelStyle: TextStyle(color: sem.textSecondary),
       filled: true,
-      fillColor: AppColors.bgSecondary,
+      fillColor: sem.card,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0x332D363D)),
+        borderSide: BorderSide(color: sem.border.withValues(alpha: 0.65)),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0x332D363D)),
+        borderSide: BorderSide(color: sem.border.withValues(alpha: 0.65)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.purpleNeon),
+        borderSide: BorderSide(color: sem.brand),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final sem = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppColors.bgSecondary,
+        backgroundColor: sem.card,
         leading: const AppBarLeadingBackAndHome(),
         leadingWidth: 112,
         automaticallyImplyLeading: false,
         title: Text(
           widget.isEditMode ? 'Sửa bài Text' : 'Tạo bài Text',
-          style: const TextStyle(color: AppColors.textPrimary, fontSize: 18),
+          style: TextStyle(color: sem.textPrimary, fontSize: 18),
         ),
         elevation: 0,
       ),
@@ -426,8 +435,9 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
                     // Title
                     TextFormField(
                       controller: _titleController,
-                      style: const TextStyle(color: AppColors.textPrimary),
-                      decoration: _inputDecoration('Tiêu đề bài học'),
+                      style: TextStyle(color: sem.textPrimary),
+                      decoration:
+                          _inputDecoration(context, 'Tiêu đề bài học'),
                       validator: (v) =>
                           v == null || v.trim().isEmpty ? 'Nhập tiêu đề' : null,
                     ),
@@ -436,8 +446,8 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
                     // Description
                     TextFormField(
                       controller: _descriptionController,
-                      style: const TextStyle(color: AppColors.textPrimary),
-                      decoration: _inputDecoration('Mô tả'),
+                      style: TextStyle(color: sem.textPrimary),
+                      decoration: _inputDecoration(context, 'Mô tả'),
                       maxLines: 3,
                       validator: (v) =>
                           v == null || v.trim().isEmpty ? 'Nhập mô tả' : null,
@@ -450,19 +460,18 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
                       children: [
                         Text(
                           'Các phần (${_sections.length})',
-                          style: const TextStyle(
-                            color: AppColors.textPrimary,
+                          style: TextStyle(
+                            color: sem.textPrimary,
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         TextButton.icon(
                           onPressed: _addSection,
-                          icon: const Icon(Icons.add,
-                              color: AppColors.purpleNeon),
-                          label: const Text(
+                          icon: Icon(Icons.add, color: sem.brand),
+                          label: Text(
                             'Thêm phần',
-                            style: TextStyle(color: AppColors.purpleNeon),
+                            style: TextStyle(color: sem.brand),
                           ),
                         ),
                       ],
@@ -477,17 +486,17 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildSectionCard(index),
+                          _buildSectionCard(context, index),
                           // "Add inline quiz" button after each section
                           Center(
                             child: TextButton.icon(
                               onPressed: () => _addInlineQuiz(index),
-                              icon: const Icon(Icons.quiz_outlined,
-                                  color: AppColors.primaryLight, size: 18),
-                              label: const Text(
+                              icon: Icon(Icons.quiz_outlined,
+                                  color: sem.brand, size: 18),
+                              label: Text(
                                 'Thêm câu hỏi',
                                 style: TextStyle(
-                                    color: AppColors.primaryLight,
+                                    color: sem.brand,
                                     fontSize: 13),
                               ),
                             ),
@@ -495,7 +504,7 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
                           // Inline quizzes after this section
                           ...quizzesAfter.map((quiz) {
                             final qIndex = _inlineQuizzes.indexOf(quiz);
-                            return _buildInlineQuizCard(qIndex);
+                            return _buildInlineQuizCard(context, qIndex);
                           }),
                         ],
                       );
@@ -504,10 +513,10 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
                     const SizedBox(height: 24),
 
                     // Summary
-                    const Text(
+                    Text(
                       'Tóm tắt',
                       style: TextStyle(
-                        color: AppColors.textPrimary,
+                        color: sem.textPrimary,
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
@@ -515,8 +524,9 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _summaryController,
-                      style: const TextStyle(color: AppColors.textPrimary),
-                      decoration: _inputDecoration('Tóm tắt bài học'),
+                      style: TextStyle(color: sem.textPrimary),
+                      decoration:
+                          _inputDecoration(context, 'Tóm tắt bài học'),
                       maxLines: 5,
                     ),
                     const SizedBox(height: 24),
@@ -525,21 +535,20 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
+                        Text(
                           'Mục tiêu học tập',
                           style: TextStyle(
-                            color: AppColors.textPrimary,
+                            color: sem.textPrimary,
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         TextButton.icon(
                           onPressed: _addObjective,
-                          icon: const Icon(Icons.add,
-                              color: AppColors.purpleNeon),
-                          label: const Text(
+                          icon: Icon(Icons.add, color: sem.brand),
+                          label: Text(
                             'Thêm',
-                            style: TextStyle(color: AppColors.purpleNeon),
+                            style: TextStyle(color: sem.brand),
                           ),
                         ),
                       ],
@@ -553,16 +562,15 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
                             Expanded(
                               child: TextFormField(
                                 controller: _objectiveControllers[index],
-                                style: const TextStyle(
-                                    color: AppColors.textPrimary),
-                                decoration:
-                                    _inputDecoration('Mục tiêu ${index + 1}'),
+                                style: TextStyle(color: sem.textPrimary),
+                                decoration: _inputDecoration(
+                                    context, 'Mục tiêu ${index + 1}'),
                               ),
                             ),
                             if (_objectiveControllers.length > 1)
                               IconButton(
-                                icon: const Icon(Icons.remove_circle_outline,
-                                    color: AppColors.errorNeon, size: 20),
+                                icon: Icon(Icons.remove_circle_outline,
+                                    color: sem.error, size: 20),
                                 onPressed: () => _removeObjective(index),
                               ),
                           ],
@@ -580,17 +588,18 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16),
-              decoration: const BoxDecoration(
-                color: AppColors.bgSecondary,
+              decoration: BoxDecoration(
+                color: sem.card,
                 border: Border(
-                  top: BorderSide(color: Color(0x332D363D)),
+                  top: BorderSide(
+                      color: sem.border.withValues(alpha: 0.65)),
                 ),
               ),
               child: ElevatedButton(
                 onPressed: _navigateToQuizEditor,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.purpleNeon,
-                  foregroundColor: Colors.white,
+                  backgroundColor: sem.brand,
+                  foregroundColor: sem.onBrand,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -646,12 +655,14 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
     },
   };
 
-  Widget _buildExampleCard(int sectionIndex, int exampleIndex) {
+  Widget _buildExampleCard(
+      BuildContext context, int sectionIndex, int exampleIndex) {
     final example = _sections[sectionIndex].examples[exampleIndex];
     final typeInfo =
         _exampleTypes[example.type] ?? _exampleTypes['real_world_scenario']!;
     final typeColor = Color(typeInfo['color'] as int);
     final isGenerating = _generatingExampleSection == sectionIndex;
+    final sem = context.colors;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8, top: 4),
@@ -685,17 +696,17 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
                       : () =>
                           _generateExampleWithAI(sectionIndex, exampleIndex),
                   icon: isGenerating
-                      ? const SizedBox(
+                      ? SizedBox(
                           width: 12,
                           height: 12,
                           child: CircularProgressIndicator(
-                              strokeWidth: 2, color: Colors.white))
+                              strokeWidth: 2, color: sem.textOnBrand))
                       : const Icon(Icons.auto_awesome, size: 12),
                   label: Text(isGenerating ? '...' : 'AI 10💎',
                       style: const TextStyle(fontSize: 11)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: typeColor,
-                    foregroundColor: Colors.white,
+                    foregroundColor: sem.textOnBrand,
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(6)),
@@ -706,8 +717,7 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
               InkWell(
                 onTap: () =>
                     _removeExampleFromSection(sectionIndex, exampleIndex),
-                child: const Icon(Icons.close,
-                    color: AppColors.errorNeon, size: 18),
+                child: Icon(Icons.close, color: sem.error, size: 18),
               ),
             ],
           ),
@@ -716,9 +726,9 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
           // Type dropdown
           DropdownButtonFormField<String>(
             value: example.type,
-            dropdownColor: AppColors.bgSecondary,
-            style: const TextStyle(color: AppColors.textPrimary, fontSize: 13),
-            decoration: _inputDecoration('Loại ví dụ'),
+            dropdownColor: sem.card,
+            style: TextStyle(color: sem.textPrimary, fontSize: 13),
+            decoration: _inputDecoration(context, 'Loại ví dụ'),
             isDense: true,
             items: _exampleTypes.entries.map((entry) {
               final info = entry.value;
@@ -744,16 +754,16 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
           // Title
           TextFormField(
             controller: example.titleController,
-            style: const TextStyle(color: AppColors.textPrimary, fontSize: 13),
-            decoration: _inputDecoration('Tiêu đề ví dụ'),
+            style: TextStyle(color: sem.textPrimary, fontSize: 13),
+            decoration: _inputDecoration(context, 'Tiêu đề ví dụ'),
           ),
           const SizedBox(height: 8),
 
           // Content
           TextFormField(
             controller: example.contentController,
-            style: const TextStyle(color: AppColors.textPrimary, fontSize: 13),
-            decoration: _inputDecoration('Nội dung ví dụ'),
+            style: TextStyle(color: sem.textPrimary, fontSize: 13),
+            decoration: _inputDecoration(context, 'Nội dung ví dụ'),
             maxLines: 4,
             minLines: 2,
           ),
@@ -762,16 +772,18 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
     );
   }
 
-  Widget _buildSectionCard(int index) {
+  Widget _buildSectionCard(BuildContext context, int index) {
     final section = _sections[index];
+    final sem = context.colors;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
+        color: sem.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0x332D363D)),
+        border: Border.all(
+            color: sem.border.withValues(alpha: 0.65)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -782,27 +794,28 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
             children: [
               Text(
                 'Phần ${index + 1}',
-                style: const TextStyle(
-                  color: AppColors.purpleNeon,
+                style: TextStyle(
+                  color: sem.brand,
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               if (_sections.length > 1)
                 IconButton(
-                  icon: const Icon(Icons.delete_outline,
-                      color: AppColors.errorNeon, size: 20),
+                  icon: Icon(Icons.delete_outline,
+                      color: sem.error, size: 20),
                   onPressed: () => _removeSection(index),
                 ),
             ],
           ),
-          const Divider(color: Color(0x332D363D), height: 20),
+          Divider(
+              color: sem.border.withValues(alpha: 0.65), height: 20),
 
           // Section title
           TextFormField(
             controller: section.titleController,
-            style: const TextStyle(color: AppColors.textPrimary),
-            decoration: _inputDecoration('Tiêu đề phần'),
+            style: TextStyle(color: sem.textPrimary),
+            decoration: _inputDecoration(context, 'Tiêu đề phần'),
             validator: (v) =>
                 v == null || v.trim().isEmpty ? 'Nhập tiêu đề' : null,
           ),
@@ -811,8 +824,8 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
           // Section content
           TextFormField(
             controller: section.contentController,
-            style: const TextStyle(color: AppColors.textPrimary),
-            decoration: _inputDecoration('Nội dung'),
+            style: TextStyle(color: sem.textPrimary),
+            decoration: _inputDecoration(context, 'Nội dung'),
             maxLines: 8,
             validator: (v) =>
                 v == null || v.trim().isEmpty ? 'Nhập nội dung' : null,
@@ -822,13 +835,13 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
           const SizedBox(height: 12),
           Row(
             children: [
-              const Icon(Icons.lightbulb_outline,
-                  color: AppColors.xpGold, size: 16),
+              Icon(Icons.lightbulb_outline,
+                  color: sem.gold, size: 16),
               const SizedBox(width: 4),
               Text(
                 'Ví dụ minh họa (${section.examples.length})',
-                style: const TextStyle(
-                    color: AppColors.xpGold,
+                style: TextStyle(
+                    color: sem.gold,
                     fontSize: 13,
                     fontWeight: FontWeight.w600),
               ),
@@ -837,10 +850,9 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
                 height: 28,
                 child: TextButton.icon(
                   onPressed: () => _addExampleToSection(index),
-                  icon:
-                      const Icon(Icons.add, color: AppColors.xpGold, size: 14),
-                  label: const Text('Thêm',
-                      style: TextStyle(color: AppColors.xpGold, fontSize: 12)),
+                  icon: Icon(Icons.add, color: sem.gold, size: 14),
+                  label: Text('Thêm',
+                      style: TextStyle(color: sem.gold, fontSize: 12)),
                   style: TextButton.styleFrom(
                       padding: const EdgeInsets.symmetric(horizontal: 6)),
                 ),
@@ -848,7 +860,7 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
             ],
           ),
           ...List.generate(section.examples.length, (eIdx) {
-            return _buildExampleCard(index, eIdx);
+            return _buildExampleCard(context, index, eIdx);
           }),
         ],
       ),
@@ -864,7 +876,7 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
         SnackBar(
           content: const Text(
               'Vui lòng nhập câu hỏi (ít nhất 5 ký tự) trước khi tạo giải thích'),
-          backgroundColor: AppColors.warningNeon,
+          backgroundColor: context.colors.warning,
           behavior: SnackBarBehavior.floating,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -883,7 +895,7 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
               'C',
               'D'
             ][i]} trước khi tạo giải thích'),
-            backgroundColor: AppColors.warningNeon,
+            backgroundColor: context.colors.warning,
             behavior: SnackBarBehavior.floating,
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -951,10 +963,11 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
       }
 
       if (mounted) {
+        final sem = context.colors;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Đã tạo lời giải thích thành công!'),
-            backgroundColor: AppColors.successGlow,
+            backgroundColor: sem.success,
             behavior: SnackBarBehavior.floating,
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -976,10 +989,12 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
       } else {
         errorMsg = e.toString();
       }
+      if (!mounted) return;
+      final semErr = context.colors;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(errorMsg),
-          backgroundColor: AppColors.errorNeon,
+          backgroundColor: semErr.error,
           behavior: SnackBarBehavior.floating,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -995,57 +1010,61 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
   Future<bool?> _showInlineQuizValidationDialog(List<String> issues) {
     return showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.bgSecondary,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Row(
-          children: [
-            Icon(Icons.warning_amber_rounded, color: AppColors.warningNeon),
-            SizedBox(width: 8),
-            Text('Phát hiện vấn đề',
-                style: TextStyle(color: AppColors.textPrimary, fontSize: 17)),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: issues
-              .map((issue) => Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('• ',
-                            style: TextStyle(
-                                color: AppColors.warningNeon, fontSize: 14)),
-                        Expanded(
-                            child: Text(issue,
-                                style: const TextStyle(
-                                    color: AppColors.textSecondary,
-                                    fontSize: 14))),
-                      ],
-                    ),
-                  ))
-              .toList(),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Sửa lỗi',
-                style: TextStyle(color: AppColors.textSecondary)),
+      builder: (ctx) {
+        final sem = ctx.colors;
+        return AlertDialog(
+          backgroundColor: sem.card,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: [
+              Icon(Icons.warning_amber_rounded, color: sem.warning),
+              const SizedBox(width: 8),
+              Text('Phát hiện vấn đề',
+                  style: TextStyle(color: sem.textPrimary, fontSize: 17)),
+            ],
           ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.warningNeon,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: issues
+                .map((issue) => Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('• ',
+                              style: TextStyle(
+                                  color: sem.warning, fontSize: 14)),
+                          Expanded(
+                              child: Text(issue,
+                                  style: TextStyle(
+                                      color: sem.textSecondary,
+                                      fontSize: 14))),
+                        ],
+                      ),
+                    ))
+                .toList(),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text('Sửa lỗi',
+                  style: TextStyle(color: sem.textSecondary)),
             ),
-            child:
-                const Text('Tiếp tục', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: sem.warning,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)),
+              ),
+              child: Text('Tiếp tục',
+                  style: TextStyle(color: sem.textOnBrand)),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -1057,111 +1076,118 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
     final labels = ['A', 'B', 'C', 'D'];
     return showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.bgSecondary,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Row(
-          children: [
-            Icon(Icons.error_outline, color: AppColors.errorNeon),
-            SizedBox(width: 8),
-            Expanded(
-              child: Text('Cảnh báo: Đáp án có thể sai',
-                  style: TextStyle(color: AppColors.textPrimary, fontSize: 17)),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            RichText(
-              text: TextSpan(
-                style: const TextStyle(
-                    color: AppColors.textSecondary, fontSize: 14),
-                children: [
-                  const TextSpan(text: 'Bạn đánh dấu: '),
-                  TextSpan(
-                      text: labels[currentAnswer],
-                      style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary)),
-                  const TextSpan(text: ' là đúng'),
-                ],
+      builder: (ctx) {
+        final sem = ctx.colors;
+        return AlertDialog(
+          backgroundColor: sem.card,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: [
+              Icon(Icons.error_outline, color: sem.error),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text('Cảnh báo: Đáp án có thể sai',
+                    style:
+                        TextStyle(color: sem.textPrimary, fontSize: 17)),
               ),
-            ),
-            const SizedBox(height: 8),
-            RichText(
-              text: TextSpan(
-                style: const TextStyle(
-                    color: AppColors.textSecondary, fontSize: 14),
-                children: [
-                  const TextSpan(text: 'AI đề xuất: '),
-                  TextSpan(
-                      text: labels[suggestedAnswer],
-                      style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.orangeNeon)),
-                  const TextSpan(text: ' mới đúng'),
-                ],
-              ),
-            ),
-            if (reason.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: AppColors.bgTertiary,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              RichText(
+                text: TextSpan(
+                  style: TextStyle(
+                      color: sem.textSecondary, fontSize: 14),
                   children: [
-                    const Icon(Icons.lightbulb_outline,
-                        color: AppColors.orangeNeon, size: 16),
-                    const SizedBox(width: 8),
-                    Expanded(
-                        child: Text(reason,
-                            style: const TextStyle(
-                                color: AppColors.textSecondary, fontSize: 13))),
+                    const TextSpan(text: 'Bạn đánh dấu: '),
+                    TextSpan(
+                        text: labels[currentAnswer],
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: sem.textPrimary)),
+                    const TextSpan(text: ' là đúng'),
                   ],
                 ),
               ),
+              const SizedBox(height: 8),
+              RichText(
+                text: TextSpan(
+                  style: TextStyle(
+                      color: sem.textSecondary, fontSize: 14),
+                  children: [
+                    const TextSpan(text: 'AI đề xuất: '),
+                    TextSpan(
+                        text: labels[suggestedAnswer],
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: sem.gold)),
+                    const TextSpan(text: ' mới đúng'),
+                  ],
+                ),
+              ),
+              if (reason.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: sem.cardMuted,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.lightbulb_outline,
+                          color: sem.gold, size: 16),
+                      const SizedBox(width: 8),
+                      Expanded(
+                          child: Text(reason,
+                              style: TextStyle(
+                                  color: sem.textSecondary, fontSize: 13))),
+                    ],
+                  ),
+                ),
+              ],
             ],
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text('Giữ ${labels[currentAnswer]}',
-                style: const TextStyle(color: AppColors.textSecondary)),
           ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.orangeNeon,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text('Giữ ${labels[currentAnswer]}',
+                  style: TextStyle(color: sem.textSecondary)),
             ),
-            child: Text('Đổi sang ${labels[suggestedAnswer]}',
-                style: const TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: sem.gold,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)),
+              ),
+              child: Text('Đổi sang ${labels[suggestedAnswer]}',
+                  style: TextStyle(
+                      color: Theme.of(ctx).colorScheme.onSecondary)),
+            ),
+          ],
+        );
+      },
     );
   }
 
-  Widget _buildInlineQuizCard(int quizIndex) {
+  Widget _buildInlineQuizCard(BuildContext context, int quizIndex) {
     final quiz = _inlineQuizzes[quizIndex];
     final labels = ['A', 'B', 'C', 'D'];
+    final sem = context.colors;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
+        color: sem.card,
         borderRadius: BorderRadius.circular(16),
         border:
-            Border.all(color: AppColors.primaryLight.withValues(alpha: 0.4)),
+            Border.all(color: sem.brand.withValues(alpha: 0.4)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1169,14 +1195,13 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
           // Header
           Row(
             children: [
-              const Icon(Icons.quiz_outlined,
-                  color: AppColors.primaryLight, size: 18),
+              Icon(Icons.quiz_outlined, color: sem.brand, size: 18),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
                   'Câu hỏi inline (sau phần ${quiz.afterSectionIndex + 1})',
-                  style: const TextStyle(
-                    color: AppColors.primaryLight,
+                  style: TextStyle(
+                    color: sem.brand,
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
                   ),
@@ -1187,12 +1212,12 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
                   ? Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 10, vertical: 6),
-                      child: const SizedBox(
+                      child: SizedBox(
                         width: 16,
                         height: 16,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: AppColors.orangeNeon,
+                          color: sem.gold,
                         ),
                       ),
                     )
@@ -1203,21 +1228,20 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: AppColors.orangeNeon.withValues(alpha: 0.1),
+                          color: sem.gold.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                              color:
-                                  AppColors.orangeNeon.withValues(alpha: 0.3)),
+                              color: sem.gold.withValues(alpha: 0.3)),
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(Icons.auto_awesome,
-                                color: AppColors.orangeNeon, size: 12),
-                            SizedBox(width: 3),
+                                color: sem.gold, size: 12),
+                            const SizedBox(width: 3),
                             Text('AI 5💎',
                                 style: TextStyle(
-                                    color: AppColors.orangeNeon,
+                                    color: sem.gold,
                                     fontSize: 11,
                                     fontWeight: FontWeight.w600)),
                           ],
@@ -1225,19 +1249,20 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
                       ),
                     ),
               IconButton(
-                icon: const Icon(Icons.delete_outline,
-                    color: AppColors.errorNeon, size: 20),
+                icon: Icon(Icons.delete_outline,
+                    color: sem.error, size: 20),
                 onPressed: () => _removeInlineQuiz(quizIndex),
               ),
             ],
           ),
-          const Divider(color: Color(0x332D363D), height: 16),
+          Divider(
+              color: sem.border.withValues(alpha: 0.65), height: 16),
 
           // Question
           TextFormField(
             controller: quiz.questionController,
-            style: const TextStyle(color: AppColors.textPrimary),
-            decoration: _inputDecoration('Câu hỏi'),
+            style: TextStyle(color: sem.textPrimary),
+            decoration: _inputDecoration(context, 'Câu hỏi'),
             validator: (v) =>
                 v == null || v.trim().isEmpty ? 'Nhập câu hỏi' : null,
           ),
@@ -1259,18 +1284,18 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
                             quiz.correctAnswer = v ?? 0;
                           });
                         },
-                        activeColor: AppColors.successNeon,
+                        activeColor: sem.success,
                         fillColor: WidgetStateProperty.resolveWith((states) {
                           if (states.contains(WidgetState.selected)) {
-                            return AppColors.successNeon;
+                            return sem.success;
                           }
-                          return AppColors.textTertiary;
+                          return sem.textTertiary;
                         }),
                       ),
                       Text(
                         labels[optIdx],
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
+                        style: TextStyle(
+                          color: sem.textPrimary,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -1278,10 +1303,10 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
                       Expanded(
                         child: TextFormField(
                           controller: quiz.optionControllers[optIdx],
-                          style: const TextStyle(
-                              color: AppColors.textPrimary, fontSize: 14),
-                          decoration:
-                              _inputDecoration('Đáp án ${labels[optIdx]}'),
+                          style: TextStyle(
+                              color: sem.textPrimary, fontSize: 14),
+                          decoration: _inputDecoration(
+                              context, 'Đáp án ${labels[optIdx]}'),
                           validator: (v) => v == null || v.trim().isEmpty
                               ? 'Nhập đáp án'
                               : null,
@@ -1293,9 +1318,10 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
                     padding: const EdgeInsets.only(left: 56, top: 4),
                     child: TextFormField(
                       controller: quiz.explanationControllers[optIdx],
-                      style: const TextStyle(
-                          color: AppColors.textSecondary, fontSize: 13),
-                      decoration: _inputDecoration('Giải thích (tuỳ chọn)'),
+                      style: TextStyle(
+                          color: sem.textSecondary, fontSize: 13),
+                      decoration:
+                          _inputDecoration(context, 'Giải thích (tuỳ chọn)'),
                     ),
                   ),
                 ],

@@ -269,7 +269,8 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                         label: const Text('Nhận thưởng'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: rarityColor,
-                          foregroundColor: Colors.white,
+                          foregroundColor:
+                              Theme.of(context).colorScheme.onSecondary,
                           padding: const EdgeInsets.symmetric(
                             horizontal: 12,
                             vertical: 8,

@@ -1,8 +1,9 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import '../colors.dart';
+import '../semantic_colors.dart';
 
-/// Glassmorphism card with blur effect
+/// Card sang **light mode**: nền trắng + border mềm + shadow nhẹ.
+/// Ở **dark mode**: giữ glassmorphism (blur + lớp trong suốt) như cũ.
 class GlassCard extends StatelessWidget {
   final Widget child;
   final EdgeInsets? padding;
@@ -27,13 +28,29 @@ class GlassCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final tokens = context.colors;
+
+    if (!isDark) {
+      return _LightCard(
+        padding: padding,
+        borderRadius: borderRadius,
+        borderColor: borderColor ?? tokens.border,
+        backgroundColor: backgroundColor ?? tokens.card,
+        onTap: onTap,
+        boxShadow: boxShadow,
+        tokens: tokens,
+        child: child,
+      );
+    }
+
     return Container(
       decoration: BoxDecoration(
         color:
-            (backgroundColor ?? AppColors.bgSecondary).withValues(alpha: 0.6),
+            (backgroundColor ?? tokens.card).withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(borderRadius),
         border: Border.all(
-          color: borderColor ?? AppColors.borderPrimary,
+          color: borderColor ?? tokens.border,
           width: 1,
         ),
         boxShadow: boxShadow ??
@@ -66,12 +83,65 @@ class GlassCard extends StatelessWidget {
   }
 }
 
+class _LightCard extends StatelessWidget {
+  const _LightCard({
+    required this.child,
+    required this.borderRadius,
+    required this.tokens,
+    this.padding,
+    this.borderColor,
+    this.backgroundColor,
+    this.onTap,
+    this.boxShadow,
+  });
+
+  final Widget child;
+  final EdgeInsets? padding;
+  final double borderRadius;
+  final Color? borderColor;
+  final Color? backgroundColor;
+  final VoidCallback? onTap;
+  final List<BoxShadow>? boxShadow;
+  final SemanticColors tokens;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: backgroundColor ?? tokens.card,
+        borderRadius: BorderRadius.circular(borderRadius),
+        border: Border.all(color: borderColor ?? tokens.border),
+        boxShadow: boxShadow ??
+            [
+              BoxShadow(
+                color: tokens.shadowColor,
+                blurRadius: 18,
+                offset: const Offset(0, 6),
+              ),
+            ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(borderRadius),
+          child: Padding(
+            padding: padding ?? const EdgeInsets.all(20),
+            child: child,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// Card with neon glow border on hover/active
 class NeonCard extends StatefulWidget {
   final Widget child;
   final EdgeInsets? padding;
   final double borderRadius;
-  final Color glowColor;
+  /// null → [SemanticColors.brand] theo theme.
+  final Color? glowColor;
   final VoidCallback? onTap;
   final bool isActive;
 
@@ -80,7 +150,7 @@ class NeonCard extends StatefulWidget {
     required this.child,
     this.padding,
     this.borderRadius = 16,
-    this.glowColor = AppColors.purpleNeon,
+    this.glowColor,
     this.onTap,
     this.isActive = false,
   });
@@ -94,6 +164,8 @@ class _NeonCardState extends State<NeonCard> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.colors;
+    final glow = widget.glowColor ?? tokens.brand;
     final showGlow = _isHovered || widget.isActive;
 
     return MouseRegion(
@@ -102,16 +174,16 @@ class _NeonCardState extends State<NeonCard> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         decoration: BoxDecoration(
-          color: AppColors.bgSecondary,
+          color: tokens.card,
           borderRadius: BorderRadius.circular(widget.borderRadius),
           border: Border.all(
-            color: showGlow ? widget.glowColor : AppColors.borderPrimary,
+            color: showGlow ? glow : tokens.border,
             width: showGlow ? 2 : 1,
           ),
           boxShadow: showGlow
               ? [
                   BoxShadow(
-                    color: widget.glowColor.withValues(alpha: 0.4),
+                    color: glow.withValues(alpha: 0.4),
                     blurRadius: 20,
                     spreadRadius: 0,
                   ),
@@ -157,12 +229,13 @@ class DarkCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
+        color: t.card,
         borderRadius: BorderRadius.circular(borderRadius),
         border: Border.all(
-          color: AppColors.borderPrimary,
+          color: t.border,
           width: 1,
         ),
       ),

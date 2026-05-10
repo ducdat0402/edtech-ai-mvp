@@ -86,17 +86,18 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
   }
 
   Future<bool?> _showConfirmDialog(String title, String message, int cost) {
+    final t = context.colors;
     final balance = _pricing!['userBalance'] as int? ?? 0;
     final canAfford = balance >= cost;
 
     return showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.bgSecondary,
+        backgroundColor: t.card,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(title,
-            style: const TextStyle(
-                color: Colors.white,
+            style: TextStyle(
+                color: t.textPrimary,
                 fontSize: 16,
                 fontWeight: FontWeight.bold)),
         content: Column(
@@ -104,26 +105,22 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(message,
-                style: const TextStyle(
-                    color: AppColors.textSecondary, fontSize: 14)),
+                style: TextStyle(color: t.textSecondary, fontSize: 14)),
             const SizedBox(height: 16),
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.bgTertiary,
+                color: t.cardMuted,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Số dư:',
-                      style: TextStyle(
-                          color: AppColors.textSecondary, fontSize: 13)),
+                  Text('Số dư:',
+                      style: TextStyle(color: t.textSecondary, fontSize: 13)),
                   Text('$balance 💎',
                       style: TextStyle(
-                        color: canAfford
-                            ? AppColors.successNeon
-                            : AppColors.errorNeon,
+                        color: canAfford ? t.success : t.error,
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
                       )),
@@ -134,8 +131,7 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
               const SizedBox(height: 8),
               Text(
                 'Bạn cần thêm ${cost - balance} 💎. Hãy mua thêm kim cương.',
-                style:
-                    const TextStyle(color: AppColors.errorNeon, fontSize: 12),
+                style: TextStyle(color: t.error, fontSize: 12),
               ),
             ],
           ],
@@ -143,19 +139,18 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Hủy',
-                style: TextStyle(color: AppColors.textSecondary)),
+            child: Text('Hủy', style: TextStyle(color: t.textSecondary)),
           ),
           if (canAfford)
             ElevatedButton(
               onPressed: () => Navigator.pop(ctx, true),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.purpleNeon,
+                backgroundColor: t.brand,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10)),
               ),
               child: Text('Mở khóa ($cost 💎)',
-                  style: const TextStyle(color: Colors.white)),
+                  style: TextStyle(color: t.textOnBrand)),
             )
           else
             ElevatedButton.icon(
@@ -166,7 +161,7 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
               icon: const Text('💎', style: TextStyle(fontSize: 16)),
               label: const Text('Mua kim cương'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryLight,
+                backgroundColor: t.info,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10)),
               ),
@@ -184,7 +179,7 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(result['message'] ?? 'Mở khóa thành công!'),
-            backgroundColor: AppColors.successNeon,
+            backgroundColor: context.colors.success,
           ),
         );
         _loadPricing(); // Reload
@@ -193,7 +188,7 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text('Lỗi: $e'), backgroundColor: AppColors.errorNeon),
+              content: Text('Lỗi: $e'), backgroundColor: context.colors.error),
         );
       }
     } finally {
@@ -203,13 +198,14 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text('Mở khóa bài học',
-            style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
+            style: AppTextStyles.h4.copyWith(color: t.textPrimary)),
         leading: const AppBarLeadingBackAndHome(),
         leadingWidth: 112,
         automaticallyImplyLeading: false,
@@ -219,9 +215,9 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
               margin: const EdgeInsets.only(right: 16),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: AppColors.bgSecondary,
+                color: t.card,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0x332D363D)),
+                border: Border.all(color: t.border),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -231,7 +227,7 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
                   Text(
                     '${_pricing!['userBalance'] ?? 0}',
                     style: AppTextStyles.labelLarge
-                        .copyWith(color: AppColors.primaryLight),
+                        .copyWith(color: t.info),
                   ),
                 ],
               ),
@@ -239,12 +235,11 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
         ],
       ),
       body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: AppColors.primaryLight))
+          ? Center(child: CircularProgressIndicator(color: t.info))
           : _error != null
               ? Center(
                   child: Text('Lỗi: $_error',
-                      style: const TextStyle(color: AppColors.textSecondary)))
+                      style: TextStyle(color: t.textSecondary)))
               : _buildContent(),
     );
   }
@@ -279,6 +274,7 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
 
   // ── Section 1: Unlock whole subject ──
   Widget _buildSubjectUnlock() {
+    final t = context.colors;
     final subject = _pricing!['subject'] as Map<String, dynamic>;
     final isUnlocked = subject['isUnlocked'] == true;
     final price = subject['price'] as int;
@@ -291,18 +287,18 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
       decoration: BoxDecoration(
         gradient: isUnlocked
             ? LinearGradient(colors: [
-                AppColors.successNeon.withValues(alpha: 0.15),
-                AppColors.successNeon.withValues(alpha: 0.05)
+                t.success.withValues(alpha: 0.15),
+                t.success.withValues(alpha: 0.05)
               ])
             : LinearGradient(colors: [
-                AppColors.purpleNeon.withValues(alpha: 0.15),
-                AppColors.pinkNeon.withValues(alpha: 0.1)
+                t.brand.withValues(alpha: 0.15),
+                t.error.withValues(alpha: 0.1)
               ]),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
             color: isUnlocked
-                ? AppColors.successNeon.withValues(alpha: 0.3)
-                : AppColors.purpleNeon.withValues(alpha: 0.3)),
+                ? t.success.withValues(alpha: 0.3)
+                : t.brand.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -313,14 +309,14 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   color: isUnlocked
-                      ? AppColors.successNeon.withValues(alpha: 0.2)
-                      : AppColors.purpleNeon.withValues(alpha: 0.2),
+                      ? t.success.withValues(alpha: 0.2)
+                      : t.brand.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
                   isUnlocked ? Icons.lock_open_rounded : Icons.star_rounded,
                   color:
-                      isUnlocked ? AppColors.successNeon : AppColors.purpleNeon,
+                      isUnlocked ? t.success : t.brand,
                   size: 28,
                 ),
               ),
@@ -332,13 +328,13 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
                     Text(
                       isUnlocked ? 'Đã mở khóa toàn bộ' : 'Mở khóa toàn bộ môn',
                       style: AppTextStyles.h4
-                          .copyWith(color: AppColors.textPrimary),
+                          .copyWith(color: t.textPrimary),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       '${_pricing!['subjectName']} ($totalLessons bài)',
                       style: AppTextStyles.bodySmall
-                          .copyWith(color: AppColors.textSecondary),
+                          .copyWith(color: t.textSecondary),
                     ),
                   ],
                 ),
@@ -348,12 +344,12 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppColors.errorNeon.withValues(alpha: 0.15),
+                    color: t.error.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Text('-30%',
+                  child: Text('-30%',
                       style: TextStyle(
-                          color: AppColors.errorNeon,
+                          color: t.error,
                           fontWeight: FontWeight.bold,
                           fontSize: 13)),
                 ),
@@ -365,7 +361,7 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.bgTertiary,
+                color: t.cardMuted,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Column(
@@ -374,11 +370,10 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text('$totalLessons bài × 50 💎 × 0.7',
-                          style: const TextStyle(
-                              color: AppColors.textTertiary, fontSize: 12)),
+                          style: TextStyle(color: t.textTertiary, fontSize: 12)),
                       Text('$price 💎',
-                          style: const TextStyle(
-                              color: AppColors.primaryLight,
+                          style: TextStyle(
+                              color: t.info,
                               fontWeight: FontWeight.bold,
                               fontSize: 16)),
                     ],
@@ -387,12 +382,11 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Giá gốc (mua lẻ):',
-                          style: TextStyle(
-                              color: AppColors.textTertiary, fontSize: 11)),
+                      Text('Giá gốc (mua lẻ):',
+                          style: TextStyle(color: t.textTertiary, fontSize: 11)),
                       Text('$totalIfTopics 💎',
-                          style: const TextStyle(
-                              color: AppColors.textTertiary,
+                          style: TextStyle(
+                              color: t.textTertiary,
                               fontSize: 11,
                               decoration: TextDecoration.lineThrough)),
                     ],
@@ -401,12 +395,11 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Tiết kiệm:',
-                          style: TextStyle(
-                              color: AppColors.successNeon, fontSize: 12)),
+                      Text('Tiết kiệm:',
+                          style: TextStyle(color: t.success, fontSize: 12)),
                       Text('$savings 💎',
-                          style: const TextStyle(
-                              color: AppColors.successNeon,
+                          style: TextStyle(
+                              color: t.success,
                               fontWeight: FontWeight.bold,
                               fontSize: 13)),
                     ],
@@ -423,8 +416,8 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
                 label: Text('Mở khóa cả môn — $price 💎',
                     style: const TextStyle(fontWeight: FontWeight.bold)),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.purpleNeon,
-                  foregroundColor: Colors.white,
+                  backgroundColor: t.brand,
+                  foregroundColor: t.textOnBrand,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14)),
@@ -439,6 +432,7 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
 
   // ── Section 2: Unlock by domain ──
   Widget _buildDomainUnlocks() {
+    final t = context.colors;
     final domains = _pricing!['domains'] as List? ?? [];
     if (domains.isEmpty) return const SizedBox.shrink();
 
@@ -450,17 +444,17 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
         Row(
           children: [
             Text('Mua theo chương',
-                style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
+                style: AppTextStyles.h4.copyWith(color: t.textPrimary)),
             const SizedBox(width: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
-                color: AppColors.primaryLight.withValues(alpha: 0.15),
+                color: t.info.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(6),
               ),
-              child: const Text('-15%',
+              child: Text('-15%',
                   style: TextStyle(
-                      color: AppColors.primaryLight,
+                      color: t.info,
                       fontSize: 11,
                       fontWeight: FontWeight.bold)),
             ),
@@ -480,13 +474,13 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               color: isUnlocked
-                  ? AppColors.successNeon.withValues(alpha: 0.06)
-                  : AppColors.bgSecondary,
+                  ? t.success.withValues(alpha: 0.06)
+                  : t.card,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
                   color: isUnlocked
-                      ? AppColors.successNeon.withValues(alpha: 0.2)
-                      : const Color(0x332D363D)),
+                      ? t.success.withValues(alpha: 0.2)
+                      : t.border),
             ),
             child: Row(
               children: [
@@ -498,17 +492,16 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
                     children: [
                       Text(name,
                           style: AppTextStyles.labelLarge
-                              .copyWith(color: AppColors.textPrimary)),
+                              .copyWith(color: t.textPrimary)),
                       const SizedBox(height: 4),
                       Text('$lessonsCount bài học',
                           style: AppTextStyles.caption
-                              .copyWith(color: AppColors.textTertiary)),
+                              .copyWith(color: t.textTertiary)),
                       if (!isUnlocked) ...[
                         const SizedBox(height: 2),
                         Text('$lessonsCount x 50 x 0.85 = $price 💎',
                             style: TextStyle(
-                                color: AppColors.primaryLight
-                                    .withValues(alpha: 0.8),
+                                color: t.info.withValues(alpha: 0.8),
                                 fontSize: 11)),
                       ],
                     ],
@@ -519,12 +512,12 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
-                      color: AppColors.successNeon.withValues(alpha: 0.15),
+                      color: t.success.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Text('Đã mở',
+                    child: Text('Đã mở',
                         style: TextStyle(
-                            color: AppColors.successNeon,
+                            color: t.success,
                             fontSize: 12,
                             fontWeight: FontWeight.bold)),
                   )
@@ -532,8 +525,8 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
                   ElevatedButton(
                     onPressed: () => _unlockDomain(d),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryLight,
-                      foregroundColor: Colors.white,
+                      backgroundColor: t.info,
+                      foregroundColor: t.textOnBrand,
                       padding: const EdgeInsets.symmetric(
                           horizontal: 14, vertical: 8),
                       shape: RoundedRectangleBorder(
@@ -553,18 +546,17 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
           margin: const EdgeInsets.only(top: 4),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           decoration: BoxDecoration(
-            color: AppColors.bgTertiary,
+            color: t.cardMuted,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Tổng nếu mua tất cả chương:',
-                  style:
-                      TextStyle(color: AppColors.textTertiary, fontSize: 12)),
+              Text('Tổng nếu mua tất cả chương:',
+                  style: TextStyle(color: t.textTertiary, fontSize: 12)),
               Text('${_pricing!['totalIfBuyDomains']} 💎',
-                  style: const TextStyle(
-                      color: AppColors.textSecondary,
+                  style: TextStyle(
+                      color: t.textSecondary,
                       fontSize: 13,
                       fontWeight: FontWeight.bold)),
             ],
@@ -576,6 +568,7 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
 
   // ── Section 3: Unlock by topic ──
   Widget _buildTopicUnlocks() {
+    final t = context.colors;
     final domains = _pricing!['domains'] as List? ?? [];
     if (domains.isEmpty) return const SizedBox.shrink();
 
@@ -585,11 +578,10 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('Mua theo chủ đề',
-            style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
+            style: AppTextStyles.h4.copyWith(color: t.textPrimary)),
         const SizedBox(height: 4),
         Text('Giá gốc — không giảm giá',
-            style:
-                AppTextStyles.caption.copyWith(color: AppColors.textTertiary)),
+            style: AppTextStyles.caption.copyWith(color: t.textTertiary)),
         const SizedBox(height: 12),
         ...domains.map<Widget>((domain) {
           final d = domain as Map<String, dynamic>;
@@ -601,9 +593,9 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
           return Container(
             margin: const EdgeInsets.only(bottom: 12),
             decoration: BoxDecoration(
-              color: AppColors.bgSecondary,
+              color: t.card,
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: const Color(0x332D363D)),
+              border: Border.all(color: t.border),
             ),
             child: Theme(
               data:
@@ -614,18 +606,18 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
                 leading: Text(domainIcon, style: const TextStyle(fontSize: 24)),
                 title: Text(domainName,
                     style: AppTextStyles.labelLarge
-                        .copyWith(color: AppColors.textPrimary)),
+                        .copyWith(color: t.textPrimary)),
                 subtitle: Text('${topics.length} chủ đề',
                     style: AppTextStyles.caption
-                        .copyWith(color: AppColors.textTertiary)),
-                iconColor: AppColors.textSecondary,
-                collapsedIconColor: AppColors.textTertiary,
+                        .copyWith(color: t.textTertiary)),
+                iconColor: t.textSecondary,
+                collapsedIconColor: t.textTertiary,
                 children: topics.map<Widget>((topic) {
-                  final t = topic as Map<String, dynamic>;
-                  final topicName = t['name'] as String? ?? '';
-                  final lessonsCount = t['lessonsCount'] as int? ?? 0;
-                  final price = t['price'] as int? ?? 0;
-                  final isUnlocked = t['isUnlocked'] == true || domainUnlocked;
+                  final topicMap = topic as Map<String, dynamic>;
+                  final topicName = topicMap['name'] as String? ?? '';
+                  final lessonsCount = topicMap['lessonsCount'] as int? ?? 0;
+                  final price = topicMap['price'] as int? ?? 0;
+                  final isUnlocked = topicMap['isUnlocked'] == true || domainUnlocked;
 
                   return Container(
                     margin:
@@ -633,8 +625,8 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
                       color: isUnlocked
-                          ? AppColors.successNeon.withValues(alpha: 0.05)
-                          : AppColors.bgTertiary,
+                          ? t.success.withValues(alpha: 0.05)
+                          : t.cardMuted,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Row(
@@ -644,8 +636,8 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
                               ? Icons.check_circle_rounded
                               : Icons.lock_rounded,
                           color: isUnlocked
-                              ? AppColors.successNeon
-                              : AppColors.textTertiary,
+                              ? t.success
+                              : t.textTertiary,
                           size: 18,
                         ),
                         const SizedBox(width: 10),
@@ -656,42 +648,38 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
                               Text(topicName,
                                   style: TextStyle(
                                     color: isUnlocked
-                                        ? AppColors.textSecondary
-                                        : AppColors.textPrimary,
+                                        ? t.textSecondary
+                                        : t.textPrimary,
                                     fontSize: 13,
                                     fontWeight: FontWeight.w500,
                                   )),
                               Text('$lessonsCount bài',
-                                  style: const TextStyle(
-                                      color: AppColors.textTertiary,
-                                      fontSize: 11)),
+                                  style: TextStyle(color: t.textTertiary, fontSize: 11)),
                             ],
                           ),
                         ),
                         if (isUnlocked)
-                          const Text('Đã mở',
+                          Text('Đã mở',
                               style: TextStyle(
-                                  color: AppColors.successNeon,
+                                  color: t.success,
                                   fontSize: 11,
                                   fontWeight: FontWeight.bold))
                         else
                           InkWell(
-                            onTap: () => _unlockTopic(t),
+                            onTap: () => _unlockTopic(topicMap),
                             borderRadius: BorderRadius.circular(8),
                             child: Container(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 10, vertical: 5),
                               decoration: BoxDecoration(
-                                color: AppColors.orangeNeon
-                                    .withValues(alpha: 0.15),
+                                color: t.warning.withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                    color: AppColors.orangeNeon
-                                        .withValues(alpha: 0.3)),
+                                border:
+                                    Border.all(color: t.warning.withValues(alpha: 0.3)),
                               ),
                               child: Text('$price 💎',
-                                  style: const TextStyle(
-                                      color: AppColors.orangeNeon,
+                                  style: TextStyle(
+                                      color: t.warning,
                                       fontSize: 12,
                                       fontWeight: FontWeight.bold)),
                             ),
@@ -709,18 +697,17 @@ class _UnlockSubjectScreenState extends State<UnlockSubjectScreen> {
           margin: const EdgeInsets.only(top: 4),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           decoration: BoxDecoration(
-            color: AppColors.bgTertiary,
+            color: t.cardMuted,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Tổng nếu mua lẻ từng chủ đề:',
-                  style:
-                      TextStyle(color: AppColors.textTertiary, fontSize: 12)),
+              Text('Tổng nếu mua lẻ từng chủ đề:',
+                  style: TextStyle(color: t.textTertiary, fontSize: 12)),
               Text('${_pricing!['totalIfBuyTopics']} 💎',
-                  style: const TextStyle(
-                      color: AppColors.textSecondary,
+                  style: TextStyle(
+                      color: t.textSecondary,
                       fontSize: 13,
                       fontWeight: FontWeight.bold)),
             ],

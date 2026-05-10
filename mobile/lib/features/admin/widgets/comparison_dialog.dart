@@ -66,12 +66,15 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
     }
   }
 
-  Widget _buildQuizPreview(Map<String, dynamic>? quizData) {
+  Widget _buildQuizPreview(
+      BuildContext context, Map<String, dynamic>? quizData) {
+    final sem = context.colors;
+    final brandHi = Color.lerp(sem.brand, Colors.white, 0.55)!;
     if (quizData == null) {
-      return const Text(
+      return Text(
         '(Không có quiz)',
         style: TextStyle(
-            color: AppColors.textTertiary, fontStyle: FontStyle.italic),
+            color: sem.textTertiary, fontStyle: FontStyle.italic),
       );
     }
 
@@ -83,9 +86,9 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        border: Border.all(color: const Color(0x332D363D)),
+        border: Border.all(color: sem.border.withValues(alpha: 0.65)),
         borderRadius: BorderRadius.circular(8),
-        color: AppColors.bgTertiary,
+        color: sem.cardMuted,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -93,7 +96,7 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
           Text(
             question.isEmpty ? '(Không có câu hỏi)' : question,
             style: AppTextStyles.labelLarge.copyWith(
-              color: AppColors.textPrimary,
+              color: sem.textPrimary,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -106,12 +109,12 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: isCorrect
-                      ? AppColors.successNeon.withValues(alpha: 0.12)
-                      : AppColors.bgSecondary,
+                      ? sem.success.withValues(alpha: 0.12)
+                      : sem.card,
                   border: Border.all(
                     color: isCorrect
-                        ? AppColors.successNeon
-                        : const Color(0x332D363D),
+                        ? sem.success
+                        : sem.border.withValues(alpha: 0.65),
                     width: isCorrect ? 2 : 1,
                   ),
                   borderRadius: BorderRadius.circular(8),
@@ -123,8 +126,8 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
                           ? Icons.check_circle
                           : Icons.radio_button_unchecked,
                       color: isCorrect
-                          ? AppColors.successNeon
-                          : AppColors.textTertiary,
+                          ? sem.success
+                          : sem.textTertiary,
                       size: 20,
                     ),
                     const SizedBox(width: 8),
@@ -142,12 +145,13 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: AppColors.successNeon,
+                          color: sem.success,
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        child: const Text(
+                        child: Text(
                           'Đúng',
-                          style: TextStyle(color: Colors.white, fontSize: 12),
+                          style: TextStyle(
+                              color: sem.textOnBrand, fontSize: 12),
                         ),
                       ),
                   ],
@@ -160,10 +164,10 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.primaryLight.withValues(alpha: 0.08),
+                color: brandHi.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
-                    color: AppColors.primaryLight.withValues(alpha: 0.35)),
+                    color: brandHi.withValues(alpha: 0.35)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -171,13 +175,13 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
                   Text(
                     'Giải thích:',
                     style: AppTextStyles.labelMedium.copyWith(
-                      color: AppColors.textPrimary,
+                      color: sem.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(explanation,
                       style: AppTextStyles.bodySmall
-                          .copyWith(color: AppColors.textSecondary)),
+                          .copyWith(color: sem.textSecondary)),
                 ],
               ),
             ),
@@ -187,12 +191,14 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
     );
   }
 
-  Widget _buildRichContentPreview(dynamic richContent) {
+  Widget _buildRichContentPreview(
+      BuildContext context, dynamic richContent) {
+    final sem = context.colors;
     if (richContent == null) {
-      return const Text(
+      return Text(
         '(Không có nội dung)',
         style: TextStyle(
-            color: AppColors.textTertiary, fontStyle: FontStyle.italic),
+            color: sem.textTertiary, fontStyle: FontStyle.italic),
       );
     }
 
@@ -214,8 +220,9 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
         constraints: const BoxConstraints(maxHeight: 300),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          border: Border.all(color: const Color(0x332D363D)),
+          border: Border.all(color: sem.border.withValues(alpha: 0.65)),
           borderRadius: BorderRadius.circular(8),
+          color: sem.cardMuted,
         ),
         child: SingleChildScrollView(
           child: IgnorePointer(
@@ -231,12 +238,14 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
     } catch (e) {
       return Text(
         richContent.toString(),
-        style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary),
+        style: AppTextStyles.bodyMedium.copyWith(color: sem.textPrimary),
       );
     }
   }
 
-  Widget _buildMediaPreview(Map<String, dynamic>? media) {
+  Widget _buildMediaPreview(BuildContext context, Map<String, dynamic>? media) {
+    final sem = context.colors;
+    final brandHi = Color.lerp(sem.brand, Colors.white, 0.55)!;
     // Check if media has actual content (not just empty arrays)
     final hasImageUrls = media != null &&
         media['imageUrls'] != null &&
@@ -257,11 +266,13 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildNoMediaPlaceholder(
+            context,
             icon: Icons.image_not_supported_outlined,
             text: 'Chưa có hình ảnh',
           ),
           const SizedBox(height: 12),
           _buildNoMediaPlaceholder(
+            context,
             icon: Icons.videocam_off_outlined,
             text: 'Chưa có video',
           ),
@@ -295,20 +306,20 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
                       width: 100,
                       height: 100,
                       fit: BoxFit.cover,
-                      placeholder: (context, url) => Container(
+                      placeholder: (_, __) => Container(
                         width: 100,
                         height: 100,
-                        color: AppColors.bgTertiary,
-                        child: const Center(
+                        color: sem.cardMuted,
+                        child: Center(
                             child: CircularProgressIndicator(
-                                color: AppColors.primaryLight)),
+                                color: brandHi)),
                       ),
-                      errorWidget: (context, url, error) => Container(
+                      errorWidget: (_, __, ___) => Container(
                         width: 100,
                         height: 100,
-                        color: AppColors.bgTertiary,
-                        child: const Icon(Icons.error_outline_rounded,
-                            color: AppColors.errorNeon),
+                        color: sem.cardMuted,
+                        child: Icon(Icons.error_outline_rounded,
+                            color: sem.error),
                       ),
                     ),
                   ),
@@ -330,18 +341,18 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
               width: double.infinity,
               height: 200,
               fit: BoxFit.cover,
-              placeholder: (context, url) => Container(
+              placeholder: (_, __) => Container(
                 height: 200,
-                color: AppColors.bgTertiary,
-                child: const Center(
+                color: sem.cardMuted,
+                child: Center(
                     child: CircularProgressIndicator(
-                        color: AppColors.primaryLight)),
+                        color: brandHi)),
               ),
-              errorWidget: (context, url, error) => Container(
+              errorWidget: (_, __, ___) => Container(
                 height: 200,
-                color: AppColors.bgTertiary,
-                child: const Icon(Icons.error_outline_rounded,
-                    color: AppColors.errorNeon),
+                color: sem.cardMuted,
+                child: Icon(Icons.error_outline_rounded,
+                    color: sem.error),
               ),
             ),
           ),
@@ -349,6 +360,7 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
         ] else ...[
           // No image placeholder
           _buildNoMediaPlaceholder(
+            context,
             icon: Icons.image_not_supported_outlined,
             text: 'Chưa có hình ảnh',
           ),
@@ -375,6 +387,7 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
         ] else ...[
           // No video placeholder
           _buildNoMediaPlaceholder(
+            context,
             icon: Icons.videocam_off_outlined,
             text: 'Chưa có video',
           ),
@@ -384,22 +397,26 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
   }
 
   Widget _buildNoMediaPlaceholder(
-      {required IconData icon, required String text}) {
+    BuildContext context, {
+    required IconData icon,
+    required String text,
+  }) {
+    final sem = context.colors;
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
       decoration: BoxDecoration(
-        color: AppColors.bgTertiary,
+        color: sem.cardMuted,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0x332D363D)),
+        border: Border.all(color: sem.border.withValues(alpha: 0.65)),
       ),
       child: Row(
         children: [
-          Icon(icon, color: AppColors.textTertiary, size: 20),
+          Icon(icon, color: sem.textTertiary, size: 20),
           const SizedBox(width: 12),
           Text(
             text,
             style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.textSecondary,
+              color: sem.textSecondary,
               fontStyle: FontStyle.italic,
             ),
           ),
@@ -410,13 +427,15 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final sem = context.colors;
+    final brandHi = Color.lerp(sem.brand, Colors.white, 0.55)!;
     final original =
         widget.comparison['original'] as Map<String, dynamic>? ?? {};
     final proposed =
         widget.comparison['proposed'] as Map<String, dynamic>? ?? {};
 
     return Dialog(
-      backgroundColor: AppColors.bgSecondary,
+      backgroundColor: sem.card,
       insetPadding: const EdgeInsets.all(16),
       child: Container(
         constraints: const BoxConstraints(maxHeight: 800),
@@ -435,21 +454,21 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.compare_arrows, color: Colors.white),
+                  Icon(Icons.compare_arrows, color: sem.textOnBrand),
                   const SizedBox(width: 8),
-                  const Expanded(
+                  Expanded(
                     child: Text(
                       'So sánh: Bản gốc vs Bản đề xuất',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: sem.textOnBrand,
                       ),
                     ),
                   ),
                   IconButton(
-                    icon:
-                        const Icon(Icons.close_rounded, color: Colors.white70),
+                    icon: Icon(Icons.close_rounded,
+                        color: sem.textOnBrand.withValues(alpha: 0.7)),
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                 ],
@@ -465,11 +484,11 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
                       onPressed: () => setState(() => _showOriginal = true),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: _showOriginal
-                            ? AppColors.purpleNeon
-                            : AppColors.bgTertiary,
+                            ? sem.brand
+                            : sem.cardMuted,
                         foregroundColor: _showOriginal
-                            ? Colors.white
-                            : AppColors.textSecondary,
+                            ? sem.textOnBrand
+                            : sem.textSecondary,
                       ),
                       child: const Text('Bản gốc'),
                     ),
@@ -480,11 +499,11 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
                       onPressed: () => setState(() => _showOriginal = false),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: !_showOriginal
-                            ? AppColors.successNeon
-                            : AppColors.bgTertiary,
+                            ? sem.success
+                            : sem.cardMuted,
                         foregroundColor: !_showOriginal
-                            ? Colors.white
-                            : AppColors.textSecondary,
+                            ? sem.textOnBrand
+                            : sem.textSecondary,
                       ),
                       child: const Text('Bản đề xuất'),
                     ),
@@ -505,8 +524,8 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         color: _showOriginal
-                            ? AppColors.primaryLight
-                            : AppColors.successNeon,
+                            ? brandHi
+                            : sem.success,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -517,7 +536,7 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
                           : (proposed['title'] as String? ??
                               '(Không có tiêu đề)'),
                       style: AppTextStyles.labelLarge.copyWith(
-                          color: AppColors.textPrimary,
+                          color: sem.textPrimary,
                           fontWeight: FontWeight.w600),
                     ),
                     const SizedBox(height: 16),
@@ -532,12 +551,13 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: _showOriginal
-                              ? AppColors.primaryLight
-                              : AppColors.successNeon,
+                              ? brandHi
+                              : sem.success,
                         ),
                       ),
                       const SizedBox(height: 8),
                       _buildQuizPreview(
+                        context,
                         _showOriginal
                             ? original['quizData']
                             : proposed['quizData'],
@@ -549,15 +569,15 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: _showOriginal
-                              ? AppColors.primaryLight
-                              : AppColors.successNeon,
+                              ? brandHi
+                              : sem.success,
                         ),
                       ),
                       const SizedBox(height: 8),
                       // Complexity selector
                       Container(
                         decoration: BoxDecoration(
-                          color: AppColors.bgTertiary,
+                          color: sem.cardMuted,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         padding: const EdgeInsets.all(4),
@@ -565,9 +585,9 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
                           children: List.generate(3, (index) {
                             final isSelected = _complexityIndex == index;
                             final colors = [
-                              AppColors.successNeon,
-                              AppColors.purpleNeon,
-                              AppColors.orangeNeon
+                              sem.success,
+                              sem.brand,
+                              sem.warning
                             ];
                             return Expanded(
                               child: GestureDetector(
@@ -587,8 +607,8 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
                                       color: isSelected
-                                          ? Colors.white
-                                          : AppColors.textSecondary,
+                                          ? sem.textOnBrand
+                                          : sem.textSecondary,
                                       fontWeight: isSelected
                                           ? FontWeight.bold
                                           : FontWeight.normal,
@@ -604,6 +624,7 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
                       const SizedBox(height: 8),
                       // Rich Content based on selected complexity
                       _buildRichContentPreview(
+                        context,
                         _getContentForComplexity(
                             _showOriginal ? original : proposed),
                       ),
@@ -611,6 +632,7 @@ class _ComparisonDialogState extends State<_ComparisonDialog> {
                     const SizedBox(height: 16),
                     // Media
                     _buildMediaPreview(
+                      context,
                       _showOriginal ? original['media'] : proposed['media'],
                     ),
                   ],

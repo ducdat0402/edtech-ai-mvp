@@ -1,7 +1,6 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:edtech_mobile/theme/colors.dart';
 import 'package:edtech_mobile/theme/text_styles.dart';
 
 /// GTU coin — mặc định vẽ vector (vàng + tím + chữ G) để đồng bộ với icon Material
@@ -72,9 +71,9 @@ class _GtuCoinVectorPainter extends CustomPainter {
     final goldOuter = r * 0.92;
     const sweepColors = [
       Color(0xFFFFE08A),
-      AppColors.coinGold,
+      Color(0xFFF4B73B),
       Color(0xFFE8A020),
-      AppColors.coinShadow,
+      Color(0xFFB45309),
       Color(0xFFFFE08A),
     ];
     final goldShader = SweepGradient(

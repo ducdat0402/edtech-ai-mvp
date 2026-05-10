@@ -43,15 +43,26 @@ class _JourneyLogScreenState extends State<JourneyLogScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final tokens = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: tokens.bg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: AppColors.textPrimary),
+        flexibleSpace: isDark
+            ? null
+            : const BrandHeader(
+                padding: EdgeInsets.zero,
+                child: SizedBox.shrink(),
+              ),
+        iconTheme: IconThemeData(
+            color: isDark ? tokens.textPrimary : tokens.textOnBrand),
         title: Text(
           'Nhật ký hành trình',
-          style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+          style: AppTextStyles.h4.copyWith(
+            color: isDark ? tokens.textPrimary : tokens.textOnBrand,
+          ),
         ),
       ),
       body: _isLoading
@@ -66,18 +77,18 @@ class _JourneyLogScreenState extends State<JourneyLogScreen> {
                       child: Text(
                         'Chưa có hoạt động nào được ghi lại',
                         style: AppTextStyles.bodyMedium
-                            .copyWith(color: AppColors.textSecondary),
+                            .copyWith(color: tokens.textSecondary),
                       ),
                     )
                   : RefreshIndicator(
                       onRefresh: _loadHistory,
-                      color: AppColors.primaryLight,
+                      color: tokens.brand,
                       child: ListView.builder(
                         padding: const EdgeInsets.all(16),
                         itemCount: _history.length,
-                        itemBuilder: (context, index) {
+                        itemBuilder: (ctx, index) {
                           final item = _history[index] as Map<String, dynamic>;
-                          return _buildHistoryItem(item);
+                          return _buildHistoryItem(ctx, item);
                         },
                       ),
                     ),
@@ -97,7 +108,8 @@ class _JourneyLogScreenState extends State<JourneyLogScreen> {
     );
   }
 
-  Widget _buildHistoryItem(Map<String, dynamic> item) {
+  Widget _buildHistoryItem(BuildContext context, Map<String, dynamic> item) {
+    final tokens = context.colors;
     final action = item['action'] as String? ?? 'unknown';
     final createdAt = item['createdAt'] as String?;
     final details = item['description'] as String? ?? '';
@@ -123,37 +135,37 @@ class _JourneyLogScreenState extends State<JourneyLogScreen> {
 
     switch (action) {
       case 'approve':
-        statusColor = AppColors.successNeon;
+        statusColor = tokens.success;
         statusText = 'Đã duyệt';
         statusIcon = Icons.check_circle_rounded;
         break;
       case 'reject':
-        statusColor = AppColors.errorNeon;
+        statusColor = tokens.error;
         statusText = 'Từ chối';
         statusIcon = Icons.cancel_rounded;
         break;
       case 'submit':
-        statusColor = AppColors.primaryLight;
+        statusColor = tokens.info;
         statusText = 'Đã gửi';
         statusIcon = Icons.send_rounded;
         break;
       case 'create':
-        statusColor = AppColors.purpleNeon;
+        statusColor = tokens.brand;
         statusText = 'Tạo mới';
         statusIcon = Icons.add_circle_rounded;
         break;
       case 'update':
-        statusColor = AppColors.orangeNeon;
+        statusColor = tokens.warning;
         statusText = 'Cập nhật';
         statusIcon = Icons.edit_rounded;
         break;
       case 'remove':
-        statusColor = AppColors.errorNeon;
+        statusColor = tokens.error;
         statusText = 'Đã gỡ';
         statusIcon = Icons.delete_rounded;
         break;
       default:
-        statusColor = AppColors.textSecondary;
+        statusColor = tokens.textSecondary;
         statusText = 'Hoạt động';
         statusIcon = Icons.info_rounded;
         break;
@@ -163,9 +175,9 @@ class _JourneyLogScreenState extends State<JourneyLogScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
+        color: tokens.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0x332D363D)),
+        border: Border.all(color: tokens.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -199,7 +211,7 @@ class _JourneyLogScreenState extends State<JourneyLogScreen> {
               Text(
                 dateStr,
                 style: AppTextStyles.caption
-                    .copyWith(color: AppColors.textTertiary),
+                    .copyWith(color: tokens.textTertiary),
               ),
             ],
           ),
@@ -207,26 +219,26 @@ class _JourneyLogScreenState extends State<JourneyLogScreen> {
           Text(
             details,
             style:
-                AppTextStyles.labelLarge.copyWith(color: AppColors.textPrimary),
+                AppTextStyles.labelLarge.copyWith(color: tokens.textPrimary),
           ),
           const SizedBox(height: 4),
           Text(
             'Bài học: $contentTitle',
             style: AppTextStyles.bodySmall
-                .copyWith(color: AppColors.textSecondary),
+                .copyWith(color: tokens.textSecondary),
           ),
           if (performerName != null &&
               (action == 'approve' || action == 'reject')) ...[
             const SizedBox(height: 8),
             Row(
               children: [
-                const Icon(Icons.admin_panel_settings_rounded,
-                    size: 14, color: AppColors.primaryLight),
+                Icon(Icons.admin_panel_settings_rounded,
+                    size: 14, color: tokens.brand),
                 const SizedBox(width: 4),
                 Text(
                   'Xử lý bởi: Admin',
                   style: AppTextStyles.caption.copyWith(
-                    color: AppColors.primaryLight,
+                    color: tokens.brand,
                     fontStyle: FontStyle.italic,
                   ),
                 ),

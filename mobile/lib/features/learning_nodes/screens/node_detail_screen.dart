@@ -110,16 +110,17 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
   }
 
   /// Lấy màu cho độ khó
-  Color _getDifficultyColor(String difficulty) {
+  Color _getDifficultyColor(BuildContext context, String difficulty) {
+    final t = context.colors;
     switch (difficulty) {
       case 'easy':
-        return AppColors.successNeon;
+        return t.success;
       case 'medium':
-        return AppColors.cyanNeon;
+        return t.info;
       case 'hard':
-        return AppColors.xpOrange;
+        return t.warning;
       default:
-        return AppColors.cyanNeon;
+        return t.info;
     }
   }
 
@@ -369,7 +370,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
         builder: (context) => AlertDialog(
           title: Row(
             children: [
-              const Icon(Icons.check_circle, color: AppColors.successNeon),
+              Icon(Icons.check_circle, color: context.colors.success),
               const SizedBox(width: 8),
               Text(item['title'] ?? 'Phần thưởng ẩn'),
             ],
@@ -389,8 +390,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                     padding: const EdgeInsets.only(bottom: 4),
                     child: Row(
                       children: [
-                        const Icon(Icons.star,
-                            color: AppColors.xpOrange, size: 20),
+                        Icon(Icons.star,
+                            color: context.colors.warning, size: 20),
                         const SizedBox(width: 8),
                         Text('XP: +${rewards['xp']}'),
                       ],
@@ -413,8 +414,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                     padding: const EdgeInsets.only(bottom: 4),
                     child: Row(
                       children: [
-                        const Icon(Icons.diamond,
-                            color: AppColors.cyanNeon, size: 20),
+                        Icon(Icons.diamond,
+                            color: context.colors.info, size: 20),
                         const SizedBox(width: 8),
                         Text(
                             'Shard: ${rewards['shard']} x${rewards['shardAmount'] ?? 1}'),
@@ -448,7 +449,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
       builder: (context) => AlertDialog(
         title: Row(
           children: [
-            const Icon(Icons.star, color: AppColors.xpGold, size: 32),
+            Icon(Icons.star, color: context.colors.gold, size: 32),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
@@ -487,30 +488,30 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: AppColors.xpOrange.withValues(alpha: 0.2),
+                          color: context.colors.warning.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Icon(Icons.star,
-                            color: AppColors.xpOrange, size: 24),
+                        child: Icon(Icons.star,
+                            color: context.colors.warning, size: 24),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               'XP',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: AppColors.textTertiary,
+                                color: context.colors.textTertiary,
                               ),
                             ),
                             Text(
                               '+${rewards['xp']}',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
-                                color: AppColors.xpOrange,
+                                color: context.colors.warning,
                               ),
                             ),
                           ],
@@ -527,7 +528,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: AppColors.xpGold.withValues(alpha: 0.2),
+                          color: context.colors.gold.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: const GtuCoinIcon(size: 24),
@@ -539,17 +540,17 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                           children: [
                             Text(
                               CurrencyLabels.gtuCoin,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 12,
-                                color: AppColors.textTertiary,
+                                color: context.colors.textTertiary,
                               ),
                             ),
                             Text(
                               '+${rewards['coin']}',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
-                                color: AppColors.xpGold,
+                                color: context.colors.gold,
                               ),
                             ),
                           ],
@@ -566,31 +567,30 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color:
-                              AppColors.contributorBlue.withValues(alpha: 0.22),
+                          color: context.colors.info.withValues(alpha: 0.22),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Icon(Icons.diamond,
-                            color: AppColors.cyanNeon, size: 24),
+                        child: Icon(Icons.diamond,
+                            color: context.colors.info, size: 24),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               'Shard',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: AppColors.textTertiary,
+                                color: context.colors.textTertiary,
                               ),
                             ),
                             Text(
                               '${rewards['shard']} x${rewards['shardAmount'] ?? 1}',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
-                                color: AppColors.cyanNeon,
+                                color: context.colors.info,
                               ),
                             ),
                           ],
@@ -637,9 +637,9 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
 
                         // Show success message
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Đã nhận thưởng thành công! 🎉'),
-                            backgroundColor: AppColors.successNeon,
+                          SnackBar(
+                            content: const Text('Đã nhận thưởng thành công! 🎉'),
+                            backgroundColor: context.colors.success,
                             duration: Duration(seconds: 2),
                           ),
                         );
@@ -654,7 +654,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text('Lỗi: ${e.toString()}'),
-                            backgroundColor: AppColors.errorNeon,
+                            backgroundColor: context.colors.error,
                           ),
                         );
                       }
@@ -664,8 +664,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
             icon: const Icon(Icons.check),
             label: const Text('Nhận thưởng'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.successNeon,
-              foregroundColor: Colors.white,
+              backgroundColor: context.colors.success,
+              foregroundColor: context.colors.textOnBrand,
             ),
           ),
         ],
@@ -693,6 +693,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
 
   /// Build Diamond Locked UI - replaces old Premium lock
   Widget _buildDiamondLockedUI() {
+    final t = context.colors;
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(32),
@@ -708,13 +709,13 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    AppColors.purpleNeon.withValues(alpha: 0.2),
-                    AppColors.primaryLight.withValues(alpha: 0.1),
+                    t.brand.withValues(alpha: 0.2),
+                    t.gold.withValues(alpha: 0.1),
                   ],
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.purpleNeon.withValues(alpha: 0.3),
+                    color: t.brand.withValues(alpha: 0.3),
                     blurRadius: 30,
                     spreadRadius: 5,
                   ),
@@ -726,12 +727,11 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
 
             // Title
             ShaderMask(
-              shaderCallback: (bounds) => const LinearGradient(
-                colors: [AppColors.purpleNeon, AppColors.primaryLight],
-              ).createShader(bounds),
+              shaderCallback: (bounds) =>
+                  LinearGradient(colors: [t.brand, t.gold]).createShader(bounds),
               child: Text(
                 'Bài học chưa mở khóa',
-                style: AppTextStyles.h2.copyWith(color: Colors.white),
+                style: AppTextStyles.h2.copyWith(color: t.textOnBrand),
                 textAlign: TextAlign.center,
               ),
             ),
@@ -741,7 +741,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
             Text(
               'Bài học này cần được mở khóa bằng kim cương.\nBạn có thể mở khóa từng bài, theo chủ đề, chương hoặc cả môn để tiết kiệm hơn!',
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+                color: t.textSecondary,
                 height: 1.5,
               ),
               textAlign: TextAlign.center,
@@ -752,9 +752,9 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: AppColors.bgSecondary,
+                color: t.card,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0x332D363D)),
+                border: Border.all(color: t.border),
               ),
               child: Column(
                 children: [
@@ -762,21 +762,21 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                     icon: Icons.topic_rounded,
                     label: 'Mở khóa theo chủ đề',
                     description: 'Giá gốc - không giảm',
-                    color: AppColors.orangeNeon,
+                    color: t.warning,
                   ),
                   const SizedBox(height: 12),
                   _buildUnlockOption(
                     icon: Icons.category_rounded,
                     label: 'Mở khóa theo chương',
                     description: 'Giảm 15%',
-                    color: AppColors.primaryLight,
+                    color: t.gold,
                   ),
                   const SizedBox(height: 12),
                   _buildUnlockOption(
                     icon: Icons.star_rounded,
                     label: 'Mở khóa cả môn',
                     description: 'Giảm 30% - tiết kiệm nhất!',
-                    color: AppColors.purpleNeon,
+                    color: t.brand,
                   ),
                 ],
               ),
@@ -799,8 +799,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                       style:
                           TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.purpleNeon,
-                    foregroundColor: Colors.white,
+                    backgroundColor: t.brand,
+                    foregroundColor: t.textOnBrand,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14)),
@@ -820,9 +820,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                 icon: const Icon(Icons.shopping_cart_rounded, size: 18),
                 label: const Text('Mua kim cương'),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.primaryLight,
-                  side: BorderSide(
-                      color: AppColors.primaryLight.withValues(alpha: 0.5)),
+                  foregroundColor: t.gold,
+                  side: BorderSide(color: t.gold.withValues(alpha: 0.5)),
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14)),
@@ -837,7 +836,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
               icon: const Icon(Icons.arrow_back, size: 18),
               label: const Text('Quay lại'),
               style: TextButton.styleFrom(
-                foregroundColor: AppColors.textSecondary,
+                foregroundColor: t.textSecondary,
               ),
             ),
           ],
@@ -852,6 +851,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
     required String description,
     required Color color,
   }) {
+    final t = context.colors;
     return Row(
       children: [
         Container(
@@ -872,7 +872,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                       .copyWith(fontWeight: FontWeight.w600)),
               Text(description,
                   style: AppTextStyles.caption
-                      .copyWith(color: AppColors.textTertiary)),
+                      .copyWith(color: t.textTertiary)),
             ],
           ),
         ),
@@ -882,8 +882,9 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: t.bg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -895,12 +896,11 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
               icon: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppColors.bgSecondary,
+                  color: t.card,
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: const Color(0x332D363D)),
+                  border: Border.all(color: t.border),
                 ),
-                child: const Icon(Icons.arrow_back,
-                    color: AppColors.textPrimary, size: 20),
+                child: Icon(Icons.arrow_back, color: t.textPrimary, size: 20),
               ),
               onPressed: _handleBack,
               tooltip: 'Quay lại',
@@ -909,12 +909,11 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
               icon: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppColors.bgSecondary,
+                  color: t.card,
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: const Color(0x332D363D)),
+                  border: Border.all(color: t.border),
                 ),
-                child: const Icon(Icons.home_rounded,
-                    color: AppColors.textPrimary, size: 20),
+                child: Icon(Icons.home_rounded, color: t.textPrimary, size: 20),
               ),
               onPressed: () => context.go('/dashboard'),
               tooltip: 'Trang chủ',
@@ -923,15 +922,14 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
         ),
         title: Text(
           _nodeData?['title'] ?? 'Node Detail',
-          style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+          style: AppTextStyles.h4.copyWith(color: t.textPrimary),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
         automaticallyImplyLeading: false,
       ),
       body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: AppColors.primaryLight))
+          ? Center(child: CircularProgressIndicator(color: t.brand))
           : _isDiamondLocked
               ? _buildDiamondLockedUI()
               : _error != null
@@ -945,16 +943,16 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                               padding: const EdgeInsets.all(20),
                               decoration: BoxDecoration(
                                 color:
-                                    AppColors.errorNeon.withValues(alpha: 0.15),
+                                    t.error.withValues(alpha: 0.15),
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(Icons.error_outline_rounded,
-                                  size: 48, color: AppColors.errorNeon),
+                              child: Icon(Icons.error_outline_rounded,
+                                  size: 48, color: t.error),
                             ),
                             const SizedBox(height: 16),
                             Text('Lỗi: $_error',
                                 style: AppTextStyles.bodyMedium
-                                    .copyWith(color: AppColors.textSecondary),
+                                    .copyWith(color: t.textSecondary),
                                 textAlign: TextAlign.center),
                             const SizedBox(height: 16),
                             GamingButton(
@@ -969,10 +967,10 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                       ? Center(
                           child: Text('Chưa có dữ liệu',
                               style: AppTextStyles.bodyMedium
-                                  .copyWith(color: AppColors.textSecondary)))
+                                  .copyWith(color: t.textSecondary)))
                       : RefreshIndicator(
                           onRefresh: _refreshData,
-                          color: AppColors.purpleNeon,
+                          color: t.brand,
                           child: SingleChildScrollView(
                             physics: const AlwaysScrollableScrollPhysics(),
                             padding: const EdgeInsets.all(16),
@@ -991,16 +989,17 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
     );
   }
 
-  Color _getFormatColor(String format) {
+  Color _getFormatColor(BuildContext context, String format) {
+    final t = context.colors;
     switch (format) {
       case 'text':
-        return AppColors.cyanNeon;
+        return t.info;
       case 'video':
-        return AppColors.purpleNeon;
+        return t.brand;
       case 'image':
-        return AppColors.levelStudent;
+        return t.gold;
       default:
-        return AppColors.textSecondary;
+        return t.textSecondary;
     }
   }
 
@@ -1068,13 +1067,14 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
   }
 
   Widget _buildProgressHUD() {
+    final t = context.colors;
     final progressByDiff = _calculateProgressByDifficulty();
 
     final selectedProgress = progressByDiff[_selectedDifficulty]!;
     final completed = selectedProgress['completed']!;
     final total = selectedProgress['total']!;
     final percentage = total > 0 ? (completed / total * 100).round() : 0;
-    final diffColor = _getDifficultyColor(_selectedDifficulty);
+    final diffColor = _getDifficultyColor(context, _selectedDifficulty);
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -1093,7 +1093,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                 children: [
                   Text('Tiến độ',
                       style: AppTextStyles.labelLarge
-                          .copyWith(color: AppColors.textPrimary)),
+                          .copyWith(color: t.textPrimary)),
                   const SizedBox(width: 8),
                   Container(
                     padding:
@@ -1105,7 +1105,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                     child: Text(
                       _getDifficultyLabel(_selectedDifficulty),
                       style: AppTextStyles.caption.copyWith(
-                          color: Colors.white, fontWeight: FontWeight.bold),
+                          color: t.textOnBrand,
+                          fontWeight: FontWeight.bold),
                     ),
                   ),
                 ],
@@ -1122,7 +1123,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
               Container(
                 height: 10,
                 decoration: BoxDecoration(
-                  color: AppColors.bgTertiary,
+                  color: t.cardMuted,
                   borderRadius: BorderRadius.circular(5),
                 ),
               ),
@@ -1188,28 +1189,29 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
   }
 
   Widget _buildNodeInfo() {
+    final t = context.colors;
     final contentByDifficulty = _getContentCountByDifficulty();
 
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
+        color: t.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0x332D363D)),
+        border: Border.all(color: t.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             _nodeData!['title'] ?? 'Node',
-            style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary),
+            style: AppTextStyles.h3.copyWith(color: t.textPrimary),
           ),
           if (_nodeData!['description'] != null) ...[
             const SizedBox(height: 12),
             Text(
               _nodeData!['description'] ?? '',
               style: AppTextStyles.bodyMedium
-                  .copyWith(color: AppColors.textSecondary),
+                  .copyWith(color: t.textSecondary),
             ),
           ],
           const SizedBox(height: 16),
@@ -1222,19 +1224,19 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                 icon: Icons.menu_book_rounded,
                 label: 'Bài học',
                 value: '${contentByDifficulty['concepts'] ?? 0}',
-                color: _getDifficultyColor(_selectedDifficulty),
+                color: _getDifficultyColor(context, _selectedDifficulty),
               ),
               _InfoChip(
                 icon: Icons.star_rounded,
                 label: 'Rewards',
                 value: '${contentByDifficulty['hiddenRewards']}',
-                color: AppColors.xpGold,
+                color: t.gold,
               ),
               _InfoChip(
                 icon: Icons.quiz_rounded,
                 label: 'Boss Quiz',
                 value: '${contentByDifficulty['bossQuiz']}',
-                color: AppColors.pinkNeon,
+                color: t.warning,
               ),
             ],
           ),
@@ -1244,6 +1246,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
   }
 
   Widget _buildContentPath() {
+    final t = context.colors;
     // Sử dụng filtered content nếu có, không thì dùng tất cả
     final contentToShow = _filteredContentItems ?? _contentItems;
 
@@ -1298,11 +1301,11 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
           ),
         ),
         const SizedBox(height: 8),
-        const Text(
+        Text(
           'Hoàn thành các bài theo thứ tự để mở khóa bài tiếp theo',
           style: TextStyle(
             fontSize: 14,
-            color: AppColors.textTertiary,
+            color: t.textTertiary,
             fontStyle: FontStyle.italic,
           ),
         ),
@@ -1315,14 +1318,14 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                AppColors.cyanNeon.withValues(alpha: 0.12),
-                AppColors.successNeon.withValues(alpha: 0.12),
-                AppColors.successNeon.withValues(alpha: 0.18),
+                t.info.withValues(alpha: 0.12),
+                t.success.withValues(alpha: 0.12),
+                t.success.withValues(alpha: 0.18),
               ],
             ),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-                color: AppColors.successNeon.withValues(alpha: 0.35), width: 1),
+                color: t.success.withValues(alpha: 0.35), width: 1),
           ),
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
@@ -1428,7 +1431,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
 
   /// Hiển thị trạng thái trống khi không có content theo format đã chọn
   Widget _buildEmptyFormatState() {
-    final formatColor = _getFormatColor(_selectedFormat);
+    final formatColor = _getFormatColor(context, _selectedFormat);
     final formatLabel = _getFormatLabel(_selectedFormat);
     final formatIcon = _selectedFormat == 'video'
         ? Icons.videocam
@@ -1480,9 +1483,9 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
             Text(
               'Bài học này chưa có nội dung dạng ${formatLabel.toLowerCase()}.\nBạn có thể đóng góp để giúp cộng đồng!',
               textAlign: TextAlign.center,
-              style: const TextStyle(
+            style: TextStyle(
                 fontSize: 14,
-                color: AppColors.textTertiary,
+              color: context.colors.textTertiary,
                 height: 1.5,
               ),
             ),
@@ -1492,45 +1495,42 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.xpGold.withValues(alpha: 0.12),
+                color: context.colors.gold.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(12),
-                border:
-                    Border.all(color: AppColors.xpGold.withValues(alpha: 0.35)),
+                border: Border.all(color: context.colors.gold.withValues(alpha: 0.35)),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.emoji_events,
-                      color: AppColors.coinShadow, size: 24),
+                  Icon(Icons.emoji_events, color: context.colors.gold, size: 24),
                   const SizedBox(width: 12),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Phần thưởng đóng góp',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: AppColors.xpOrange,
+                          color: context.colors.warning,
                           fontSize: 13,
                         ),
                       ),
                       const SizedBox(height: 2),
                       Row(
                         children: [
-                          const Icon(Icons.star,
-                              size: 14, color: AppColors.xpOrange),
-                          const Text(
+                          Icon(Icons.star, size: 14, color: context.colors.warning),
+                          Text(
                             ' +50 XP  ',
                             style: TextStyle(
                                 fontSize: 12,
-                                color: AppColors.textSecondary),
+                                color: context.colors.textSecondary),
                           ),
                           const GtuCoinIcon(size: 14),
                           Text(
                             ' ${CurrencyLabels.rewardShort(30)}',
-                            style: const TextStyle(
+                            style: TextStyle(
                                 fontSize: 12,
-                                color: AppColors.textSecondary),
+                                color: context.colors.textSecondary),
                           ),
                         ],
                       ),
@@ -1557,7 +1557,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: formatColor,
-                  foregroundColor: Colors.white,
+                  foregroundColor: context.colors.textOnBrand,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
@@ -1571,11 +1571,10 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
             // Switch format hint
             TextButton.icon(
               onPressed: () => _changeFormat('all'),
-              icon: const Icon(Icons.apps,
-                  size: 18, color: AppColors.textTertiary),
-              label: const Text(
+              icon: Icon(Icons.apps, size: 18, color: context.colors.textTertiary),
+              label: Text(
                 'Xem tất cả dạng bài học',
-                style: TextStyle(color: AppColors.textTertiary),
+                style: TextStyle(color: context.colors.textTertiary),
               ),
             ),
           ],
@@ -1586,7 +1585,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
 
   /// Dialog để đóng góp nội dung theo format
   void _showContributeFormatDialog() {
-    final formatColor = _getFormatColor(_selectedFormat);
+    final t = context.colors;
+    final formatColor = _getFormatColor(context, _selectedFormat);
     final formatLabel = _getFormatLabel(_selectedFormat);
     final nodeTitle = _nodeData?['title'] ?? 'Bài học';
 
@@ -1642,8 +1642,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                             const SizedBox(height: 4),
                             Text(
                               nodeTitle,
-                              style: const TextStyle(
-                                color: AppColors.textTertiary,
+                              style: TextStyle(
+                                color: t.textTertiary,
                                 fontSize: 14,
                               ),
                             ),
@@ -1666,26 +1666,26 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                   _buildContributionGuideItem(
                     Icons.info_outline,
                     'Nội dung liên quan đến "$nodeTitle"',
-                    AppColors.cyanNeon,
+                    t.info,
                   ),
                   _buildContributionGuideItem(
                     Icons.check_circle_outline,
                     _selectedFormat == 'video'
                         ? 'Video rõ ràng, chất lượng tốt (720p trở lên)'
                         : 'Hình ảnh rõ nét, có chú thích',
-                    AppColors.successNeon,
+                    t.success,
                   ),
                   _buildContributionGuideItem(
                     Icons.translate,
                     'Ưu tiên nội dung tiếng Việt',
-                    AppColors.xpOrange,
+                    t.warning,
                   ),
                   _buildContributionGuideItem(
                     Icons.timer,
                     _selectedFormat == 'video'
                         ? 'Độ dài: 2-10 phút'
                         : 'Kích thước: tối đa 10MB',
-                    AppColors.purpleNeon,
+                    t.brand,
                   ),
 
                   const SizedBox(height: 24),
@@ -1696,16 +1696,15 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          AppColors.xpGold.withValues(alpha: 0.2),
-                          AppColors.xpOrange.withValues(alpha: 0.2)
+                          t.gold.withValues(alpha: 0.2),
+                          t.warning.withValues(alpha: 0.2)
                         ],
                       ),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.emoji_events,
-                            color: AppColors.xpGold, size: 32),
+                        Icon(Icons.emoji_events, color: t.gold, size: 32),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(
@@ -1721,8 +1720,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                               const SizedBox(height: 4),
                               Row(
                                 children: [
-                                  const Icon(Icons.star,
-                                      color: AppColors.xpOrange, size: 16),
+                                  Icon(Icons.star, color: t.warning, size: 16),
                                   const Text(' +50 XP  '),
                                   const GtuCoinIcon(size: 16),
                                   Text(
@@ -1758,7 +1756,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: formatColor,
-                        foregroundColor: Colors.white,
+                        foregroundColor: context.colors.textOnBrand,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
@@ -1775,6 +1773,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
   }
 
   Widget _buildContributionGuideItem(IconData icon, String text, Color color) {
+    final t = context.colors;
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -1784,8 +1783,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
           Expanded(
             child: Text(
               text,
-              style: const TextStyle(
-                color: AppColors.textSecondary,
+              style: TextStyle(
+                color: t.textSecondary,
                 fontSize: 14,
               ),
             ),
@@ -1832,6 +1831,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
 
   Widget _buildPathContentItem(Map<String, dynamic> item, int stepNumber,
       bool isCompleted, String itemType, bool isUnlocked) {
+    final t = context.colors;
     final title = item['title'] as String? ?? 'Content';
     final color = _getItemTypeColor(itemType);
     final icon = _getItemTypeIcon(itemType);
@@ -1847,9 +1847,9 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
           : () {
               HapticFeedback.lightImpact();
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
+                SnackBar(
                   content: Text('Hoàn thành các bài trước để mở khóa bài này!'),
-                  backgroundColor: AppColors.xpOrange,
+                  backgroundColor: context.colors.warning,
                 ),
               );
             },
@@ -1862,9 +1862,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
             // ✅ Locked: grey background
             color: isCompleted
                 ? null
-                : (isUnlocked
-                    ? AppColors.borderPrimary
-                    : AppColors.outlineVariant),
+                : (isUnlocked ? t.border : t.cardMuted),
             // ✅ Completed: bright gradient with glow effect
             // ✅ Unlocked but not completed: lighter gradient
             gradient: isCompleted
@@ -1889,10 +1887,10 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                     : null,
             border: Border.all(
               color: isCompleted
-                  ? AppColors.textPrimary
+                  ? t.textPrimary
                   : isUnlocked
                       ? color.withValues(alpha: 0.5)
-                      : AppColors.textDisabled,
+                      : t.textTertiary,
               width: isCompleted ? 3 : (isUnlocked ? 2.5 : 2),
             ),
             borderRadius: BorderRadius.circular(16),
@@ -1905,7 +1903,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                       spreadRadius: 4,
                     ),
                     BoxShadow(
-                      color: AppColors.textPrimary.withValues(alpha: 0.6),
+                      color: t.textPrimary.withValues(alpha: 0.6),
                       blurRadius: 8,
                       spreadRadius: 2,
                     ),
@@ -1937,15 +1935,14 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                   height: 24,
                   decoration: BoxDecoration(
                     color: isCompleted
-                        ? AppColors.contributorBlue
-                        : AppColors.textDisabled,
+                        ? t.info
+                        : t.textTertiary,
                     shape: BoxShape.circle,
-                    border: Border.all(color: AppColors.textPrimary, width: 2),
+                    border: Border.all(color: t.textPrimary, width: 2),
                     boxShadow: isCompleted
                         ? [
                             BoxShadow(
-                              color: AppColors.contributorBlue
-                                  .withValues(alpha: 0.5),
+                              color: t.info.withValues(alpha: 0.5),
                               blurRadius: 4,
                               spreadRadius: 1,
                             ),
@@ -1955,8 +1952,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                   child: Center(
                     child: Text(
                       '$stepNumber',
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
+                      style: TextStyle(
+                        color: t.textPrimary,
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
                       ),
@@ -1970,11 +1967,11 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                     isCompleted ? const EdgeInsets.all(4) : EdgeInsets.zero,
                 decoration: isCompleted
                     ? BoxDecoration(
-                        color: AppColors.textPrimary.withValues(alpha: 0.3),
+                        color: t.textPrimary.withValues(alpha: 0.3),
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.textPrimary.withValues(alpha: 0.6),
+                            color: t.textPrimary.withValues(alpha: 0.6),
                             blurRadius: 6,
                             spreadRadius: 2,
                           ),
@@ -1984,10 +1981,10 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                 child: Icon(
                   icon,
                   color: isCompleted
-                      ? AppColors.textPrimary
+                      ? t.textPrimary
                       : isUnlocked
                           ? color
-                          : AppColors.textTertiary,
+                          : t.textTertiary,
                   size: isCompleted ? 28 : 24, // Larger icon for completed
                 ),
               ),
@@ -1999,7 +1996,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                       const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                   decoration: isCompleted
                       ? BoxDecoration(
-                          color: AppColors.bgOverlay.withValues(alpha: 0.45),
+                          color: t.cardOverlay.withValues(alpha: 0.45),
                           borderRadius: BorderRadius.circular(4),
                         )
                       : null,
@@ -2010,13 +2007,12 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                       fontSize: 9,
                       fontWeight: FontWeight.bold,
                       color: isCompleted
-                          ? AppColors.textPrimary
-                          : AppColors.textTertiary,
+                          ? t.textPrimary
+                          : t.textTertiary,
                       shadows: isCompleted
                           ? [
                               Shadow(
-                                color:
-                                    AppColors.bgOverlay.withValues(alpha: 0.88),
+                                color: t.cardOverlay.withValues(alpha: 0.88),
                                 blurRadius: 3,
                                 offset: const Offset(1, 1),
                               ),
@@ -2035,26 +2031,25 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(3),
                     decoration: BoxDecoration(
-                      color: AppColors.successGlow,
+                      color: t.success,
                       shape: BoxShape.circle,
-                      border:
-                          Border.all(color: AppColors.textPrimary, width: 2),
+                      border: Border.all(color: t.textPrimary, width: 2),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.successNeon.withValues(alpha: 0.8),
+                          color: t.success.withValues(alpha: 0.8),
                           blurRadius: 8,
                           spreadRadius: 2,
                         ),
                         BoxShadow(
-                          color: AppColors.textPrimary.withValues(alpha: 0.5),
+                          color: t.textPrimary.withValues(alpha: 0.5),
                           blurRadius: 4,
                           spreadRadius: 1,
                         ),
                       ],
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.check,
-                      color: AppColors.textPrimary,
+                      color: t.textPrimary,
                       size: 14,
                     ),
                   ),
@@ -2066,14 +2061,13 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(3),
                     decoration: BoxDecoration(
-                      color: AppColors.textSecondary,
+                      color: t.textSecondary,
                       shape: BoxShape.circle,
-                      border:
-                          Border.all(color: AppColors.textPrimary, width: 1.5),
+                      border: Border.all(color: t.textPrimary, width: 1.5),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.lock,
-                      color: AppColors.textPrimary,
+                      color: t.textPrimary,
                       size: 14,
                     ),
                   ),
@@ -2087,6 +2081,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
 
   Widget _buildPathContentItemCard(Map<String, dynamic> item, int stepNumber,
       bool isCompleted, String itemType, bool isUnlocked) {
+    final t = context.colors;
     final title = item['title'] as String? ?? 'Content';
     final format = item['format'] as String? ?? 'text';
     final status = item['status'] as String? ?? 'published';
@@ -2095,7 +2090,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
 
     // Placeholder uses different color scheme
     final color = isPlaceholder
-        ? (format == 'video' ? AppColors.purpleNeon : AppColors.levelStudent)
+        ? (format == 'video' ? t.brand : t.gold)
         : _getItemTypeColor(itemType);
     final icon = isPlaceholder
         ? (format == 'video' ? Icons.videocam : Icons.image)
@@ -2111,7 +2106,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
           ? color.withValues(alpha: 0.15)
           : isUnlocked
               ? color.withValues(alpha: 0.05)
-              : AppColors.bgSecondary,
+              : t.card,
       elevation: isCompleted ? 6 : (isUnlocked ? 2 : 1),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
@@ -2120,7 +2115,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
               ? color.withValues(alpha: 0.5)
               : isUnlocked
                   ? color.withValues(alpha: 0.3)
-                  : AppColors.outlineVariant,
+                  : t.border,
           width: isCompleted ? 2 : 1,
         ),
       ),
@@ -2136,7 +2131,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                   ? null
                   : (isUnlocked
                       ? color.withValues(alpha: 0.1)
-                      : AppColors.borderPrimary),
+                      : t.cardMuted),
               gradient: isCompleted
                   ? LinearGradient(
                       begin: Alignment.topLeft,
@@ -2150,10 +2145,10 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: isCompleted
-                    ? AppColors.textPrimary
+                    ? t.textPrimary
                     : isUnlocked
                         ? color.withValues(alpha: 0.5)
-                        : AppColors.outlineVariant,
+                        : t.border,
                 width: isCompleted ? 2.5 : 2,
               ),
               boxShadow: isCompleted
@@ -2172,10 +2167,10 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                 Icon(
                   icon,
                   color: isCompleted
-                      ? AppColors.textPrimary
+                      ? t.textPrimary
                       : isUnlocked
                           ? color
-                          : AppColors.textTertiary,
+                          : t.textTertiary,
                   size: 24,
                 ),
                 Positioned(
@@ -2186,20 +2181,19 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                     height: 18,
                     decoration: BoxDecoration(
                       color: isCompleted
-                          ? AppColors.contributorBlue
+                          ? t.info
                           : isUnlocked
-                              ? AppColors.contributorBlueLight
-                              : AppColors.textDisabled,
+                              ? t.info.withValues(alpha: 0.75)
+                              : t.textTertiary,
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: AppColors.textPrimary,
+                        color: t.textPrimary,
                         width: 1.5,
                       ),
                       boxShadow: isCompleted
                           ? [
                               BoxShadow(
-                                color: AppColors.contributorBlue
-                                    .withValues(alpha: 0.5),
+                                color: t.info.withValues(alpha: 0.5),
                                 blurRadius: 4,
                                 spreadRadius: 1,
                               ),
@@ -2209,8 +2203,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                     child: Center(
                       child: Text(
                         '$stepNumber',
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
+                        style: TextStyle(
+                          color: t.textPrimary,
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
                         ),
@@ -2232,14 +2226,13 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
             children: [
               // Status badge for content item
               if (isPlaceholder) ...[
-                const Icon(Icons.volunteer_activism,
-                    color: AppColors.xpOrange, size: 14),
+                Icon(Icons.volunteer_activism, color: t.warning, size: 14),
                 const SizedBox(width: 4),
-                const Flexible(
+                Flexible(
                   child: Text(
                     'Cần đóng góp',
                     style: TextStyle(
-                      color: AppColors.streakOrange,
+                      color: t.warning,
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
                     ),
@@ -2247,38 +2240,36 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                   ),
                 ),
               ] else if (isAwaitingReview) ...[
-                const Icon(Icons.hourglass_empty,
-                    color: AppColors.contributorBlue, size: 14),
+                Icon(Icons.hourglass_empty, color: t.info, size: 14),
                 const SizedBox(width: 4),
-                const Flexible(
+                Flexible(
                   child: Text(
                     'Đang chờ duyệt',
                     style: TextStyle(
-                      color: AppColors.contributorBlueDark,
+                      color: t.info,
                       fontSize: 12,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ] else if (isCompleted) ...[
-                const Icon(Icons.check_circle,
-                    color: AppColors.successGlow, size: 16),
+                Icon(Icons.check_circle, color: t.success, size: 16),
                 const SizedBox(width: 4),
-                const Text(
+                Text(
                   'Đã hoàn thành',
                   style: TextStyle(
-                    color: AppColors.successNeon,
+                    color: t.success,
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
               ] else if (!isUnlocked) ...[
-                const Icon(Icons.lock, color: AppColors.textTertiary, size: 14),
+                Icon(Icons.lock, color: t.textTertiary, size: 14),
                 const SizedBox(width: 4),
-                const Text(
+                Text(
                   'Chưa mở khóa',
                   style: TextStyle(
-                    color: AppColors.textTertiary,
+                    color: t.textTertiary,
                     fontSize: 12,
                   ),
                 ),
@@ -2301,29 +2292,26 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
-                    color: AppColors.xpOrange,
+                    color: t.warning,
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Đóng góp',
                     style: TextStyle(
-                      color: AppColors.textPrimary,
+                      color: t.textPrimary,
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 )
               : isAwaitingReview
-                  ? const Icon(Icons.hourglass_empty,
-                      color: AppColors.contributorBlueLight, size: 24)
+                  ? Icon(Icons.hourglass_empty, color: t.info, size: 24)
                   : isCompleted
-                      ? const Icon(Icons.check_circle,
-                          color: AppColors.successGlow, size: 28)
+                      ? Icon(Icons.check_circle, color: t.success, size: 28)
                       : isUnlocked
                           ? Icon(Icons.arrow_forward_ios,
                               size: 16, color: color)
-                          : const Icon(Icons.lock,
-                              color: AppColors.textDisabled, size: 20),
+                          : Icon(Icons.lock, color: t.textTertiary, size: 20),
           onTap: canAccess
               ? () {
                   if (isPlaceholder) {
@@ -2334,10 +2322,10 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                 }
               : () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
+                    SnackBar(
                       content:
-                          Text('Hoàn thành các bài trước để mở khóa bài này!'),
-                      backgroundColor: AppColors.xpOrange,
+                          const Text('Hoàn thành các bài trước để mở khóa bài này!'),
+                      backgroundColor: t.warning,
                     ),
                   );
                 },
@@ -2348,6 +2336,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
 
   /// Hiển thị dialog cho việc đóng góp nội dung (video/image)
   void _showContributionDialog(Map<String, dynamic> item) {
+    final t = context.colors;
     final title = item['title'] as String? ?? 'Nội dung';
     final content = item['content'] as String? ?? '';
     final format = item['format'] as String? ?? 'text';
@@ -2383,15 +2372,15 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                         height: 56,
                         decoration: BoxDecoration(
                           color: format == 'video'
-                              ? AppColors.purpleNeon.withValues(alpha: 0.2)
-                              : AppColors.levelStudent.withValues(alpha: 0.2),
+                              ? t.brand.withValues(alpha: 0.2)
+                              : t.gold.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Icon(
                           format == 'video' ? Icons.videocam : Icons.image,
                           color: format == 'video'
-                              ? AppColors.purpleNeon
-                              : AppColors.levelStudent,
+                              ? t.brand
+                              : t.gold,
                           size: 32,
                         ),
                       ),
@@ -2414,16 +2403,15 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
-                                color:
-                                    AppColors.xpOrange.withValues(alpha: 0.2),
+                                color: t.warning.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
                                 format == 'video'
                                     ? 'Video cần đóng góp'
                                     : 'Hình ảnh cần đóng góp',
-                                style: const TextStyle(
-                                  color: AppColors.streakOrange,
+                                style: TextStyle(
+                                  color: t.warning,
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -2443,16 +2431,15 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            AppColors.xpGold.withValues(alpha: 0.2),
-                            AppColors.xpOrange.withValues(alpha: 0.2)
+                            t.gold.withValues(alpha: 0.2),
+                            t.warning.withValues(alpha: 0.2)
                           ],
                         ),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.emoji_events,
-                              color: AppColors.xpGold, size: 32),
+                          Icon(Icons.emoji_events, color: t.gold, size: 32),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(
@@ -2469,8 +2456,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                                 Row(
                                   children: [
                                     if (rewards['xp'] != null) ...[
-                                      const Icon(Icons.star,
-                                          color: AppColors.xpOrange, size: 16),
+                                      Icon(Icons.star,
+                                          color: t.warning, size: 16),
                                       const SizedBox(width: 4),
                                       Text('+${rewards['xp']} XP'),
                                       const SizedBox(width: 12),
@@ -2507,7 +2494,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: AppColors.bgTertiary,
+                      color: t.cardMuted,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
@@ -2542,8 +2529,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Icon(Icons.check_circle,
-                                  color: AppColors.successGlow, size: 20),
+                              Icon(Icons.check_circle,
+                                  color: t.success, size: 20),
                               const SizedBox(width: 8),
                               Expanded(child: Text(req.toString())),
                             ],
@@ -2564,23 +2551,23 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
                                 color:
-                                    AppColors.cyanNeon.withValues(alpha: 0.12),
+                                    t.info.withValues(alpha: 0.12),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Row(
                                 children: [
-                                  const Icon(Icons.signal_cellular_alt,
-                                      color: AppColors.contributorBlue),
+                                  Icon(Icons.signal_cellular_alt,
+                                      color: t.info),
                                   const SizedBox(width: 8),
                                   Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      const Text(
+                                      Text(
                                         'Độ khó',
                                         style: TextStyle(
                                             fontSize: 12,
-                                            color: AppColors.textTertiary),
+                                            color: t.textTertiary),
                                       ),
                                       Text(
                                         _getDifficultyText(
@@ -2602,24 +2589,23 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                             child: Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: AppColors.successNeon
+                                color: t.success
                                     .withValues(alpha: 0.12),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Row(
                                 children: [
-                                  const Icon(Icons.schedule,
-                                      color: AppColors.successGlow),
+                                  Icon(Icons.schedule, color: t.success),
                                   const SizedBox(width: 8),
                                   Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      const Text(
+                                      Text(
                                         'Thời gian',
                                         style: TextStyle(
                                             fontSize: 12,
-                                            color: AppColors.textTertiary),
+                                            color: t.textTertiary),
                                       ),
                                       Text(
                                         contributionGuide['estimatedTime']
@@ -2664,9 +2650,11 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: format == 'video'
-                            ? AppColors.purpleNeon
-                            : AppColors.levelStudent,
-                        foregroundColor: Colors.white,
+                            ? t.brand
+                            : t.gold,
+                        foregroundColor: format == 'video'
+                            ? t.textOnBrand
+                            : Theme.of(context).colorScheme.onSecondary,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
@@ -2686,15 +2674,14 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                               Navigator.pop(context);
                               _showEditHistory(itemId);
                             },
-                            icon: const Icon(Icons.history,
-                                size: 18, color: AppColors.textSecondary),
-                            label: const Text(
+                            icon: Icon(Icons.history,
+                                size: 18, color: t.textSecondary),
+                            label: Text(
                               'Lịch sử',
-                              style: TextStyle(color: AppColors.textSecondary),
+                              style: TextStyle(color: t.textSecondary),
                             ),
                             style: OutlinedButton.styleFrom(
-                              side: const BorderSide(
-                                  color: AppColors.outlineVariant),
+                              side: BorderSide(color: t.border),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
@@ -2709,15 +2696,14 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                               Navigator.pop(context);
                               _showVersions(itemId);
                             },
-                            icon: const Icon(Icons.folder_copy,
-                                size: 18, color: AppColors.textSecondary),
-                            label: const Text(
+                            icon: Icon(Icons.folder_copy,
+                                size: 18, color: t.textSecondary),
+                            label: Text(
                               'Phiên bản',
-                              style: TextStyle(color: AppColors.textSecondary),
+                              style: TextStyle(color: t.textSecondary),
                             ),
                             style: OutlinedButton.styleFrom(
-                              side: const BorderSide(
-                                  color: AppColors.outlineVariant),
+                              side: BorderSide(color: t.border),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
@@ -2754,9 +2740,9 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
       {String? title, Map<String, dynamic>? contributionGuide}) {
     if (itemId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text('Không tìm thấy ID nội dung'),
-          backgroundColor: AppColors.errorNeon,
+          backgroundColor: context.colors.error,
         ),
       );
       return;
@@ -2777,17 +2763,18 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
   }
 
   Color _getItemTypeColor(String type) {
+    final t = context.colors;
     switch (type) {
       case 'concept':
-        return AppColors.cyanNeon;
+        return t.info;
       case 'example':
-        return AppColors.successNeon;
+        return t.success;
       case 'hidden_reward':
-        return AppColors.xpGold;
+        return t.gold;
       case 'boss_quiz':
-        return AppColors.errorNeon;
+        return t.error;
       default:
-        return AppColors.textTertiary;
+        return t.textTertiary;
     }
   }
 
@@ -2809,15 +2796,16 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
   Color _getDarkerColor(Color color) {
     // Convert to darker shade
     return Color.fromRGBO(
-      (color.red * 0.7).round().clamp(0, 255),
-      (color.green * 0.7).round().clamp(0, 255),
-      (color.blue * 0.7).round().clamp(0, 255),
+      (color.r * 0.7).round().clamp(0, 255),
+      (color.g * 0.7).round().clamp(0, 255),
+      (color.b * 0.7).round().clamp(0, 255),
       1.0,
     );
   }
 
   /// Hiển thị lịch sử đóng góp của content item
   void _showEditHistory(String contentItemId) async {
+    final t = context.colors;
     // Show loading
     showDialog(
       context: context,
@@ -2856,12 +2844,10 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                         Container(
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: AppColors.contributorBlue
-                                .withValues(alpha: 0.22),
+                            color: t.info.withValues(alpha: 0.22),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Icon(Icons.history,
-                              color: AppColors.contributorBlueDark, size: 24),
+                          child: Icon(Icons.history, color: t.info, size: 24),
                         ),
                         const SizedBox(width: 12),
                         const Expanded(
@@ -2885,18 +2871,18 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
 
                     // History list
                     if (history.isEmpty)
-                      const Center(
+                      Center(
                         child: Padding(
-                          padding: EdgeInsets.all(32),
+                          padding: const EdgeInsets.all(32),
                           child: Column(
                             children: [
                               Icon(Icons.history_toggle_off,
-                                  size: 64, color: AppColors.textDisabled),
-                              SizedBox(height: 16),
+                                  size: 64, color: t.textTertiary),
+                              const SizedBox(height: 16),
                               Text(
                                 'Chưa có lịch sử đóng góp',
                                 style: TextStyle(
-                                  color: AppColors.textTertiary,
+                                  color: t.textTertiary,
                                   fontSize: 16,
                                 ),
                               ),
@@ -2920,7 +2906,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Lỗi khi tải lịch sử: $e'),
-            backgroundColor: AppColors.errorNeon,
+            backgroundColor: t.error,
           ),
         );
       }
@@ -2928,6 +2914,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
   }
 
   Widget _buildHistoryItem(Map<String, dynamic> entry) {
+    final t = context.colors;
     final action = entry['action'] as String? ?? 'unknown';
     final description = entry['description'] as String? ?? '';
     final createdAt = entry['createdAt'] as String?;
@@ -2950,35 +2937,35 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
     switch (action) {
       case 'submit':
         actionIcon = Icons.upload;
-        actionColor = AppColors.cyanNeon;
+        actionColor = t.info;
         break;
       case 'approve':
         actionIcon = Icons.check_circle;
-        actionColor = AppColors.successNeon;
+        actionColor = t.success;
         break;
       case 'reject':
         actionIcon = Icons.cancel;
-        actionColor = AppColors.errorNeon;
+        actionColor = t.error;
         break;
       case 'remove':
         actionIcon = Icons.delete;
-        actionColor = AppColors.xpOrange;
+        actionColor = t.warning;
         break;
       default:
         actionIcon = Icons.info;
-        actionColor = AppColors.textTertiary;
+        actionColor = t.textTertiary;
     }
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
+        color: t.card,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.borderPrimary),
+        border: Border.all(color: t.border),
         boxShadow: [
           BoxShadow(
-            color: AppColors.bgOverlay.withValues(alpha: 0.12),
+            color: t.cardOverlay.withValues(alpha: 0.12),
             blurRadius: 4,
           ),
         ],
@@ -3008,8 +2995,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                 const SizedBox(height: 4),
                 Text(
                   formattedDate,
-                  style: const TextStyle(
-                    color: AppColors.textTertiary,
+                  style: TextStyle(
+                    color: t.textTertiary,
                     fontSize: 12,
                   ),
                 ),
@@ -3023,6 +3010,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
 
   /// Hiển thị các phiên bản của content item
   void _showVersions(String contentItemId) async {
+    final t = context.colors;
     // Show loading
     showDialog(
       context: context,
@@ -3061,11 +3049,11 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                         Container(
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: AppColors.purpleNeon.withValues(alpha: 0.2),
+                            color: t.brand.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Icon(Icons.folder_copy,
-                              color: AppColors.purpleNeon, size: 24),
+                          child:
+                              Icon(Icons.folder_copy, color: t.brand, size: 24),
                         ),
                         const SizedBox(width: 12),
                         const Expanded(
@@ -3089,18 +3077,18 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
 
                     // Versions list
                     if (versions.isEmpty)
-                      const Center(
+                      Center(
                         child: Padding(
-                          padding: EdgeInsets.all(32),
+                          padding: const EdgeInsets.all(32),
                           child: Column(
                             children: [
                               Icon(Icons.folder_off,
-                                  size: 64, color: AppColors.textDisabled),
-                              SizedBox(height: 16),
+                                  size: 64, color: t.textTertiary),
+                              const SizedBox(height: 16),
                               Text(
                                 'Chưa có phiên bản nào',
                                 style: TextStyle(
-                                  color: AppColors.textTertiary,
+                                  color: t.textTertiary,
                                   fontSize: 16,
                                 ),
                               ),
@@ -3129,7 +3117,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Lỗi khi tải phiên bản: $e'),
-            backgroundColor: AppColors.errorNeon,
+            backgroundColor: t.error,
           ),
         );
       }
@@ -3138,6 +3126,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
 
   Widget _buildVersionItem(
       Map<String, dynamic> version, bool isLatest, String contentItemId) {
+    final t = context.colors;
     final versionId = version['id'] as String? ?? '';
     final description = version['description'] as String? ?? 'Phiên bản';
     final createdAt = version['createdAt'] as String?;
@@ -3160,13 +3149,13 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: isLatest
-            ? AppColors.successNeon.withValues(alpha: 0.12)
-            : AppColors.bgSecondary,
+            ? t.success.withValues(alpha: 0.12)
+            : t.card,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isLatest
-              ? AppColors.successNeon.withValues(alpha: 0.45)
-              : AppColors.borderPrimary,
+              ? t.success.withValues(alpha: 0.45)
+              : t.border,
         ),
       ),
       child: Row(
@@ -3176,14 +3165,14 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: isLatest ? AppColors.successNeon : AppColors.borderPrimary,
+              color: isLatest ? t.success : t.border,
               borderRadius: BorderRadius.circular(8),
             ),
             child: Center(
               child: Text(
                 'v$versionNumber',
                 style: TextStyle(
-                  color: isLatest ? Colors.white : AppColors.textSecondary,
+                  color: isLatest ? t.textOnBrand : t.textSecondary,
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
                 ),
@@ -3210,13 +3199,13 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
-                          color: AppColors.successNeon,
+                          color: t.success,
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Text(
+                        child: Text(
                           'Hiện tại',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: t.textOnBrand,
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
                           ),
@@ -3227,8 +3216,8 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                 const SizedBox(height: 4),
                 Text(
                   formattedDate,
-                  style: const TextStyle(
-                    color: AppColors.textTertiary,
+                  style: TextStyle(
+                    color: t.textTertiary,
                     fontSize: 12,
                   ),
                 ),
@@ -3239,12 +3228,11 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                     TextButton.icon(
                       onPressed: () =>
                           _showVersionComparison(versionId, version),
-                      icon: const Icon(Icons.compare_arrows,
-                          size: 16, color: AppColors.contributorBlue),
-                      label: const Text(
+                      icon: Icon(Icons.compare_arrows, size: 16, color: t.info),
+                      label: Text(
                         'So sánh',
                         style: TextStyle(
-                            color: AppColors.contributorBlue, fontSize: 12),
+                            color: t.info, fontSize: 12),
                       ),
                       style: TextButton.styleFrom(
                         padding: const EdgeInsets.symmetric(
@@ -3258,12 +3246,12 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                       TextButton.icon(
                         onPressed: () =>
                             _revertToVersion(versionId, versionNumber),
-                        icon: const Icon(Icons.restore,
-                            size: 16, color: AppColors.xpOrange),
-                        label: const Text(
+                        icon:
+                            Icon(Icons.restore, size: 16, color: t.warning),
+                        label: Text(
                           'Khôi phục',
                           style: TextStyle(
-                              color: AppColors.xpOrange, fontSize: 12),
+                              color: t.warning, fontSize: 12),
                         ),
                         style: TextButton.styleFrom(
                           padding: const EdgeInsets.symmetric(
@@ -3285,6 +3273,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
   /// Hiển thị so sánh phiên bản
   void _showVersionComparison(
       String versionId, Map<String, dynamic> version) async {
+    final t = context.colors;
     // Show loading
     showDialog(
       context: context,
@@ -3313,11 +3302,11 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Row(
+          title: Row(
             children: [
-              Icon(Icons.compare_arrows, color: AppColors.contributorBlue),
-              SizedBox(width: 8),
-              Text('So sánh phiên bản'),
+              Icon(Icons.compare_arrows, color: t.info),
+              const SizedBox(width: 8),
+              const Text('So sánh phiên bản'),
             ],
           ),
           content: SingleChildScrollView(
@@ -3330,18 +3319,17 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppColors.errorNeon.withValues(alpha: 0.12),
+                    color: t.error.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Row(
+                      Row(
                         children: [
-                          Icon(Icons.remove_circle,
-                              color: AppColors.errorNeon, size: 16),
-                          SizedBox(width: 4),
-                          Text('Trước',
+                          Icon(Icons.remove_circle, color: t.error, size: 16),
+                          const SizedBox(width: 4),
+                          const Text('Trước',
                               style: TextStyle(fontWeight: FontWeight.bold)),
                         ],
                       ),
@@ -3359,18 +3347,17 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppColors.successNeon.withValues(alpha: 0.12),
+                    color: t.success.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Row(
+                      Row(
                         children: [
-                          Icon(Icons.add_circle,
-                              color: AppColors.successGlow, size: 16),
-                          SizedBox(width: 4),
-                          Text('Sau',
+                          Icon(Icons.add_circle, color: t.success, size: 16),
+                          const SizedBox(width: 4),
+                          const Text('Sau',
                               style: TextStyle(fontWeight: FontWeight.bold)),
                         ],
                       ),
@@ -3398,7 +3385,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text('Lỗi: $e'), backgroundColor: AppColors.errorNeon),
+              content: Text('Lỗi: $e'), backgroundColor: t.error),
         );
       }
     }
@@ -3406,6 +3393,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
 
   /// Khôi phục về phiên bản trước
   void _revertToVersion(String versionId, int versionNumber) async {
+    final t = context.colors;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -3419,10 +3407,9 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
-            style:
-                ElevatedButton.styleFrom(backgroundColor: AppColors.xpOrange),
-            child:
-                const Text('Khôi phục', style: TextStyle(color: Colors.white)),
+            style: ElevatedButton.styleFrom(backgroundColor: t.warning),
+            child: Text('Khôi phục',
+                style: TextStyle(color: t.textOnBrand)),
           ),
         ],
       ),
@@ -3445,7 +3432,7 @@ class _NodeDetailScreenState extends State<NodeDetailScreen> {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text('Lỗi: $e'), backgroundColor: AppColors.errorNeon),
+              content: Text('Lỗi: $e'), backgroundColor: t.error),
         );
       }
     }
@@ -3477,7 +3464,7 @@ class ContentPathPainter extends CustomPainter {
     // Draw path connecting all items
     final path = Path();
     final pathPaint = Paint()
-      ..color = AppColors.borderPrimary
+      ..color = SemanticColors.dark.border
       ..strokeWidth = 20
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
@@ -3485,7 +3472,7 @@ class ContentPathPainter extends CustomPainter {
 
     // Shadow paint for depth
     final shadowPaint = Paint()
-      ..color = AppColors.bgOverlay.withValues(alpha: 0.35)
+      ..color = SemanticColors.dark.cardOverlay.withValues(alpha: 0.35)
       ..strokeWidth = 22
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
@@ -3513,7 +3500,7 @@ class ContentPathPainter extends CustomPainter {
 
     // Draw path center line for detail
     final centerLinePaint = Paint()
-      ..color = AppColors.outlineVariant
+      ..color = SemanticColors.dark.cardMuted
       ..strokeWidth = 2
       ..style = PaintingStyle.stroke;
     canvas.drawPath(path, centerLinePaint);
@@ -3535,7 +3522,7 @@ class ContentPathPainter extends CustomPainter {
 
           // Outer glow
           final glowPaint = Paint()
-            ..color = AppColors.successNeon.withValues(alpha: 0.25)
+            ..color = SemanticColors.dark.success.withValues(alpha: 0.25)
             ..strokeWidth = 24
             ..style = PaintingStyle.stroke
             ..strokeCap = StrokeCap.round;
@@ -3543,7 +3530,7 @@ class ContentPathPainter extends CustomPainter {
 
           // Main bright path
           final completedPaint = Paint()
-            ..color = AppColors.successNeon
+            ..color = SemanticColors.dark.success
             ..strokeWidth = 20
             ..style = PaintingStyle.stroke
             ..strokeCap = StrokeCap.round;
@@ -3551,7 +3538,7 @@ class ContentPathPainter extends CustomPainter {
 
           // Inner highlight
           final highlightPaint = Paint()
-            ..color = AppColors.successNeon.withValues(alpha: 0.35)
+            ..color = SemanticColors.dark.success.withValues(alpha: 0.35)
             ..strokeWidth = 4
             ..style = PaintingStyle.stroke
             ..strokeCap = StrokeCap.round;
@@ -3565,7 +3552,7 @@ class ContentPathPainter extends CustomPainter {
           halfPath.lineTo(midX, midY);
 
           final halfPaint = Paint()
-            ..color = AppColors.successGlow
+            ..color = SemanticColors.dark.success
             ..strokeWidth = 18
             ..style = PaintingStyle.stroke
             ..strokeCap = StrokeCap.round;
@@ -3594,13 +3581,14 @@ class _InfoChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final chipColor = color ?? AppColors.textSecondary;
+    final t = context.colors;
+    final chipColor = color ?? t.textSecondary;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: color != null
             ? color!.withValues(alpha: 0.1)
-            : AppColors.bgTertiary,
+            : t.cardMuted,
         borderRadius: BorderRadius.circular(20),
         border: color != null
             ? Border.all(color: color!.withValues(alpha: 0.3))

@@ -79,16 +79,18 @@ class _DailyQuestsScreenState extends State<DailyQuestsScreen>
       await _loadQuests();
 
       if (mounted) {
+        final on = context.colors.textOnBrand;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Row(
               children: [
-                Icon(Icons.celebration, color: Colors.white),
-                SizedBox(width: 8),
-                Text('Đã nhận phần thưởng!'),
+                Icon(Icons.celebration, color: on),
+                const SizedBox(width: 8),
+                Text('Đã nhận phần thưởng!',
+                    style: TextStyle(color: on)),
               ],
             ),
-            backgroundColor: AppColors.successNeon,
+            backgroundColor: context.colors.success,
           ),
         );
       }
@@ -97,7 +99,7 @@ class _DailyQuestsScreenState extends State<DailyQuestsScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Lỗi: ${e.toString()}'),
-            backgroundColor: AppColors.errorNeon,
+            backgroundColor: context.colors.error,
           ),
         );
       }
@@ -129,8 +131,9 @@ class _DailyQuestsScreenState extends State<DailyQuestsScreen>
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -145,24 +148,24 @@ class _DailyQuestsScreenState extends State<DailyQuestsScreen>
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    AppColors.orangeNeon.withValues(alpha: 0.48),
-                    AppColors.orangeNeon.withValues(alpha: 0.08),
+                    t.warning.withValues(alpha: 0.48),
+                    t.warning.withValues(alpha: 0.08),
                   ],
                 ),
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.1),
+                  color: t.textOnBrand.withValues(alpha: 0.1),
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.orangeNeon.withValues(alpha: 0.28),
+                    color: t.warning.withValues(alpha: 0.28),
                     blurRadius: 10,
                     offset: const Offset(0, 2),
                   ),
                 ],
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.task_alt_rounded,
-                color: AppColors.orangeNeon,
+                color: t.warning,
                 size: 22,
               ),
             ),
@@ -171,7 +174,7 @@ class _DailyQuestsScreenState extends State<DailyQuestsScreen>
               child: Text(
                 'Nhiệm vụ hằng ngày',
                 style: AppTextStyles.h4.copyWith(
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                   fontWeight: FontWeight.w800,
                   letterSpacing: -0.3,
                 ),
@@ -190,12 +193,12 @@ class _DailyQuestsScreenState extends State<DailyQuestsScreen>
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    AppColors.orangeNeon.withValues(alpha: 0.14),
-                    AppColors.bgSecondary,
+                    t.warning.withValues(alpha: 0.14),
+                    t.card,
                   ],
                 ),
                 border: Border.all(
-                  color: AppColors.orangeNeon.withValues(alpha: 0.28),
+                  color: t.warning.withValues(alpha: 0.28),
                 ),
                 boxShadow: [
                   BoxShadow(
@@ -214,20 +217,20 @@ class _DailyQuestsScreenState extends State<DailyQuestsScreen>
                   borderRadius: BorderRadius.circular(13),
                   gradient: LinearGradient(
                     colors: [
-                      AppColors.purpleNeon.withValues(alpha: 0.45),
-                      AppColors.purpleNeon.withValues(alpha: 0.14),
+                      t.brand.withValues(alpha: 0.45),
+                      t.brand.withValues(alpha: 0.14),
                     ],
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.purpleNeon.withValues(alpha: 0.28),
+                      color: t.brand.withValues(alpha: 0.28),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
                   ],
                 ),
-                labelColor: Colors.white,
-                unselectedLabelColor: AppColors.textTertiary,
+                labelColor: t.textOnBrand,
+                unselectedLabelColor: t.textTertiary,
                 labelStyle: AppTextStyles.labelMedium.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
@@ -253,7 +256,7 @@ class _DailyQuestsScreenState extends State<DailyQuestsScreen>
             tooltip: 'Làm mới',
             icon: Icon(
               Icons.refresh_rounded,
-              color: AppColors.primaryLight.withValues(alpha: 0.95),
+              color: t.brand.withValues(alpha: 0.95),
             ),
             onPressed: _loadQuests,
           ),
@@ -280,15 +283,16 @@ class _DailyQuestsScreenState extends State<DailyQuestsScreen>
   }
 
   Widget _buildLoadingState() {
+    final t = context.colors;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const CircularProgressIndicator(color: AppColors.primaryLight),
+          CircularProgressIndicator(color: t.brand),
           const SizedBox(height: 16),
           Text('Đang tải nhiệm vụ…',
               style: AppTextStyles.bodyMedium
-                  .copyWith(color: AppColors.textSecondary)),
+                  .copyWith(color: t.textSecondary)),
         ],
       ),
     );
@@ -301,7 +305,7 @@ class _DailyQuestsScreenState extends State<DailyQuestsScreen>
 
     return RefreshIndicator(
       onRefresh: _loadQuests,
-      color: AppColors.purpleNeon,
+      color: context.colors.brand,
       child: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: _dailyQuests!.length,
@@ -338,7 +342,7 @@ class _DailyQuestsScreenState extends State<DailyQuestsScreen>
 
     return RefreshIndicator(
       onRefresh: _loadQuests,
-      color: AppColors.purpleNeon,
+      color: context.colors.brand,
       child: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: _questHistory!.length,
@@ -368,6 +372,7 @@ class _QuestCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
     final quest = questData['quest'] as Map<String, dynamic>;
     final progress = questData['progress'] as int? ?? 0;
     final target =
@@ -383,7 +388,7 @@ class _QuestCard extends StatelessWidget {
         ? recentSubjectName
         : null;
     final icon = _getQuestIcon(questType);
-    final color = _getQuestColor(questType);
+    final color = _getQuestColor(context, questType);
     final progressPercent = (progress / target).clamp(0.0, 1.0);
 
     return Container(
@@ -395,12 +400,12 @@ class _QuestCard extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: [
             color.withValues(alpha: isClaimed ? 0.1 : (canClaim ? 0.14 : 0.06)),
-            AppColors.bgSecondary,
+            t.card,
           ],
         ),
         border: Border.all(
           color: isClaimed
-              ? AppColors.successNeon.withValues(alpha: 0.52)
+              ? t.success.withValues(alpha: 0.52)
               : canClaim
                   ? color.withValues(alpha: 0.52)
                   : color.withValues(alpha: 0.2),
@@ -434,11 +439,11 @@ class _QuestCard extends StatelessWidget {
                       colors: [
                         color.withValues(alpha: 0.55),
                         color.withValues(alpha: 0.18),
-                        AppColors.bgTertiary,
+                        t.cardMuted,
                       ],
                     ),
                     border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.12),
+                      color: t.textOnBrand.withValues(alpha: 0.12),
                     ),
                     boxShadow: [
                       BoxShadow(
@@ -450,9 +455,9 @@ class _QuestCard extends StatelessWidget {
                   ),
                   child: Icon(
                     icon,
-                    color: color == AppColors.textSecondary
-                        ? AppColors.primaryLight
-                        : Colors.white,
+                    color: color == t.textSecondary
+                        ? t.brand
+                        : t.textOnBrand,
                     size: 26,
                   ),
                 ),
@@ -467,7 +472,7 @@ class _QuestCard extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: AppTextStyles.caption.copyWith(
-                            color: AppColors.primaryLight,
+                            color: t.brand,
                             fontWeight: FontWeight.w700,
                             fontSize: 12,
                           ),
@@ -477,14 +482,14 @@ class _QuestCard extends StatelessWidget {
                       Text(
                         quest['title'] ?? 'Nhiệm vụ',
                         style: AppTextStyles.labelLarge
-                            .copyWith(color: AppColors.textPrimary),
+                            .copyWith(color: t.textPrimary),
                       ),
                       if (quest['description'] != null) ...[
                         const SizedBox(height: 4),
                         Text(
                           quest['description'] ?? '',
                           style: AppTextStyles.bodySmall
-                              .copyWith(color: AppColors.textSecondary),
+                              .copyWith(color: t.textSecondary),
                         ),
                       ],
                     ],
@@ -497,24 +502,24 @@ class _QuestCard extends StatelessWidget {
                       shape: BoxShape.circle,
                       gradient: RadialGradient(
                         colors: [
-                          AppColors.successNeon.withValues(alpha: 0.45),
-                          AppColors.successNeon.withValues(alpha: 0.12),
+                          t.success.withValues(alpha: 0.45),
+                          t.success.withValues(alpha: 0.12),
                         ],
                       ),
                       border: Border.all(
-                        color: AppColors.successNeon.withValues(alpha: 0.45),
+                        color: t.success.withValues(alpha: 0.45),
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.successNeon.withValues(alpha: 0.25),
+                          color: t.success.withValues(alpha: 0.25),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
                       ],
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.check_rounded,
-                      color: Colors.white,
+                      color: t.textOnBrand,
                       size: 22,
                     ),
                   ),
@@ -531,7 +536,7 @@ class _QuestCard extends StatelessWidget {
                     Text(
                       '$progress / $target',
                       style: AppTextStyles.labelMedium
-                          .copyWith(color: AppColors.textSecondary),
+                          .copyWith(color: t.textSecondary),
                     ),
                     Text(
                       '${(progressPercent * 100).round()}%',
@@ -552,7 +557,7 @@ class _QuestCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(999),
                           color: Colors.black.withValues(alpha: 0.38),
                           border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.06),
+                            color: t.textOnBrand.withValues(alpha: 0.06),
                           ),
                         ),
                       ),
@@ -563,7 +568,7 @@ class _QuestCard extends StatelessWidget {
                           child: Stack(
                             fit: StackFit.expand,
                             children: [
-                              ColoredBox(color: AppColors.bgTertiary),
+                              ColoredBox(color: t.cardMuted),
                               AnimatedProgressBox(
                                 widthFactor: progressPercent,
                                 duration: const Duration(milliseconds: 300),
@@ -599,7 +604,7 @@ class _QuestCard extends StatelessWidget {
             const SizedBox(height: 16),
             // Rewards
             if (quest['rewards'] != null) ...[
-              _buildRewards(quest['rewards'] as Map<String, dynamic>),
+              _buildRewards(context, quest['rewards'] as Map<String, dynamic>),
               const SizedBox(height: 16),
             ],
             // Nhận thưởng / ĐẾN / đã nhận — đồng bộ dashboard
@@ -621,16 +626,16 @@ class _QuestCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                   gradient: LinearGradient(
                     colors: [
-                      AppColors.successNeon.withValues(alpha: 0.22),
-                      AppColors.successNeon.withValues(alpha: 0.06),
+                      t.success.withValues(alpha: 0.22),
+                      t.success.withValues(alpha: 0.06),
                     ],
                   ),
                   border: Border.all(
-                    color: AppColors.successNeon.withValues(alpha: 0.42),
+                    color: t.success.withValues(alpha: 0.42),
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.successNeon.withValues(alpha: 0.15),
+                      color: t.success.withValues(alpha: 0.15),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -639,16 +644,16 @@ class _QuestCard extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.check_circle_rounded,
-                      color: AppColors.successNeon,
+                      color: t.success,
                       size: 22,
                     ),
                     const SizedBox(width: 8),
                     Text(
                       'Đã nhận phần thưởng',
                       style: AppTextStyles.labelMedium.copyWith(
-                        color: AppColors.successNeon,
+                        color: t.success,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -673,12 +678,12 @@ class _QuestCard extends StatelessWidget {
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                           colors: [
-                            AppColors.purpleNeon.withValues(alpha: 0.35),
-                            AppColors.purpleNeon.withValues(alpha: 0.12),
+                            t.brand.withValues(alpha: 0.35),
+                            t.brand.withValues(alpha: 0.12),
                           ],
                         ),
                         border: Border.all(
-                          color: AppColors.purpleNeon.withValues(alpha: 0.45),
+                          color: t.brand.withValues(alpha: 0.45),
                         ),
                         boxShadow: [
                           BoxShadow(
@@ -693,7 +698,7 @@ class _QuestCard extends StatelessWidget {
                         style: AppTextStyles.labelSmall.copyWith(
                           fontWeight: FontWeight.w800,
                           fontSize: 12,
-                          color: Colors.white,
+                          color: t.textOnBrand,
                           letterSpacing: 0.4,
                         ),
                       ),
@@ -707,7 +712,9 @@ class _QuestCard extends StatelessWidget {
     );
   }
 
-  Widget _buildRewards(Map<String, dynamic> rewards) {
+  Widget _buildRewards(
+      BuildContext context, Map<String, dynamic> rewards) {
+    final t = context.colors;
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -716,16 +723,16 @@ class _QuestCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppColors.xpGold.withValues(alpha: 0.22),
-            AppColors.xpGold.withValues(alpha: 0.05),
+            t.gold.withValues(alpha: 0.22),
+            t.gold.withValues(alpha: 0.05),
           ],
         ),
         border: Border.all(
-          color: AppColors.xpGold.withValues(alpha: 0.38),
+          color: t.gold.withValues(alpha: 0.38),
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.xpGold.withValues(alpha: 0.12),
+            color: t.gold.withValues(alpha: 0.12),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -733,29 +740,26 @@ class _QuestCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(Icons.auto_awesome_rounded,
-              color: AppColors.xpGold, size: 20),
+          Icon(Icons.auto_awesome_rounded, color: t.gold, size: 20),
           const SizedBox(width: 10),
           Text('Phần thưởng:',
-              style:
-                  AppTextStyles.labelMedium.copyWith(color: AppColors.xpGold)),
+              style: AppTextStyles.labelMedium.copyWith(color: t.gold)),
           const Spacer(),
           if (rewards['xp'] != null) ...[
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: AppColors.xpGold.withValues(alpha: 0.2),
+                color: t.gold.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.star_rounded,
-                      size: 14, color: AppColors.xpGold),
+                  Icon(Icons.star_rounded, size: 14, color: t.gold),
                   const SizedBox(width: 4),
                   Text(
                     '+${rewards['xp']} XP',
                     style: AppTextStyles.labelSmall.copyWith(
-                        color: AppColors.xpGold, fontWeight: FontWeight.bold),
+                        color: t.gold, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
@@ -766,7 +770,7 @@ class _QuestCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: AppColors.coinGold.withValues(alpha: 0.2),
+                color: t.gold.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
@@ -777,7 +781,7 @@ class _QuestCard extends StatelessWidget {
                     CurrencyLabels.rewardShort(
                         (rewards['coin'] as num).toInt()),
                     style: AppTextStyles.labelSmall.copyWith(
-                        color: AppColors.coinGold, fontWeight: FontWeight.bold),
+                        color: t.gold, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
@@ -807,22 +811,23 @@ class _QuestCard extends StatelessWidget {
     }
   }
 
-  Color _getQuestColor(String type) {
+  Color _getQuestColor(BuildContext context, String type) {
+    final t = context.colors;
     switch (type) {
       case 'complete_items':
-        return AppColors.primaryLight;
+        return t.brand;
       case 'maintain_streak':
-        return AppColors.streakOrange;
+        return t.warning;
       case 'earn_coins':
-        return AppColors.coinGold;
+        return t.gold;
       case 'earn_xp':
-        return AppColors.purpleNeon;
+        return t.brand;
       case 'complete_node':
-        return AppColors.successNeon;
+        return t.success;
       case 'complete_daily_lesson':
-        return AppColors.infoNeon;
+        return t.info;
       default:
-        return AppColors.textSecondary;
+        return t.textSecondary;
     }
   }
 }
@@ -834,6 +839,7 @@ class _QuestHistoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
     final quest = questData['quest'] as Map<String, dynamic>;
     final status = questData['status'] as String? ?? 'active';
     final completedAt = questData['completedAt'] as String?;
@@ -841,7 +847,7 @@ class _QuestHistoryCard extends StatelessWidget {
 
     final questType = quest['type'] as String? ?? '';
     final icon = _getQuestIcon(questType);
-    final color = _getQuestColor(questType);
+    final color = _getQuestColor(context, questType);
     final isClaimed = status == 'claimed';
 
     return Container(
@@ -853,12 +859,12 @@ class _QuestHistoryCard extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: [
             color.withValues(alpha: 0.1),
-            AppColors.bgSecondary,
+            t.card,
           ],
         ),
         border: Border.all(
           color: isClaimed
-              ? AppColors.successNeon.withValues(alpha: 0.4)
+              ? t.success.withValues(alpha: 0.4)
               : color.withValues(alpha: 0.22),
         ),
         boxShadow: [
@@ -887,16 +893,13 @@ class _QuestHistoryCard extends StatelessWidget {
           ),
           child: Icon(
             icon,
-            color: color == AppColors.textSecondary
-                ? AppColors.primaryLight
-                : Colors.white,
+            color: color == t.textSecondary ? t.brand : t.textOnBrand,
             size: 22,
           ),
         ),
         title: Text(
           quest['title'] ?? 'Nhiệm vụ',
-          style:
-              AppTextStyles.labelMedium.copyWith(color: AppColors.textPrimary),
+          style: AppTextStyles.labelMedium.copyWith(color: t.textPrimary),
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -906,19 +909,18 @@ class _QuestHistoryCard extends StatelessWidget {
               Text(
                 'Hoàn thành: ${_formatDate(completedAt)}',
                 style: AppTextStyles.caption
-                    .copyWith(color: AppColors.textTertiary),
+                    .copyWith(color: t.textTertiary),
               ),
             if (claimedAt != null)
               Text(
                 'Nhận thưởng: ${_formatDate(claimedAt)}',
                 style: AppTextStyles.caption
-                    .copyWith(color: AppColors.successNeon),
+                    .copyWith(color: t.success),
               ),
           ],
         ),
         trailing: isClaimed
-            ? const Icon(Icons.check_circle_rounded,
-                color: AppColors.successNeon)
+            ? Icon(Icons.check_circle_rounded, color: t.success)
             : null,
       ),
     );
@@ -943,22 +945,23 @@ class _QuestHistoryCard extends StatelessWidget {
     }
   }
 
-  Color _getQuestColor(String type) {
+  Color _getQuestColor(BuildContext context, String type) {
+    final t = context.colors;
     switch (type) {
       case 'complete_items':
-        return AppColors.primaryLight;
+        return t.brand;
       case 'maintain_streak':
-        return AppColors.streakOrange;
+        return t.warning;
       case 'earn_coins':
-        return AppColors.coinGold;
+        return t.gold;
       case 'earn_xp':
-        return AppColors.purpleNeon;
+        return t.brand;
       case 'complete_node':
-        return AppColors.successNeon;
+        return t.success;
       case 'complete_daily_lesson':
-        return AppColors.infoNeon;
+        return t.info;
       default:
-        return AppColors.textSecondary;
+        return t.textSecondary;
     }
   }
 
@@ -977,6 +980,7 @@ class _DailyQuestsEmptyGamified extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -989,12 +993,12 @@ class _DailyQuestsEmptyGamified extends StatelessWidget {
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    AppColors.orangeNeon.withValues(alpha: 0.4),
-                    AppColors.bgSecondary,
+                    t.warning.withValues(alpha: 0.4),
+                    t.card,
                   ],
                 ),
                 border: Border.all(
-                  color: AppColors.purpleNeon.withValues(alpha: 0.32),
+                  color: t.brand.withValues(alpha: 0.32),
                 ),
                 boxShadow: [
                   BoxShadow(
@@ -1007,7 +1011,7 @@ class _DailyQuestsEmptyGamified extends StatelessWidget {
               child: Icon(
                 Icons.task_alt_rounded,
                 size: 52,
-                color: AppColors.orangeNeon.withValues(alpha: 0.95),
+                color: t.warning.withValues(alpha: 0.95),
               ),
             ),
             const SizedBox(height: 20),
@@ -1015,7 +1019,7 @@ class _DailyQuestsEmptyGamified extends StatelessWidget {
               'Chưa có quest nào hôm nay',
               textAlign: TextAlign.center,
               style: AppTextStyles.h4.copyWith(
-                color: AppColors.textPrimary,
+                color: t.textPrimary,
                 fontWeight: FontWeight.w800,
               ),
             ),
@@ -1024,7 +1028,7 @@ class _DailyQuestsEmptyGamified extends StatelessWidget {
               'Quests sẽ được tạo tự động mỗi ngày.',
               textAlign: TextAlign.center,
               style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textSecondary,
+                color: t.textSecondary,
                 height: 1.4,
               ),
             ),
@@ -1040,6 +1044,7 @@ class _QuestHistoryEmptyGamified extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -1052,12 +1057,12 @@ class _QuestHistoryEmptyGamified extends StatelessWidget {
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    AppColors.purpleNeon.withValues(alpha: 0.35),
-                    AppColors.bgSecondary,
+                    t.brand.withValues(alpha: 0.35),
+                    t.card,
                   ],
                 ),
                 border: Border.all(
-                  color: AppColors.purpleNeon.withValues(alpha: 0.3),
+                  color: t.brand.withValues(alpha: 0.3),
                 ),
                 boxShadow: [
                   BoxShadow(
@@ -1070,7 +1075,7 @@ class _QuestHistoryEmptyGamified extends StatelessWidget {
               child: Icon(
                 Icons.history_rounded,
                 size: 48,
-                color: AppColors.primaryLight.withValues(alpha: 0.95),
+                color: t.brand.withValues(alpha: 0.95),
               ),
             ),
             const SizedBox(height: 18),
@@ -1078,7 +1083,7 @@ class _QuestHistoryEmptyGamified extends StatelessWidget {
               'Chưa có lịch sử nhiệm vụ',
               textAlign: TextAlign.center,
               style: AppTextStyles.h4.copyWith(
-                color: AppColors.textPrimary,
+                color: t.textPrimary,
                 fontWeight: FontWeight.w800,
               ),
             ),
@@ -1087,7 +1092,7 @@ class _QuestHistoryEmptyGamified extends StatelessWidget {
               'Hoàn thành và nhận thưởng để thấy lịch sử tại đây.',
               textAlign: TextAlign.center,
               style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textSecondary,
+                color: t.textSecondary,
                 height: 1.4,
               ),
             ),

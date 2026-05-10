@@ -6,9 +6,7 @@ import 'package:edtech_mobile/core/constants/currency_labels.dart';
 import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/core/widgets/lesson_unlock_sheet.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
-import 'package:edtech_mobile/theme/colors.dart';
-import 'package:edtech_mobile/theme/text_styles.dart';
-import 'package:edtech_mobile/theme/widgets/gtu_coin_icon.dart';
+import 'package:edtech_mobile/theme/theme.dart';
 
 class AllLessonsScreen extends StatefulWidget {
   final String subjectId;
@@ -181,34 +179,34 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: t.bg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(
           _introData?['subject']?['name'] ?? 'Lộ trình tổng quát',
-          style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+          style: AppTextStyles.h4.copyWith(color: t.textPrimary),
         ),
         leading: const AppBarLeadingBackAndHome(),
         leadingWidth: 112,
         automaticallyImplyLeading: false,
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh, color: AppColors.textSecondary),
+            icon: Icon(Icons.refresh, color: t.textSecondary),
             onPressed: _loadData,
           ),
         ],
       ),
       body: _isLoading
-          ? const Center(
+          ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  CircularProgressIndicator(color: AppColors.primaryLight),
-                  SizedBox(height: 16),
-                  Text('Đang tải...',
-                      style: TextStyle(color: AppColors.textSecondary)),
+                  CircularProgressIndicator(color: t.brand),
+                  const SizedBox(height: 16),
+                  Text('Đang tải...', style: TextStyle(color: t.textSecondary)),
                 ],
               ),
             )
@@ -217,16 +215,20 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.error_outline,
-                          size: 64, color: AppColors.errorNeon),
+                      Icon(Icons.error_outline, size: 64, color: t.error),
                       const SizedBox(height: 16),
-                      Text('Lỗi: $_error', style: AppTextStyles.bodyMedium),
+                      Text(
+                        'Lỗi: $_error',
+                        style: AppTextStyles.bodyMedium
+                            .copyWith(color: t.textSecondary),
+                        textAlign: TextAlign.center,
+                      ),
                       const SizedBox(height: 16),
                       ElevatedButton(
                         onPressed: _loadData,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.purpleNeon,
-                          foregroundColor: Colors.white,
+                          backgroundColor: t.brand,
+                          foregroundColor: t.textOnBrand,
                         ),
                         child: const Text('Thử lại'),
                       ),
@@ -234,12 +236,13 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
                   ),
                 )
               : _domains.isEmpty
-                  ? const Center(
+                  ? Center(
                       child: Text('Chưa có nội dung',
-                          style: TextStyle(color: AppColors.textSecondary)),
+                          style: TextStyle(color: t.textSecondary)),
                     )
                   : RefreshIndicator(
                       onRefresh: _loadData,
+                      color: t.brand,
                       child: ListView(
                         padding: const EdgeInsets.all(16),
                         children: [
@@ -257,6 +260,7 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
   // HEADER
   // =====================
   Widget _buildHeader() {
+    final t = context.colors;
     final stats = _stats;
     final total = stats['total']!;
     final completed = stats['completed']!;
@@ -267,19 +271,18 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColors.purpleNeon.withValues(alpha: 0.2),
-            AppColors.primaryLight.withValues(alpha: 0.1),
+            t.brand.withValues(alpha: 0.2),
+            t.gold.withValues(alpha: 0.1),
           ],
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.purpleNeon.withValues(alpha: 0.3)),
+        border: Border.all(color: t.brand.withValues(alpha: 0.3)),
       ),
       child: Column(
         children: [
           Row(
             children: [
-              const Icon(Icons.route_rounded,
-                  color: AppColors.purpleNeon, size: 28),
+              Icon(Icons.route_rounded, color: t.brand, size: 28),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -287,11 +290,11 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
                   children: [
                     Text('Lộ trình tổng quát',
                         style: AppTextStyles.h4
-                            .copyWith(color: AppColors.textPrimary)),
+                            .copyWith(color: t.textPrimary)),
                     const SizedBox(height: 4),
                     Text('Học tuần tự từ cơ bản đến nâng cao',
                         style: AppTextStyles.caption
-                            .copyWith(color: AppColors.textSecondary)),
+                            .copyWith(color: t.textSecondary)),
                   ],
                 ),
               ),
@@ -300,14 +303,14 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
           const SizedBox(height: 16),
           Row(
             children: [
-              _buildStatBadge(Icons.check_circle, AppColors.successNeon,
+              _buildStatBadge(Icons.check_circle, t.success,
                   '$completed', 'Hoàn thành'),
               const SizedBox(width: 12),
-              _buildStatBadge(Icons.folder, AppColors.primaryLight,
-                  '${_domains.length}', 'Chương'),
+              _buildStatBadge(
+                  Icons.folder, t.brand, '${_domains.length}', 'Chương'),
               const SizedBox(width: 12),
               _buildStatBadge(
-                  Icons.menu_book, AppColors.purpleNeon, '$total', 'Tổng bài'),
+                  Icons.menu_book, t.gold, '$total', 'Tổng bài'),
             ],
           ),
           const SizedBox(height: 12),
@@ -315,8 +318,8 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
             borderRadius: BorderRadius.circular(8),
             child: LinearProgressIndicator(
               value: total > 0 ? completed / total : 0,
-              backgroundColor: AppColors.bgSecondary,
-              valueColor: const AlwaysStoppedAnimation(AppColors.successNeon),
+              backgroundColor: t.cardMuted,
+              valueColor: AlwaysStoppedAnimation(t.success),
               minHeight: 8,
             ),
           ),
@@ -327,6 +330,7 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
 
   Widget _buildStatBadge(
       IconData icon, Color color, String value, String label) {
+    final t = context.colors;
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
@@ -348,7 +352,7 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
             const SizedBox(height: 2),
             Text(label,
                 style: AppTextStyles.caption
-                    .copyWith(color: AppColors.textTertiary),
+                    .copyWith(color: t.textTertiary),
                 textAlign: TextAlign.center),
           ],
         ),
@@ -357,14 +361,15 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
   }
 
   Widget _buildContributorNotice() {
+    final t = context.colors;
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.warningNeon.withValues(alpha: 0.08),
+        color: t.warning.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(14),
         border:
-            Border.all(color: AppColors.warningNeon.withValues(alpha: 0.22)),
+            Border.all(color: t.warning.withValues(alpha: 0.22)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -372,10 +377,9 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-                color: AppColors.warningNeon.withValues(alpha: 0.15),
+                color: t.warning.withValues(alpha: 0.15),
                 shape: BoxShape.circle),
-            child: const Icon(Icons.info_outline_rounded,
-                color: AppColors.warningNeon, size: 20),
+            child: Icon(Icons.info_outline_rounded, color: t.warning, size: 20),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -384,12 +388,12 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
               children: [
                 Text('Bạn đang ở chế độ Contributor',
                     style: AppTextStyles.labelLarge
-                        .copyWith(color: AppColors.warningNeon)),
+                        .copyWith(color: t.warning)),
                 const SizedBox(height: 4),
                 Text(
                   'Muốn nhận phần thưởng XP và ${CurrencyLabels.gtuCoin}, hãy chuyển sang chế độ học viên để học và làm bài kiểm tra nhé!',
                   style: AppTextStyles.bodySmall
-                      .copyWith(color: AppColors.textSecondary, height: 1.4),
+                      .copyWith(color: t.textSecondary, height: 1.4),
                 ),
               ],
             ),
@@ -403,6 +407,7 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
   // DOMAIN TILE (Level 1)
   // =====================
   Widget _buildDomainTile(Map<String, dynamic> domain) {
+    final t = context.colors;
     final domainId = domain['id'] as String;
     final title = domain['title'] as String? ?? '';
     final isExpanded = _expandedDomains.contains(domainId);
@@ -420,13 +425,13 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(14),
-        color: AppColors.bgSecondary,
+        color: t.card,
         border: Border.all(
           color: isCompleted
-              ? AppColors.successNeon.withValues(alpha: 0.4)
+              ? t.success.withValues(alpha: 0.4)
               : isExpanded
-                  ? AppColors.purpleNeon.withValues(alpha: 0.4)
-                  : const Color(0x332D363D),
+                  ? t.brand.withValues(alpha: 0.4)
+                  : t.border,
           width: isCompleted || isExpanded ? 1.5 : 1,
         ),
       ),
@@ -456,14 +461,14 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: isCompleted
-                            ? [AppColors.successNeon, const Color(0xFF2DD4BF)]
-                            : [AppColors.purpleNeon, AppColors.primaryLight],
+                            ? [t.success, t.info]
+                            : [t.brand, t.gold],
                       ),
                       borderRadius: BorderRadius.circular(11),
                     ),
                     child: Icon(
                       isCompleted ? Icons.check_rounded : Icons.folder_outlined,
-                      color: Colors.white,
+                      color: t.textOnBrand,
                       size: 22,
                     ),
                   ),
@@ -475,7 +480,7 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
                       children: [
                         Text(title,
                             style: AppTextStyles.labelLarge.copyWith(
-                                color: AppColors.textPrimary,
+                                color: t.textPrimary,
                                 fontWeight: FontWeight.bold)),
                         const SizedBox(height: 4),
                         Row(
@@ -483,19 +488,18 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
                             Text(
                               '${topics.length} chủ đề',
                               style: AppTextStyles.caption
-                                  .copyWith(color: AppColors.textSecondary),
+                                  .copyWith(color: t.textSecondary),
                             ),
                             if (domainTotal > 0) ...[
-                              const Text('  ·  ',
+                              Text('  ·  ',
                                   style: TextStyle(
-                                      color: AppColors.textTertiary,
-                                      fontSize: 12)),
+                                      color: t.textTertiary, fontSize: 12)),
                               Text(
                                 '$domainCompleted/$domainTotal bài',
                                 style: AppTextStyles.caption.copyWith(
                                   color: isCompleted
-                                      ? AppColors.successNeon
-                                      : AppColors.textSecondary,
+                                      ? t.success
+                                      : t.textSecondary,
                                 ),
                               ),
                             ],
@@ -509,11 +513,11 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
                               value: domainTotal > 0
                                   ? domainCompleted / domainTotal
                                   : 0,
-                              backgroundColor: AppColors.bgTertiary,
+                              backgroundColor: t.cardMuted,
                               valueColor: AlwaysStoppedAnimation(
                                 isCompleted
-                                    ? AppColors.successNeon
-                                    : AppColors.purpleNeon,
+                                    ? t.success
+                                    : t.brand,
                               ),
                               minHeight: 4,
                             ),
@@ -526,8 +530,8 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
                   AnimatedRotation(
                     turns: isExpanded ? 0.5 : 0,
                     duration: const Duration(milliseconds: 200),
-                    child: const Icon(Icons.keyboard_arrow_down,
-                        color: AppColors.textTertiary),
+                    child:
+                        Icon(Icons.keyboard_arrow_down, color: t.textTertiary),
                   ),
                 ],
               ),
@@ -560,6 +564,7 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
   // TOPIC TILE (Level 2)
   // =====================
   Widget _buildTopicTile(Map<String, dynamic> topic) {
+    final t = context.colors;
     final topicId = topic['id'] as String;
     final title = topic['title'] as String? ?? '';
     final isExpanded = _expandedTopics.contains(topicId);
@@ -578,16 +583,16 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         color: isCompleted
-            ? AppColors.successNeon.withValues(alpha: 0.06)
+            ? t.success.withValues(alpha: 0.06)
             : isExpanded
-                ? AppColors.primaryLight.withValues(alpha: 0.04)
-                : AppColors.bgPrimary.withValues(alpha: 0.5),
+                ? t.gold.withValues(alpha: 0.04)
+                : t.bg.withValues(alpha: 0.5),
         border: Border.all(
           color: isCompleted
-              ? AppColors.successNeon.withValues(alpha: 0.3)
+              ? t.success.withValues(alpha: 0.3)
               : isExpanded
-                  ? AppColors.primaryLight.withValues(alpha: 0.3)
-                  : const Color(0x332D363D).withValues(alpha: 0.55),
+                  ? t.gold.withValues(alpha: 0.3)
+                  : t.border.withValues(alpha: 0.55),
         ),
       ),
       child: Column(
@@ -615,15 +620,15 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
                     height: 34,
                     decoration: BoxDecoration(
                       color: isCompleted
-                          ? AppColors.successNeon.withValues(alpha: 0.15)
-                          : AppColors.primaryLight.withValues(alpha: 0.1),
+                          ? t.success.withValues(alpha: 0.15)
+                          : t.gold.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(
                       isCompleted ? Icons.check : Icons.menu_book,
                       color: isCompleted
-                          ? AppColors.successNeon
-                          : AppColors.primaryLight,
+                          ? t.success
+                          : t.gold,
                       size: 18,
                     ),
                   ),
@@ -634,7 +639,7 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
                       children: [
                         Text(title,
                             style: AppTextStyles.labelLarge.copyWith(
-                                color: AppColors.textPrimary,
+                                color: t.textPrimary,
                                 fontWeight: FontWeight.w600)),
                         const SizedBox(height: 3),
                         Row(
@@ -645,8 +650,8 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
                                   : '$completedLessons/$totalLessons bài',
                               style: AppTextStyles.caption.copyWith(
                                 color: isCompleted
-                                    ? AppColors.successNeon
-                                    : AppColors.textSecondary,
+                                    ? t.success
+                                    : t.textSecondary,
                               ),
                             ),
                             // Rewards
@@ -654,13 +659,13 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
                                 (totalXp > 0 || totalCoins > 0)) ...[
                               const SizedBox(width: 8),
                               if (totalXp > 0) ...[
-                                const Icon(Icons.auto_awesome,
-                                    size: 11, color: AppColors.xpGold),
+                                Icon(Icons.auto_awesome,
+                                    size: 11, color: t.gold),
                                 const SizedBox(width: 2),
                                 Text('+$totalXp',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                         fontSize: 10,
-                                        color: AppColors.xpGold,
+                                        color: t.gold,
                                         fontWeight: FontWeight.w600)),
                                 const SizedBox(width: 4),
                               ],
@@ -668,20 +673,20 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
                                 const GtuCoinIcon(size: 11),
                                 const SizedBox(width: 2),
                                 Text('+$totalCoins',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                         fontSize: 10,
-                                        color: AppColors.orangeNeon,
+                                        color: t.warning,
                                         fontWeight: FontWeight.w600)),
                               ],
                             ],
                             if (isCompleted) ...[
                               const SizedBox(width: 6),
-                              const Icon(Icons.card_giftcard,
-                                  size: 11, color: AppColors.textTertiary),
+                              Icon(Icons.card_giftcard,
+                                  size: 11, color: t.textTertiary),
                               const SizedBox(width: 2),
                               Text('Đã nhận thưởng',
                                   style: AppTextStyles.caption.copyWith(
-                                      color: AppColors.textTertiary,
+                                      color: t.textTertiary,
                                       fontSize: 10)),
                             ],
                           ],
@@ -692,8 +697,8 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
                   AnimatedRotation(
                     turns: isExpanded ? 0.5 : 0,
                     duration: const Duration(milliseconds: 200),
-                    child: const Icon(Icons.keyboard_arrow_down,
-                        size: 20, color: AppColors.textTertiary),
+                    child: Icon(Icons.keyboard_arrow_down,
+                        size: 20, color: t.textTertiary),
                   ),
                 ],
               ),
@@ -711,7 +716,7 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
                     padding: const EdgeInsets.all(12),
                     child: Text('Chưa có bài học.',
                         style: AppTextStyles.caption
-                            .copyWith(color: AppColors.textTertiary)),
+                            .copyWith(color: t.textTertiary)),
                   )
                 : Padding(
                     padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
@@ -732,6 +737,7 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
   // LESSON TILE (Level 3) - with diamond lock status
   // ========================
   Widget _buildLessonTile(Map<String, dynamic> lesson, int index) {
+    final t = context.colors;
     final nodeId = lesson['id'] as String;
     final title = lesson['title'] as String? ?? '';
     final isCompleted = lesson['isCompleted'] as bool? ?? false;
@@ -758,16 +764,16 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
           color: isCompleted
-              ? AppColors.successNeon.withValues(alpha: 0.05)
+              ? t.success.withValues(alpha: 0.05)
               : isLocked
-                  ? AppColors.bgPrimary.withValues(alpha: 0.3)
-                  : AppColors.bgSecondary,
+                  ? t.bg.withValues(alpha: 0.3)
+                  : t.card,
           border: Border.all(
             color: isCompleted
-                ? AppColors.successNeon.withValues(alpha: 0.25)
+                ? t.success.withValues(alpha: 0.25)
                 : isLocked
-                    ? const Color(0x332D363D).withValues(alpha: 0.35)
-                    : const Color(0x332D363D).withValues(alpha: 0.55),
+                    ? t.border.withValues(alpha: 0.35)
+                    : t.border.withValues(alpha: 0.55),
           ),
         ),
         child: Opacity(
@@ -780,25 +786,23 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
                 height: 30,
                 decoration: BoxDecoration(
                   color: isCompleted
-                      ? AppColors.successNeon.withValues(alpha: 0.15)
+                      ? t.success.withValues(alpha: 0.15)
                       : isLocked
-                          ? AppColors.coinGold.withValues(alpha: 0.12)
-                          : AppColors.primaryLight.withValues(alpha: 0.1),
+                          ? t.gold.withValues(alpha: 0.12)
+                          : t.brand.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Center(
                   child: isCompleted
-                      ? const Icon(Icons.check,
-                          color: AppColors.successNeon, size: 16)
+                      ? Icon(Icons.check, color: t.success, size: 16)
                       : isLocked
-                          ? const Icon(Icons.lock,
-                              color: AppColors.coinGold, size: 14)
+                          ? Icon(Icons.lock, color: t.gold, size: 14)
                           : Text(
                               '${index + 1}',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 12,
-                                color: AppColors.primaryLight,
+                                color: t.brand,
                               ),
                             ),
                 ),
@@ -812,43 +816,40 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
                     Text(title,
                         style: AppTextStyles.labelLarge.copyWith(
                           color: isLocked
-                              ? AppColors.textTertiary
+                              ? t.textTertiary
                               : isCompleted
-                                  ? AppColors.textSecondary
-                                  : AppColors.textPrimary,
+                                  ? t.textSecondary
+                                  : t.textPrimary,
                           fontSize: 13,
                         )),
                     const SizedBox(height: 3),
                     Row(
                       children: [
                         if (isCompleted) ...[
-                          const Icon(Icons.check_circle,
-                              size: 12, color: AppColors.successNeon),
+                          Icon(Icons.check_circle, size: 12, color: t.success),
                           const SizedBox(width: 3),
                           Text('Hoàn thành',
                               style: AppTextStyles.caption.copyWith(
-                                  color: AppColors.successNeon, fontSize: 10)),
+                                  color: t.success, fontSize: 10)),
                           const SizedBox(width: 6),
                           Text('· Nhấn xem lại',
                               style: AppTextStyles.caption.copyWith(
-                                  color: AppColors.textTertiary, fontSize: 10)),
+                                  color: t.textTertiary, fontSize: 10)),
                         ] else if (isLocked) ...[
-                          const Icon(Icons.lock,
-                              size: 11, color: AppColors.coinGold),
+                          Icon(Icons.lock, size: 11, color: t.gold),
                           const SizedBox(width: 3),
                           Text('50 💎 hoặc suất miễn phí',
                               style: AppTextStyles.caption.copyWith(
-                                  color: AppColors.coinGold,
+                                  color: t.gold,
                                   fontWeight: FontWeight.w600)),
                         ] else ...[
                           if (xp > 0) ...[
-                            const Icon(Icons.auto_awesome,
-                                size: 12, color: AppColors.xpGold),
+                            Icon(Icons.auto_awesome, size: 12, color: t.gold),
                             const SizedBox(width: 2),
                             Text('+$xp XP',
-                                style: const TextStyle(
+                                style: TextStyle(
                                     fontSize: 10,
-                                    color: AppColors.xpGold,
+                                    color: t.gold,
                                     fontWeight: FontWeight.w600)),
                             const SizedBox(width: 6),
                           ],
@@ -856,15 +857,15 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
                             const GtuCoinIcon(size: 12),
                             const SizedBox(width: 2),
                             Text(CurrencyLabels.rewardShort(coins),
-                                style: const TextStyle(
+                                style: TextStyle(
                                     fontSize: 10,
-                                    color: AppColors.orangeNeon,
+                                    color: t.warning,
                                     fontWeight: FontWeight.w600)),
                           ],
                           if (xp == 0 && coins == 0)
                             Text('Nhấn để chọn dạng bài',
                                 style: AppTextStyles.caption.copyWith(
-                                    color: AppColors.primaryLight,
+                                    color: t.brand,
                                     fontSize: 10)),
                         ],
                       ],
@@ -874,14 +875,13 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
               ),
               // Trailing
               isLocked
-                  ? const Icon(Icons.lock_outline,
-                      size: 18, color: AppColors.coinGold)
+                  ? Icon(Icons.lock_outline, size: 18, color: t.gold)
                   : Icon(
                       isCompleted ? Icons.replay : Icons.play_circle_outline,
                       size: 20,
                       color: isCompleted
-                          ? AppColors.textTertiary
-                          : AppColors.primaryLight,
+                          ? t.textTertiary
+                          : t.brand,
                     ),
             ],
           ),
@@ -902,6 +902,7 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
         return;
       }
     } catch (_) {}
+    if (!mounted) return;
     final opened = await LessonUnlockSheet.show(
       context: context,
       api: api,
@@ -915,9 +916,10 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
   }
 
   void _showCompletedDialog(String title, String nodeId) {
+    final t = context.colors;
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.bgSecondary,
+      backgroundColor: t.card,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -926,17 +928,16 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.check_circle,
-                color: AppColors.successNeon, size: 56),
+            Icon(Icons.check_circle, color: t.success, size: 56),
             const SizedBox(height: 12),
             Text(title,
-                style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+                style: AppTextStyles.h4.copyWith(color: t.textPrimary),
                 textAlign: TextAlign.center),
             const SizedBox(height: 8),
             Text(
               'Bạn đã hoàn thành bài học này và nhận phần thưởng rồi!',
               style: AppTextStyles.bodyMedium
-                  .copyWith(color: AppColors.textSecondary),
+                  .copyWith(color: t.textSecondary),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
@@ -949,13 +950,12 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
                       context.push('/lessons/$nodeId/types',
                           extra: {'title': title}).then((_) => _loadData());
                     },
-                    icon:
-                        const Icon(Icons.replay, color: AppColors.primaryLight),
-                    label: const Text('Xem lại',
-                        style: TextStyle(color: AppColors.primaryLight)),
+                    icon: Icon(Icons.replay, color: t.brand),
+                    label:
+                        Text('Xem lại', style: TextStyle(color: t.brand)),
                     style: OutlinedButton.styleFrom(
                       side: BorderSide(
-                          color: AppColors.primaryLight.withValues(alpha: 0.5)),
+                          color: t.brand.withValues(alpha: 0.5)),
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12)),
                       padding: const EdgeInsets.symmetric(vertical: 12),
@@ -967,7 +967,7 @@ class _AllLessonsScreenState extends State<AllLessonsScreen>
                   child: ElevatedButton(
                     onPressed: () => Navigator.pop(ctx),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.purpleNeon,
+                      backgroundColor: t.brand,
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12)),
                       padding: const EdgeInsets.symmetric(vertical: 12),

@@ -155,7 +155,7 @@ class _SubjectLearningGoalsScreenState
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Lỗi: ${e.toString()}'),
-            backgroundColor: AppColors.errorNeon,
+            backgroundColor: context.colors.error,
           ),
         );
       }
@@ -183,14 +183,16 @@ class _SubjectLearningGoalsScreenState
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: tokens.bg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
         title: Text(
           'Xác định mục tiêu học tập',
-          style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+          style: AppTextStyles.h4.copyWith(color: tokens.textPrimary),
         ),
       ),
       body: Column(
@@ -215,12 +217,11 @@ class _SubjectLearningGoalsScreenState
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 12),
                     decoration: BoxDecoration(
-                      color:
-                          isUser ? AppColors.purpleNeon : AppColors.bgSecondary,
+                      color: isUser ? tokens.brand : tokens.card,
                       borderRadius: BorderRadius.circular(16),
                       border: isUser
                           ? null
-                          : Border.all(color: const Color(0x332D363D)),
+                          : Border.all(color: tokens.border),
                     ),
                     constraints: BoxConstraints(
                       maxWidth: MediaQuery.of(context).size.width * 0.75,
@@ -230,7 +231,7 @@ class _SubjectLearningGoalsScreenState
                             key: ValueKey('typewriter_$index'),
                             text: content,
                             style: AppTextStyles.bodyMedium
-                                .copyWith(color: AppColors.textPrimary),
+                                .copyWith(color: tokens.textPrimary),
                             speed: const Duration(milliseconds: 30),
                             onComplete: () {
                               setState(() {
@@ -241,8 +242,7 @@ class _SubjectLearningGoalsScreenState
                         : Text(
                             content,
                             style: AppTextStyles.bodyMedium.copyWith(
-                              color:
-                                  isUser ? Colors.white : AppColors.textPrimary,
+                              color: isUser ? tokens.onBrand : tokens.textPrimary,
                             ),
                           ),
                   ),
@@ -251,16 +251,16 @@ class _SubjectLearningGoalsScreenState
             ),
           ),
           if (_isLoading)
-            const Padding(
-              padding: EdgeInsets.all(8.0),
-              child: CircularProgressIndicator(color: AppColors.primaryLight),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: CircularProgressIndicator(color: tokens.brand),
             ),
           Container(
             padding: const EdgeInsets.all(16),
-            decoration: const BoxDecoration(
-              color: AppColors.bgSecondary,
+            decoration: BoxDecoration(
+              color: tokens.card,
               border: Border(
-                top: BorderSide(color: Color(0x332D363D)),
+                top: BorderSide(color: tokens.border),
               ),
             ),
             child: Row(
@@ -269,26 +269,25 @@ class _SubjectLearningGoalsScreenState
                   child: TextField(
                     controller: _messageController,
                     style: AppTextStyles.bodyMedium
-                        .copyWith(color: AppColors.textPrimary),
+                        .copyWith(color: tokens.textPrimary),
                     decoration: InputDecoration(
                       hintText: 'Nhập tin nhắn...',
                       hintStyle: AppTextStyles.bodyMedium
-                          .copyWith(color: AppColors.textTertiary),
+                          .copyWith(color: tokens.textTertiary),
                       filled: true,
-                      fillColor: AppColors.bgTertiary,
+                      fillColor: tokens.cardMuted,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(24),
-                        borderSide: const BorderSide(color: Color(0x332D363D)),
+                        borderSide: BorderSide(color: tokens.border),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(24),
-                        borderSide: const BorderSide(color: Color(0x332D363D)),
+                        borderSide: BorderSide(color: tokens.border),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(24),
                         borderSide: BorderSide(
-                            color:
-                                AppColors.primaryLight.withValues(alpha: 0.6)),
+                            color: tokens.brand.withValues(alpha: 0.6)),
                       ),
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16,
@@ -302,7 +301,7 @@ class _SubjectLearningGoalsScreenState
                 IconButton(
                   icon: const Icon(Icons.send_rounded),
                   onPressed: _sendMessage,
-                  color: AppColors.primaryLight,
+                  color: tokens.brand,
                 ),
               ],
             ),

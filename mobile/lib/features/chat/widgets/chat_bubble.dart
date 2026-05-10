@@ -18,16 +18,17 @@ class _CornerRedDot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
     return Container(
       width: 10,
       height: 10,
       decoration: BoxDecoration(
         color: const Color(0xFFFF3B30),
         shape: BoxShape.circle,
-        border: Border.all(color: AppColors.bgPrimary, width: 1.5),
+        border: Border.all(color: t.bg, width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: AppColors.errorNeon.withValues(alpha: 0.45),
+            color: t.error.withValues(alpha: 0.45),
             blurRadius: 4,
           ),
         ],
@@ -244,6 +245,7 @@ class _FloatingChatBubbleState extends State<FloatingChatBubble>
   @override
   Widget build(BuildContext context) {
     final bottom = MediaQuery.of(context).padding.bottom + 80;
+    final t = context.colors;
 
     final chatFab = AnimatedBuilder(
       animation: _pulseAnimation,
@@ -258,20 +260,20 @@ class _FloatingChatBubbleState extends State<FloatingChatBubble>
         showDot: _chatUnreadDot,
         gradient: LinearGradient(
           colors: [
-            AppColors.primaryLight.withValues(alpha: 0.82),
-            AppColors.purpleNeon.withValues(alpha: 0.75),
+            t.gold.withValues(alpha: 0.82),
+            t.brand.withValues(alpha: 0.75),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         shadows: [
           BoxShadow(
-            color: AppColors.primaryLight.withValues(alpha: 0.16),
+            color: t.gold.withValues(alpha: 0.16),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
-        child: const Icon(Icons.chat_rounded, color: Colors.white, size: 22),
+        child: Icon(Icons.chat_rounded, color: t.textOnBrand, size: 22),
       ),
     );
 
@@ -284,7 +286,7 @@ class _FloatingChatBubbleState extends State<FloatingChatBubble>
             _ShortcutPill(
               icon: Icons.task_alt_rounded,
               label: 'Nhiệm vụ',
-              color: AppColors.primaryLight,
+              color: t.brand,
               onTap: _goQuests,
               showBadge: widget.hasClaimableQuest,
             ),
@@ -292,21 +294,21 @@ class _FloatingChatBubbleState extends State<FloatingChatBubble>
             _ShortcutPill(
               icon: Icons.flag_circle_rounded,
               label: 'Cam kết tuần',
-              color: AppColors.orangeNeon,
+              color: t.warning,
               onTap: _goWeeklyCommitment,
             ),
             const SizedBox(height: 8),
             _ShortcutPill(
               icon: Icons.leaderboard_rounded,
               label: 'Xếp hạng',
-              color: AppColors.purpleNeon,
+              color: t.brand,
               onTap: _goLeaderboard,
             ),
             const SizedBox(height: 8),
             _ShortcutPill(
               icon: Icons.storefront_rounded,
               label: 'Cửa hàng',
-              color: AppColors.coinGold,
+              color: t.gold,
               onTap: _goShop,
             ),
             const SizedBox(height: 8),
@@ -317,8 +319,8 @@ class _FloatingChatBubbleState extends State<FloatingChatBubble>
             children: [
               _circleButton(
                 onTap: _toggleShortcuts,
-                color: AppColors.bgSecondary,
-                border: Border.all(color: const Color(0x332D363D)),
+                color: t.card,
+                border: Border.all(color: t.border),
                 shadows: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.25),
@@ -328,7 +330,7 @@ class _FloatingChatBubbleState extends State<FloatingChatBubble>
                 ],
                 child: Icon(
                   _shortcutsOpen ? Icons.expand_more : Icons.apps_rounded,
-                  color: AppColors.textSecondary,
+                  color: t.textSecondary,
                   size: 22,
                 ),
               ),
@@ -378,8 +380,9 @@ class _ShortcutPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
     return Material(
-      color: AppColors.bgSecondary,
+      color: t.card,
       elevation: 3,
       borderRadius: BorderRadius.circular(24),
       shadowColor: Colors.black54,
@@ -407,7 +410,7 @@ class _ShortcutPill extends StatelessWidget {
               Text(
                 label,
                 style: AppTextStyles.labelMedium.copyWith(
-                  color: AppColors.textPrimary,
+                  color: t.textPrimary,
                   fontWeight: FontWeight.w600,
                 ),
               ),

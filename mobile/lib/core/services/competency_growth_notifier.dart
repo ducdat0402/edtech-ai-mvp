@@ -67,16 +67,18 @@ class CompetencyGrowthNotifier {
 
       await showDialog<void>(
         context: context,
-        builder: (ctx) => AlertDialog(
-          backgroundColor: AppColors.bgSecondary,
-          title: const Row(
+        builder: (ctx) {
+          final d = ctx.colors;
+          return AlertDialog(
+          backgroundColor: d.card,
+          title: Row(
             children: [
-              Icon(Icons.trending_up_rounded, color: AppColors.successNeon),
-              SizedBox(width: 8),
+              Icon(Icons.trending_up_rounded, color: d.success),
+              const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   'Chỉ số năng lực tăng!',
-                  style: TextStyle(color: AppColors.textPrimary),
+                  style: TextStyle(color: d.textPrimary),
                 ),
               ),
             ],
@@ -88,7 +90,7 @@ class CompetencyGrowthNotifier {
               Text(
                 'Bạn vừa được tăng chỉ số:',
                 style: AppTextStyles.bodySmall
-                    .copyWith(color: AppColors.textSecondary),
+                    .copyWith(color: d.textSecondary),
               ),
               const SizedBox(height: 8),
               ...top.map(
@@ -97,7 +99,7 @@ class CompetencyGrowthNotifier {
                   child: Text(
                     '• ${_labels[g.key] ?? g.key}: +${g.value.toStringAsFixed(0)}',
                     style: AppTextStyles.bodyMedium
-                        .copyWith(color: AppColors.textPrimary),
+                        .copyWith(color: d.textPrimary),
                   ),
                 ),
               ),
@@ -109,7 +111,8 @@ class CompetencyGrowthNotifier {
               child: const Text('Tuyệt vời!'),
             ),
           ],
-        ),
+        );
+        },
       );
     } catch (_) {
       // Ignore to avoid interrupting learning flow.

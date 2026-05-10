@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
-import 'package:edtech_mobile/theme/colors.dart';
 import 'package:edtech_mobile/features/auth/screens/login_screen.dart';
 import 'package:edtech_mobile/features/auth/screens/register_screen.dart';
 import 'package:edtech_mobile/features/dashboard/screens/dashboard_screen.dart';
@@ -566,7 +565,7 @@ class _LessonEditLoaderState extends State<_LessonEditLoader> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,

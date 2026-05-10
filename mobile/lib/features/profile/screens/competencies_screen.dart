@@ -142,14 +142,14 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
     _learning = _buildSection(
       title: 'Năng lực học tập',
       subtitle: 'Đo qua hành vi trong ứng dụng',
-      color: AppColors.primaryLight,
+      color: SemanticColors.light.brand,
       template: _learningTemplate,
       values: const {},
     );
     _human = _buildSection(
       title: 'Năng lực con người',
       subtitle: 'Đo qua pattern & đánh giá',
-      color: AppColors.orangeNeon,
+      color: SemanticColors.light.warning,
       template: _humanTemplate,
       values: const {},
     );
@@ -263,7 +263,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
         _learning = _buildSection(
           title: 'Năng lực học tập',
           subtitle: 'Đo qua hành vi trong ứng dụng',
-          color: AppColors.primaryLight,
+          color: context.colors.brand,
           template: _learningTemplate,
           values: learningValues,
           memoryTooltip: _memoryTooltip,
@@ -277,7 +277,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
         _human = _buildSection(
           title: 'Năng lực con người',
           subtitle: 'Đo qua pattern & đánh giá',
-          color: AppColors.orangeNeon,
+          color: context.colors.warning,
           template: _humanTemplate,
           values: humanValues,
           systemsThinkingTooltip: _systemsThinkingTooltip,
@@ -727,21 +727,20 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(
           'Năng lực',
-          style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+          style: AppTextStyles.h4.copyWith(color: t.textPrimary),
         ),
-        iconTheme: const IconThemeData(color: AppColors.textPrimary),
+        iconTheme: IconThemeData(color: t.textPrimary),
       ),
       body: _loading
-          ? const Center(
-              child: CircularProgressIndicator(color: AppColors.primaryLight),
-            )
+          ? Center(child: CircularProgressIndicator(color: t.brand))
           : _error != null
               ? Center(
                   child: Padding(
@@ -752,20 +751,20 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
                         Text(
                           'Không tải được chỉ số',
                           style: AppTextStyles.bodyLarge
-                              .copyWith(color: AppColors.textPrimary),
+                              .copyWith(color: t.textPrimary),
                         ),
                         const SizedBox(height: 6),
                         Text(
                           _error!,
                           style: AppTextStyles.caption
-                              .copyWith(color: AppColors.textTertiary),
+                              .copyWith(color: t.textTertiary),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 10),
                         TextButton(
                           onPressed: _load,
-                          style: TextButton.styleFrom(
-                              foregroundColor: AppColors.purpleNeon),
+                          style:
+                              TextButton.styleFrom(foregroundColor: t.brand),
                           child: const Text('Thử lại'),
                         ),
                       ],
@@ -788,7 +787,7 @@ class _CompetenciesScreenState extends State<CompetenciesScreen> {
 
                     return RefreshIndicator(
                       onRefresh: _load,
-                      color: AppColors.primaryLight,
+                      color: t.brand,
                       child: SingleChildScrollView(
                         physics: const AlwaysScrollableScrollPhysics(),
                         padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
@@ -882,11 +881,12 @@ class _CompetencySection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
+        color: t.card,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0x332D363D)),
+        border: Border.all(color: t.border),
       ),
       child: LayoutBuilder(
         builder: (context, c) {
@@ -901,7 +901,7 @@ class _CompetencySection extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(section.subtitle,
                     style: AppTextStyles.bodySmall
-                        .copyWith(color: AppColors.textTertiary)),
+                        .copyWith(color: t.textTertiary)),
                 const SizedBox(height: 14),
                 compact
                     ? Column(
@@ -998,12 +998,13 @@ class _RadarCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.bgTertiary.withValues(alpha: 0.35),
+        color: t.cardMuted.withValues(alpha: 0.35),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0x332D363D)),
+        border: Border.all(color: t.border),
       ),
       child: Column(
         children: [
@@ -1017,12 +1018,11 @@ class _RadarCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             average.toStringAsFixed(0),
-            style: AppTextStyles.h2.copyWith(color: AppColors.textPrimary),
+            style: AppTextStyles.h2.copyWith(color: t.textPrimary),
           ),
           Text(
             'điểm trung bình',
-            style:
-                AppTextStyles.caption.copyWith(color: AppColors.textTertiary),
+            style: AppTextStyles.caption.copyWith(color: t.textTertiary),
           ),
         ],
       ),
@@ -1136,6 +1136,7 @@ class _MetricRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
     final v = item.value.clamp(0, 100).toDouble();
     final showMemoryTooltip = item.key == 'memory' && memoryTooltip != null;
     final showSystemsThinkingTooltip =
@@ -1201,9 +1202,9 @@ class _MetricRow extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: AppColors.bgTertiary.withValues(alpha: 0.2),
+        color: t.cardMuted.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0x332D363D)),
+        border: Border.all(color: t.border),
       ),
       child: Row(
         children: [
@@ -1226,7 +1227,7 @@ class _MetricRow extends StatelessWidget {
                       child: Text(
                         item.label,
                         style: AppTextStyles.labelLarge.copyWith(
-                          color: AppColors.textPrimary,
+                          color: t.textPrimary,
                         ),
                       ),
                     ),
@@ -1234,12 +1235,12 @@ class _MetricRow extends StatelessWidget {
                       Tooltip(
                         message: tooltipMessage,
                         triggerMode: TooltipTriggerMode.tap,
-                        child: const Padding(
-                          padding: EdgeInsets.only(left: 8),
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 8),
                           child: Icon(
                             Icons.info_outline_rounded,
                             size: 16,
-                            color: AppColors.textTertiary,
+                            color: t.textTertiary,
                           ),
                         ),
                       ),
@@ -1248,7 +1249,7 @@ class _MetricRow extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(item.description,
                     style: AppTextStyles.caption
-                        .copyWith(color: AppColors.textTertiary)),
+                        .copyWith(color: t.textTertiary)),
               ],
             ),
           ),
@@ -1261,13 +1262,13 @@ class _MetricRow extends StatelessWidget {
                 Text(
                   v.toStringAsFixed(0),
                   style: AppTextStyles.labelLarge
-                      .copyWith(color: AppColors.textSecondary),
+                      .copyWith(color: t.textSecondary),
                 ),
                 SliderTheme(
                   data: SliderTheme.of(context).copyWith(
                     trackHeight: 3,
                     inactiveTrackColor:
-                        AppColors.borderPrimary.withValues(alpha: 0.8),
+                        t.border.withValues(alpha: 0.8),
                     activeTrackColor: color.withValues(alpha: 0.9),
                     thumbColor: color,
                     overlayShape: SliderComponentShape.noOverlay,
@@ -1295,6 +1296,7 @@ class _RadarChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
     if (items.isEmpty) return const SizedBox.shrink();
     final values = items.map((e) => (e.value.clamp(0, 100) / 100.0)).toList();
 
@@ -1302,15 +1304,15 @@ class _RadarChart extends StatelessWidget {
       RadarChartData(
         radarBackgroundColor: Colors.transparent,
         borderData: FlBorderData(show: false),
-        radarBorderData: const BorderSide(color: Color(0x332D363D)),
-        tickBorderData: const BorderSide(color: Color(0x552D363D)),
-        gridBorderData: const BorderSide(color: Color(0x332D363D)),
+        radarBorderData: BorderSide(color: t.border),
+        tickBorderData: BorderSide(color: t.border.withValues(alpha: 0.7)),
+        gridBorderData: BorderSide(color: t.border),
         ticksTextStyle: AppTextStyles.caption.copyWith(
-          color: AppColors.textTertiary,
+          color: t.textTertiary,
           fontSize: 10,
         ),
         titleTextStyle: AppTextStyles.caption.copyWith(
-          color: AppColors.textSecondary,
+          color: t.textSecondary,
           fontSize: 10,
           fontWeight: FontWeight.w600,
         ),

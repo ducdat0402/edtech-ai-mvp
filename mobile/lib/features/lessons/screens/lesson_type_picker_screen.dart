@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
-import 'package:edtech_mobile/theme/colors.dart';
+import 'package:edtech_mobile/theme/theme.dart';
 import 'package:edtech_mobile/features/lessons/editors/image_quiz_editor_screen.dart';
 import 'package:edtech_mobile/features/lessons/editors/image_gallery_editor_screen.dart';
 import 'package:edtech_mobile/features/lessons/editors/video_editor_screen.dart';
@@ -52,19 +52,20 @@ class _LessonTypePickerScreenState extends State<LessonTypePickerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
     // If preselected and not yet navigated, show loading
     if (widget.preselectedType != null && !_autoNavigated) {
-      return const Scaffold(
-        backgroundColor: AppColors.bgPrimary,
-        body: Center(child: CircularProgressIndicator()),
+      return Scaffold(
+        backgroundColor: t.bg,
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
     return Scaffold(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: t.bg,
       appBar: AppBar(
         title: const Text('Chọn dạng bài học'),
-        backgroundColor: AppColors.bgPrimary,
-        foregroundColor: AppColors.textPrimary,
+        backgroundColor: t.bg,
+        foregroundColor: t.textPrimary,
         elevation: 0,
         leading: const AppBarLeadingBackAndHome(),
         leadingWidth: 112,
@@ -78,15 +79,14 @@ class _LessonTypePickerScreenState extends State<LessonTypePickerScreen> {
             if (widget.topicName != null) ...[
               Text(
                 'Tạo bài học cho: ${widget.topicName}',
-                style: const TextStyle(
-                    color: AppColors.textSecondary, fontSize: 14),
+                style: TextStyle(color: t.textSecondary, fontSize: 14),
               ),
               const SizedBox(height: 16),
             ],
-            const Text(
+            Text(
               'Chọn dạng bài học bạn muốn tạo',
               style: TextStyle(
-                  color: AppColors.textPrimary,
+                  color: t.textPrimary,
                   fontSize: 18,
                   fontWeight: FontWeight.bold),
             ),
@@ -104,7 +104,7 @@ class _LessonTypePickerScreenState extends State<LessonTypePickerScreen> {
                     title: 'Hình ảnh\n(Quiz)',
                     description:
                         'Câu hỏi trắc nghiệm kèm hình ảnh, swipe qua nhiều câu',
-                    color: AppColors.purpleNeon,
+                    color: t.brand,
                     onTap: () => _navigateToEditor(context, 'image_quiz'),
                   ),
                   _buildTypeCard(
@@ -112,7 +112,7 @@ class _LessonTypePickerScreenState extends State<LessonTypePickerScreen> {
                     icon: Icons.photo_library_outlined,
                     title: 'Hình ảnh\n(Thư viện)',
                     description: 'Nhiều hình ảnh kèm mô tả chi tiết',
-                    color: AppColors.primaryLight,
+                    color: t.gold,
                     onTap: () => _navigateToEditor(context, 'image_gallery'),
                   ),
                   _buildTypeCard(
@@ -121,7 +121,7 @@ class _LessonTypePickerScreenState extends State<LessonTypePickerScreen> {
                     title: 'Video',
                     description:
                         'Video bài giảng kèm tóm tắt và nội dung chính',
-                    color: AppColors.orangeNeon,
+                    color: t.warning,
                     onTap: () => _navigateToEditor(context, 'video'),
                   ),
                   _buildTypeCard(
@@ -129,7 +129,7 @@ class _LessonTypePickerScreenState extends State<LessonTypePickerScreen> {
                     icon: Icons.article_outlined,
                     title: 'Văn bản',
                     description: 'Bài viết với câu hỏi xen kẽ và tổng kết',
-                    color: AppColors.pinkNeon,
+                    color: t.info,
                     onTap: () => _navigateToEditor(context, 'text'),
                   ),
                 ],
@@ -149,11 +149,12 @@ class _LessonTypePickerScreenState extends State<LessonTypePickerScreen> {
     required Color color,
     required VoidCallback onTap,
   }) {
+    final t = context.colors;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.bgSecondary,
+          color: t.card,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
@@ -173,8 +174,8 @@ class _LessonTypePickerScreenState extends State<LessonTypePickerScreen> {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
+              style: TextStyle(
+                color: t.textPrimary,
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
               ),
@@ -185,8 +186,8 @@ class _LessonTypePickerScreenState extends State<LessonTypePickerScreen> {
               textAlign: TextAlign.center,
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: AppColors.textSecondary,
+              style: TextStyle(
+                color: t.textSecondary,
                 fontSize: 11,
               ),
             ),
@@ -245,21 +246,22 @@ class _LessonTypePickerScreenState extends State<LessonTypePickerScreen> {
   }
 
   void _showAlreadyExistsDialog(BuildContext context, String type) {
+    final t = context.colors;
     final typeLabel = _getTypeLabel(type);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.bgSecondary,
+        backgroundColor: t.card,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.info_outline, color: AppColors.warningNeon, size: 28),
-            SizedBox(width: 12),
+            Icon(Icons.info_outline, color: t.warning, size: 28),
+            const SizedBox(width: 12),
             Expanded(
               child: Text(
                 'Dạng bài học đã tồn tại',
                 style: TextStyle(
-                    color: AppColors.textPrimary,
+                    color: t.textPrimary,
                     fontSize: 18,
                     fontWeight: FontWeight.bold),
               ),
@@ -273,31 +275,29 @@ class _LessonTypePickerScreenState extends State<LessonTypePickerScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.warningNeon.withValues(alpha: 0.1),
+                color: t.warning.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                    color: AppColors.warningNeon.withValues(alpha: 0.3)),
+                    color: t.warning.withValues(alpha: 0.3)),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.check_circle,
-                      color: AppColors.successNeon, size: 20),
+                  Icon(Icons.check_circle, color: t.success, size: 20),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       'Dạng bài học "$typeLabel" đã tồn tại và được phê duyệt.',
-                      style: const TextStyle(
-                          color: AppColors.textPrimary, fontSize: 14),
+                      style: TextStyle(color: t.textPrimary, fontSize: 14),
                     ),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'Bạn có thể:',
               style: TextStyle(
-                  color: AppColors.textPrimary,
+                  color: t.textPrimary,
                   fontWeight: FontWeight.w600,
                   fontSize: 14),
             ),
@@ -311,8 +311,7 @@ class _LessonTypePickerScreenState extends State<LessonTypePickerScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Đóng',
-                style: TextStyle(color: AppColors.textSecondary)),
+            child: Text('Đóng', style: TextStyle(color: t.textSecondary)),
           ),
         ],
       ),
@@ -320,15 +319,15 @@ class _LessonTypePickerScreenState extends State<LessonTypePickerScreen> {
   }
 
   Widget _buildOption(IconData icon, String text) {
+    final t = context.colors;
     return Row(
       children: [
-        Icon(icon, color: AppColors.purpleNeon, size: 18),
+        Icon(icon, color: t.brand, size: 18),
         const SizedBox(width: 8),
         Expanded(
           child: Text(
             text,
-            style:
-                const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+            style: TextStyle(color: t.textSecondary, fontSize: 13),
           ),
         ),
       ],

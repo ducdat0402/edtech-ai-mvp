@@ -217,9 +217,10 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
                         borderRadius: BorderRadius.circular(12)),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
-                  child: const Text('Đã hiểu',
+                  child: Text('Đã hiểu',
                       style: TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.bold)),
+                          color: context.colors.textOnBrand,
+                          fontWeight: FontWeight.bold)),
                 ),
               ),
             ],
@@ -231,14 +232,28 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final tokens = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: tokens.bg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text('Giới thiệu khóa học',
-            style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
-        leading: const AppBarLeadingBackAndHome(),
+        flexibleSpace: isDark
+            ? null
+            : const BrandHeader(
+                padding: EdgeInsets.zero,
+                child: SizedBox.shrink(),
+              ),
+        title: Text(
+          'Giới thiệu khóa học',
+          style: AppTextStyles.h4.copyWith(
+            color: isDark ? tokens.textPrimary : tokens.textOnBrand,
+          ),
+        ),
+        leading: AppBarLeadingBackAndHome(
+          iconColor: isDark ? null : tokens.textOnBrand,
+        ),
         leadingWidth: 112,
         automaticallyImplyLeading: false,
         actions: const [],
@@ -248,11 +263,11 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const CircularProgressIndicator(color: AppColors.purpleNeon),
+                  CircularProgressIndicator(color: tokens.brand),
                   const SizedBox(height: 16),
                   Text('Đang tải...',
                       style: AppTextStyles.bodyMedium
-                          .copyWith(color: AppColors.textSecondary)),
+                          .copyWith(color: tokens.textSecondary)),
                 ],
               ),
             )
@@ -264,16 +279,16 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
                       Container(
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color: AppColors.errorNeon.withValues(alpha: 0.15),
+                          color: tokens.error.withValues(alpha: 0.15),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.error_outline_rounded,
-                            size: 48, color: AppColors.errorNeon),
+                        child: Icon(Icons.error_outline_rounded,
+                            size: 48, color: tokens.error),
                       ),
                       const SizedBox(height: 16),
                       Text('Lỗi: $_error',
                           style: AppTextStyles.bodyMedium
-                              .copyWith(color: AppColors.textSecondary)),
+                              .copyWith(color: tokens.textSecondary)),
                       const SizedBox(height: 16),
                       GamingButton(
                           text: 'Thử lại',
@@ -286,7 +301,7 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
                   ? Center(
                       child: Text('Không có dữ liệu',
                           style: AppTextStyles.bodyMedium
-                              .copyWith(color: AppColors.textSecondary)))
+                              .copyWith(color: tokens.textSecondary)))
                   : SingleChildScrollView(
                       padding: const EdgeInsets.all(16),
                       child: Column(
@@ -319,10 +334,10 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
   }
 
   Widget _buildSubjectHeader() {
+    final t = context.colors;
     final subject = _introData!['subject'] as Map<String, dynamic>;
     final track = subject['track'] as String;
-    final trackColor =
-        track == 'explorer' ? AppColors.successNeon : AppColors.primaryLight;
+    final trackColor = track == 'explorer' ? t.success : t.brand;
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -352,17 +367,17 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
             ),
             child: Text(
               track.toUpperCase(),
-              style: AppTextStyles.labelSmall.copyWith(color: Colors.white),
+              style: AppTextStyles.labelSmall.copyWith(color: t.textOnBrand),
             ),
           ),
           const SizedBox(height: 16),
           Text(subject['name'] ?? 'Subject',
-              style: AppTextStyles.h2.copyWith(color: AppColors.textPrimary)),
+              style: AppTextStyles.h2.copyWith(color: t.textPrimary)),
           const SizedBox(height: 10),
           Text(
             subject['description'] ?? '',
             style: AppTextStyles.bodyMedium
-                .copyWith(color: AppColors.textSecondary, height: 1.5),
+                .copyWith(color: t.textSecondary, height: 1.5),
           ),
         ],
       ),
@@ -370,14 +385,14 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
   }
 
   Widget _buildContributorQuickAccess() {
+    final t = context.colors;
     final subjectName = _introData?['subject']?['name'] as String? ?? '';
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.contributorBlue.withValues(alpha: 0.06),
+        color: t.info.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(16),
-        border:
-            Border.all(color: AppColors.contributorBlue.withValues(alpha: 0.2)),
+        border: Border.all(color: t.info.withValues(alpha: 0.2)),
       ),
       child: InkWell(
         onTap: () async {
@@ -393,11 +408,10 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: AppColors.contributorBlue.withValues(alpha: 0.12),
+                color: t.info.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(Icons.account_tree,
-                  color: AppColors.contributorBlue, size: 24),
+              child: Icon(Icons.account_tree, color: t.info, size: 24),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -407,7 +421,7 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
                   Text(
                     'Chỉnh sửa cấu trúc môn học',
                     style: AppTextStyles.labelLarge.copyWith(
-                      color: AppColors.contributorBlue,
+                      color: t.info,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -415,12 +429,12 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
                   Text(
                     'Thêm domain, topic, bài học dạng mind map',
                     style: AppTextStyles.bodySmall
-                        .copyWith(color: AppColors.textSecondary),
+                        .copyWith(color: t.textSecondary),
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right, color: AppColors.contributorBlue),
+            Icon(Icons.chevron_right, color: t.info),
           ],
         ),
       ),
@@ -428,11 +442,12 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
   }
 
   Widget _buildMindMapButtons() {
+    final t = context.colors;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('Bản đồ kiến thức',
-            style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
+            style: AppTextStyles.h4.copyWith(color: t.textPrimary)),
         const SizedBox(height: 16),
         // Single row with 3 equal compact buttons
         Row(
@@ -441,7 +456,7 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
               child: _CompactMindMapButton(
                 title: 'Mind map',
                 icon: Icons.account_tree_rounded,
-                color: AppColors.primaryLight,
+                color: t.brand,
                 isSelected: true,
                 onTap: () {
                   // Scroll down to show the mind map on this page
@@ -459,7 +474,7 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
               child: _CompactMindMapButton(
                 title: 'Lộ trình',
                 icon: Icons.route_rounded,
-                color: AppColors.successNeon,
+                color: t.success,
                 isSelected: false,
                 onTap: () {
                   // Navigate to all lessons screen (sequential view)
@@ -474,9 +489,7 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
                 icon: _isContributor
                     ? Icons.edit_note_rounded
                     : Icons.person_rounded,
-                color: _isContributor
-                    ? AppColors.contributorBlue
-                    : AppColors.purpleNeon,
+                color: _isContributor ? t.info : t.brand,
                 isSelected: false,
                 onTap: () async {
                   if (_isContributor) {
@@ -529,68 +542,71 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
               });
             }
           },
-          child: Container(
-            width: 220,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [nodeColor.withValues(alpha: 0.9), nodeColor],
+          child: Builder(builder: (ctx) {
+            final on = ctx.colors.textOnBrand;
+            return Container(
+              width: 220,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [nodeColor.withValues(alpha: 0.9), nodeColor],
+                ),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: on, width: 4),
+                boxShadow: [
+                  BoxShadow(
+                    color: nodeColor.withValues(alpha: 0.4),
+                    blurRadius: 12,
+                    spreadRadius: 2,
+                  ),
+                ],
               ),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.white, width: 4),
-              boxShadow: [
-                BoxShadow(
-                  color: nodeColor.withValues(alpha: 0.4),
-                  blurRadius: 12,
-                  spreadRadius: 2,
-                ),
-              ],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  isCompleted ? Icons.check_circle : Icons.school,
-                  color: Colors.white,
-                  size: 40,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    isCompleted ? Icons.check_circle : Icons.school,
+                    color: on,
+                    size: 40,
                   ),
-                  textAlign: TextAlign.center,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(12),
+                  const SizedBox(height: 12),
+                  Text(
+                    title,
+                    style: TextStyle(
+                      color: on,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.touch_app, color: Colors.white, size: 16),
-                      SizedBox(width: 4),
-                      Text(
-                        'Nhấn để mở rộng',
-                        style: TextStyle(color: Colors.white, fontSize: 12),
-                      ),
-                    ],
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: on.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.touch_app, color: on, size: 16),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Nhấn để mở rộng',
+                          style: TextStyle(color: on, fontSize: 12),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ),
+                ],
+              ),
+            );
+          }),
         ),
       ),
     );
@@ -864,7 +880,7 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
                                 color: nodeColor,
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                  color: Colors.white,
+                                  color: context.colors.textOnBrand,
                                   width: borderWidth,
                                 ),
                                 boxShadow: [
@@ -889,21 +905,21 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   if (level == 1)
-                                    const Icon(
+                                    Icon(
                                       Icons.school,
-                                      color: Colors.white,
+                                      color: context.colors.textOnBrand,
                                       size: 28,
                                     )
                                   else if (level == 2)
-                                    const Icon(
+                                    Icon(
                                       Icons.book,
-                                      color: Colors.white,
+                                      color: context.colors.textOnBrand,
                                       size: 22,
                                     )
                                   else
-                                    const Icon(
+                                    Icon(
                                       Icons.article,
-                                      color: Colors.white,
+                                      color: context.colors.textOnBrand,
                                       size: 18,
                                     ),
                                   const SizedBox(height: 6),
@@ -911,7 +927,7 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
                                     child: Text(
                                       title,
                                       style: TextStyle(
-                                        color: Colors.white,
+                                        color: context.colors.textOnBrand,
                                         fontWeight: FontWeight.bold,
                                         fontSize: fontSize,
                                         height: 1.3,
@@ -940,20 +956,21 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
   }
 
   Widget _buildCourseOutline() {
+    final t = context.colors;
     final outline = _introData!['courseOutline'] as Map<String, dynamic>;
 
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
+        color: t.card,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0x332D363D)),
+        border: Border.all(color: t.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('Tổng quan khóa học',
-              style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
+              style: AppTextStyles.h4.copyWith(color: t.textPrimary)),
           const SizedBox(height: 20),
           Row(
             children: [
@@ -962,19 +979,19 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
                       icon: Icons.book_rounded,
                       label: 'Bài học',
                       value: '${outline['totalLessons'] ?? 0}',
-                      color: AppColors.purpleNeon)),
+                      color: t.brand)),
               Expanded(
                   child: _OutlineItem(
                       icon: Icons.topic_rounded,
                       label: 'Topic',
                       value: '${outline['totalTopics'] ?? 0}',
-                      color: AppColors.primaryLight)),
+                      color: t.info)),
               Expanded(
                   child: _OutlineItem(
                       icon: Icons.category_rounded,
                       label: 'Domain',
                       value: '${outline['totalDomains'] ?? 0}',
-                      color: AppColors.coinGold)),
+                      color: t.gold)),
             ],
           ),
         ],
@@ -983,6 +1000,7 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
   }
 
   Widget _buildUnlockBanner() {
+    final t = context.colors;
     return InkWell(
       onTap: () async {
         await context.push('/subjects/${widget.subjectId}/unlock');
@@ -995,20 +1013,19 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              AppColors.purpleNeon.withValues(alpha: 0.12),
-              AppColors.primaryLight.withValues(alpha: 0.08)
+              t.brand.withValues(alpha: 0.12),
+              t.brandSoft.withValues(alpha: 0.5),
             ],
           ),
           borderRadius: BorderRadius.circular(16),
-          border:
-              Border.all(color: AppColors.purpleNeon.withValues(alpha: 0.25)),
+          border: Border.all(color: t.brand.withValues(alpha: 0.25)),
         ),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: AppColors.purpleNeon.withValues(alpha: 0.2),
+                color: t.brand.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Text('💎', style: TextStyle(fontSize: 24)),
@@ -1021,14 +1038,14 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
                   Text(
                     'Mở khóa bài học',
                     style: AppTextStyles.labelLarge.copyWith(
-                        color: AppColors.textPrimary,
+                        color: t.textPrimary,
                         fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     'Dùng kim cương để mở khóa từng bài, chương hoặc cả môn',
                     style: AppTextStyles.caption
-                        .copyWith(color: AppColors.textSecondary),
+                        .copyWith(color: t.textSecondary),
                   ),
                 ],
               ),
@@ -1036,11 +1053,11 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AppColors.purpleNeon.withValues(alpha: 0.15),
+                color: t.brand.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(Icons.chevron_right_rounded,
-                  color: AppColors.purpleNeon, size: 20),
+              child: Icon(Icons.chevron_right_rounded,
+                  color: t.brand, size: 20),
             ),
           ],
         ),
@@ -1072,6 +1089,7 @@ class _OutlineItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: Column(
@@ -1087,11 +1105,11 @@ class _OutlineItem extends StatelessWidget {
           const SizedBox(height: 10),
           Text(value,
               style: AppTextStyles.numberMedium
-                  .copyWith(color: AppColors.textPrimary)),
+                  .copyWith(color: t.textPrimary)),
           const SizedBox(height: 4),
           Text(label,
               style: AppTextStyles.caption
-                  .copyWith(color: AppColors.textTertiary)),
+                  .copyWith(color: t.textTertiary)),
         ],
       ),
     );
@@ -1116,6 +1134,7 @@ class _CompactMindMapButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -1123,12 +1142,12 @@ class _CompactMindMapButton extends StatelessWidget {
         decoration: BoxDecoration(
           color: isSelected
               ? color.withValues(alpha: 0.15)
-              : AppColors.bgSecondary,
+              : t.card,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected
                 ? color.withValues(alpha: 0.5)
-                : const Color(0x332D363D),
+                : t.border,
             width: isSelected ? 2 : 1,
           ),
           boxShadow: isSelected
@@ -1150,7 +1169,7 @@ class _CompactMindMapButton extends StatelessWidget {
             Text(
               title,
               style: AppTextStyles.caption.copyWith(
-                color: isSelected ? color : AppColors.textPrimary,
+                color: isSelected ? color : t.textPrimary,
                 fontWeight: FontWeight.w600,
               ),
               textAlign: TextAlign.center,

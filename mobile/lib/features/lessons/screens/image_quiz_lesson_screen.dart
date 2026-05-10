@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/core/widgets/ai_generated_notice.dart';
 import 'package:edtech_mobile/core/widgets/contributor_credit_button.dart';
-import 'package:edtech_mobile/theme/colors.dart';
+import 'package:edtech_mobile/theme/theme.dart';
 import 'end_quiz_screen.dart';
 import 'fullscreen_image_viewer.dart';
 
@@ -79,23 +79,24 @@ class _ImageQuizLessonScreenState extends State<ImageQuizLessonScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
     final totalSlides = _slides.length;
     final answeredCount = _selectedAnswers.values.whereType<int>().length;
     final hasAnsweredAllSlides =
         totalSlides > 0 && answeredCount >= totalSlides;
 
     return Scaffold(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppColors.bgPrimary,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
         leading: const AppBarLeadingBackAndHome(),
         leadingWidth: 112,
         automaticallyImplyLeading: false,
         title: Text(
           widget.title,
-          style: const TextStyle(
-            color: AppColors.textPrimary,
+          style: TextStyle(
+            color: t.textPrimary,
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
@@ -124,16 +125,16 @@ class _ImageQuizLessonScreenState extends State<ImageQuizLessonScreen> {
                   children: [
                     Text(
                       'Slide ${_currentPage + 1}/$totalSlides',
-                      style: const TextStyle(
-                        color: AppColors.purpleNeon,
+                      style: TextStyle(
+                        color: t.brand,
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     Text(
                       '${((_currentPage + 1) / totalSlides * 100).toInt()}%',
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
+                      style: TextStyle(
+                        color: t.textSecondary,
                         fontSize: 14,
                       ),
                     ),
@@ -145,29 +146,28 @@ class _ImageQuizLessonScreenState extends State<ImageQuizLessonScreen> {
                   child: LinearProgressIndicator(
                     value:
                         totalSlides > 0 ? (_currentPage + 1) / totalSlides : 0,
-                    backgroundColor: AppColors.bgSecondary,
-                    valueColor: const AlwaysStoppedAnimation<Color>(
-                        AppColors.purpleNeon),
+                    backgroundColor: t.card,
+                    valueColor: AlwaysStoppedAnimation<Color>(t.brand),
                     minHeight: 6,
                   ),
                 ),
                 if (totalSlides > 1) ...[
                   const SizedBox(height: 8),
-                  const Row(
+                  Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
                         kIsWeb ? Icons.touch_app : Icons.swipe,
-                        color: AppColors.textTertiary,
+                        color: t.textTertiary,
                         size: 14,
                       ),
-                      SizedBox(width: 6),
+                      const SizedBox(width: 6),
                       Text(
                         kIsWeb
                             ? 'Dùng nút Trước/Sau để chuyển câu'
                             : 'Vuốt trái/phải để sang câu tiếp theo',
                         style: TextStyle(
-                          color: AppColors.textTertiary,
+                          color: t.textTertiary,
                           fontSize: 12,
                         ),
                       ),
@@ -186,8 +186,8 @@ class _ImageQuizLessonScreenState extends State<ImageQuizLessonScreen> {
                         icon: const Icon(Icons.chevron_left, size: 16),
                         label: const Text('Trước'),
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.textSecondary,
-                          side: const BorderSide(color: Color(0x332D363D)),
+                          foregroundColor: t.textSecondary,
+                          side: BorderSide(color: t.border),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -198,8 +198,8 @@ class _ImageQuizLessonScreenState extends State<ImageQuizLessonScreen> {
                         icon: const Icon(Icons.chevron_right, size: 16),
                         label: const Text('Sau'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.purpleNeon,
-                          foregroundColor: Colors.white,
+                          backgroundColor: t.brand,
+                          foregroundColor: t.textOnBrand,
                         ),
                       ),
                     ],
@@ -247,8 +247,8 @@ class _ImageQuizLessonScreenState extends State<ImageQuizLessonScreen> {
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.purpleNeon,
-                        foregroundColor: Colors.white,
+                        backgroundColor: t.brand,
+                        foregroundColor: t.textOnBrand,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
@@ -265,15 +265,15 @@ class _ImageQuizLessonScreenState extends State<ImageQuizLessonScreen> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 14, vertical: 12),
                     decoration: BoxDecoration(
-                      color: AppColors.bgSecondary,
+                      color: t.card,
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: const Color(0x332D363D)),
+                      border: Border.all(color: t.border),
                     ),
                     child: Text(
                       'Hãy trả lời hết tất cả slide trước khi làm bài kiểm tra '
                       '($answeredCount/$totalSlides).',
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
+                      style: TextStyle(
+                        color: t.textSecondary,
                         fontSize: 14,
                       ),
                     ),
@@ -285,6 +285,7 @@ class _ImageQuizLessonScreenState extends State<ImageQuizLessonScreen> {
   }
 
   Widget _buildSlide(int index, Map<String, dynamic> slide) {
+    final t = context.colors;
     final imageUrl = slide['imageUrl'] ?? slide['image'] ?? '';
     final question = slide['question'] ?? '';
     final options = List<Map<String, dynamic>>.from(slide['options'] ?? []);
@@ -333,19 +334,18 @@ class _ImageQuizLessonScreenState extends State<ImageQuizLessonScreen> {
                         height: 250,
                         width: double.infinity,
                         decoration: BoxDecoration(
-                          color: AppColors.bgSecondary,
+                          color: t.card,
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: const Color(0x332D363D)),
+                          border: Border.all(color: t.border),
                         ),
-                        child: const Column(
+                        child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(Icons.image_not_supported,
-                                color: AppColors.textTertiary, size: 48),
-                            SizedBox(height: 8),
+                                color: t.textTertiary, size: 48),
+                            const SizedBox(height: 8),
                             Text('Không thể tải hình ảnh',
-                                style:
-                                    TextStyle(color: AppColors.textTertiary)),
+                                style: TextStyle(color: t.textTertiary)),
                           ],
                         ),
                       ),
@@ -361,9 +361,9 @@ class _ImageQuizLessonScreenState extends State<ImageQuizLessonScreen> {
                         color: Colors.black54,
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.zoom_in,
-                        color: Colors.white,
+                        color: t.textOnBrand,
                         size: 20,
                       ),
                     ),
@@ -376,8 +376,8 @@ class _ImageQuizLessonScreenState extends State<ImageQuizLessonScreen> {
           // Question
           Text(
             question.toString(),
-            style: const TextStyle(
-              color: AppColors.textPrimary,
+            style: TextStyle(
+              color: t.textPrimary,
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
@@ -391,25 +391,23 @@ class _ImageQuizLessonScreenState extends State<ImageQuizLessonScreen> {
               padding: const EdgeInsets.all(12),
               margin: const EdgeInsets.only(bottom: 16),
               decoration: BoxDecoration(
-                color: AppColors.purpleNeon.withValues(alpha: 0.1),
+                color: t.brand.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                    color: AppColors.purpleNeon.withValues(alpha: 0.3)),
+                border: Border.all(color: t.brand.withValues(alpha: 0.3)),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.lightbulb_outline,
-                      color: AppColors.purpleNeon, size: 20),
+                  Icon(Icons.lightbulb_outline, color: t.brand, size: 20),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'Gợi ý',
                           style: TextStyle(
-                            color: AppColors.purpleNeon,
+                            color: t.brand,
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
                           ),
@@ -417,8 +415,8 @@ class _ImageQuizLessonScreenState extends State<ImageQuizLessonScreen> {
                         const SizedBox(height: 4),
                         Text(
                           hint.toString(),
-                          style: const TextStyle(
-                            color: AppColors.textSecondary,
+                          style: TextStyle(
+                            color: t.textSecondary,
                             fontSize: 14,
                           ),
                         ),
@@ -439,18 +437,18 @@ class _ImageQuizLessonScreenState extends State<ImageQuizLessonScreen> {
             final isSelected = selected == optIdx;
 
             Color borderColor = const Color(0x332D363D);
-            Color bgColor = AppColors.bgSecondary;
-            Color labelColor = AppColors.textSecondary;
+            Color bgColor = t.card;
+            Color labelColor = t.textSecondary;
 
             if (revealed) {
               if (isCorrect) {
-                borderColor = AppColors.successNeon;
-                bgColor = AppColors.successNeon.withValues(alpha: 0.1);
-                labelColor = AppColors.successNeon;
+                borderColor = t.success;
+                bgColor = t.success.withValues(alpha: 0.1);
+                labelColor = t.success;
               } else if (isSelected && !isCorrect) {
-                borderColor = AppColors.errorNeon;
-                bgColor = AppColors.errorNeon.withValues(alpha: 0.1);
-                labelColor = AppColors.errorNeon;
+                borderColor = t.error;
+                bgColor = t.error.withValues(alpha: 0.1);
+                labelColor = t.error;
               }
             }
 
@@ -477,11 +475,10 @@ class _ImageQuizLessonScreenState extends State<ImageQuizLessonScreen> {
                             height: 36,
                             decoration: BoxDecoration(
                               color: revealed && isCorrect
-                                  ? AppColors.successNeon.withValues(alpha: 0.2)
+                                  ? t.success.withValues(alpha: 0.2)
                                   : revealed && isSelected
-                                      ? AppColors.errorNeon
-                                          .withValues(alpha: 0.2)
-                                      : AppColors.bgTertiary,
+                                      ? t.error.withValues(alpha: 0.2)
+                                      : t.cardMuted,
                               borderRadius: BorderRadius.circular(8),
                             ),
                             alignment: Alignment.center,
@@ -498,18 +495,16 @@ class _ImageQuizLessonScreenState extends State<ImageQuizLessonScreen> {
                           Expanded(
                             child: Text(
                               optionText.toString(),
-                              style: const TextStyle(
-                                color: AppColors.textPrimary,
+                              style: TextStyle(
+                                color: t.textPrimary,
                                 fontSize: 15,
                               ),
                             ),
                           ),
                           if (revealed && isCorrect)
-                            const Icon(Icons.check_circle,
-                                color: AppColors.successNeon, size: 22),
+                            Icon(Icons.check_circle, color: t.success, size: 22),
                           if (revealed && isSelected && !isCorrect)
-                            const Icon(Icons.cancel,
-                                color: AppColors.errorNeon, size: 22),
+                            Icon(Icons.cancel, color: t.error, size: 22),
                         ],
                       ),
                     ),
@@ -527,7 +522,7 @@ class _ImageQuizLessonScreenState extends State<ImageQuizLessonScreen> {
                         maxHeight: revealed ? 200 : 0,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.bgTertiary.withValues(alpha: 0.5),
+                        color: t.cardMuted.withValues(alpha: 0.5),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
@@ -536,16 +531,16 @@ class _ImageQuizLessonScreenState extends State<ImageQuizLessonScreen> {
                           Icon(
                             isCorrect ? Icons.info_outline : Icons.info_outline,
                             color: isCorrect
-                                ? AppColors.successNeon
-                                : AppColors.textTertiary,
+                                ? t.success
+                                : t.textTertiary,
                             size: 16,
                           ),
                           const SizedBox(width: 6),
                           Expanded(
                             child: Text(
                               explanation.toString(),
-                              style: const TextStyle(
-                                color: AppColors.textSecondary,
+                              style: TextStyle(
+                                color: t.textSecondary,
                                 fontSize: 13,
                               ),
                             ),

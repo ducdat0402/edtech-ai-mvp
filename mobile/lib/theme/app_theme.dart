@@ -1,82 +1,343 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'colors.dart';
+import 'semantic_colors.dart';
 
 /// Gamistu — theme theo `DESIGN.md` (Luminal Scholar, dark-first).
 class AppTheme {
   AppTheme._();
 
-  /// Light theme
+  /// Gamistu light theme — purple/gold/white-card theo bộ mockup `OB/Homepage/TV/MT`.
   static ThemeData get lightTheme {
+    const light = SemanticColors.light;
+
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
-      colorScheme: const ColorScheme.light(
-        primary: Color(0xFF7354F5),
-        secondary: Color(0xFFEAB308),
-        tertiary: Color(0xFF16A34A),
-        surface: Color(0xFFF1F5F9),
-        error: Color(0xFFDC2626),
+      colorScheme: ColorScheme.light(
+        primary: light.brand,
+        onPrimary: light.onBrand,
+        primaryContainer: light.brandSoft,
+        onPrimaryContainer: light.brandStrong,
+        secondary: light.gold,
+        onSecondary: const Color(0xFF3F2A04),
+        tertiary: light.success,
+        onTertiary: Colors.white,
+        surface: light.card,
+        onSurface: light.textPrimary,
+        onSurfaceVariant: light.textSecondary,
+        surfaceContainerHighest: light.cardMuted,
+        error: light.error,
+        onError: Colors.white,
+        outline: light.border,
+        outlineVariant: light.divider,
       ),
-      scaffoldBackgroundColor: const Color(0xFFF3F4F6),
+      scaffoldBackgroundColor: light.bg,
       appBarTheme: AppBarTheme(
-        backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF111827),
+        backgroundColor: light.card,
+        foregroundColor: light.textPrimary,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
         titleTextStyle: GoogleFonts.outfit(
           fontSize: 18,
-          fontWeight: FontWeight.w600,
-          color: const Color(0xFF111827),
+          fontWeight: FontWeight.w700,
+          color: light.textPrimary,
+          letterSpacing: 0.2,
         ),
+        iconTheme: IconThemeData(color: light.textPrimary),
+        actionsIconTheme: IconThemeData(color: light.textPrimary),
       ),
-      textTheme: GoogleFonts.beVietnamProTextTheme().apply(
-        bodyColor: const Color(0xFF111827),
-        displayColor: const Color(0xFF111827),
-      ),
+      textTheme: _buildLightTextTheme(light),
       cardTheme: CardTheme(
-        color: Colors.white,
+        color: light.card,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: Color(0xFFE5E7EB)),
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: light.border),
+        ),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: light.brand,
+          foregroundColor: light.onBrand,
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(999),
+          ),
+          textStyle: GoogleFonts.beVietnamPro(
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.2,
+          ),
+        ),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          backgroundColor: light.brand,
+          foregroundColor: light.onBrand,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(999),
+          ),
+          textStyle: GoogleFonts.beVietnamPro(
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: light.brand,
+          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(999),
+          ),
+          side: BorderSide(color: light.brand.withValues(alpha: 0.4)),
+          textStyle: GoogleFonts.beVietnamPro(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: light.brand,
+          textStyle: GoogleFonts.manrope(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: Colors.white,
+        fillColor: light.card,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: light.border),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: light.border),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF6D28D9), width: 2),
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: light.brand, width: 1.5),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: light.error),
+        ),
+        labelStyle: GoogleFonts.beVietnamPro(color: light.textSecondary),
+        hintStyle: GoogleFonts.beVietnamPro(color: light.textTertiary),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+      ),
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+        backgroundColor: light.card,
+        selectedItemColor: light.brand,
+        unselectedItemColor: light.textTertiary,
+        type: BottomNavigationBarType.fixed,
+        elevation: 0,
+      ),
+      dialogTheme: DialogTheme(
+        backgroundColor: light.card,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+        ),
+        titleTextStyle: GoogleFonts.outfit(
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+          color: light.textPrimary,
+        ),
+        contentTextStyle: GoogleFonts.beVietnamPro(
+          fontSize: 14,
+          color: light.textSecondary,
+          height: 1.5,
         ),
       ),
-      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor: Colors.white,
-        selectedItemColor: Color(0xFF6D28D9),
-        unselectedItemColor: Color(0xFF6B7280),
-        type: BottomNavigationBarType.fixed,
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: light.card,
+        surfaceTintColor: Colors.transparent,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+      ),
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: light.textPrimary,
+        contentTextStyle: GoogleFonts.beVietnamPro(color: Colors.white),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+        ),
+        behavior: SnackBarBehavior.floating,
+      ),
+      progressIndicatorTheme: ProgressIndicatorThemeData(
+        color: light.gold,
+        linearTrackColor: light.cardMuted,
+      ),
+      sliderTheme: SliderThemeData(
+        activeTrackColor: light.brand,
+        inactiveTrackColor: light.cardMuted,
+        thumbColor: light.brand,
+        overlayColor: light.brand.withValues(alpha: 0.18),
       ),
       switchTheme: SwitchThemeData(
         thumbColor: WidgetStateProperty.resolveWith((states) {
           return states.contains(WidgetState.selected)
-              ? const Color(0xFF6D28D9)
-              : const Color(0xFF9CA3AF);
+              ? light.brand
+              : Colors.white;
         }),
         trackColor: WidgetStateProperty.resolveWith((states) {
           return states.contains(WidgetState.selected)
-              ? const Color(0xFF6D28D9).withValues(alpha: 0.4)
-              : const Color(0xFFE5E7EB);
+              ? light.brand.withValues(alpha: 0.45)
+              : light.cardMuted;
         }),
       ),
+      checkboxTheme: CheckboxThemeData(
+        fillColor: WidgetStateProperty.resolveWith((states) {
+          return states.contains(WidgetState.selected)
+              ? light.brand
+              : Colors.transparent;
+        }),
+        checkColor: WidgetStateProperty.all(Colors.white),
+        side: BorderSide(color: light.border, width: 1.5),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(6),
+        ),
+      ),
+      dividerTheme: DividerThemeData(
+        color: light.divider,
+        thickness: 1,
+      ),
+      tooltipTheme: TooltipThemeData(
+        decoration: BoxDecoration(
+          color: light.textPrimary,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        textStyle: GoogleFonts.beVietnamPro(
+          fontSize: 12,
+          color: Colors.white,
+        ),
+        preferBelow: true,
+        verticalOffset: 10,
+        waitDuration: const Duration(milliseconds: 600),
+        showDuration: const Duration(seconds: 4),
+      ),
+      chipTheme: ChipThemeData(
+        backgroundColor: light.brandSoft,
+        selectedColor: light.brand,
+        secondarySelectedColor: light.brand,
+        labelStyle: GoogleFonts.beVietnamPro(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: light.textPrimary,
+        ),
+        secondaryLabelStyle: GoogleFonts.beVietnamPro(
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+          color: light.onBrand,
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        shape: const StadiumBorder(),
+        side: BorderSide(color: light.border),
+      ),
     );
+  }
+
+  static TextTheme _buildLightTextTheme(SemanticColors c) {
+    final base = TextTheme(
+      displayLarge: GoogleFonts.outfit(
+        fontSize: 32,
+        fontWeight: FontWeight.w700,
+        color: c.textPrimary,
+        letterSpacing: 0.3,
+      ),
+      displayMedium: GoogleFonts.outfit(
+        fontSize: 28,
+        fontWeight: FontWeight.w700,
+        color: c.textPrimary,
+        letterSpacing: 0.25,
+      ),
+      displaySmall: GoogleFonts.outfit(
+        fontSize: 24,
+        fontWeight: FontWeight.w600,
+        color: c.textPrimary,
+        letterSpacing: 0.2,
+      ),
+      headlineLarge: GoogleFonts.outfit(
+        fontSize: 24,
+        fontWeight: FontWeight.w700,
+        color: c.textPrimary,
+        letterSpacing: 0.25,
+      ),
+      headlineMedium: GoogleFonts.outfit(
+        fontSize: 20,
+        fontWeight: FontWeight.w600,
+        color: c.textPrimary,
+        letterSpacing: 0.2,
+      ),
+      headlineSmall: GoogleFonts.outfit(
+        fontSize: 18,
+        fontWeight: FontWeight.w600,
+        color: c.textPrimary,
+        letterSpacing: 0.15,
+      ),
+      titleLarge: GoogleFonts.beVietnamPro(
+        fontSize: 18,
+        fontWeight: FontWeight.w600,
+        color: c.textPrimary,
+      ),
+      titleMedium: GoogleFonts.beVietnamPro(
+        fontSize: 16,
+        fontWeight: FontWeight.w600,
+        color: c.textPrimary,
+      ),
+      titleSmall: GoogleFonts.beVietnamPro(
+        fontSize: 14,
+        fontWeight: FontWeight.w600,
+        color: c.textPrimary,
+      ),
+      bodyLarge: GoogleFonts.beVietnamPro(
+        fontSize: 16,
+        fontWeight: FontWeight.w400,
+        color: c.textPrimary,
+        height: 1.5,
+      ),
+      bodyMedium: GoogleFonts.beVietnamPro(
+        fontSize: 14,
+        fontWeight: FontWeight.w400,
+        color: c.textSecondary,
+        height: 1.5,
+      ),
+      bodySmall: GoogleFonts.beVietnamPro(
+        fontSize: 12,
+        fontWeight: FontWeight.w400,
+        color: c.textTertiary,
+        height: 1.45,
+      ),
+      labelLarge: GoogleFonts.manrope(
+        fontSize: 14,
+        fontWeight: FontWeight.w600,
+        color: c.textPrimary,
+        letterSpacing: 0.2,
+      ),
+      labelMedium: GoogleFonts.manrope(
+        fontSize: 12,
+        fontWeight: FontWeight.w500,
+        color: c.textSecondary,
+        letterSpacing: 0.15,
+      ),
+      labelSmall: GoogleFonts.manrope(
+        fontSize: 10,
+        fontWeight: FontWeight.w500,
+        color: c.textTertiary,
+        letterSpacing: 0.1,
+      ),
+    );
+    return base;
   }
 
   /// Dark theme (primary theme)

@@ -6,8 +6,16 @@ import 'package:edtech_mobile/core/constants/currency_labels.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/core/widgets/bottom_nav_bar.dart';
-import 'package:edtech_mobile/theme/colors.dart';
+import 'package:edtech_mobile/theme/semantic_colors.dart';
 import 'package:edtech_mobile/theme/text_styles.dart';
+import 'package:edtech_mobile/theme/widgets/brand_header.dart';
+
+/// Nền contributor (không map 1:1 sang semantic light).
+abstract final class _ContributorSurface {
+  static const Color bgPrimary = Color(0xFF0A1218);
+  static const Color bgSecondary = Color(0xFF152028);
+  static const Color border = Color(0xFF1E3A5F);
+}
 
 class SubjectsHubScreen extends StatefulWidget {
   const SubjectsHubScreen({super.key});
@@ -102,12 +110,31 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
       _currentRole == 'contributor' || _currentRole == 'admin';
   bool get _isContributor => _hasContributorRole && _viewAsContributor;
 
-  Color get _bgPrimary =>
-      _isContributor ? AppColors.contributorBgPrimary : AppColors.bgPrimary;
-  Color get _bgSecondary =>
-      _isContributor ? AppColors.contributorBgSecondary : AppColors.bgSecondary;
-  Color get _borderColor =>
-      _isContributor ? AppColors.contributorBorder : const Color(0x332D363D);
+  /// Surface tokens — light learner dùng semantic; dark / contributor dùng nền tối.
+  Color get _bgPrimary {
+    if (_isContributor) return _ContributorSurface.bgPrimary;
+    return context.colors.bg;
+  }
+
+  Color get _bgSecondary {
+    if (_isContributor) return _ContributorSurface.bgSecondary;
+    return context.colors.card;
+  }
+
+  Color get _borderColor {
+    if (_isContributor) return _ContributorSurface.border;
+    return Theme.of(context).brightness == Brightness.dark
+        ? const Color(0x332D363D)
+        : context.colors.border;
+  }
+
+  /// Chữ & accent đọc được trên nền hiện tại (contributor luôn nền tối).
+  SemanticColors get _screenTokens {
+    if (_isContributor) return SemanticColors.dark;
+    return Theme.of(context).brightness == Brightness.dark
+        ? SemanticColors.dark
+        : SemanticColors.light;
+  }
 
   Future<void> _handleSwitchRole() async {
     if (_isSwitchingRole) return;
@@ -128,8 +155,8 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                   : 'Đang xem dưới chế độ Learner (Admin)',
             ),
             backgroundColor: _viewAsContributor
-                ? AppColors.contributorBlue
-                : AppColors.successNeon,
+                ? context.colors.info
+                : context.colors.success,
           ),
         );
       }
@@ -155,8 +182,8 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                 ? 'Đã chuyển sang chế độ Contributor'
                 : 'Đã chuyển sang chế độ Learner'),
             backgroundColor: targetRole == 'contributor'
-                ? AppColors.contributorBlue
-                : AppColors.successNeon,
+                ? context.colors.info
+                : context.colors.success,
           ),
         );
       }
@@ -165,7 +192,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Lỗi: $e'),
-            backgroundColor: AppColors.errorNeon,
+            backgroundColor: context.colors.error,
           ),
         );
       }
@@ -176,18 +203,31 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final t = _screenTokens;
+    final brandHeaderEnabled = !isDark && !_isContributor;
+    final titleColor =
+        brandHeaderEnabled ? t.textOnBrand : t.textPrimary;
     return Scaffold(
       backgroundColor: _bgPrimary,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: const AppBarLeadingBackAndHome(),
+        leading: AppBarLeadingBackAndHome(
+          iconColor: brandHeaderEnabled ? t.textOnBrand : null,
+        ),
         leadingWidth: 112,
         automaticallyImplyLeading: false,
-        title: const Text(
+        flexibleSpace: brandHeaderEnabled
+            ? const BrandHeader(
+                padding: EdgeInsets.zero,
+                child: SizedBox.shrink(),
+              )
+            : null,
+        title: Text(
           'Thư viện',
           style: TextStyle(
-            color: AppColors.textPrimary,
+            color: titleColor,
             fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
@@ -212,14 +252,14 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
               },
               icon: Icon(
                 _showSearchField ? Icons.close : Icons.search,
-                color: AppColors.textPrimary,
+                color: titleColor,
               ),
             ),
         ],
       ),
       body: _loading
-          ? const Center(
-              child: CircularProgressIndicator(color: AppColors.purpleNeon))
+          ? Center(
+              child: CircularProgressIndicator(color: t.brand))
           : _error != null
               ? Center(
                   child: Padding(
@@ -227,14 +267,14 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.error_outline,
-                            color: AppColors.errorNeon, size: 44),
+                        Icon(Icons.error_outline,
+                            color: t.error, size: 44),
                         const SizedBox(height: 8),
                         Text(
                           'Không tải được danh sách môn học.\n$_error',
                           textAlign: TextAlign.center,
                           style:
-                              const TextStyle(color: AppColors.textSecondary),
+                              TextStyle(color: t.textSecondary),
                         ),
                         const SizedBox(height: 12),
                         ElevatedButton(
@@ -250,7 +290,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                   children: [
                     RefreshIndicator(
                       onRefresh: _loadData,
-                      color: AppColors.purpleNeon,
+                      color: t.brand,
                       child: CustomScrollView(
                         physics: const AlwaysScrollableScrollPhysics(),
                         slivers: [
@@ -275,25 +315,25 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                         ),
                       ),
                       if (_subjects.isEmpty)
-                        const SliverFillRemaining(
+                        SliverFillRemaining(
                           hasScrollBody: false,
                           child: Center(
                             child: Text(
                               'Chưa có môn học nào',
-                              style: TextStyle(color: AppColors.textSecondary),
+                              style: TextStyle(color: t.textSecondary),
                             ),
                           ),
                         )
                       else if (_filteredSubjects.isEmpty)
-                        const SliverToBoxAdapter(
+                        SliverToBoxAdapter(
                           child: Padding(
-                            padding: EdgeInsets.fromLTRB(24, 32, 24, 48),
+                            padding: const EdgeInsets.fromLTRB(24, 32, 24, 48),
                             child: Center(
                               child: Text(
                                 'Không tìm thấy môn học phù hợp.\nThử từ khóa khác hoặc xóa ô tìm kiếm.',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
-                                  color: AppColors.textSecondary,
+                                  color: t.textSecondary,
                                   fontSize: 14,
                                   height: 1.4,
                                 ),
@@ -310,7 +350,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                                 _buildTypeSection(
                                   title: 'Môn học cá nhân',
                                   sectionIcon: Icons.lock_rounded,
-                                  sectionTint: AppColors.primaryLight,
+                                  sectionTint: t.info,
                                   summary:
                                       'Môn riêng — chỉ bạn thấy; bài học private miễn phí cho bạn.',
                                   detail:
@@ -322,7 +362,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                                 _buildTypeSection(
                                   title: 'Môn học cộng đồng',
                                   sectionIcon: Icons.groups_rounded,
-                                  sectionTint: AppColors.orangeNeon,
+                                  sectionTint: t.gold,
                                   summary:
                                       'Đóng góp bài được duyệt có thể mang lại thưởng hàng tháng.',
                                   detail:
@@ -334,7 +374,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                                 _buildTypeSection(
                                   title: 'Môn học chuyên gia',
                                   sectionIcon: Icons.workspace_premium_rounded,
-                                  sectionTint: AppColors.purpleNeon,
+                                  sectionTint: t.brand,
                                   summary:
                                       'Nội dung chuyên sâu — mỗi bài mở bằng 50 kim cương; cần admin duyệt.',
                                   detail:
@@ -374,23 +414,24 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
   }
 
   Widget _buildSearchField() {
+    final t = _screenTokens;
     return TextField(
       controller: _searchController,
       focusNode: _searchFocusNode,
-      style: const TextStyle(color: AppColors.textPrimary, fontSize: 15),
-      cursorColor: AppColors.purpleNeon,
+      style: TextStyle(color: t.textPrimary, fontSize: 15),
+      cursorColor: t.brand,
       decoration: InputDecoration(
         hintText: 'Tìm theo tên hoặc mô tả môn học…',
         hintStyle: TextStyle(
-            color: AppColors.textSecondary.withValues(alpha: 0.85),
+            color: t.textSecondary.withValues(alpha: 0.85),
             fontSize: 14),
         prefixIcon:
-            const Icon(Icons.search, color: AppColors.textSecondary, size: 22),
+            Icon(Icons.search, color: t.textSecondary, size: 22),
         suffixIcon: _searchController.text.isEmpty
             ? null
             : IconButton(
                 tooltip: 'Xóa',
-                icon: const Icon(Icons.clear, color: AppColors.textSecondary),
+                icon: Icon(Icons.clear, color: t.textSecondary),
                 onPressed: () {
                   _searchController.clear();
                   setState(() {});
@@ -400,18 +441,18 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
         fillColor: _bgSecondary,
         isDense: true,
         contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
-        border: const OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(12)),
-          borderSide: BorderSide(color: Color(0x332D363D)),
+        border: OutlineInputBorder(
+          borderRadius: const BorderRadius.all(Radius.circular(12)),
+          borderSide: BorderSide(color: _borderColor),
         ),
-        enabledBorder: const OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(12)),
-          borderSide: BorderSide(color: Color(0x332D363D)),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: const BorderRadius.all(Radius.circular(12)),
+          borderSide: BorderSide(color: _borderColor),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: const BorderRadius.all(Radius.circular(12)),
           borderSide: BorderSide(
-            color: AppColors.purpleNeon.withValues(alpha: 0.45),
+            color: t.brand.withValues(alpha: 0.45),
             width: 1,
           ),
         ),
@@ -422,14 +463,15 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
   }
 
   Widget _buildContributorBanner() {
+    final t = _screenTokens;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
       decoration: BoxDecoration(
-        color: AppColors.contributorBgSecondary,
+        color: _ContributorSurface.bgSecondary,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: AppColors.contributorBlue.withValues(alpha: 0.35),
+          color: t.info.withValues(alpha: 0.35),
         ),
       ),
       child: Column(
@@ -439,7 +481,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
             children: [
               Icon(
                 Icons.insights_rounded,
-                color: AppColors.contributorBlue,
+                color: t.info,
                 size: 22,
               ),
               const SizedBox(width: 10),
@@ -447,7 +489,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                 child: Text(
                   'Xem đóng góp của tôi',
                   style: TextStyle(
-                    color: AppColors.textPrimary,
+                    color: t.textPrimary,
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                   ),
@@ -459,7 +501,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
           Text(
             'Chỉ liệt kê môn cộng đồng mà đã có bài ghi tên bạn; mỗi môn hiện hai câu giải thích rõ (tổng quan môn và phần của bạn).',
             style: TextStyle(
-              color: AppColors.textSecondary,
+              color: t.textSecondary,
               fontSize: 12.5,
               height: 1.35,
             ),
@@ -470,8 +512,8 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
             icon: const Icon(Icons.arrow_forward_rounded, size: 20),
             label: const Text('Mở bảng đóng góp'),
             style: FilledButton.styleFrom(
-              backgroundColor: AppColors.contributorBlue,
-              foregroundColor: Colors.white,
+              backgroundColor: t.info,
+              foregroundColor: t.textOnBrand,
               padding: const EdgeInsets.symmetric(vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -484,6 +526,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
   }
 
   Widget _buildLearnerFilterChips() {
+    final t = _screenTokens;
     ChipThemeData chipTheme(Color accent) {
       return ChipThemeData(
         shape: RoundedRectangleBorder(
@@ -504,52 +547,52 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
         children: [
           Theme(
             data: Theme.of(context).copyWith(
-              chipTheme: chipTheme(AppColors.purpleNeon),
+              chipTheme: chipTheme(t.brand),
             ),
             child: ChoiceChip(
               label: const Text('Tất cả'),
               selected: _subjectFilter == 'all',
               onSelected: (_) => setState(() => _subjectFilter = 'all'),
-              selectedColor: AppColors.purpleNeon.withValues(alpha: 0.22),
+              selectedColor: t.brand.withValues(alpha: 0.22),
               backgroundColor: _bgSecondary,
             ),
           ),
           const SizedBox(width: 10),
           Theme(
             data: Theme.of(context).copyWith(
-              chipTheme: chipTheme(AppColors.primaryLight),
+              chipTheme: chipTheme(t.info),
             ),
             child: ChoiceChip(
               label: const Text('Cá nhân'),
               selected: _subjectFilter == 'private',
               onSelected: (_) => setState(() => _subjectFilter = 'private'),
-              selectedColor: AppColors.primaryLight.withValues(alpha: 0.2),
+              selectedColor: t.info.withValues(alpha: 0.2),
               backgroundColor: _bgSecondary,
             ),
           ),
           const SizedBox(width: 10),
           Theme(
             data: Theme.of(context).copyWith(
-              chipTheme: chipTheme(AppColors.orangeNeon),
+              chipTheme: chipTheme(t.gold),
             ),
             child: ChoiceChip(
               label: const Text('Cộng đồng'),
               selected: _subjectFilter == 'community',
               onSelected: (_) => setState(() => _subjectFilter = 'community'),
-              selectedColor: AppColors.orangeNeon.withValues(alpha: 0.22),
+              selectedColor: t.gold.withValues(alpha: 0.22),
               backgroundColor: _bgSecondary,
             ),
           ),
           const SizedBox(width: 10),
           Theme(
             data: Theme.of(context).copyWith(
-              chipTheme: chipTheme(AppColors.purpleNeon),
+              chipTheme: chipTheme(t.brand),
             ),
             child: ChoiceChip(
               label: const Text('Chuyên gia'),
               selected: _subjectFilter == 'expert',
               onSelected: (_) => setState(() => _subjectFilter = 'expert'),
-              selectedColor: AppColors.purpleNeon.withValues(alpha: 0.24),
+              selectedColor: t.brand.withValues(alpha: 0.24),
               backgroundColor: _bgSecondary,
             ),
           ),
@@ -559,6 +602,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
   }
 
   Widget _buildRoleSwitcher() {
+    final t = _screenTokens;
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
@@ -579,12 +623,12 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
                   color: !_isContributor
-                      ? AppColors.purpleNeon.withValues(alpha: 0.32)
+                      ? t.brand.withValues(alpha: 0.32)
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(12),
                   border: !_isContributor
                       ? Border.all(
-                          color: AppColors.purpleNeon.withValues(alpha: 0.55),
+                          color: t.brand.withValues(alpha: 0.55),
                         )
                       : null,
                 ),
@@ -595,16 +639,16 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                       Icons.school_rounded,
                       size: 18,
                       color: !_isContributor
-                          ? AppColors.purpleNeon
-                          : AppColors.textTertiary,
+                          ? t.brand
+                          : t.textTertiary,
                     ),
                     const SizedBox(width: 6),
                     Text(
                       'Learner',
                       style: AppTextStyles.labelMedium.copyWith(
                         color: !_isContributor
-                            ? AppColors.purpleNeon
-                            : AppColors.textTertiary,
+                            ? t.brand
+                            : t.textTertiary,
                         fontWeight: !_isContributor
                             ? FontWeight.bold
                             : FontWeight.normal,
@@ -627,13 +671,12 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
                   color: _isContributor
-                      ? AppColors.contributorBlue.withValues(alpha: 0.2)
+                      ? t.info.withValues(alpha: 0.2)
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(12),
                   border: _isContributor
                       ? Border.all(
-                          color:
-                              AppColors.contributorBlue.withValues(alpha: 0.5),
+                          color: t.info.withValues(alpha: 0.5),
                         )
                       : null,
                 ),
@@ -641,12 +684,12 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     if (_isSwitchingRole && !_isContributor)
-                      const SizedBox(
+                      SizedBox(
                         width: 16,
                         height: 16,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: AppColors.contributorBlue,
+                          color: t.info,
                         ),
                       )
                     else
@@ -654,16 +697,16 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                         Icons.edit_note_rounded,
                         size: 18,
                         color: _isContributor
-                            ? AppColors.contributorBlue
-                            : AppColors.textTertiary,
+                            ? t.info
+                            : t.textTertiary,
                       ),
                     const SizedBox(width: 6),
                     Text(
                       'Contributor',
                       style: AppTextStyles.labelMedium.copyWith(
                         color: _isContributor
-                            ? AppColors.contributorBlue
-                            : AppColors.textTertiary,
+                            ? t.info
+                            : t.textTertiary,
                         fontWeight: _isContributor
                             ? FontWeight.bold
                             : FontWeight.normal,
@@ -680,6 +723,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
   }
 
   Widget _buildLearnerSection() {
+    final t = _screenTokens;
     final selectedType = _subjectFilter;
     final items = selectedType == 'all'
         ? _filteredSubjects
@@ -708,12 +752,12 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                AppColors.purpleNeon.withValues(alpha: 0.16),
+                t.brand.withValues(alpha: 0.16),
                 _bgSecondary,
               ],
             ),
             border: Border.all(
-              color: AppColors.purpleNeon.withValues(alpha: 0.28),
+              color: t.brand.withValues(alpha: 0.28),
             ),
             boxShadow: [
               BoxShadow(
@@ -732,24 +776,24 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      AppColors.purpleNeon.withValues(alpha: 0.45),
-                      AppColors.purpleNeon.withValues(alpha: 0.1),
+                      t.brand.withValues(alpha: 0.45),
+                      t.brand.withValues(alpha: 0.1),
                     ],
                   ),
                   border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.1),
+                    color: t.textOnBrand.withValues(alpha: 0.1),
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.purpleNeon.withValues(alpha: 0.2),
+                      color: t.brand.withValues(alpha: 0.2),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
                   ],
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.menu_book_rounded,
-                  color: AppColors.primaryLight,
+                  color: t.onBrand,
                   size: 22,
                 ),
               ),
@@ -770,7 +814,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                     Text(
                       '${items.length} môn học',
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.textSecondary,
+                        color: t.textSecondary,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -782,11 +826,11 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
         ),
         const SizedBox(height: 12),
         if (items.isEmpty)
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 20),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 20),
             child: Text(
               'Không có môn phù hợp với bộ lọc hiện tại.',
-              style: TextStyle(color: AppColors.textSecondary),
+              style: TextStyle(color: t.textSecondary),
             ),
           )
         else
@@ -805,6 +849,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
 
   /// Nội dung giải thích 3 loại môn — dùng trong bottom sheet lần đầu (5A).
   Widget _buildSubjectTypesExplainerBody() {
+    final t = _screenTokens;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
@@ -814,11 +859,11 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppColors.purpleNeon.withValues(alpha: 0.22),
-            AppColors.bgSecondary,
+            t.brand.withValues(alpha: 0.22),
+            t.card,
           ],
         ),
-        border: Border.all(color: AppColors.purpleNeon.withValues(alpha: 0.28)),
+        border: Border.all(color: t.brand.withValues(alpha: 0.28)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -829,18 +874,18 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                 width: 34,
                 height: 34,
                 decoration: BoxDecoration(
-                  color: AppColors.purpleNeon.withValues(alpha: 0.2),
+                  color: t.brand.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.menu_book_rounded,
-                    color: AppColors.primaryLight),
+                child: Icon(Icons.menu_book_rounded,
+                    color: t.onBrand),
               ),
               const SizedBox(width: 10),
-              const Expanded(
+              Expanded(
                 child: Text(
                   'Khám phá 3 loại môn học',
                   style: TextStyle(
-                    color: AppColors.textPrimary,
+                    color: t.textPrimary,
                     fontSize: 16,
                     fontWeight: FontWeight.w800,
                   ),
@@ -851,8 +896,8 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
           const SizedBox(height: 8),
           Text(
             'Private: chỉ bạn thấy. Community: mở bằng 50 ${CurrencyLabels.gtuCoin} hoặc 50 kim cương mỗi bài. Expert: mở bằng 50 kim cương mỗi bài.',
-            style: const TextStyle(
-              color: AppColors.textSecondary,
+            style: TextStyle(
+              color: t.textSecondary,
               fontSize: 13,
               height: 1.4,
             ),
@@ -877,9 +922,9 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
         return Padding(
           padding: EdgeInsets.only(bottom: bottomInset),
           child: Container(
-            decoration: const BoxDecoration(
-              color: AppColors.bgSecondary,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            decoration: BoxDecoration(
+              color: ctx.colors.card,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
             ),
             child: SafeArea(
               child: SingleChildScrollView(
@@ -893,7 +938,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                         width: 40,
                         height: 4,
                         decoration: BoxDecoration(
-                          color: AppColors.textTertiary,
+                          color: ctx.colors.textTertiary,
                           borderRadius: BorderRadius.circular(999),
                         ),
                       ),
@@ -981,6 +1026,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
     String name,
     double diameter,
   ) {
+    final on = _screenTokens.textOnBrand;
     final meta = _metadata(subject);
     final iconRaw = meta?['icon']?.toString().trim();
     final emojiSize = diameter * 0.44;
@@ -1011,7 +1057,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
           style: TextStyle(
             fontSize: letterSize,
             fontWeight: FontWeight.w900,
-            color: Colors.white,
+            color: on,
             height: 1,
             shadows: [
               Shadow(
@@ -1030,7 +1076,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
       style: TextStyle(
         fontSize: letterSize,
         fontWeight: FontWeight.w900,
-        color: Colors.white,
+        color: on,
         height: 1,
         shadows: [
           Shadow(
@@ -1051,6 +1097,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
     double diameter = 56,
   }) {
     final hasCover = coverUrl != null && coverUrl.isNotEmpty;
+    final tokens = _screenTokens;
     final deep = Color.lerp(accent, Colors.black, 0.52) ?? _bgSecondary;
     final mid = Color.lerp(accent, const Color(0xFF12121A), 0.45) ?? _bgSecondary;
 
@@ -1062,7 +1109,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
             center: const Alignment(-0.4, -0.45),
             radius: 1.05,
             colors: [
-              Color.lerp(accent, Colors.white, 0.22)!,
+              Color.lerp(accent, tokens.textOnBrand, 0.22)!,
               mid,
               deep,
             ],
@@ -1086,8 +1133,8 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Colors.white.withValues(alpha: 0.32),
-                  Colors.white.withValues(alpha: 0.0),
+                  tokens.textOnBrand.withValues(alpha: 0.32),
+                  tokens.textOnBrand.withValues(alpha: 0.0),
                 ],
               ),
             ),
@@ -1154,6 +1201,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
   }
 
   Widget _buildSubjectTile(Map<String, dynamic> subject) {
+    final t = _screenTokens;
     final id = (subject['id'] ?? '').toString();
     final name = (subject['name'] ?? 'Môn học').toString();
     final totalNodes = (subject['totalNodesCount'] as num?)?.toInt();
@@ -1198,7 +1246,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: AppColors.textPrimary,
+                  color: t.textPrimary,
                   fontWeight: FontWeight.w700,
                   fontSize: 11.5,
                   height: 1.25,
@@ -1212,7 +1260,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: AppColors.textSecondary,
+                    color: t.textSecondary,
                     fontWeight: FontWeight.w600,
                     fontSize: 10,
                   ),
@@ -1232,15 +1280,17 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
   }) async {
     final target = await showDialog<String>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.bgSecondary,
-        title: const Text(
+      builder: (ctx) {
+        final d = ctx.colors;
+        return AlertDialog(
+        backgroundColor: d.card,
+        title: Text(
           'Yêu cầu nâng hạng môn',
-          style: TextStyle(color: AppColors.textPrimary),
+          style: TextStyle(color: d.textPrimary),
         ),
         content: Text(
           'Môn "$subjectName" đang là private. Bạn muốn gửi duyệt lên loại nào?',
-          style: const TextStyle(color: AppColors.textSecondary),
+          style: TextStyle(color: d.textSecondary),
         ),
         actions: [
           TextButton(
@@ -1256,7 +1306,8 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
             child: const Text('Lên chuyên gia'),
           ),
         ],
-      ),
+      );
+      },
     );
     if (target == null) return;
     if (!mounted) return;
@@ -1272,7 +1323,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('$e'), backgroundColor: AppColors.errorNeon),
+        SnackBar(content: Text('$e'), backgroundColor: context.colors.error),
       );
     }
   }
@@ -1281,7 +1332,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.bgSecondary,
+      backgroundColor: context.colors.card,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -1302,7 +1353,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                     child: Text(
                       detail,
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                     ),
                   ),
@@ -1327,8 +1378,9 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
     required List<Map<String, dynamic>> items,
     required Future<void> Function() onCreate,
     IconData sectionIcon = Icons.folder_rounded,
-    Color sectionTint = AppColors.primaryLight,
+    required Color sectionTint,
   }) {
+    final st = _screenTokens;
     return Container(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 14),
       decoration: BoxDecoration(
@@ -1376,7 +1428,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                     ),
                   ],
                   border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.12),
+                    color: st.textOnBrand.withValues(alpha: 0.12),
                   ),
                 ),
                 child: Icon(sectionIcon, color: sectionTint, size: 20),
@@ -1385,8 +1437,8 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
               Expanded(
                 child: Text(
                   title,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
+                  style: TextStyle(
+                    color: st.textPrimary,
                     fontWeight: FontWeight.w800,
                     fontSize: 15,
                     letterSpacing: -0.2,
@@ -1397,8 +1449,8 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                 tooltip: 'Chi tiết loại môn',
                 onPressed: () =>
                     _showContributorSectionDetail(title, detail),
-                icon: const Icon(Icons.info_outline_rounded,
-                    color: AppColors.textSecondary, size: 22),
+                icon: Icon(Icons.info_outline_rounded,
+                    color: st.textSecondary, size: 22),
                 visualDensity: VisualDensity.compact,
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
@@ -1422,18 +1474,18 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
           Text(
             summary,
             style: TextStyle(
-              color: AppColors.textSecondary.withValues(alpha: 0.95),
+              color: st.textSecondary.withValues(alpha: 0.95),
               fontSize: 12.5,
               height: 1.38,
             ),
           ),
           const SizedBox(height: 12),
           if (items.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
               child: Text(
                 'Chưa có môn học',
-                style: TextStyle(color: AppColors.textSecondary),
+                style: TextStyle(color: st.textSecondary),
               ),
             )
           else
@@ -1500,10 +1552,12 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
     final descCtrl = TextEditingController();
     final ok = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.bgSecondary,
+      builder: (ctx) {
+        final d = ctx.colors;
+        return AlertDialog(
+        backgroundColor: d.card,
         title:
-            Text(title, style: const TextStyle(color: AppColors.textPrimary)),
+            Text(title, style: TextStyle(color: d.textPrimary)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -1527,7 +1581,8 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
               onPressed: () => Navigator.pop(ctx, true),
               child: const Text('Tạo')),
         ],
-      ),
+      );
+      },
     );
     if (ok != true) return;
     final name = nameCtrl.text.trim();
@@ -1545,7 +1600,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('$e'), backgroundColor: AppColors.errorNeon),
+        SnackBar(content: Text('$e'), backgroundColor: context.colors.error),
       );
     }
   }

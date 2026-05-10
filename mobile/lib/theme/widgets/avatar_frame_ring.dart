@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../colors.dart';
+import '../semantic_colors.dart';
 
 /// Tier 1–20 từ id `af_01` … `af_20` (đồng bộ backend catalog).
 int? avatarFrameTier(String? frameId) {
@@ -189,7 +189,7 @@ class _GradientFrameBody extends StatelessWidget {
     final tier = avatarFrameTier(frameId)!.clamp(1, 20);
     final ring = 1.4 + (tier / 20) * 3.2;
     final glow = 3.0 + (tier / 20) * 14.0;
-    final colors = _tierColors(tier);
+    final colors = _tierColors(tier, context.colors);
     final outer = _gradientFrameOuterDiameter(diameter, frameId);
 
     return SizedBox(
@@ -277,14 +277,16 @@ class _TierColors {
   });
 }
 
-_TierColors _tierColors(int t) {
+_TierColors _tierColors(int t, SemanticColors sem) {
+  final ai2 = sem.aiGradient.length > 1 ? sem.aiGradient[1] : sem.brand;
+  final brandGlow = sem.brand;
   if (t <= 3) {
     return _TierColors(
       ring: [
         Colors.white.withValues(alpha: 0.95),
-        AppColors.textTertiary.withValues(alpha: 0.5),
+        sem.textTertiary.withValues(alpha: 0.5),
       ],
-      inner: AppColors.bgSecondary,
+      inner: sem.card,
       accent: Colors.white,
       glow: Colors.white,
     );
@@ -292,58 +294,58 @@ _TierColors _tierColors(int t) {
   if (t <= 6) {
     return _TierColors(
       ring: [
-        AppColors.primaryLight.withValues(alpha: 0.9),
-        AppColors.purpleNeon.withValues(alpha: 0.85),
+        Color.lerp(ai2, Colors.white, 0.35)!.withValues(alpha: 0.9),
+        brandGlow.withValues(alpha: 0.85),
       ],
-      inner: AppColors.surfaceContainerLow,
-      accent: AppColors.primaryLight,
-      glow: AppColors.purpleNeon,
+      inner: sem.cardMuted,
+      accent: Color.lerp(sem.brand, Colors.white, 0.55)!,
+      glow: brandGlow,
     );
   }
   if (t <= 10) {
     return _TierColors(
       ring: [
-        AppColors.successNeon.withValues(alpha: 0.95),
-        AppColors.cyanNeon.withValues(alpha: 0.85),
+        sem.success.withValues(alpha: 0.95),
+        sem.info.withValues(alpha: 0.85),
       ],
-      inner: AppColors.bgTertiary,
-      accent: AppColors.successNeon,
-      glow: AppColors.successNeon,
+      inner: sem.cardMuted,
+      accent: sem.success,
+      glow: sem.success,
     );
   }
   if (t <= 14) {
     return _TierColors(
       ring: [
-        AppColors.xpGold.withValues(alpha: 0.95),
-        AppColors.orangeNeon.withValues(alpha: 0.88),
+        sem.gold.withValues(alpha: 0.95),
+        sem.warning.withValues(alpha: 0.88),
       ],
-      inner: AppColors.surfaceContainerLow,
-      accent: AppColors.xpGold,
-      glow: AppColors.xpGold,
+      inner: sem.cardMuted,
+      accent: sem.gold,
+      glow: sem.gold,
     );
   }
   if (t <= 17) {
     return _TierColors(
       ring: [
-        AppColors.purpleNeon,
-        AppColors.pinkNeon,
-        AppColors.primaryLight,
+        brandGlow,
+        ai2,
+        Color.lerp(sem.brand, Colors.white, 0.45)!,
       ],
-      inner: AppColors.bgSecondary,
-      accent: AppColors.pinkNeon,
-      glow: AppColors.purpleNeon,
+      inner: sem.card,
+      accent: ai2,
+      glow: brandGlow,
     );
   }
   return _TierColors(
     ring: [
-      AppColors.xpGold,
-      AppColors.rankGold,
-      AppColors.purpleNeon,
-      AppColors.primaryLight,
+      sem.gold,
+      const Color(0xFFFFD647),
+      brandGlow,
+      Color.lerp(sem.brand, Colors.white, 0.45)!,
     ],
-    inner: AppColors.surfaceContainerLow,
-    accent: AppColors.rankGold,
-    glow: AppColors.xpGold,
+    inner: sem.cardMuted,
+    accent: const Color(0xFFFFD647),
+    glow: sem.gold,
   );
 }
 

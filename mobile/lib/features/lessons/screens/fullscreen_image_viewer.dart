@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:edtech_mobile/theme/colors.dart';
+import 'package:edtech_mobile/theme/theme.dart';
 
 /// A fullscreen image viewer with zoom/pan and optional gallery swipe.
 ///
@@ -244,6 +244,7 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer>
                       ? loadingProgress.cumulativeBytesLoaded /
                           loadingProgress.expectedTotalBytes!
                       : null;
+                  const ov = SemanticColors.dark;
                   return Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -253,7 +254,7 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer>
                           height: 48,
                           child: CircularProgressIndicator(
                             value: progress,
-                            color: AppColors.purpleNeon,
+                            color: ov.brand,
                             strokeWidth: 3,
                           ),
                         ),
@@ -261,8 +262,8 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer>
                           const SizedBox(height: 12),
                           Text(
                             '${(progress * 100).toInt()}%',
-                            style: const TextStyle(
-                              color: AppColors.textSecondary,
+                            style: TextStyle(
+                              color: ov.textSecondary,
                               fontSize: 13,
                             ),
                           ),
@@ -271,27 +272,30 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer>
                     ),
                   );
                 },
-                errorBuilder: (_, __, ___) => const Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.broken_image_outlined,
-                          color: AppColors.textTertiary, size: 64),
-                      SizedBox(height: 12),
-                      Text(
-                        'Không thể tải hình ảnh',
-                        style: TextStyle(
-                          color: AppColors.textTertiary,
-                          fontSize: 14,
+                errorBuilder: (_, __, ___) {
+                  const ov = SemanticColors.dark;
+                  return Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.broken_image_outlined,
+                            color: ov.textTertiary, size: 64),
+                        const SizedBox(height: 12),
+                        Text(
+                          'Không thể tải hình ảnh',
+                          style: TextStyle(
+                            color: ov.textTertiary,
+                            fontSize: 14,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
+                      ],
+                    ),
+                  );
+                },
               )
-            : const Center(
+            : Center(
                 child: Icon(Icons.image_not_supported,
-                    color: AppColors.textTertiary, size: 64),
+                    color: SemanticColors.dark.textTertiary, size: 64),
               ),
       ),
     );
@@ -338,8 +342,8 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer>
                 ),
                 child: Text(
                   '${_currentIndex + 1} / ${widget.imageUrls.length}',
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: SemanticColors.dark.textOnBrand,
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
@@ -355,6 +359,7 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer>
   }
 
   Widget _buildBottomBar(bool isGallery) {
+    const t = SemanticColors.dark;
     return Container(
       padding: EdgeInsets.only(
         left: 20,
@@ -381,8 +386,8 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer>
               padding: const EdgeInsets.only(bottom: 12),
               child: Text(
                 _currentCaption,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: t.textOnBrand,
                   fontSize: 14,
                   height: 1.5,
                 ),
@@ -405,8 +410,8 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer>
                   height: 6,
                   decoration: BoxDecoration(
                     color: isActive
-                        ? AppColors.purpleNeon
-                        : Colors.white.withValues(alpha: 0.4),
+                        ? t.brand
+                        : t.textOnBrand.withValues(alpha: 0.4),
                     borderRadius: BorderRadius.circular(3),
                   ),
                 );
@@ -421,6 +426,7 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer>
     required IconData icon,
     required VoidCallback onTap,
   }) {
+    final on = SemanticColors.dark.textOnBrand;
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -430,10 +436,10 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer>
           color: Colors.black54,
           shape: BoxShape.circle,
           border: Border.all(
-            color: Colors.white.withValues(alpha: 0.2),
+            color: on.withValues(alpha: 0.2),
           ),
         ),
-        child: Icon(icon, color: Colors.white, size: 24),
+        child: Icon(icon, color: on, size: 24),
       ),
     );
   }

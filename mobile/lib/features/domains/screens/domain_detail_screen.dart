@@ -114,17 +114,19 @@ class _DomainDetailScreenState extends State<DomainDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: tokens.bg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
         leading: const AppBarLeadingBackAndHome(),
         leadingWidth: 112,
         automaticallyImplyLeading: false,
         title: Text(
           _domainData?['name'] ?? 'Chương học',
-          style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+          style: AppTextStyles.h4.copyWith(color: tokens.textPrimary),
         ),
       ),
       body: _isLoading
@@ -137,7 +139,7 @@ class _DomainDetailScreenState extends State<DomainDetailScreen> {
                       child: Text(
                         'Không tìm thấy chương học',
                         style: AppTextStyles.bodyMedium
-                            .copyWith(color: AppColors.textSecondary),
+                            .copyWith(color: tokens.textSecondary),
                       ),
                     )
                   : SingleChildScrollView(
@@ -157,17 +159,18 @@ class _DomainDetailScreenState extends State<DomainDetailScreen> {
   }
 
   Widget _buildDomainInfo() {
+    final tokens = context.colors;
     final name = _domainData!['name'] as String? ?? 'Chương học';
     final description = _domainData!['description'] as String?;
     final metadata = _domainData!['metadata'] as Map<String, dynamic>?;
     final icon = metadata?['icon'] as String? ?? '📚';
 
     return Card(
-      color: AppColors.bgSecondary,
+      color: tokens.card,
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: Color(0x332D363D)),
+        side: BorderSide(color: tokens.border),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -185,7 +188,7 @@ class _DomainDetailScreenState extends State<DomainDetailScreen> {
                   child: Text(
                     name,
                     style: AppTextStyles.h2.copyWith(
-                      color: AppColors.textPrimary,
+                      color: tokens.textPrimary,
                     ),
                   ),
                 ),
@@ -196,7 +199,7 @@ class _DomainDetailScreenState extends State<DomainDetailScreen> {
               Text(
                 description,
                 style: AppTextStyles.bodyLarge.copyWith(
-                  color: AppColors.textSecondary,
+                  color: tokens.textSecondary,
                   height: 1.5,
                 ),
               ),
@@ -208,19 +211,20 @@ class _DomainDetailScreenState extends State<DomainDetailScreen> {
   }
 
   Widget _buildNodesList() {
+    final tokens = context.colors;
     final nodes = _domainData!['nodes'] as List<dynamic>? ?? [];
 
     if (nodes.isEmpty && !_isContributor) {
       return Center(
         child: Column(
           children: [
-            const Icon(Icons.book_outlined,
-                size: 64, color: AppColors.textTertiary),
+            Icon(Icons.book_outlined,
+                size: 64, color: tokens.textTertiary),
             const SizedBox(height: 16),
             Text(
               'Chưa có bài học nào trong chương này',
               style: AppTextStyles.bodyLarge
-                  .copyWith(color: AppColors.textSecondary),
+                  .copyWith(color: tokens.textSecondary),
             ),
           ],
         ),
@@ -235,7 +239,7 @@ class _DomainDetailScreenState extends State<DomainDetailScreen> {
           children: [
             Text(
               'Danh sách bài học',
-              style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+              style: AppTextStyles.h4.copyWith(color: tokens.textPrimary),
             ),
             if (_isContributor)
               TextButton.icon(
@@ -248,11 +252,11 @@ class _DomainDetailScreenState extends State<DomainDetailScreen> {
                   );
                   if (result == true) _loadDomain();
                 },
-                icon: const Icon(Icons.add,
-                    size: 18, color: AppColors.contributorBlue),
-                label: const Text('Thêm Topic',
+                icon: Icon(Icons.add,
+                    size: 18, color: tokens.info),
+                label: Text('Thêm Topic',
                     style: TextStyle(
-                        color: AppColors.contributorBlue,
+                        color: tokens.info,
                         fontWeight: FontWeight.w600)),
               ),
           ],
@@ -265,16 +269,17 @@ class _DomainDetailScreenState extends State<DomainDetailScreen> {
   }
 
   Widget _buildAddTopicCard() {
+    final t = context.colors;
     final subjectId = _domainData!['subjectId'] as String?;
     final domainName = _domainData!['name'] as String? ?? '';
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 0,
-      color: AppColors.contributorBlue.withValues(alpha: 0.08),
+      color: t.info.withValues(alpha: 0.08),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
-            color: AppColors.contributorBlue.withValues(alpha: 0.3),
+            color: t.info.withValues(alpha: 0.3),
             width: 1.5),
       ),
       child: InkWell(
@@ -286,17 +291,17 @@ class _DomainDetailScreenState extends State<DomainDetailScreen> {
           if (result == true) _loadDomain();
         },
         borderRadius: BorderRadius.circular(12),
-        child: const Padding(
-          padding: EdgeInsets.all(16),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(Icons.add_circle_outline,
-                  color: AppColors.contributorBlue, size: 24),
-              SizedBox(width: 8),
+                  color: t.info, size: 24),
+              const SizedBox(width: 8),
               Text('Thêm Topic / Bài học mới',
                   style: TextStyle(
-                      color: AppColors.contributorBlue,
+                      color: t.info,
                       fontWeight: FontWeight.w600,
                       fontSize: 15)),
             ],
@@ -307,6 +312,7 @@ class _DomainDetailScreenState extends State<DomainDetailScreen> {
   }
 
   Widget _buildNodeCard(Map<String, dynamic> node) {
+    final tokens = context.colors;
     final nodeId = node['id'] as String;
     final title = node['title'] as String? ?? 'Bài học';
     final description = node['description'] as String?;
@@ -316,11 +322,11 @@ class _DomainDetailScreenState extends State<DomainDetailScreen> {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      color: isLocked ? AppColors.bgTertiary : AppColors.bgSecondary,
+      color: isLocked ? tokens.cardMuted : tokens.card,
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: Color(0x332D363D)),
+        side: BorderSide(color: tokens.border),
       ),
       child: InkWell(
         onTap: () async {
@@ -367,7 +373,9 @@ class _DomainDetailScreenState extends State<DomainDetailScreen> {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: isLocked ? Colors.grey : null,
+                          color: isLocked
+                              ? tokens.textTertiary
+                              : tokens.textPrimary,
                         ),
                       ),
                       if (description != null && description.isNotEmpty) ...[
@@ -375,7 +383,7 @@ class _DomainDetailScreenState extends State<DomainDetailScreen> {
                         Text(
                           description,
                           style: TextStyle(
-                              fontSize: 14, color: Colors.grey.shade600),
+                              fontSize: 14, color: tokens.textSecondary),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -385,13 +393,13 @@ class _DomainDetailScreenState extends State<DomainDetailScreen> {
                         Row(
                           children: [
                             Icon(Icons.lock,
-                                size: 12, color: Colors.orange.shade400),
+                                size: 12, color: tokens.warning),
                             const SizedBox(width: 4),
                             Text(
                               '50 💎 để mở khóa',
                               style: TextStyle(
                                   fontSize: 11,
-                                  color: Colors.orange.shade600,
+                                  color: tokens.warning,
                                   fontWeight: FontWeight.w500),
                             ),
                           ],
@@ -401,10 +409,10 @@ class _DomainDetailScreenState extends State<DomainDetailScreen> {
                   ),
                 ),
                 isLocked
-                    ? const Icon(Icons.lock_outline,
-                        color: AppColors.coinGold, size: 22)
-                    : const Icon(Icons.chevron_right,
-                        color: AppColors.textTertiary),
+                    ? Icon(Icons.lock_outline,
+                        color: tokens.gold, size: 22)
+                    : Icon(Icons.chevron_right,
+                        color: tokens.textTertiary),
               ],
             ),
           ),
@@ -417,73 +425,76 @@ class _DomainDetailScreenState extends State<DomainDetailScreen> {
     final subjectId = _domainData?['subjectId'] as String?;
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.bgSecondary,
+      backgroundColor: context.colors.card,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('🔒', style: TextStyle(fontSize: 48)),
-            const SizedBox(height: 12),
-            Text(title,
-                style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
-                textAlign: TextAlign.center),
-            const SizedBox(height: 8),
-            Text(
-              'Bài học này cần mở khóa bằng kim cương.\nBạn có thể mở khóa từng topic, chương hoặc cả môn để tiết kiệm.',
-              style: AppTextStyles.bodyMedium
-                  .copyWith(color: AppColors.textSecondary, height: 1.45),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(ctx),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.textSecondary,
-                      side: const BorderSide(color: Color(0x332D363D)),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                    child: const Text('Đóng'),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                if (subjectId != null)
+      builder: (ctx) {
+        final t = ctx.colors;
+        return Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('🔒', style: TextStyle(fontSize: 48)),
+              const SizedBox(height: 12),
+              Text(title,
+                  style: AppTextStyles.h4.copyWith(color: t.textPrimary),
+                  textAlign: TextAlign.center),
+              const SizedBox(height: 8),
+              Text(
+                'Bài học này cần mở khóa bằng kim cương.\nBạn có thể mở khóa từng topic, chương hoặc cả môn để tiết kiệm.',
+                style: AppTextStyles.bodyMedium
+                    .copyWith(color: t.textSecondary, height: 1.45),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
                   Expanded(
-                    flex: 2,
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        Navigator.pop(ctx);
-                        context
-                            .push('/subjects/$subjectId/unlock')
-                            .then((_) => _loadDomain());
-                      },
-                      icon: const Text('💎', style: TextStyle(fontSize: 16)),
-                      label: const Text('Mở khóa',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold)),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primaryLight,
-                        foregroundColor: Colors.white,
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: t.textSecondary,
+                        side: BorderSide(color: t.border),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12)),
                         padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
+                      child: const Text('Đóng'),
                     ),
                   ),
-              ],
-            ),
-          ],
-        ),
-      ),
+                  const SizedBox(width: 12),
+                  if (subjectId != null)
+                    Expanded(
+                      flex: 2,
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.pop(ctx);
+                          context
+                              .push('/subjects/$subjectId/unlock')
+                              .then((_) => _loadDomain());
+                        },
+                        icon: const Text('💎', style: TextStyle(fontSize: 16)),
+                        label: Text('Mở khóa',
+                            style: TextStyle(
+                                color: t.onBrand,
+                                fontWeight: FontWeight.bold)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: t.brand,
+                          foregroundColor: t.onBrand,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

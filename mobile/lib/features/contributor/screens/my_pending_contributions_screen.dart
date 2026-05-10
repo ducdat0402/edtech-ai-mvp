@@ -49,31 +49,32 @@ class _MyPendingContributionsScreenState
   Future<void> _deleteContribution(String id) async {
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.contributorBgSecondary,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Xóa đóng góp',
-            style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
-        content: Text(
-          'Bạn có chắc muốn xóa đóng góp này?',
-          style:
-              AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Hủy',
-                style: TextStyle(color: AppColors.textSecondary)),
+      builder: (ctx) {
+        final d = ctx.colors;
+        return AlertDialog(
+          backgroundColor: d.card,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text('Xóa đóng góp',
+              style: AppTextStyles.h4.copyWith(color: d.textPrimary)),
+          content: Text(
+            'Bạn có chắc muốn xóa đóng góp này?',
+            style: AppTextStyles.bodyMedium.copyWith(color: d.textSecondary),
           ),
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child:
-                const Text('Xóa', style: TextStyle(color: AppColors.errorNeon)),
-          ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: Text('Hủy', style: TextStyle(color: d.textSecondary)),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: Text('Xóa', style: TextStyle(color: d.error)),
+            ),
+          ],
+        );
+      },
     );
     if (confirm != true) return;
+    if (!mounted) return;
 
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
@@ -81,9 +82,9 @@ class _MyPendingContributionsScreenState
       _loadContributions();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text('Đã xóa đóng góp'),
-            backgroundColor: AppColors.contributorBlue,
+            backgroundColor: context.colors.info,
           ),
         );
       }
@@ -91,7 +92,7 @@ class _MyPendingContributionsScreenState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text('Lỗi: $e'), backgroundColor: AppColors.errorNeon),
+              content: Text('Lỗi: $e'), backgroundColor: context.colors.error),
         );
       }
     }
@@ -99,37 +100,38 @@ class _MyPendingContributionsScreenState
 
   @override
   Widget build(BuildContext context) {
+    final sem = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.contributorBgPrimary,
+      backgroundColor: sem.bg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(
           'Đóng góp của tôi',
-          style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+          style: AppTextStyles.h4.copyWith(color: sem.textPrimary),
         ),
         leading: const AppBarLeadingBackAndHome(),
         leadingWidth: 112,
         automaticallyImplyLeading: false,
         actions: [
           IconButton(
-            icon: const Icon(Icons.add_circle_outline,
-                color: AppColors.contributorBlueLight),
+            icon: Icon(Icons.add_circle_outline,
+                color: sem.brandStrong),
             onPressed: () => context.push('/contributor/create-subject'),
             tooltip: 'Tạo môn học mới',
           ),
         ],
       ),
       body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: AppColors.primaryLight))
+          ? Center(
+              child: CircularProgressIndicator(color: sem.brandStrong))
           : _error != null
               ? AppErrorWidget(message: _error!, onRetry: _loadContributions)
               : _contributions.isEmpty
                   ? _buildEmptyState()
                   : RefreshIndicator(
                       onRefresh: _loadContributions,
-                      color: AppColors.primaryLight,
+                      color: sem.brandStrong,
                       child: ListView.builder(
                         padding: const EdgeInsets.all(16),
                         itemCount: _contributions.length,
@@ -142,9 +144,10 @@ class _MyPendingContributionsScreenState
                     ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/contributor/create-subject'),
-        backgroundColor: AppColors.contributorBlue,
-        icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text('Tạo môn học', style: TextStyle(color: Colors.white)),
+        backgroundColor: sem.info,
+        icon: Icon(Icons.add, color: sem.textOnBrand),
+        label: Text('Tạo môn học',
+            style: TextStyle(color: sem.textOnBrand)),
       ),
     );
   }
@@ -159,26 +162,26 @@ class _MyPendingContributionsScreenState
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: AppColors.contributorBlue.withValues(alpha: 0.1),
+                color: context.colors.info.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.volunteer_activism,
                 size: 64,
-                color: AppColors.contributorBlue.withValues(alpha: 0.5),
+                color: context.colors.info.withValues(alpha: 0.5),
               ),
             ),
             const SizedBox(height: 24),
             Text(
               'Chưa có đóng góp nào',
-              style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary),
+              style: AppTextStyles.h3.copyWith(color: context.colors.textPrimary),
             ),
             const SizedBox(height: 8),
             Text(
               'Bắt đầu đóng góp bằng cách tạo môn học mới!',
               textAlign: TextAlign.center,
               style: AppTextStyles.bodyMedium
-                  .copyWith(color: AppColors.textSecondary),
+                  .copyWith(color: context.colors.textSecondary),
             ),
           ],
         ),
@@ -200,11 +203,11 @@ class _MyPendingContributionsScreenState
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: AppColors.contributorBgSecondary,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: action == 'delete'
-              ? AppColors.errorNeon.withValues(alpha: 0.3)
+              ? context.colors.error.withValues(alpha: 0.3)
               : _getStatusColor(status).withValues(alpha: 0.3),
         ),
       ),
@@ -224,8 +227,8 @@ class _MyPendingContributionsScreenState
                 const Spacer(),
                 if (status == 'pending')
                   IconButton(
-                    icon: const Icon(Icons.delete_outline,
-                        color: AppColors.errorNeon, size: 20),
+                    icon: Icon(Icons.delete_outline,
+                        color: context.colors.error, size: 20),
                     onPressed: () => _deleteContribution(id),
                     tooltip: 'Xóa',
                     constraints: const BoxConstraints(),
@@ -249,7 +252,7 @@ class _MyPendingContributionsScreenState
                 child: Text(
                   contextDescription,
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -261,7 +264,7 @@ class _MyPendingContributionsScreenState
             Text(
               title,
               style: AppTextStyles.labelLarge.copyWith(
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -272,7 +275,7 @@ class _MyPendingContributionsScreenState
               Text(
                 action != 'create' ? 'Lý do: $description' : description,
                 style: AppTextStyles.bodySmall
-                    .copyWith(color: AppColors.textSecondary),
+                    .copyWith(color: context.colors.textSecondary),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -317,7 +320,7 @@ class _MyPendingContributionsScreenState
               Text(
                 _formatDate(createdAt),
                 style: AppTextStyles.caption
-                    .copyWith(color: AppColors.textTertiary),
+                    .copyWith(color: context.colors.textTertiary),
               ),
             ],
           ],
@@ -365,11 +368,11 @@ class _MyPendingContributionsScreenState
   Color _getActionColor(String action) {
     switch (action) {
       case 'edit':
-        return AppColors.primaryLight;
+        return context.colors.brandStrong;
       case 'delete':
-        return AppColors.errorNeon;
+        return context.colors.error;
       default:
-        return AppColors.successNeon;
+        return context.colors.success;
     }
   }
 
@@ -424,31 +427,31 @@ class _MyPendingContributionsScreenState
         return {
           'icon': Icons.school,
           'label': 'Môn học',
-          'color': AppColors.contributorBlue
+          'color': context.colors.info
         };
       case 'domain':
         return {
           'icon': Icons.folder,
           'label': 'Domain',
-          'color': AppColors.primaryLight
+          'color': context.colors.brandStrong
         };
       case 'topic':
         return {
           'icon': Icons.topic,
           'label': 'Topic',
-          'color': AppColors.purpleNeon
+          'color': context.colors.brand
         };
       case 'lesson':
         return {
           'icon': Icons.article,
           'label': 'Bài học',
-          'color': AppColors.successNeon
+          'color': context.colors.success
         };
       default:
         return {
           'icon': Icons.help,
           'label': type,
-          'color': AppColors.textSecondary
+          'color': context.colors.textSecondary
         };
     }
   }
@@ -456,13 +459,13 @@ class _MyPendingContributionsScreenState
   Color _getStatusColor(String status) {
     switch (status) {
       case 'pending':
-        return AppColors.warningNeon;
+        return context.colors.warning;
       case 'approved':
-        return AppColors.successNeon;
+        return context.colors.success;
       case 'rejected':
-        return AppColors.errorNeon;
+        return context.colors.error;
       default:
-        return AppColors.textSecondary;
+        return context.colors.textSecondary;
     }
   }
 

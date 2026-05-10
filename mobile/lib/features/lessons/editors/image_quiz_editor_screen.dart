@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dio/dio.dart';
-import 'package:edtech_mobile/theme/colors.dart';
+import 'package:edtech_mobile/theme/theme.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'quiz_editor_screen.dart';
@@ -106,6 +106,7 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
 
   Future<void> _pickAndUploadImage(int slideIndex) async {
     try {
+      final apiService = Provider.of<ApiService>(context, listen: false);
       final XFile? image = await _imagePicker.pickImage(
         source: ImageSource.gallery,
         maxWidth: 1920,
@@ -113,11 +114,10 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
         imageQuality: 85,
       );
 
-      if (image == null) return;
+      if (!mounted || image == null) return;
 
       setState(() => _uploadingImages[slideIndex] = true);
 
-      final apiService = Provider.of<ApiService>(context, listen: false);
       final imageUrl = await apiService.uploadImage(image.path);
 
       if (mounted) {
@@ -126,20 +126,22 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
           _uploadingImages[slideIndex] = false;
         });
 
+        final sem = context.colors;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Tải hình ảnh thành công!'),
-            backgroundColor: AppColors.successGlow,
+          SnackBar(
+            content: const Text('Tải hình ảnh thành công!'),
+            backgroundColor: sem.success,
           ),
         );
       }
     } catch (e) {
       if (mounted) {
         setState(() => _uploadingImages[slideIndex] = false);
+        final sem = context.colors;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Lỗi tải hình: $e'),
-            backgroundColor: AppColors.errorNeon,
+            backgroundColor: sem.error,
           ),
         );
       }
@@ -207,39 +209,41 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
     );
   }
 
-  InputDecoration _inputDecoration(String label) {
+  InputDecoration _inputDecoration(BuildContext context, String label) {
+    final sem = context.colors;
     return InputDecoration(
       labelText: label,
-      labelStyle: const TextStyle(color: AppColors.textSecondary),
+      labelStyle: TextStyle(color: sem.textSecondary),
       filled: true,
-      fillColor: AppColors.bgSecondary,
+      fillColor: sem.card,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0x332D363D)),
+        borderSide: BorderSide(color: sem.border.withValues(alpha: 0.65)),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0x332D363D)),
+        borderSide: BorderSide(color: sem.border.withValues(alpha: 0.65)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.purpleNeon),
+        borderSide: BorderSide(color: sem.brand),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final sem = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppColors.bgSecondary,
+        backgroundColor: sem.card,
         leading: const AppBarLeadingBackAndHome(),
         leadingWidth: 112,
         automaticallyImplyLeading: false,
         title: Text(
           widget.isEditMode ? 'Sửa bài Image Quiz' : 'Tạo bài Image Quiz',
-          style: const TextStyle(color: AppColors.textPrimary, fontSize: 18),
+          style: TextStyle(color: sem.textPrimary, fontSize: 18),
         ),
         elevation: 0,
       ),
@@ -256,8 +260,9 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
                     // Title field
                     TextFormField(
                       controller: _titleController,
-                      style: const TextStyle(color: AppColors.textPrimary),
-                      decoration: _inputDecoration('Tiêu đề bài học'),
+                      style: TextStyle(color: sem.textPrimary),
+                      decoration:
+                          _inputDecoration(context, 'Tiêu đề bài học'),
                       validator: (v) =>
                           v == null || v.trim().isEmpty ? 'Nhập tiêu đề' : null,
                     ),
@@ -266,8 +271,8 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
                     // Description field
                     TextFormField(
                       controller: _descriptionController,
-                      style: const TextStyle(color: AppColors.textPrimary),
-                      decoration: _inputDecoration('Mô tả'),
+                      style: TextStyle(color: sem.textPrimary),
+                      decoration: _inputDecoration(context, 'Mô tả'),
                       maxLines: 3,
                       validator: (v) =>
                           v == null || v.trim().isEmpty ? 'Nhập mô tả' : null,
@@ -280,19 +285,18 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
                       children: [
                         Text(
                           'Slides (${_slides.length})',
-                          style: const TextStyle(
-                            color: AppColors.textPrimary,
+                          style: TextStyle(
+                            color: sem.textPrimary,
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         TextButton.icon(
                           onPressed: _addSlide,
-                          icon: const Icon(Icons.add,
-                              color: AppColors.purpleNeon),
-                          label: const Text(
+                          icon: Icon(Icons.add, color: sem.brand),
+                          label: Text(
                             'Thêm slide',
-                            style: TextStyle(color: AppColors.purpleNeon),
+                            style: TextStyle(color: sem.brand),
                           ),
                         ),
                       ],
@@ -311,8 +315,8 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
                           child: child,
                         );
                       },
-                      itemBuilder: (context, index) {
-                        return _buildSlideCard(index,
+                      itemBuilder: (listContext, index) {
+                        return _buildSlideCard(listContext, index,
                             key: ValueKey('slide_$index'));
                       },
                     ),
@@ -325,17 +329,18 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16),
-              decoration: const BoxDecoration(
-                color: AppColors.bgSecondary,
+              decoration: BoxDecoration(
+                color: sem.card,
                 border: Border(
-                  top: BorderSide(color: Color(0x332D363D)),
+                  top: BorderSide(
+                      color: sem.border.withValues(alpha: 0.65)),
                 ),
               ),
               child: ElevatedButton(
                 onPressed: _navigateToQuizEditor,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.purpleNeon,
-                  foregroundColor: Colors.white,
+                  backgroundColor: sem.brand,
+                  foregroundColor: sem.onBrand,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -362,7 +367,7 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
         SnackBar(
           content: const Text(
               'Vui lòng nhập câu hỏi (ít nhất 5 ký tự) trước khi tạo giải thích'),
-          backgroundColor: AppColors.warningNeon,
+          backgroundColor: context.colors.warning,
           behavior: SnackBarBehavior.floating,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -381,7 +386,7 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
               'C',
               'D'
             ][i]} trước khi tạo giải thích'),
-            backgroundColor: AppColors.warningNeon,
+            backgroundColor: context.colors.warning,
             behavior: SnackBarBehavior.floating,
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -449,10 +454,11 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
       }
 
       if (mounted) {
+        final sem = context.colors;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Đã tạo lời giải thích thành công!'),
-            backgroundColor: AppColors.successGlow,
+            backgroundColor: sem.success,
             behavior: SnackBarBehavior.floating,
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -474,10 +480,12 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
       } else {
         errorMsg = e.toString();
       }
+      if (!mounted) return;
+      final semErr = context.colors;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(errorMsg),
-          backgroundColor: AppColors.errorNeon,
+          backgroundColor: semErr.error,
           behavior: SnackBarBehavior.floating,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -491,109 +499,118 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
   void _showDiamondInsufficientDialog(String message) {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.bgSecondary,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Row(
-          children: [
-            Text('💎', style: TextStyle(fontSize: 24)),
-            SizedBox(width: 8),
-            Text('Không đủ kim cương',
-                style: TextStyle(color: Colors.white, fontSize: 16)),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(message,
-                style: const TextStyle(
-                    color: AppColors.textSecondary, fontSize: 14)),
-            const SizedBox(height: 12),
-            const Text(
-              'Bạn có thể mua thêm kim cương trong phần Cửa hàng.',
-              style: TextStyle(color: AppColors.textTertiary, fontSize: 13),
+      builder: (ctx) {
+        final sem = ctx.colors;
+        return AlertDialog(
+          backgroundColor: sem.card,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: [
+              const Text('💎', style: TextStyle(fontSize: 24)),
+              const SizedBox(width: 8),
+              Text('Không đủ kim cương',
+                  style:
+                      TextStyle(color: sem.textPrimary, fontSize: 16)),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(message,
+                  style:
+                      TextStyle(color: sem.textSecondary, fontSize: 14)),
+              const SizedBox(height: 12),
+              Text(
+                'Bạn có thể mua thêm kim cương trong phần Cửa hàng.',
+                style: TextStyle(color: sem.textTertiary, fontSize: 13),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text('Đóng',
+                  style: TextStyle(color: sem.textSecondary)),
+            ),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.pop(ctx);
+                context.push('/payment');
+              },
+              icon: const Text('💎', style: TextStyle(fontSize: 16)),
+              label: const Text('Mua kim cương'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: sem.brand,
+                foregroundColor: sem.onBrand,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+              ),
             ),
           ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Đóng',
-                style: TextStyle(color: AppColors.textSecondary)),
-          ),
-          ElevatedButton.icon(
-            onPressed: () {
-              Navigator.pop(ctx);
-              context.push('/payment');
-            },
-            icon: const Text('💎', style: TextStyle(fontSize: 16)),
-            label: const Text('Mua kim cương'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryLight,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
   Future<bool?> _showValidationIssuesDialog(List<String> issues) {
     return showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.bgSecondary,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Row(
-          children: [
-            Icon(Icons.warning_amber_rounded, color: AppColors.warningNeon),
-            SizedBox(width: 8),
-            Text('Phát hiện vấn đề',
-                style: TextStyle(color: AppColors.textPrimary, fontSize: 17)),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: issues
-              .map((issue) => Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('• ',
-                            style: TextStyle(
-                                color: AppColors.warningNeon, fontSize: 14)),
-                        Expanded(
-                            child: Text(issue,
-                                style: const TextStyle(
-                                    color: AppColors.textSecondary,
-                                    fontSize: 14))),
-                      ],
-                    ),
-                  ))
-              .toList(),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Sửa lỗi',
-                style: TextStyle(color: AppColors.textSecondary)),
+      builder: (ctx) {
+        final sem = ctx.colors;
+        return AlertDialog(
+          backgroundColor: sem.card,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: [
+              Icon(Icons.warning_amber_rounded, color: sem.warning),
+              const SizedBox(width: 8),
+              Text('Phát hiện vấn đề',
+                  style: TextStyle(color: sem.textPrimary, fontSize: 17)),
+            ],
           ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.warningNeon,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: issues
+                .map((issue) => Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('• ',
+                              style: TextStyle(
+                                  color: sem.warning, fontSize: 14)),
+                          Expanded(
+                              child: Text(issue,
+                                  style: TextStyle(
+                                      color: sem.textSecondary,
+                                      fontSize: 14))),
+                        ],
+                      ),
+                    ))
+                .toList(),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text('Sửa lỗi',
+                  style: TextStyle(color: sem.textSecondary)),
             ),
-            child:
-                const Text('Tiếp tục', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: sem.warning,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)),
+              ),
+              child: Text('Tiếp tục',
+                  style: TextStyle(color: sem.textOnBrand)),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -605,111 +622,119 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
     final labels = ['A', 'B', 'C', 'D'];
     return showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.bgSecondary,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Row(
-          children: [
-            Icon(Icons.error_outline, color: AppColors.errorNeon),
-            SizedBox(width: 8),
-            Expanded(
-              child: Text('Cảnh báo: Đáp án có thể sai',
-                  style: TextStyle(color: AppColors.textPrimary, fontSize: 17)),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            RichText(
-              text: TextSpan(
-                style: const TextStyle(
-                    color: AppColors.textSecondary, fontSize: 14),
-                children: [
-                  const TextSpan(text: 'Bạn đánh dấu: '),
-                  TextSpan(
-                      text: labels[currentAnswer],
-                      style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary)),
-                  const TextSpan(text: ' là đúng'),
-                ],
+      builder: (ctx) {
+        final sem = ctx.colors;
+        return AlertDialog(
+          backgroundColor: sem.card,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: [
+              Icon(Icons.error_outline, color: sem.error),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text('Cảnh báo: Đáp án có thể sai',
+                    style:
+                        TextStyle(color: sem.textPrimary, fontSize: 17)),
               ),
-            ),
-            const SizedBox(height: 8),
-            RichText(
-              text: TextSpan(
-                style: const TextStyle(
-                    color: AppColors.textSecondary, fontSize: 14),
-                children: [
-                  const TextSpan(text: 'AI đề xuất: '),
-                  TextSpan(
-                      text: labels[suggestedAnswer],
-                      style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.orangeNeon)),
-                  const TextSpan(text: ' mới đúng'),
-                ],
-              ),
-            ),
-            if (reason.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: AppColors.bgTertiary,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              RichText(
+                text: TextSpan(
+                  style: TextStyle(
+                      color: sem.textSecondary, fontSize: 14),
                   children: [
-                    const Icon(Icons.lightbulb_outline,
-                        color: AppColors.orangeNeon, size: 16),
-                    const SizedBox(width: 8),
-                    Expanded(
-                        child: Text(reason,
-                            style: const TextStyle(
-                                color: AppColors.textSecondary, fontSize: 13))),
+                    const TextSpan(text: 'Bạn đánh dấu: '),
+                    TextSpan(
+                        text: labels[currentAnswer],
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: sem.textPrimary)),
+                    const TextSpan(text: ' là đúng'),
                   ],
                 ),
               ),
+              const SizedBox(height: 8),
+              RichText(
+                text: TextSpan(
+                  style: TextStyle(
+                      color: sem.textSecondary, fontSize: 14),
+                  children: [
+                    const TextSpan(text: 'AI đề xuất: '),
+                    TextSpan(
+                        text: labels[suggestedAnswer],
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: sem.gold)),
+                    const TextSpan(text: ' mới đúng'),
+                  ],
+                ),
+              ),
+              if (reason.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: sem.cardMuted,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.lightbulb_outline,
+                          color: sem.gold, size: 16),
+                      const SizedBox(width: 8),
+                      Expanded(
+                          child: Text(reason,
+                              style: TextStyle(
+                                  color: sem.textSecondary, fontSize: 13))),
+                    ],
+                  ),
+                ),
+              ],
             ],
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text('Giữ ${labels[currentAnswer]}',
-                style: const TextStyle(color: AppColors.textSecondary)),
           ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.orangeNeon,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text('Giữ ${labels[currentAnswer]}',
+                  style: TextStyle(color: sem.textSecondary)),
             ),
-            child: Text('Đổi sang ${labels[suggestedAnswer]}',
-                style: const TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: sem.gold,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)),
+              ),
+              child: Text('Đổi sang ${labels[suggestedAnswer]}',
+                  style: TextStyle(
+                      color: Theme.of(ctx).colorScheme.onSecondary)),
+            ),
+          ],
+        );
+      },
     );
   }
 
-  Widget _buildSlideCard(int index, {Key? key}) {
+  Widget _buildSlideCard(BuildContext context, int index, {Key? key}) {
     final slide = _slides[index];
     final labels = ['A', 'B', 'C', 'D'];
+    final sem = context.colors;
 
     return Container(
       key: key,
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
+        color: sem.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0x332D363D)),
+        border: Border.all(
+            color: sem.border.withValues(alpha: 0.65)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -717,13 +742,13 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
           // Slide header
           Row(
             children: [
-              const Icon(Icons.drag_handle,
-                  color: AppColors.textTertiary, size: 20),
+              Icon(Icons.drag_handle,
+                  color: sem.textTertiary, size: 20),
               const SizedBox(width: 8),
               Text(
                 'Slide ${index + 1}',
-                style: const TextStyle(
-                  color: AppColors.purpleNeon,
+                style: TextStyle(
+                  color: sem.brand,
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
                 ),
@@ -734,12 +759,12 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
                   ? Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 10, vertical: 6),
-                      child: const SizedBox(
+                      child: SizedBox(
                         width: 16,
                         height: 16,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: AppColors.orangeNeon,
+                          color: sem.gold,
                         ),
                       ),
                     )
@@ -750,21 +775,20 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 6),
                         decoration: BoxDecoration(
-                          color: AppColors.orangeNeon.withValues(alpha: 0.1),
+                          color: sem.gold.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                              color:
-                                  AppColors.orangeNeon.withValues(alpha: 0.3)),
+                              color: sem.gold.withValues(alpha: 0.3)),
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(Icons.auto_awesome,
-                                color: AppColors.orangeNeon, size: 14),
-                            SizedBox(width: 4),
+                                color: sem.gold, size: 14),
+                            const SizedBox(width: 4),
                             Text('AI 5💎',
                                 style: TextStyle(
-                                    color: AppColors.orangeNeon,
+                                    color: sem.gold,
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600)),
                           ],
@@ -773,22 +797,23 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
                     ),
               if (_slides.length > 1)
                 IconButton(
-                  icon: const Icon(Icons.delete_outline,
-                      color: AppColors.errorNeon, size: 20),
+                  icon: Icon(Icons.delete_outline,
+                      color: sem.error, size: 20),
                   onPressed: () => _removeSlide(index),
                 ),
             ],
           ),
-          const Divider(color: Color(0x332D363D), height: 20),
+          Divider(
+              color: sem.border.withValues(alpha: 0.65), height: 20),
 
           // Image upload/preview
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Hình ảnh',
                 style: TextStyle(
-                  color: AppColors.textSecondary,
+                  color: sem.textSecondary,
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
                 ),
@@ -803,7 +828,8 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
                   margin: const EdgeInsets.only(bottom: 8),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0x332D363D)),
+                    border: Border.all(
+                        color: sem.border.withValues(alpha: 0.65)),
                     image: DecorationImage(
                       image: NetworkImage(slide.imageUrlController.text),
                       fit: BoxFit.cover,
@@ -820,12 +846,12 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
                           ? null
                           : () => _pickAndUploadImage(index),
                       icon: _uploadingImages[index] == true
-                          ? const SizedBox(
+                          ? SizedBox(
                               width: 16,
                               height: 16,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                color: Colors.white,
+                                color: context.colors.textOnBrand,
                               ),
                             )
                           : Icon(
@@ -842,12 +868,12 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
                                 : 'Đổi hình ảnh',
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.bgTertiary,
-                        foregroundColor: AppColors.purpleNeon,
+                        backgroundColor: sem.cardMuted,
+                        foregroundColor: sem.brand,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
-                          side: const BorderSide(color: AppColors.purpleNeon),
+                          side: BorderSide(color: sem.brand),
                         ),
                       ),
                     ),
@@ -855,8 +881,8 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
                   if (slide.imageUrlController.text.isNotEmpty) ...[
                     const SizedBox(width: 8),
                     IconButton(
-                      icon: const Icon(Icons.delete_outline,
-                          color: AppColors.errorNeon),
+                      icon: Icon(Icons.delete_outline,
+                          color: sem.error),
                       onPressed: () {
                         setState(() {
                           slide.imageUrlController.clear();
@@ -869,11 +895,11 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
 
               // Validation message
               if (slide.imageUrlController.text.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.only(top: 8, left: 12),
+                Padding(
+                  padding: const EdgeInsets.only(top: 8, left: 12),
                   child: Text(
                     'Vui lòng chọn hình ảnh',
-                    style: TextStyle(color: AppColors.errorNeon, fontSize: 12),
+                    style: TextStyle(color: sem.error, fontSize: 12),
                   ),
                 ),
             ],
@@ -883,18 +909,18 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
           // Question
           TextFormField(
             controller: slide.questionController,
-            style: const TextStyle(color: AppColors.textPrimary),
-            decoration: _inputDecoration('Câu hỏi'),
+            style: TextStyle(color: sem.textPrimary),
+            decoration: _inputDecoration(context, 'Câu hỏi'),
             validator: (v) =>
                 v == null || v.trim().isEmpty ? 'Nhập câu hỏi' : null,
           ),
           const SizedBox(height: 16),
 
           // Options
-          const Text(
+          Text(
             'Các lựa chọn',
             style: TextStyle(
-              color: AppColors.textSecondary,
+              color: sem.textSecondary,
               fontSize: 13,
               fontWeight: FontWeight.w600,
             ),
@@ -915,18 +941,18 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
                             slide.correctAnswer = v ?? 0;
                           });
                         },
-                        activeColor: AppColors.successNeon,
+                        activeColor: sem.success,
                         fillColor: WidgetStateProperty.resolveWith((states) {
                           if (states.contains(WidgetState.selected)) {
-                            return AppColors.successNeon;
+                            return sem.success;
                           }
-                          return AppColors.textTertiary;
+                          return sem.textTertiary;
                         }),
                       ),
                       Text(
                         labels[optIdx],
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
+                        style: TextStyle(
+                          color: sem.textPrimary,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -934,10 +960,10 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
                       Expanded(
                         child: TextFormField(
                           controller: slide.optionControllers[optIdx],
-                          style: const TextStyle(
-                              color: AppColors.textPrimary, fontSize: 14),
-                          decoration:
-                              _inputDecoration('Đáp án ${labels[optIdx]}'),
+                          style: TextStyle(
+                              color: sem.textPrimary, fontSize: 14),
+                          decoration: _inputDecoration(
+                              context, 'Đáp án ${labels[optIdx]}'),
                           validator: (v) => v == null || v.trim().isEmpty
                               ? 'Nhập đáp án'
                               : null,
@@ -949,9 +975,10 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
                     padding: const EdgeInsets.only(left: 56, top: 6),
                     child: TextFormField(
                       controller: slide.explanationControllers[optIdx],
-                      style: const TextStyle(
-                          color: AppColors.textSecondary, fontSize: 13),
-                      decoration: _inputDecoration('Giải thích (tuỳ chọn)'),
+                      style: TextStyle(
+                          color: sem.textSecondary, fontSize: 13),
+                      decoration:
+                          _inputDecoration(context, 'Giải thích (tuỳ chọn)'),
                       maxLines: 2,
                     ),
                   ),
@@ -965,8 +992,8 @@ class _ImageQuizEditorScreenState extends State<ImageQuizEditorScreen> {
           // Hint
           TextFormField(
             controller: slide.hintController,
-            style: const TextStyle(color: AppColors.textPrimary),
-            decoration: _inputDecoration('Gợi ý (tuỳ chọn)'),
+            style: TextStyle(color: sem.textPrimary),
+            decoration: _inputDecoration(context, 'Gợi ý (tuỳ chọn)'),
           ),
         ],
       ),

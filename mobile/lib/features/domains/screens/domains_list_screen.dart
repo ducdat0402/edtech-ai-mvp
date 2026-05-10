@@ -63,17 +63,19 @@ class _DomainsListScreenState extends State<DomainsListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: tokens.bg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
         leading: const AppBarLeadingBackAndHome(),
         leadingWidth: 112,
         automaticallyImplyLeading: false,
         title: Text(
           widget.subjectName ?? 'Chương học',
-          style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+          style: AppTextStyles.h4.copyWith(color: tokens.textPrimary),
         ),
       ),
       body: _isLoading
@@ -86,24 +88,25 @@ class _DomainsListScreenState extends State<DomainsListScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.book_outlined,
-                              size: 64, color: AppColors.textTertiary),
+                          Icon(Icons.book_outlined,
+                              size: 64, color: tokens.textTertiary),
                           const SizedBox(height: 16),
                           Text(
                             'Chưa có chương học nào',
                             style: AppTextStyles.h4
-                                .copyWith(color: AppColors.textSecondary),
+                                .copyWith(color: tokens.textSecondary),
                           ),
                           const SizedBox(height: 8),
                           Text(
                             'Vui lòng quay lại sau',
                             style: AppTextStyles.bodyMedium
-                                .copyWith(color: AppColors.textTertiary),
+                                .copyWith(color: tokens.textTertiary),
                           ),
                         ],
                       ),
                     )
                   : RefreshIndicator(
+                      color: tokens.brand,
                       onRefresh: _loadData,
                       child: ListView.builder(
                         padding: const EdgeInsets.all(16),
@@ -125,22 +128,23 @@ class _DomainsListScreenState extends State<DomainsListScreen> {
                 );
                 if (result == true) _loadData();
               },
-              backgroundColor: AppColors.contributorBlue,
-              child: const Icon(Icons.add, color: Colors.white),
+              backgroundColor: tokens.info,
+              child: Icon(Icons.add, color: tokens.textOnBrand),
             )
           : null,
     );
   }
 
   Widget _buildAddDomainCard() {
+    final t = context.colors;
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       elevation: 0,
-      color: AppColors.contributorBlue.withValues(alpha: 0.08),
+      color: t.info.withValues(alpha: 0.08),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
-            color: AppColors.contributorBlue.withValues(alpha: 0.3),
+            color: t.info.withValues(alpha: 0.3),
             width: 1.5),
       ),
       child: InkWell(
@@ -151,17 +155,17 @@ class _DomainsListScreenState extends State<DomainsListScreen> {
           if (result == true) _loadData();
         },
         borderRadius: BorderRadius.circular(12),
-        child: const Padding(
-          padding: EdgeInsets.all(20),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(Icons.add_circle_outline,
-                  color: AppColors.contributorBlue, size: 24),
-              SizedBox(width: 8),
+                  color: t.info, size: 24),
+              const SizedBox(width: 8),
               Text('Thêm Domain mới',
                   style: TextStyle(
-                      color: AppColors.contributorBlue,
+                      color: t.info,
                       fontWeight: FontWeight.w600,
                       fontSize: 16)),
             ],
@@ -172,6 +176,7 @@ class _DomainsListScreenState extends State<DomainsListScreen> {
   }
 
   Widget _buildDomainCard(Map<String, dynamic> domain) {
+    final tokens = context.colors;
     final name = domain['name'] as String? ?? 'Chương học';
     final description = domain['description'] as String?;
     final order = domain['order'] as int? ?? 0;
@@ -182,11 +187,11 @@ class _DomainsListScreenState extends State<DomainsListScreen> {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
-      color: AppColors.bgSecondary,
+      color: tokens.card,
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: Color(0x332D363D)),
+        side: BorderSide(color: tokens.border),
       ),
       child: InkWell(
         onTap: () {
@@ -203,14 +208,14 @@ class _DomainsListScreenState extends State<DomainsListScreen> {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: AppColors.purpleNeon.withValues(alpha: 0.2),
+                  color: tokens.brand.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Center(
                   child: Text(
                     '${order + 1}',
                     style: AppTextStyles.h4.copyWith(
-                      color: AppColors.primaryLight,
+                      color: tokens.brand,
                     ),
                   ),
                 ),
@@ -231,7 +236,7 @@ class _DomainsListScreenState extends State<DomainsListScreen> {
                       name,
                       style: AppTextStyles.labelLarge.copyWith(
                         fontSize: 18,
-                        color: AppColors.textPrimary,
+                        color: tokens.textPrimary,
                       ),
                     ),
                     if (description != null && description.isNotEmpty) ...[
@@ -239,7 +244,7 @@ class _DomainsListScreenState extends State<DomainsListScreen> {
                       Text(
                         description,
                         style: AppTextStyles.bodySmall
-                            .copyWith(color: AppColors.textTertiary),
+                            .copyWith(color: tokens.textTertiary),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -248,25 +253,25 @@ class _DomainsListScreenState extends State<DomainsListScreen> {
                     Row(
                       children: [
                         if (nodesCount > 0) ...[
-                          const Icon(Icons.book,
-                              size: 14, color: AppColors.textTertiary),
+                          Icon(Icons.book,
+                              size: 14, color: tokens.textTertiary),
                           const SizedBox(width: 4),
                           Text(
                             '$nodesCount bài học',
                             style: AppTextStyles.caption
-                                .copyWith(color: AppColors.textTertiary),
+                                .copyWith(color: tokens.textTertiary),
                           ),
                         ],
                         if (estimatedDays != null && estimatedDays > 0) ...[
                           if (nodesCount > 0) ...[
                             const SizedBox(width: 16),
-                            const Icon(Icons.schedule,
-                                size: 14, color: AppColors.textTertiary),
+                            Icon(Icons.schedule,
+                                size: 14, color: tokens.textTertiary),
                             const SizedBox(width: 4),
                             Text(
                               '~$estimatedDays ngày',
                               style: AppTextStyles.caption
-                                  .copyWith(color: AppColors.textTertiary),
+                                  .copyWith(color: tokens.textTertiary),
                             ),
                           ],
                         ],
@@ -276,7 +281,7 @@ class _DomainsListScreenState extends State<DomainsListScreen> {
                 ),
               ),
               // Arrow
-              const Icon(Icons.chevron_right, color: AppColors.textTertiary),
+              Icon(Icons.chevron_right, color: tokens.textTertiary),
             ],
           ),
         ),

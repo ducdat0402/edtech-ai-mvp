@@ -123,8 +123,9 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
 
   @override
   Widget build(BuildContext context) {
+    final sem = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -139,24 +140,24 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    AppColors.xpGold.withValues(alpha: 0.5),
-                    AppColors.xpGold.withValues(alpha: 0.08),
+                    sem.gold.withValues(alpha: 0.5),
+                    sem.gold.withValues(alpha: 0.08),
                   ],
                 ),
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.12),
+                  color: sem.textOnBrand.withValues(alpha: 0.12),
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.xpGold.withValues(alpha: 0.28),
+                    color: sem.gold.withValues(alpha: 0.28),
                     blurRadius: 10,
                     offset: const Offset(0, 2),
                   ),
                 ],
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.emoji_events_rounded,
-                color: AppColors.xpGold,
+                color: sem.gold,
                 size: 22,
               ),
             ),
@@ -165,7 +166,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
               child: Text(
                 'Bảng xếp hạng',
                 style: AppTextStyles.h4.copyWith(
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                   fontWeight: FontWeight.w800,
                   letterSpacing: -0.3,
                 ),
@@ -184,12 +185,12 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    AppColors.xpGold.withValues(alpha: 0.14),
-                    AppColors.bgSecondary,
+                    sem.gold.withValues(alpha: 0.14),
+                    sem.card,
                   ],
                 ),
                 border: Border.all(
-                  color: AppColors.xpGold.withValues(alpha: 0.28),
+                  color: sem.gold.withValues(alpha: 0.28),
                 ),
                 boxShadow: [
                   BoxShadow(
@@ -208,20 +209,20 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
                   borderRadius: BorderRadius.circular(13),
                   gradient: LinearGradient(
                     colors: [
-                      AppColors.purpleNeon.withValues(alpha: 0.45),
-                      AppColors.purpleNeon.withValues(alpha: 0.14),
+                      sem.brand.withValues(alpha: 0.45),
+                      sem.brand.withValues(alpha: 0.14),
                     ],
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.purpleNeon.withValues(alpha: 0.28),
+                      color: sem.brand.withValues(alpha: 0.28),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
                   ],
                 ),
-                labelColor: Colors.white,
-                unselectedLabelColor: AppColors.textTertiary,
+                labelColor: sem.textOnBrand,
+                unselectedLabelColor: sem.textTertiary,
                 labelStyle: AppTextStyles.labelMedium.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
@@ -252,7 +253,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
           IconButton(
             icon: Icon(
               Icons.history_rounded,
-              color: AppColors.purpleNeon.withValues(alpha: 0.95),
+              color: sem.brand.withValues(alpha: 0.95),
             ),
             tooltip: 'Lịch sử phần thưởng',
             onPressed: () => context.push('/weekly-rewards-history'),
@@ -260,7 +261,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
           IconButton(
             icon: Icon(
               Icons.refresh_rounded,
-              color: AppColors.primaryLight.withValues(alpha: 0.95),
+              color: sem.brand.withValues(alpha: 0.95),
             ),
             tooltip: 'Làm mới',
             onPressed: _loadData,
@@ -270,16 +271,16 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
       body: Stack(
         children: [
           _isLoading
-              ? _buildLoading()
+              ? _buildLoading(context)
               : _error != null
                   ? AppErrorWidget(message: _error!, onRetry: _loadData)
                   : TabBarView(
                       controller: _tabController,
                       children: [
-                        _buildGlobalTab(),
-                        _buildWeeklyTab(),
+                        _buildGlobalTab(context),
+                        _buildWeeklyTab(context),
                         if (widget.subjectId != null)
-                          _buildGlobalList(_subjectData),
+                          _buildGlobalList(context, _subjectData),
                       ],
                     ),
           const FloatingChatBubble(),
@@ -289,7 +290,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
     );
   }
 
-  Widget _buildLoading() {
+  Widget _buildLoading(BuildContext context) {
+    final sem = context.colors;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -300,19 +302,19 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
               shape: BoxShape.circle,
               gradient: RadialGradient(
                 colors: [
-                  AppColors.purpleNeon.withValues(alpha: 0.35),
-                  AppColors.bgSecondary,
+                  sem.brand.withValues(alpha: 0.35),
+                  sem.card,
                 ],
               ),
               border: Border.all(
-                color: AppColors.purpleNeon.withValues(alpha: 0.3),
+                color: sem.brand.withValues(alpha: 0.3),
               ),
             ),
-            child: const SizedBox(
+            child: SizedBox(
               width: 28,
               height: 28,
               child: CircularProgressIndicator(
-                color: AppColors.primaryLight,
+                color: sem.brand,
                 strokeWidth: 2.5,
               ),
             ),
@@ -321,7 +323,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
           Text(
             'Đang tải bảng xếp hạng…',
             style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.textSecondary,
+              color: sem.textSecondary,
             ),
           ),
         ],
@@ -330,21 +332,23 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
   }
 
   // ─── Global Tab ───
-  Widget _buildGlobalTab() {
+  Widget _buildGlobalTab(BuildContext context) {
     return Column(
       children: [
-        if (_myRank != null) _buildMyRankCard(),
+        if (_myRank != null) _buildMyRankCard(context),
         Expanded(
-            child: _buildGlobalList(_globalData, sourceLabel: 'Bảng toàn cầu')),
+            child: _buildGlobalList(context, _globalData,
+                sourceLabel: 'Bảng toàn cầu')),
       ],
     );
   }
 
   Widget _buildGlobalList(
+    BuildContext context,
     Map<String, dynamic>? data, {
     String sourceLabel = 'Bảng xếp hạng',
   }) {
-    if (data == null) return _buildLoading();
+    if (data == null) return _buildLoading(context);
     final entries = data['entries'] as List? ?? [];
     if (entries.isEmpty) return const _LeaderboardEmptyState();
     return ListView.builder(
@@ -365,8 +369,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
   }
 
   // ─── Weekly Tab ───
-  Widget _buildWeeklyTab() {
-    if (_weeklyData == null) return _buildLoading();
+  Widget _buildWeeklyTab(BuildContext context) {
+    if (_weeklyData == null) return _buildLoading(context);
     final entries = _weeklyData!['entries'] as List? ?? [];
     final myRank = _weeklyData!['myRank'] as int?;
     final myXp = _weeklyData!['myXp'] as int? ?? 0;
@@ -374,8 +378,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
 
     return CustomScrollView(
       slivers: [
-        SliverToBoxAdapter(child: _buildWeekHeader()),
-        SliverToBoxAdapter(child: _buildRewardsPreview(tiers)),
+        SliverToBoxAdapter(child: _buildWeekHeader(context)),
+        SliverToBoxAdapter(child: _buildRewardsPreview(context, tiers)),
         if (entries.length >= 3)
           SliverToBoxAdapter(child: _buildPodium(entries)),
         if (entries.isEmpty)
@@ -401,13 +405,15 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
             ),
           ),
         if (myRank != null && myRank > 10)
-          SliverToBoxAdapter(child: _buildStickyMyPosition(myRank, myXp)),
+          SliverToBoxAdapter(
+              child: _buildStickyMyPosition(context, myRank, myXp)),
         const SliverToBoxAdapter(child: SizedBox(height: 80)),
       ],
     );
   }
 
-  Widget _buildWeekHeader() {
+  Widget _buildWeekHeader(BuildContext context) {
+    final sem = context.colors;
     final d = _timeLeft.inDays;
     final h = _timeLeft.inHours % 24;
     final m = _timeLeft.inMinutes % 60;
@@ -420,20 +426,20 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColors.purpleNeon.withValues(alpha: 0.85),
-            AppColors.primaryLight.withValues(alpha: 0.55),
-            AppColors.xpGold.withValues(alpha: 0.35),
+            sem.brand.withValues(alpha: 0.85),
+            sem.brand.withValues(alpha: 0.55),
+            sem.gold.withValues(alpha: 0.35),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(22),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.22),
+          color: sem.textOnBrand.withValues(alpha: 0.22),
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.purpleNeon.withValues(alpha: 0.38),
+            color: sem.brand.withValues(alpha: 0.38),
             blurRadius: 22,
             offset: const Offset(0, 8),
           ),
@@ -448,20 +454,21 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
         children: [
           Row(
             children: [
-              const Icon(Icons.calendar_today_rounded,
-                  color: Colors.white, size: 20),
+              Icon(Icons.calendar_today_rounded,
+                  color: sem.textOnBrand, size: 20),
               const SizedBox(width: 8),
               Text(weekCode,
                   style:
-                      AppTextStyles.labelLarge.copyWith(color: Colors.white)),
+                      AppTextStyles.labelLarge.copyWith(color: sem.textOnBrand)),
               const Spacer(),
-              const Icon(Icons.emoji_events_rounded,
-                  color: AppColors.xpGold, size: 24),
+              Icon(Icons.emoji_events_rounded,
+                  color: sem.gold, size: 24),
             ],
           ),
           const SizedBox(height: 16),
           Text('Kết thúc trong',
-              style: AppTextStyles.bodySmall.copyWith(color: Colors.white70)),
+              style: AppTextStyles.bodySmall.copyWith(
+                  color: sem.textOnBrand.withValues(alpha: 0.7))),
           const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -483,8 +490,9 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
     );
   }
 
-  Widget _buildRewardsPreview(List tiers) {
+  Widget _buildRewardsPreview(BuildContext context, List tiers) {
     if (tiers.isEmpty) return const SizedBox.shrink();
+    final sem = context.colors;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(16),
@@ -494,12 +502,12 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppColors.purpleNeon.withValues(alpha: 0.12),
-            AppColors.bgSecondary,
+            sem.brand.withValues(alpha: 0.12),
+            sem.card,
           ],
         ),
         border: Border.all(
-          color: AppColors.purpleNeon.withValues(alpha: 0.26),
+          color: sem.brand.withValues(alpha: 0.26),
         ),
         boxShadow: [
           BoxShadow(
@@ -520,14 +528,14 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
                   borderRadius: BorderRadius.circular(10),
                   gradient: LinearGradient(
                     colors: [
-                      AppColors.xpGold.withValues(alpha: 0.35),
-                      AppColors.xpGold.withValues(alpha: 0.08),
+                      sem.gold.withValues(alpha: 0.35),
+                      sem.gold.withValues(alpha: 0.08),
                     ],
                   ),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.card_giftcard_rounded,
-                  color: AppColors.xpGold,
+                  color: sem.gold,
                   size: 18,
                 ),
               ),
@@ -535,7 +543,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
               Text(
                 'Phần thưởng tuần',
                 style: AppTextStyles.labelLarge.copyWith(
-                  color: AppColors.textPrimary,
+                  color: sem.textPrimary,
                   fontWeight: FontWeight.w800,
                 ),
               ),
@@ -557,22 +565,22 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
                   gradient: maxRank <= 3
                       ? LinearGradient(
                           colors: [
-                            AppColors.purpleNeon.withValues(alpha: 0.22),
-                            AppColors.purpleNeon.withValues(alpha: 0.06),
+                            sem.brand.withValues(alpha: 0.22),
+                            sem.brand.withValues(alpha: 0.06),
                           ],
                         )
                       : null,
-                  color: maxRank <= 3 ? null : AppColors.bgTertiary,
+                  color: maxRank <= 3 ? null : sem.cardMuted,
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
                     color: maxRank <= 3
-                        ? AppColors.purpleNeon.withValues(alpha: 0.45)
-                        : const Color(0x332D363D),
+                        ? sem.brand.withValues(alpha: 0.45)
+                        : sem.border.withValues(alpha: 0.65),
                   ),
                   boxShadow: maxRank <= 3
                       ? [
                           BoxShadow(
-                            color: AppColors.purpleNeon.withValues(alpha: 0.18),
+                            color: sem.brand.withValues(alpha: 0.18),
                             blurRadius: 6,
                             offset: const Offset(0, 2),
                           ),
@@ -586,20 +594,20 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
                       maxRank <= 3 ? 'Top $maxRank' : 'Top $maxRank',
                       style: AppTextStyles.labelMedium.copyWith(
                           color: maxRank <= 3
-                              ? AppColors.purpleNeon
-                              : AppColors.textSecondary),
+                              ? sem.brand
+                              : sem.textSecondary),
                     ),
                     const SizedBox(width: 8),
-                    const Icon(Icons.diamond_rounded,
-                        size: 14, color: AppColors.primaryLight),
+                    Icon(Icons.diamond_rounded,
+                        size: 14, color: sem.brand),
                     const SizedBox(width: 2),
                     Text('$diamonds',
                         style: AppTextStyles.labelMedium
-                            .copyWith(color: AppColors.primaryLight)),
+                            .copyWith(color: sem.brand)),
                     if (badge != null) ...[
                       const SizedBox(width: 6),
-                      const Icon(Icons.workspace_premium_rounded,
-                          size: 14, color: AppColors.xpGold),
+                      Icon(Icons.workspace_premium_rounded,
+                          size: 14, color: sem.gold),
                     ],
                   ],
                 ),
@@ -646,7 +654,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
     );
   }
 
-  Widget _buildStickyMyPosition(int rank, int xp) {
+  Widget _buildStickyMyPosition(BuildContext context, int rank, int xp) {
+    final sem = context.colors;
     return Container(
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(16),
@@ -654,11 +663,11 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
         gradient: AppGradients.primary,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.2),
+          color: sem.textOnBrand.withValues(alpha: 0.2),
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.purpleNeon.withValues(alpha: 0.38),
+            color: sem.brand.withValues(alpha: 0.38),
             blurRadius: 14,
             offset: const Offset(0, 5),
           ),
@@ -670,15 +679,15 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
             width: 50,
             height: 50,
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
+              color: sem.textOnBrand.withValues(alpha: 0.2),
               shape: BoxShape.circle,
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.35),
+                color: sem.textOnBrand.withValues(alpha: 0.35),
               ),
             ),
             child: Center(
               child: Text('#$rank',
-                  style: AppTextStyles.h4.copyWith(color: Colors.white)),
+                  style: AppTextStyles.h4.copyWith(color: sem.textOnBrand)),
             ),
           ),
           const SizedBox(width: 12),
@@ -688,21 +697,22 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
               children: [
                 Text('Vị trí của bạn',
                     style:
-                        AppTextStyles.labelLarge.copyWith(color: Colors.white)),
+                        AppTextStyles.labelLarge.copyWith(color: sem.textOnBrand)),
                 Text('$xp XP tuần này',
                     style: AppTextStyles.bodySmall
-                        .copyWith(color: Colors.white70)),
+                        .copyWith(color: sem.textOnBrand.withValues(alpha: 0.7))),
               ],
             ),
           ),
-          const Icon(Icons.arrow_upward_rounded,
-              color: AppColors.successNeon, size: 24),
+          Icon(Icons.arrow_upward_rounded,
+              color: sem.success, size: 24),
         ],
       ),
     );
   }
 
-  Widget _buildMyRankCard() {
+  Widget _buildMyRankCard(BuildContext context) {
+    final sem = context.colors;
     final rank = _myRank?['globalRank'] ?? _myRank?['rank'];
     final totalXP = _myRank?['totalXP'] ?? 0;
     if (rank == null) return const SizedBox.shrink();
@@ -714,11 +724,11 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
         gradient: AppGradients.primary,
         borderRadius: BorderRadius.circular(22),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.22),
+          color: sem.textOnBrand.withValues(alpha: 0.22),
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.purpleNeon.withValues(alpha: 0.42),
+            color: sem.brand.withValues(alpha: 0.42),
             blurRadius: 22,
             offset: const Offset(0, 8),
           ),
@@ -730,10 +740,10 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
             width: 70,
             height: 70,
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
+              color: sem.textOnBrand.withValues(alpha: 0.2),
               shape: BoxShape.circle,
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.4),
+                color: sem.textOnBrand.withValues(alpha: 0.4),
                 width: 2,
               ),
               boxShadow: [
@@ -746,7 +756,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
             ),
             child: Center(
               child: Text('#$rank',
-                  style: AppTextStyles.h3.copyWith(color: Colors.white)),
+                  style: AppTextStyles.h3.copyWith(color: sem.textOnBrand)),
             ),
           ),
           const SizedBox(width: 16),
@@ -755,11 +765,11 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('Hạng của bạn',
-                    style: AppTextStyles.h4.copyWith(color: Colors.white)),
+                    style: AppTextStyles.h4.copyWith(color: sem.textOnBrand)),
                 const SizedBox(height: 4),
                 Text('$totalXP XP tổng',
                     style: AppTextStyles.bodySmall
-                        .copyWith(color: Colors.white70)),
+                        .copyWith(color: sem.textOnBrand.withValues(alpha: 0.7))),
               ],
             ),
           ),
@@ -778,6 +788,8 @@ class _CountdownBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
+    final on = t.textOnBrand;
     return Column(
       children: [
         Container(
@@ -788,13 +800,13 @@ class _CountdownBlock extends StatelessWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                Colors.white.withValues(alpha: 0.28),
-                Colors.white.withValues(alpha: 0.08),
+                on.withValues(alpha: 0.28),
+                on.withValues(alpha: 0.08),
               ],
             ),
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: Colors.white.withValues(alpha: 0.35),
+              color: on.withValues(alpha: 0.35),
             ),
             boxShadow: [
               BoxShadow(
@@ -806,13 +818,13 @@ class _CountdownBlock extends StatelessWidget {
           ),
           child: Center(
             child: Text(value,
-                style: AppTextStyles.h3.copyWith(color: Colors.white)),
+                style: AppTextStyles.h3.copyWith(color: on)),
           ),
         ),
         const SizedBox(height: 4),
         Text(label,
             style: AppTextStyles.caption
-                .copyWith(color: Colors.white60, fontSize: 10)),
+                .copyWith(color: on.withValues(alpha: 0.6), fontSize: 10)),
       ],
     );
   }
@@ -821,9 +833,13 @@ class _CountdownBlock extends StatelessWidget {
 class _CountdownSeparator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final on = context.colors.textOnBrand;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: Text(':', style: AppTextStyles.h3.copyWith(color: Colors.white60)),
+      child: Text(
+          ':',
+          style: AppTextStyles.h3.copyWith(
+              color: on.withValues(alpha: 0.6))),
     );
   }
 }
@@ -842,10 +858,11 @@ class _PodiumItem extends StatelessWidget {
     required this.profileSourceLabel,
   });
 
-  Color get _color {
-    if (rank == 1) return AppColors.rankGold;
-    if (rank == 2) return AppColors.rankSilver;
-    return AppColors.rankBronze;
+  Color _medalColor(BuildContext context) {
+    final sem = context.colors;
+    if (rank == 1) return sem.gold;
+    if (rank == 2) return sem.textSecondary;
+    return sem.warning;
   }
 
   String get _medal {
@@ -856,6 +873,8 @@ class _PodiumItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final sem = context.colors;
+    final medalColor = _medalColor(context);
     final userId = entry['userId']?.toString();
     final api = Provider.of<ApiService>(context, listen: false);
     final weeklyXp = entry['weeklyXp'] ?? entry['totalXP'] ?? 0;
@@ -896,7 +915,7 @@ class _PodiumItem extends StatelessWidget {
             child: Text(
               entry['fullName'] ?? 'Anon',
               style: AppTextStyles.labelMedium
-                  .copyWith(color: AppColors.textPrimary),
+                  .copyWith(color: sem.textPrimary),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
@@ -905,7 +924,7 @@ class _PodiumItem extends StatelessWidget {
         ),
         Text(
           '$weeklyXp XP',
-          style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+          style: AppTextStyles.caption.copyWith(color: sem.textSecondary),
         ),
         const SizedBox(height: 8),
         Container(
@@ -914,21 +933,21 @@ class _PodiumItem extends StatelessWidget {
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                _color.withValues(alpha: 0.95),
-                _color.withValues(alpha: 0.45),
-                _color.withValues(alpha: 0.28),
+                medalColor.withValues(alpha: 0.95),
+                medalColor.withValues(alpha: 0.45),
+                medalColor.withValues(alpha: 0.28),
               ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
             border: Border.all(
-              color: Colors.white.withValues(alpha: 0.22),
+              color: sem.textOnBrand.withValues(alpha: 0.22),
               width: 1,
             ),
             boxShadow: [
               BoxShadow(
-                color: _color.withValues(alpha: 0.45),
+                color: medalColor.withValues(alpha: 0.45),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -937,7 +956,7 @@ class _PodiumItem extends StatelessWidget {
           child: Center(
             child: Text(
               '#$rank',
-              style: AppTextStyles.h3.copyWith(color: Colors.white),
+              style: AppTextStyles.h3.copyWith(color: sem.textOnBrand),
             ),
           ),
         ),
@@ -960,6 +979,7 @@ class _WeeklyEntryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final sem = context.colors;
     final userId = entry['userId']?.toString();
     final api = Provider.of<ApiService>(context, listen: false);
     final name = entry['fullName'] as String?;
@@ -989,12 +1009,12 @@ class _WeeklyEntryCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppColors.purpleNeon.withValues(alpha: 0.08),
-            AppColors.bgSecondary,
+            sem.brand.withValues(alpha: 0.08),
+            sem.card,
           ],
         ),
         border: Border.all(
-          color: AppColors.purpleNeon.withValues(alpha: 0.2),
+          color: sem.brand.withValues(alpha: 0.2),
         ),
         boxShadow: [
           BoxShadow(
@@ -1012,20 +1032,20 @@ class _WeeklyEntryCard extends StatelessWidget {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  AppColors.bgTertiary,
-                  AppColors.bgSecondary,
+                  sem.cardMuted,
+                  sem.card,
                 ],
               ),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: const Color(0x332D363D),
+                color: sem.border.withValues(alpha: 0.65),
               ),
             ),
             child: Center(
               child: Text(
                 '#$rank',
                 style: AppTextStyles.labelLarge.copyWith(
-                  color: AppColors.textSecondary,
+                  color: sem.textSecondary,
                   fontWeight: FontWeight.w800,
                 ),
               ),
@@ -1047,7 +1067,7 @@ class _WeeklyEntryCard extends StatelessWidget {
               child: Text(
                 entry['fullName'] ?? 'Anonymous',
                 style: AppTextStyles.labelLarge
-                    .copyWith(color: AppColors.textPrimary),
+                    .copyWith(color: sem.textPrimary),
               ),
             ),
           ),
@@ -1059,16 +1079,16 @@ class _WeeklyEntryCard extends StatelessWidget {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  AppColors.xpGold.withValues(alpha: 0.35),
-                  AppColors.xpGold.withValues(alpha: 0.1),
+                  sem.gold.withValues(alpha: 0.35),
+                  sem.gold.withValues(alpha: 0.1),
                 ],
               ),
               border: Border.all(
-                color: AppColors.xpGold.withValues(alpha: 0.45),
+                color: sem.gold.withValues(alpha: 0.45),
               ),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.xpGold.withValues(alpha: 0.2),
+                  color: sem.gold.withValues(alpha: 0.2),
                   blurRadius: 6,
                   offset: const Offset(0, 2),
                 ),
@@ -1076,13 +1096,12 @@ class _WeeklyEntryCard extends StatelessWidget {
             ),
             child: Row(
               children: [
-                const Icon(Icons.star_rounded,
-                    color: AppColors.xpGold, size: 16),
+                Icon(Icons.star_rounded, color: sem.gold, size: 16),
                 const SizedBox(width: 4),
                 Text(
                   '${entry['weeklyXp'] ?? 0}',
                   style: AppTextStyles.numberMedium.copyWith(
-                    color: AppColors.xpGold,
+                    color: sem.gold,
                     fontSize: 14,
                     fontWeight: FontWeight.w800,
                   ),
@@ -1108,16 +1127,18 @@ class _LeaderboardEntryCard extends StatelessWidget {
     required this.profileSourceLabel,
   });
 
-  Color _getRankColor(int rank) {
-    if (rank == 1) return AppColors.rankGold;
-    if (rank == 2) return AppColors.rankSilver;
-    if (rank == 3) return AppColors.rankBronze;
-    return AppColors.textSecondary;
+  Color _rankAccent(BuildContext context, int r) {
+    final sem = context.colors;
+    if (r == 1) return sem.gold;
+    if (r == 2) return sem.textSecondary;
+    if (r == 3) return sem.warning;
+    return sem.textSecondary;
   }
 
   @override
   Widget build(BuildContext context) {
-    final rankColor = _getRankColor(rank);
+    final sem = context.colors;
+    final rankColor = _rankAccent(context, rank);
     final isTopThree = rank <= 3;
     final userId = entry['userId']?.toString();
     final api = Provider.of<ApiService>(context, listen: false);
@@ -1147,14 +1168,14 @@ class _LeaderboardEntryCard extends StatelessWidget {
           colors: [
             isTopThree
                 ? rankColor.withValues(alpha: 0.14)
-                : AppColors.purpleNeon.withValues(alpha: 0.06),
-            AppColors.bgSecondary,
+                : sem.brand.withValues(alpha: 0.06),
+            sem.card,
           ],
         ),
         border: Border.all(
           color: isTopThree
               ? rankColor.withValues(alpha: 0.55)
-              : const Color(0x332D363D),
+              : sem.border.withValues(alpha: 0.65),
           width: isTopThree ? 1.5 : 1,
         ),
         boxShadow: [
@@ -1181,12 +1202,12 @@ class _LeaderboardEntryCard extends StatelessWidget {
                       ],
                     )
                   : null,
-              color: isTopThree ? null : AppColors.bgTertiary,
+              color: isTopThree ? null : sem.cardMuted,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
                 color: isTopThree
                     ? rankColor.withValues(alpha: 0.6)
-                    : const Color(0x332D363D),
+                    : sem.border.withValues(alpha: 0.65),
               ),
               boxShadow: isTopThree
                   ? [
@@ -1201,11 +1222,11 @@ class _LeaderboardEntryCard extends StatelessWidget {
             child: Center(
               child: isTopThree
                   ? Icon(Icons.emoji_events_rounded,
-                      color: Colors.white, size: 24)
+                      color: sem.textOnBrand, size: 24)
                   : Text(
                       '#$rank',
                       style: AppTextStyles.labelLarge.copyWith(
-                        color: AppColors.textSecondary,
+                        color: sem.textSecondary,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -1231,7 +1252,7 @@ class _LeaderboardEntryCard extends StatelessWidget {
                   child: Text(
                     entry['fullName'] ?? 'Anonymous',
                     style: AppTextStyles.labelLarge.copyWith(
-                        color: isTopThree ? rankColor : AppColors.textPrimary),
+                        color: isTopThree ? rankColor : sem.textPrimary),
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -1239,12 +1260,12 @@ class _LeaderboardEntryCard extends StatelessWidget {
                   children: [
                     if (entry['currentStreak'] != null &&
                         entry['currentStreak'] > 0) ...[
-                      const Icon(Icons.local_fire_department_rounded,
-                          size: 14, color: AppColors.streakOrange),
+                      Icon(Icons.local_fire_department_rounded,
+                          size: 14, color: sem.warning),
                       const SizedBox(width: 4),
                       Text('${entry['currentStreak']}',
                           style: AppTextStyles.caption
-                              .copyWith(color: AppColors.textSecondary)),
+                              .copyWith(color: sem.textSecondary)),
                       const SizedBox(width: 12),
                     ],
                     if (entry['coins'] != null) ...[
@@ -1252,7 +1273,7 @@ class _LeaderboardEntryCard extends StatelessWidget {
                       const SizedBox(width: 4),
                       Text('${entry['coins']}',
                           style: AppTextStyles.caption
-                              .copyWith(color: AppColors.textSecondary)),
+                              .copyWith(color: sem.textSecondary)),
                     ],
                   ],
                 ),
@@ -1267,16 +1288,16 @@ class _LeaderboardEntryCard extends StatelessWidget {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  AppColors.xpGold.withValues(alpha: 0.38),
-                  AppColors.xpGold.withValues(alpha: 0.1),
+                  sem.gold.withValues(alpha: 0.38),
+                  sem.gold.withValues(alpha: 0.1),
                 ],
               ),
               border: Border.all(
-                color: AppColors.xpGold.withValues(alpha: 0.45),
+                color: sem.gold.withValues(alpha: 0.45),
               ),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.xpGold.withValues(alpha: 0.22),
+                  color: sem.gold.withValues(alpha: 0.22),
                   blurRadius: 7,
                   offset: const Offset(0, 2),
                 ),
@@ -1284,13 +1305,12 @@ class _LeaderboardEntryCard extends StatelessWidget {
             ),
             child: Row(
               children: [
-                const Icon(Icons.star_rounded,
-                    color: AppColors.xpGold, size: 18),
+                Icon(Icons.star_rounded, color: sem.gold, size: 18),
                 const SizedBox(width: 4),
                 Text(
                   '${entry['totalXP'] ?? 0}',
                   style: AppTextStyles.numberMedium.copyWith(
-                    color: AppColors.xpGold,
+                    color: sem.gold,
                     fontSize: 16,
                     fontWeight: FontWeight.w800,
                   ),
@@ -1310,6 +1330,7 @@ class _LeaderboardEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final sem = context.colors;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -1322,12 +1343,12 @@ class _LeaderboardEmptyState extends StatelessWidget {
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    AppColors.xpGold.withValues(alpha: 0.4),
-                    AppColors.bgSecondary,
+                    sem.gold.withValues(alpha: 0.4),
+                    sem.card,
                   ],
                 ),
                 border: Border.all(
-                  color: AppColors.purpleNeon.withValues(alpha: 0.35),
+                  color: sem.brand.withValues(alpha: 0.35),
                 ),
                 boxShadow: [
                   BoxShadow(
@@ -1340,14 +1361,14 @@ class _LeaderboardEmptyState extends StatelessWidget {
               child: Icon(
                 Icons.emoji_events_rounded,
                 size: 52,
-                color: AppColors.xpGold.withValues(alpha: 0.95),
+                color: sem.gold.withValues(alpha: 0.95),
               ),
             ),
             const SizedBox(height: 20),
             Text(
               'Chưa có dữ liệu',
               style: AppTextStyles.h4.copyWith(
-                color: AppColors.textPrimary,
+                color: sem.textPrimary,
                 fontWeight: FontWeight.w800,
               ),
             ),
@@ -1356,7 +1377,7 @@ class _LeaderboardEmptyState extends StatelessWidget {
               'Bảng xếp hạng sẽ được cập nhật khi có người dùng',
               textAlign: TextAlign.center,
               style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textSecondary,
+                color: sem.textSecondary,
                 height: 1.4,
               ),
             ),

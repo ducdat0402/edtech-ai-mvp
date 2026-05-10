@@ -92,14 +92,16 @@ void showLessonContributorCreditSheet(
       ? contributor!
       : primaryContributorForCreditIcon(contributor, history);
 
+  final sheetBg = context.colors.card;
   showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
-    backgroundColor: AppColors.bgSecondary,
+    backgroundColor: sheetBg,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),
     builder: (ctx) {
+      final sem = ctx.colors;
       final bottomInset = MediaQuery.paddingOf(ctx).bottom;
       final maxH = MediaQuery.sizeOf(ctx).height * 0.88;
 
@@ -117,25 +119,25 @@ void showLessonContributorCreditSheet(
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: AppColors.textTertiary.withValues(alpha: 0.4),
+                      color: sem.textTertiary.withValues(alpha: 0.4),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Icon(Icons.volunteer_activism_rounded,
-                    size: 32, color: AppColors.contributorBlue),
+                Icon(Icons.volunteer_activism_rounded,
+                    size: 32, color: sem.info),
                 const SizedBox(height: 10),
                 Text(
                   'Cảm ơn cộng đồng!',
-                  style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+                  style: AppTextStyles.h4.copyWith(color: sem.textPrimary),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Nội dung được thêm hoặc cập nhật sau khi duyệt. Dưới đây là phiên bản đang học và các bản đã lưu trước khi có chỉnh sửa.',
                   style: AppTextStyles.bodyMedium
-                      .copyWith(color: AppColors.textSecondary),
+                      .copyWith(color: sem.textSecondary),
                   textAlign: TextAlign.center,
                 ),
                 if (hero != null && history.isEmpty) ...[
@@ -147,7 +149,7 @@ void showLessonContributorCreditSheet(
                   Text(
                     'Lịch sử phiên bản',
                     style: AppTextStyles.labelLarge
-                        .copyWith(color: AppColors.textPrimary),
+                        .copyWith(color: sem.textPrimary),
                   ),
                   const SizedBox(height: 10),
                   for (var i = 0; i < history.length; i++) ...[
@@ -171,6 +173,7 @@ class _ContributorHeroRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final sem = context.colors;
     final name = lessonContributorDisplayName(contributor);
     final avatarUrl =
         ApiConfig.absoluteMediaUrl(contributor['avatarUrl'] as String?);
@@ -179,13 +182,12 @@ class _ContributorHeroRow extends StatelessWidget {
       children: [
         CircleAvatar(
           radius: 26,
-          backgroundColor: AppColors.contributorBlue.withValues(alpha: 0.2),
+          backgroundColor: sem.info.withValues(alpha: 0.2),
           backgroundImage: avatarUrl.isNotEmpty
               ? CachedNetworkImageProvider(avatarUrl)
               : null,
           child: avatarUrl.isEmpty
-              ? const Icon(Icons.person_rounded,
-                  size: 30, color: AppColors.contributorBlue)
+              ? Icon(Icons.person_rounded, size: 30, color: sem.info)
               : null,
         ),
         const SizedBox(width: 14),
@@ -196,13 +198,12 @@ class _ContributorHeroRow extends StatelessWidget {
               Text(
                 name,
                 style: AppTextStyles.labelLarge
-                    .copyWith(color: AppColors.textPrimary),
+                    .copyWith(color: sem.textPrimary),
               ),
               const SizedBox(height: 4),
               Text(
                 'Ghi nhận trên bài học',
-                style: AppTextStyles.caption
-                    .copyWith(color: AppColors.contributorBlue),
+                style: AppTextStyles.caption.copyWith(color: sem.info),
               ),
             ],
           ),
@@ -219,6 +220,7 @@ class _VersionHistoryTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final sem = context.colors;
     final content = _contributorMapFromEntry(entry['contributor']);
     final edit = _contributorMapFromEntry(entry['editContributor']);
     final hasContent = lessonContributorVisible(content);
@@ -243,10 +245,10 @@ class _VersionHistoryTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: AppColors.bgPrimary.withValues(alpha: 0.55),
+        color: sem.bg.withValues(alpha: 0.55),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: AppColors.textTertiary.withValues(alpha: 0.2),
+          color: sem.textTertiary.withValues(alpha: 0.2),
         ),
       ),
       child: Row(
@@ -258,13 +260,13 @@ class _VersionHistoryTile extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.contributorBlue.withValues(alpha: 0.15),
+                  color: sem.info.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   label,
                   style: AppTextStyles.caption.copyWith(
-                    color: AppColors.contributorBlue,
+                    color: sem.info,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -274,14 +276,14 @@ class _VersionHistoryTile extends StatelessWidget {
           const SizedBox(width: 10),
           CircleAvatar(
             radius: 18,
-            backgroundColor: AppColors.textTertiary.withValues(alpha: 0.2),
+            backgroundColor: sem.textTertiary.withValues(alpha: 0.2),
             backgroundImage:
                 avatarUrl.isNotEmpty ? CachedNetworkImageProvider(avatarUrl) : null,
             child: avatarUrl.isEmpty
-                ? const Icon(
+                ? Icon(
                     Icons.person_outline_rounded,
                     size: 20,
-                    color: AppColors.textTertiary,
+                    color: sem.textTertiary,
                   )
                 : null,
           ),
@@ -293,7 +295,7 @@ class _VersionHistoryTile extends StatelessWidget {
                 Text(
                   headline,
                   style: AppTextStyles.labelMedium
-                      .copyWith(color: AppColors.textPrimary),
+                      .copyWith(color: sem.textPrimary),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -302,14 +304,14 @@ class _VersionHistoryTile extends StatelessWidget {
                   Text(
                     'Ghi nhận nội dung',
                     style: AppTextStyles.caption
-                        .copyWith(color: AppColors.textTertiary),
+                        .copyWith(color: sem.textTertiary),
                   ),
                 ] else if (hasEdit) ...[
                   const SizedBox(height: 2),
                   Text(
                     'Theo bản lưu (chưa tách ghi nhận nội dung)',
                     style: AppTextStyles.caption
-                        .copyWith(color: AppColors.textTertiary),
+                        .copyWith(color: sem.textTertiary),
                   ),
                 ],
                 if (hasContent && hasEdit && !samePerson) ...[
@@ -317,7 +319,7 @@ class _VersionHistoryTile extends StatelessWidget {
                   Text(
                     'Cập nhật đã duyệt: ${lessonContributorDisplayName(edit!)}',
                     style: AppTextStyles.caption
-                        .copyWith(color: AppColors.textSecondary, height: 1.25),
+                        .copyWith(color: sem.textSecondary, height: 1.25),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -327,7 +329,7 @@ class _VersionHistoryTile extends StatelessWidget {
                   Text(
                     date,
                     style: AppTextStyles.caption
-                        .copyWith(color: AppColors.textTertiary),
+                        .copyWith(color: sem.textTertiary),
                   ),
                 ],
                 if (note != null && note.isNotEmpty) ...[
@@ -335,7 +337,7 @@ class _VersionHistoryTile extends StatelessWidget {
                   Text(
                     note,
                     style: AppTextStyles.caption
-                        .copyWith(color: AppColors.textSecondary, height: 1.25),
+                        .copyWith(color: sem.textSecondary, height: 1.25),
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -372,6 +374,7 @@ class ContributorCreditButton extends StatelessWidget {
     );
     if (c == null) return const SizedBox.shrink();
 
+    final sem = context.colors;
     final avatarUrl = ApiConfig.absoluteMediaUrl(c['avatarUrl'] as String?);
     final extraCount = _distinctContributorCount(contentVersionHistory) -
         (lessonContributorVisible(c) ? 1 : 0);
@@ -388,13 +391,13 @@ class ContributorCreditButton extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 15,
-            backgroundColor: AppColors.contributorBlue.withValues(alpha: 0.2),
+            backgroundColor: sem.info.withValues(alpha: 0.2),
             backgroundImage: avatarUrl.isNotEmpty
                 ? CachedNetworkImageProvider(avatarUrl)
                 : null,
             child: avatarUrl.isEmpty
-                ? const Icon(Icons.volunteer_activism_rounded,
-                    size: 16, color: AppColors.contributorBlue)
+                ? Icon(Icons.volunteer_activism_rounded,
+                    size: 16, color: sem.info)
                 : null,
           ),
           Positioned(
@@ -402,8 +405,8 @@ class ContributorCreditButton extends StatelessWidget {
             bottom: -1,
             child: Container(
               padding: const EdgeInsets.all(2),
-              decoration: const BoxDecoration(
-                color: AppColors.bgPrimary,
+              decoration: BoxDecoration(
+                color: sem.bg,
                 shape: BoxShape.circle,
               ),
               child: Icon(Icons.favorite_rounded,
@@ -417,14 +420,14 @@ class ContributorCreditButton extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                 decoration: BoxDecoration(
-                  color: AppColors.contributorBlue,
+                  color: sem.info,
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppColors.bgPrimary, width: 1),
+                  border: Border.all(color: sem.bg, width: 1),
                 ),
                 child: Text(
                   '+$extraCount',
                   style: AppTextStyles.caption.copyWith(
-                    color: Colors.white,
+                    color: sem.textOnBrand,
                     fontSize: 9,
                     fontWeight: FontWeight.w700,
                   ),

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:edtech_mobile/theme/colors.dart';
+import 'package:edtech_mobile/theme/semantic_colors.dart';
 
 class SkeletonLoader extends StatefulWidget {
   final double width;
@@ -45,6 +45,7 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
     return AnimatedBuilder(
       animation: _animation,
       builder: (context, child) {
+        final t = context.colors;
         return Container(
           width: widget.width,
           height: widget.height,
@@ -53,10 +54,10 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
             gradient: LinearGradient(
               begin: Alignment(_animation.value, 0),
               end: Alignment(_animation.value + 1, 0),
-              colors: const [
-                AppColors.bgTertiary,
-                AppColors.borderPrimary,
-                AppColors.bgTertiary,
+              colors: [
+                t.cardMuted,
+                t.border,
+                t.cardMuted,
               ],
             ),
           ),

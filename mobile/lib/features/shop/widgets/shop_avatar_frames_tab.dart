@@ -51,8 +51,10 @@ class ShopAvatarFramesTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final sem = context.colors;
+    final brandHi = Color.lerp(sem.brand, Colors.white, 0.55)!;
     return RefreshIndicator(
-      color: AppColors.primaryLight,
+      color: brandHi,
       onRefresh: onRefresh,
       child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -72,24 +74,24 @@ class ShopAvatarFramesTab extends StatelessWidget {
                         borderRadius: BorderRadius.circular(14),
                         gradient: LinearGradient(
                           colors: [
-                            AppColors.purpleNeon.withValues(alpha: 0.4),
-                            AppColors.purpleNeon.withValues(alpha: 0.1),
+                            sem.brand.withValues(alpha: 0.4),
+                            sem.brand.withValues(alpha: 0.1),
                           ],
                         ),
                         border: Border.all(
-                          color: AppColors.purpleNeon.withValues(alpha: 0.4),
+                          color: sem.brand.withValues(alpha: 0.4),
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.purpleNeon.withValues(alpha: 0.2),
+                            color: sem.brand.withValues(alpha: 0.2),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
                         ],
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.shutter_speed_rounded,
-                        color: AppColors.primaryLight,
+                        color: brandHi,
                         size: 22,
                       ),
                     ),
@@ -101,7 +103,7 @@ class ShopAvatarFramesTab extends StatelessWidget {
                           Text(
                             'Khung avatar',
                             style: AppTextStyles.h3.copyWith(
-                              color: AppColors.textPrimary,
+                              color: sem.textPrimary,
                               fontWeight: FontWeight.w800,
                               letterSpacing: -0.3,
                             ),
@@ -110,7 +112,7 @@ class ShopAvatarFramesTab extends StatelessWidget {
                           Text(
                             'Tier càng cao càng chi tiết — giá theo GTU hoặc kim cương. Một số khung cần đủ cấp mới mua được.',
                             style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.textSecondary,
+                              color: sem.textSecondary,
                               height: 1.4,
                             ),
                           ),
@@ -174,6 +176,8 @@ class _WalletBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final sem = context.colors;
+    final brandHi = Color.lerp(sem.brand, Colors.white, 0.55)!;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
@@ -181,14 +185,14 @@ class _WalletBar extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppColors.coinGold.withValues(alpha: 0.12),
-            AppColors.purpleNeon.withValues(alpha: 0.1),
-            AppColors.bgSecondary,
+            sem.gold.withValues(alpha: 0.12),
+            sem.brand.withValues(alpha: 0.1),
+            sem.card,
           ],
         ),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: AppColors.primaryLight.withValues(alpha: 0.32),
+          color: brandHi.withValues(alpha: 0.32),
         ),
         boxShadow: [
           BoxShadow(
@@ -206,17 +210,17 @@ class _WalletBar extends StatelessWidget {
               shape: BoxShape.circle,
               gradient: RadialGradient(
                 colors: [
-                  AppColors.coinGold.withValues(alpha: 0.35),
-                  AppColors.coinGold.withValues(alpha: 0.06),
+                  sem.gold.withValues(alpha: 0.35),
+                  sem.gold.withValues(alpha: 0.06),
                 ],
               ),
               border: Border.all(
-                color: AppColors.coinGold.withValues(alpha: 0.35),
+                color: sem.gold.withValues(alpha: 0.35),
               ),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.account_balance_wallet_rounded,
-              color: AppColors.coinGold,
+              color: sem.gold,
               size: 20,
             ),
           ),
@@ -235,7 +239,7 @@ class _WalletBar extends StatelessWidget {
                     Text(
                       '$coins',
                       style: AppTextStyles.labelLarge.copyWith(
-                        color: AppColors.coinGold,
+                        color: sem.gold,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -244,13 +248,13 @@ class _WalletBar extends StatelessWidget {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.diamond_rounded,
-                        color: AppColors.primaryLight, size: 18),
+                    Icon(Icons.diamond_rounded,
+                        color: brandHi, size: 18),
                     const SizedBox(width: 4),
                     Text(
                       '$diamonds',
                       style: AppTextStyles.labelLarge.copyWith(
-                        color: AppColors.primaryLight,
+                        color: brandHi,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -262,19 +266,19 @@ class _WalletBar extends StatelessWidget {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        AppColors.purpleNeon.withValues(alpha: 0.25),
-                        AppColors.bgTertiary,
+                        sem.brand.withValues(alpha: 0.25),
+                        sem.cardMuted,
                       ],
                     ),
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
-                      color: AppColors.purpleNeon.withValues(alpha: 0.35),
+                      color: sem.brand.withValues(alpha: 0.35),
                     ),
                   ),
                   child: Text(
                     'Cấp $level',
                     style: AppTextStyles.caption.copyWith(
-                      color: AppColors.primaryLight,
+                      color: brandHi,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -321,6 +325,9 @@ class _FrameCard extends StatelessWidget {
     final canPurchase = frame['canPurchase'] as bool? ?? false;
     final isEquipped = equippedId == id;
 
+    final sem = context.colors;
+    final brandHi = Color.lerp(sem.brand, Colors.white, 0.55)!;
+
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(14),
@@ -328,14 +335,14 @@ class _FrameCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppColors.purpleNeon.withValues(alpha: 0.1),
-            AppColors.bgSecondary,
+            sem.brand.withValues(alpha: 0.1),
+            sem.card,
           ],
         ),
         border: Border.all(
           color: isEquipped
-              ? AppColors.successNeon.withValues(alpha: 0.55)
-              : AppColors.purpleNeon.withValues(alpha: 0.22),
+              ? sem.success.withValues(alpha: 0.55)
+              : sem.brand.withValues(alpha: 0.22),
         ),
         boxShadow: [
           BoxShadow(
@@ -361,11 +368,11 @@ class _FrameCard extends StatelessWidget {
                   diameter: 32,
                   child: ClipOval(
                     child: Container(
-                      color: AppColors.bgTertiary,
+                      color: sem.cardMuted,
                       child: Icon(
                         Icons.person_rounded,
                         size: 18,
-                        color: AppColors.textTertiary,
+                        color: sem.textTertiary,
                       ),
                     ),
                   ),
@@ -379,7 +386,7 @@ class _FrameCard extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
               style: AppTextStyles.labelSmall.copyWith(
-                color: AppColors.textPrimary,
+                color: sem.textPrimary,
                 fontWeight: FontWeight.w800,
                 height: 1.1,
                 fontSize: 11,
@@ -399,8 +406,8 @@ class _FrameCard extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: AppTextStyles.caption.copyWith(
                   color: lockedByLevel
-                      ? AppColors.warningNeon
-                      : AppColors.textTertiary,
+                      ? sem.warning
+                      : sem.textTertiary,
                   fontSize: 8,
                   height: 1,
                 ),
@@ -419,9 +426,9 @@ class _FrameCard extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(vertical: 2),
                     minimumSize: const Size(0, 28),
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    foregroundColor: AppColors.primaryLight,
+                    foregroundColor: brandHi,
                     side: BorderSide(
-                      color: AppColors.primaryLight.withValues(alpha: 0.5),
+                      color: brandHi.withValues(alpha: 0.5),
                     ),
                   ),
                   child: const Text('Đeo', style: TextStyle(fontSize: 12)),
@@ -434,20 +441,20 @@ class _FrameCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      AppColors.successNeon.withValues(alpha: 0.35),
-                      AppColors.successNeon.withValues(alpha: 0.1),
+                      sem.success.withValues(alpha: 0.35),
+                      sem.success.withValues(alpha: 0.1),
                     ],
                   ),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: AppColors.successNeon.withValues(alpha: 0.45),
+                    color: sem.success.withValues(alpha: 0.45),
                   ),
                 ),
                 child: Text(
                   'Đang đeo',
                   textAlign: TextAlign.center,
                   style: AppTextStyles.caption.copyWith(
-                    color: AppColors.successNeon,
+                    color: sem.success,
                     fontWeight: FontWeight.w800,
                     fontSize: 11,
                   ),
@@ -475,11 +482,11 @@ class _FrameCard extends StatelessWidget {
                     minimumSize: const Size(0, 28),
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     elevation: canPurchase && !lockedByLevel ? 2 : 0,
-                    shadowColor: AppColors.purpleNeon.withValues(alpha: 0.45),
+                    shadowColor: sem.brand.withValues(alpha: 0.45),
                     backgroundColor: canPurchase && !lockedByLevel
-                        ? AppColors.purpleNeon
-                        : AppColors.bgTertiary,
-                    foregroundColor: Colors.white,
+                        ? sem.brand
+                        : sem.cardMuted,
+                    foregroundColor: sem.textOnBrand,
                   ),
                   child: Text(
                     lockedByLevel ? 'Khóa cấp' : 'Mua',
@@ -498,10 +505,10 @@ class _FrameCard extends StatelessWidget {
                   HapticFeedback.lightImpact();
                   await onEquip(null);
                 },
-                child: const Text(
+                child: Text(
                   'Gỡ khung',
                   style: TextStyle(
-                    color: AppColors.textTertiary,
+                    color: sem.textTertiary,
                     fontSize: 10,
                   ),
                 ),
@@ -524,50 +531,54 @@ class _FrameCard extends StatelessWidget {
     if (mode == 'choice') {
       currency = await showDialog<String>(
         context: context,
-        builder: (ctx) => AlertDialog(
-          backgroundColor: AppColors.bgSecondary,
-          title: Text(
-            'Chọn loại tiền',
-            style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const GtuCoinIcon(size: 24),
-                title: Text(
-                  '${CurrencyLabels.gtuShort} — $priceCoins',
-                  style: const TextStyle(color: AppColors.textPrimary),
+        builder: (ctx) {
+          final d = ctx.colors;
+          final hi = Color.lerp(d.brand, Colors.white, 0.55)!;
+          return AlertDialog(
+            backgroundColor: d.card,
+            title: Text(
+              'Chọn loại tiền',
+              style: AppTextStyles.h4.copyWith(color: d.textPrimary),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const GtuCoinIcon(size: 24),
+                  title: Text(
+                    '${CurrencyLabels.gtuShort} — $priceCoins',
+                    style: TextStyle(color: d.textPrimary),
+                  ),
+                  onTap: () => Navigator.pop(ctx, 'coins'),
                 ),
-                onTap: () => Navigator.pop(ctx, 'coins'),
-              ),
-              ListTile(
-                leading: const Icon(Icons.diamond_rounded,
-                    color: AppColors.primaryLight),
-                title: Text(
-                  'Kim cương — $priceDiamonds 💎',
-                  style: const TextStyle(color: AppColors.textPrimary),
+                ListTile(
+                  leading: Icon(Icons.diamond_rounded, color: hi),
+                  title: Text(
+                    'Kim cương — $priceDiamonds 💎',
+                    style: TextStyle(color: d.textPrimary),
+                  ),
+                  onTap: () => Navigator.pop(ctx, 'diamonds'),
                 ),
-                onTap: () => Navigator.pop(ctx, 'diamonds'),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Hủy'),
               ),
             ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Hủy'),
-            ),
-          ],
-        ),
+          );
+        },
       );
       if (currency == null) return;
+      if (!context.mounted) return;
       if (currency == 'coins' &&
           priceCoins != null &&
           coins < priceCoins) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Không đủ GTU (cần $priceCoins).'),
-            backgroundColor: AppColors.errorNeon,
+            backgroundColor: context.colors.error,
           ),
         );
         return;
@@ -578,7 +589,7 @@ class _FrameCard extends StatelessWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Không đủ kim cương (cần $priceDiamonds).'),
-            backgroundColor: AppColors.errorNeon,
+            backgroundColor: context.colors.error,
           ),
         );
         return;
@@ -588,7 +599,7 @@ class _FrameCard extends StatelessWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Không đủ GTU (cần $priceCoins).'),
-            backgroundColor: AppColors.errorNeon,
+            backgroundColor: context.colors.error,
           ),
         );
         return;
@@ -599,7 +610,7 @@ class _FrameCard extends StatelessWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Không đủ kim cương (cần $priceDiamonds).'),
-            backgroundColor: AppColors.errorNeon,
+            backgroundColor: context.colors.error,
           ),
         );
         return;
@@ -611,9 +622,9 @@ class _FrameCard extends StatelessWidget {
       await onPurchase(frame, currency: currency);
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Đã mua khung! Có thể đeo ngay.'),
-          backgroundColor: AppColors.successNeon,
+        SnackBar(
+          content: const Text('Đã mua khung! Có thể đeo ngay.'),
+          backgroundColor: context.colors.success,
         ),
       );
     } catch (e) {
@@ -621,7 +632,7 @@ class _FrameCard extends StatelessWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('$e'),
-          backgroundColor: AppColors.errorNeon,
+          backgroundColor: context.colors.error,
         ),
       );
     }
@@ -643,6 +654,8 @@ class _PriceRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final sem = context.colors;
+    final brandHi = Color.lerp(sem.brand, Colors.white, 0.55)!;
     if (mode == 'coins' && priceCoins != null) {
       final row = Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -655,7 +668,7 @@ class _PriceRow extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: AppTextStyles.caption.copyWith(
-              color: AppColors.coinGold,
+              color: sem.gold,
               fontWeight: FontWeight.w700,
               fontSize: compact ? 10 : 12,
             ),
@@ -673,14 +686,14 @@ class _PriceRow extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(Icons.diamond_rounded,
-              color: AppColors.primaryLight, size: compact ? 14 : 16),
+              color: brandHi, size: compact ? 14 : 16),
           const SizedBox(width: 4),
           Text(
             compact ? '$priceDiamonds 💎' : '$priceDiamonds kim cương',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: AppTextStyles.caption.copyWith(
-              color: AppColors.primaryLight,
+              color: brandHi,
               fontWeight: FontWeight.w700,
               fontSize: compact ? 10 : 12,
             ),
@@ -713,7 +726,7 @@ class _PriceRow extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.caption.copyWith(
-                    color: AppColors.coinGold,
+                    color: sem.gold,
                     fontSize: compact ? 10 : 11,
                   ),
                 ),
@@ -728,14 +741,14 @@ class _PriceRow extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(Icons.diamond_rounded,
-                    color: AppColors.primaryLight, size: compact ? 12 : 14),
+                    color: brandHi, size: compact ? 12 : 14),
                 const SizedBox(width: 3),
                 Text(
                   '$priceDiamonds 💎',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.caption.copyWith(
-                    color: AppColors.primaryLight,
+                    color: brandHi,
                     fontSize: compact ? 10 : 11,
                   ),
                 ),
@@ -747,7 +760,7 @@ class _PriceRow extends StatelessWidget {
             Text(
               'Chọn loại tiền khi bấm Mua',
               style: AppTextStyles.caption.copyWith(
-                color: AppColors.textTertiary,
+                color: sem.textTertiary,
                 fontSize: 10,
               ),
             ),

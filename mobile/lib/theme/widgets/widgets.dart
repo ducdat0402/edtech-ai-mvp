@@ -11,3 +11,12 @@ export 'level_display.dart';
 export 'avatar_frame_ring.dart';
 export 'confetti_celebration.dart';
 export 'micro_interactions.dart';
+// Gamistu Light UI primitives
+export 'section_tab_switcher.dart';
+export 'lesson_chip_button.dart';
+export 'ai_suggestion_card.dart';
+export 'subject_list_tile.dart';
+export 'lesson_row_tile.dart';
+export 'stat_pill_row.dart';
+export 'completion_stat_grid.dart';
+export 'brand_header.dart';

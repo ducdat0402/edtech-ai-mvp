@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:edtech_mobile/theme/colors.dart';
+import 'package:edtech_mobile/theme/theme.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'quiz_editor_screen.dart';
@@ -94,6 +94,7 @@ class _ImageGalleryEditorScreenState extends State<ImageGalleryEditorScreen> {
 
   Future<void> _pickAndUploadImage(int imageIndex) async {
     try {
+      final apiService = Provider.of<ApiService>(context, listen: false);
       final XFile? image = await _imagePicker.pickImage(
         source: ImageSource.gallery,
         maxWidth: 1920,
@@ -101,11 +102,10 @@ class _ImageGalleryEditorScreenState extends State<ImageGalleryEditorScreen> {
         imageQuality: 85,
       );
 
-      if (image == null) return;
+      if (!mounted || image == null) return;
 
       setState(() => _uploadingImages[imageIndex] = true);
 
-      final apiService = Provider.of<ApiService>(context, listen: false);
       final imageUrl = await apiService.uploadImage(image.path);
 
       if (mounted) {
@@ -115,9 +115,9 @@ class _ImageGalleryEditorScreenState extends State<ImageGalleryEditorScreen> {
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Tải hình ảnh thành công!'),
-            backgroundColor: AppColors.successGlow,
+          SnackBar(
+            content: const Text('Tải hình ảnh thành công!'),
+            backgroundColor: context.colors.success,
           ),
         );
       }
@@ -127,7 +127,7 @@ class _ImageGalleryEditorScreenState extends State<ImageGalleryEditorScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Lỗi tải hình: $e'),
-            backgroundColor: AppColors.errorNeon,
+            backgroundColor: context.colors.error,
           ),
         );
       }
@@ -186,39 +186,41 @@ class _ImageGalleryEditorScreenState extends State<ImageGalleryEditorScreen> {
     );
   }
 
-  InputDecoration _inputDecoration(String label) {
+  InputDecoration _inputDecoration(BuildContext context, String label) {
+    final sem = context.colors;
     return InputDecoration(
       labelText: label,
-      labelStyle: const TextStyle(color: AppColors.textSecondary),
+      labelStyle: TextStyle(color: sem.textSecondary),
       filled: true,
-      fillColor: AppColors.bgSecondary,
+      fillColor: sem.card,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0x332D363D)),
+        borderSide: BorderSide(color: sem.border.withValues(alpha: 0.65)),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0x332D363D)),
+        borderSide: BorderSide(color: sem.border.withValues(alpha: 0.65)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.purpleNeon),
+        borderSide: BorderSide(color: sem.brand),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final sem = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppColors.bgSecondary,
+        backgroundColor: sem.card,
         leading: const AppBarLeadingBackAndHome(),
         leadingWidth: 112,
         automaticallyImplyLeading: false,
         title: Text(
           widget.isEditMode ? 'Sửa bài Image Gallery' : 'Tạo bài Image Gallery',
-          style: const TextStyle(color: AppColors.textPrimary, fontSize: 18),
+          style: TextStyle(color: sem.textPrimary, fontSize: 18),
         ),
         elevation: 0,
       ),
@@ -235,8 +237,8 @@ class _ImageGalleryEditorScreenState extends State<ImageGalleryEditorScreen> {
                     // Title
                     TextFormField(
                       controller: _titleController,
-                      style: const TextStyle(color: AppColors.textPrimary),
-                      decoration: _inputDecoration('Tiêu đề bài học'),
+                      style: TextStyle(color: sem.textPrimary),
+                      decoration: _inputDecoration(context, 'Tiêu đề bài học'),
                       validator: (v) =>
                           v == null || v.trim().isEmpty ? 'Nhập tiêu đề' : null,
                     ),
@@ -245,8 +247,8 @@ class _ImageGalleryEditorScreenState extends State<ImageGalleryEditorScreen> {
                     // Description
                     TextFormField(
                       controller: _descriptionController,
-                      style: const TextStyle(color: AppColors.textPrimary),
-                      decoration: _inputDecoration('Mô tả'),
+                      style: TextStyle(color: sem.textPrimary),
+                      decoration: _inputDecoration(context, 'Mô tả'),
                       maxLines: 3,
                       validator: (v) =>
                           v == null || v.trim().isEmpty ? 'Nhập mô tả' : null,
@@ -259,19 +261,19 @@ class _ImageGalleryEditorScreenState extends State<ImageGalleryEditorScreen> {
                       children: [
                         Text(
                           'Hình ảnh (${_images.length})',
-                          style: const TextStyle(
-                            color: AppColors.textPrimary,
+                          style: TextStyle(
+                            color: sem.textPrimary,
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         TextButton.icon(
                           onPressed: _addImage,
-                          icon: const Icon(Icons.add_photo_alternate,
-                              color: AppColors.purpleNeon),
-                          label: const Text(
+                          icon: Icon(Icons.add_photo_alternate,
+                              color: sem.brand),
+                          label: Text(
                             'Thêm hình',
-                            style: TextStyle(color: AppColors.purpleNeon),
+                            style: TextStyle(color: sem.brand),
                           ),
                         ),
                       ],
@@ -291,17 +293,17 @@ class _ImageGalleryEditorScreenState extends State<ImageGalleryEditorScreen> {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16),
-              decoration: const BoxDecoration(
-                color: AppColors.bgSecondary,
+              decoration: BoxDecoration(
+                color: sem.card,
                 border: Border(
-                  top: BorderSide(color: Color(0x332D363D)),
+                  top: BorderSide(color: sem.border.withValues(alpha: 0.65)),
                 ),
               ),
               child: ElevatedButton(
                 onPressed: _navigateToQuizEditor,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.purpleNeon,
-                  foregroundColor: Colors.white,
+                  backgroundColor: sem.brand,
+                  foregroundColor: sem.textOnBrand,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -320,15 +322,16 @@ class _ImageGalleryEditorScreenState extends State<ImageGalleryEditorScreen> {
   }
 
   Widget _buildImageCard(int index) {
+    final sem = context.colors;
     final img = _images[index];
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
+        color: sem.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0x332D363D)),
+        border: Border.all(color: sem.border.withValues(alpha: 0.65)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -339,30 +342,30 @@ class _ImageGalleryEditorScreenState extends State<ImageGalleryEditorScreen> {
             children: [
               Text(
                 'Hình ${index + 1}',
-                style: const TextStyle(
-                  color: AppColors.purpleNeon,
+                style: TextStyle(
+                  color: sem.brand,
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               if (_images.length > 1)
                 IconButton(
-                  icon: const Icon(Icons.delete_outline,
-                      color: AppColors.errorNeon, size: 20),
+                  icon: Icon(Icons.delete_outline,
+                      color: sem.error, size: 20),
                   onPressed: () => _removeImage(index),
                 ),
             ],
           ),
-          const Divider(color: Color(0x332D363D), height: 20),
+          Divider(color: sem.border.withValues(alpha: 0.65), height: 20),
 
           // Image upload/preview
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Hình ảnh',
                 style: TextStyle(
-                  color: AppColors.textSecondary,
+                  color: sem.textSecondary,
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
                 ),
@@ -377,7 +380,7 @@ class _ImageGalleryEditorScreenState extends State<ImageGalleryEditorScreen> {
                   margin: const EdgeInsets.only(bottom: 8),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0x332D363D)),
+                    border: Border.all(color: sem.border.withValues(alpha: 0.65)),
                     image: DecorationImage(
                       image: NetworkImage(img.urlController.text),
                       fit: BoxFit.cover,
@@ -394,12 +397,12 @@ class _ImageGalleryEditorScreenState extends State<ImageGalleryEditorScreen> {
                           ? null
                           : () => _pickAndUploadImage(index),
                       icon: _uploadingImages[index] == true
-                          ? const SizedBox(
+                          ? SizedBox(
                               width: 16,
                               height: 16,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                color: Colors.white,
+                                color: context.colors.textOnBrand,
                               ),
                             )
                           : Icon(
@@ -416,12 +419,12 @@ class _ImageGalleryEditorScreenState extends State<ImageGalleryEditorScreen> {
                                 : 'Đổi hình ảnh',
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.bgTertiary,
-                        foregroundColor: AppColors.purpleNeon,
+                        backgroundColor: sem.cardMuted,
+                        foregroundColor: sem.brand,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
-                          side: const BorderSide(color: AppColors.purpleNeon),
+                          side: BorderSide(color: sem.brand),
                         ),
                       ),
                     ),
@@ -429,8 +432,8 @@ class _ImageGalleryEditorScreenState extends State<ImageGalleryEditorScreen> {
                   if (img.urlController.text.isNotEmpty) ...[
                     const SizedBox(width: 8),
                     IconButton(
-                      icon: const Icon(Icons.delete_outline,
-                          color: AppColors.errorNeon),
+                      icon: Icon(Icons.delete_outline,
+                          color: sem.error),
                       onPressed: () {
                         setState(() {
                           img.urlController.clear();
@@ -443,11 +446,11 @@ class _ImageGalleryEditorScreenState extends State<ImageGalleryEditorScreen> {
 
               // Validation message
               if (img.urlController.text.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.only(top: 8, left: 12),
+                Padding(
+                  padding: const EdgeInsets.only(top: 8, left: 12),
                   child: Text(
                     'Vui lòng chọn hình ảnh',
-                    style: TextStyle(color: AppColors.errorNeon, fontSize: 12),
+                    style: TextStyle(color: sem.error, fontSize: 12),
                   ),
                 ),
             ],
@@ -457,8 +460,8 @@ class _ImageGalleryEditorScreenState extends State<ImageGalleryEditorScreen> {
           // Description
           TextFormField(
             controller: img.descriptionController,
-            style: const TextStyle(color: AppColors.textPrimary),
-            decoration: _inputDecoration('Mô tả hình ảnh'),
+            style: TextStyle(color: sem.textPrimary),
+            decoration: _inputDecoration(context, 'Mô tả hình ảnh'),
             maxLines: 3,
             validator: (v) =>
                 v == null || v.trim().isEmpty ? 'Nhập mô tả hình ảnh' : null,

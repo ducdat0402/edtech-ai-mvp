@@ -92,7 +92,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     };
 
     return Scaffold(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -107,24 +107,24 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    AppColors.successNeon.withValues(alpha: 0.45),
-                    AppColors.successNeon.withValues(alpha: 0.08),
+                    context.colors.success.withValues(alpha: 0.45),
+                    context.colors.success.withValues(alpha: 0.08),
                   ],
                 ),
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.1),
+                  color: context.colors.textOnBrand.withValues(alpha: 0.1),
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.successNeon.withValues(alpha: 0.25),
+                    color: context.colors.success.withValues(alpha: 0.25),
                     blurRadius: 10,
                     offset: const Offset(0, 2),
                   ),
                 ],
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.event_available_rounded,
-                color: AppColors.successNeon,
+                color: context.colors.success,
                 size: 22,
               ),
             ),
@@ -133,7 +133,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
               child: Text(
                 'Cam kết tuần',
                 style: AppTextStyles.h4.copyWith(
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                   fontWeight: FontWeight.w800,
                   letterSpacing: -0.3,
                 ),
@@ -153,19 +153,19 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
                       shape: BoxShape.circle,
                       gradient: RadialGradient(
                         colors: [
-                          AppColors.purpleNeon.withValues(alpha: 0.35),
-                          AppColors.bgSecondary,
+                          context.colors.brand.withValues(alpha: 0.35),
+                          context.colors.card,
                         ],
                       ),
                       border: Border.all(
-                        color: AppColors.purpleNeon.withValues(alpha: 0.3),
+                        color: context.colors.brand.withValues(alpha: 0.3),
                       ),
                     ),
-                    child: const SizedBox(
+                    child: SizedBox(
                       width: 28,
                       height: 28,
                       child: CircularProgressIndicator(
-                        color: AppColors.primaryLight,
+                        color: context.colors.brandStrong,
                         strokeWidth: 2.5,
                       ),
                     ),
@@ -174,7 +174,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
                   Text(
                     'Đang tải kế hoạch…',
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                     ),
                   ),
                 ],
@@ -192,7 +192,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
                   min: 1,
                   max: 14,
                   icon: Icons.play_circle_fill_rounded,
-                  accent: AppColors.orangeNeon,
+                  accent: context.colors.warning,
                 ),
                 const SizedBox(height: 12),
                 _buildStepper(
@@ -202,7 +202,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
                   min: 1,
                   max: 30,
                   icon: Icons.menu_book_rounded,
-                  accent: AppColors.primaryLight,
+                  accent: context.colors.brandStrong,
                 ),
                 const SizedBox(height: 18),
                 Row(
@@ -213,17 +213,17 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
                         borderRadius: BorderRadius.circular(10),
                         gradient: LinearGradient(
                           colors: [
-                            AppColors.purpleNeon.withValues(alpha: 0.35),
-                            AppColors.purpleNeon.withValues(alpha: 0.08),
+                            context.colors.brand.withValues(alpha: 0.35),
+                            context.colors.brand.withValues(alpha: 0.08),
                           ],
                         ),
                         border: Border.all(
-                          color: AppColors.purpleNeon.withValues(alpha: 0.35),
+                          color: context.colors.brand.withValues(alpha: 0.35),
                         ),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.calendar_month_rounded,
-                        color: AppColors.primaryLight,
+                        color: context.colors.brandStrong,
                         size: 20,
                       ),
                     ),
@@ -231,7 +231,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
                     Text(
                       'Ngày dự kiến học',
                       style: AppTextStyles.labelLarge.copyWith(
-                        color: AppColors.textPrimary,
+                        color: context.colors.textPrimary,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -258,13 +258,13 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppColors.purpleNeon.withValues(alpha: 0.2),
-            AppColors.cyanNeon.withValues(alpha: 0.1),
-            AppColors.bgSecondary,
+            context.colors.brand.withValues(alpha: 0.2),
+            context.colors.info.withValues(alpha: 0.1),
+            context.colors.card,
           ],
         ),
         border: Border.all(
-          color: AppColors.purpleNeon.withValues(alpha: 0.32),
+          color: context.colors.brand.withValues(alpha: 0.32),
         ),
         boxShadow: [
           BoxShadow(
@@ -279,16 +279,16 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
         children: [
           Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.flag_rounded,
-                color: AppColors.xpGold,
+                color: context.colors.gold,
                 size: 22,
               ),
               const SizedBox(width: 8),
               Text(
                 'Kế hoạch 7 ngày',
                 style: AppTextStyles.labelLarge.copyWith(
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                   fontWeight: FontWeight.w800,
                 ),
               ),
@@ -298,7 +298,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
           Text(
             'Đặt mục tiêu rõ ràng giúp bạn chủ động hơn — chọn số phiên, số bài và các ngày trong tuần bạn sẽ học.',
             style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
               height: 1.45,
             ),
           ),
@@ -316,12 +316,12 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppColors.purpleNeon.withValues(alpha: 0.1),
-            AppColors.bgSecondary,
+            context.colors.brand.withValues(alpha: 0.1),
+            context.colors.card,
           ],
         ),
         border: Border.all(
-          color: AppColors.purpleNeon.withValues(alpha: 0.22),
+          color: context.colors.brand.withValues(alpha: 0.22),
         ),
         boxShadow: [
           BoxShadow(
@@ -344,16 +344,16 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
                 e.value,
                 style: TextStyle(
                   fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
-                  color: selected ? Colors.white : AppColors.textSecondary,
+                  color: selected ? context.colors.textOnBrand : context.colors.textSecondary,
                 ),
               ),
               selected: selected,
-              selectedColor: AppColors.purpleNeon.withValues(alpha: 0.85),
-              backgroundColor: AppColors.bgTertiary,
+              selectedColor: context.colors.brand.withValues(alpha: 0.85),
+              backgroundColor: context.colors.cardMuted,
               side: BorderSide(
                 color: selected
-                    ? AppColors.purpleNeon.withValues(alpha: 0.65)
-                    : const Color(0x332D363D),
+                    ? context.colors.brand.withValues(alpha: 0.65)
+                    : context.colors.border.withValues(alpha: 0.65),
               ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
@@ -376,13 +376,14 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
   }
 
   Widget _buildSaveButton() {
+    final sem = context.colors;
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppColors.purpleNeon.withValues(alpha: 0.35),
+            color: context.colors.brand.withValues(alpha: 0.35),
             blurRadius: 14,
             offset: const Offset(0, 5),
           ),
@@ -407,40 +408,41 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
                 end: Alignment.bottomRight,
                 colors: _saving
                     ? [
-                        AppColors.bgTertiary,
-                        AppColors.bgTertiary,
+                        sem.cardMuted,
+                        sem.cardMuted,
                       ]
                     : [
-                        AppColors.purpleNeon,
-                        const Color(0xFF5E42E8),
+                        sem.brand,
+                        sem.brandStrong,
                       ],
               ),
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.15),
+                color: sem.textOnBrand.withValues(alpha: 0.15),
               ),
             ),
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 14),
               child: Center(
                 child: _saving
-                    ? const SizedBox(
+                    ? SizedBox(
                         width: 22,
                         height: 22,
                         child: CircularProgressIndicator(
                           strokeWidth: 2.5,
-                          color: Colors.white,
+                          color: sem.brandStrong,
                         ),
                       )
-                    : const Row(
+                    : Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.save_rounded, color: Colors.white, size: 22),
-                          SizedBox(width: 8),
+                          Icon(Icons.save_rounded,
+                              color: sem.textOnBrand, size: 22),
+                          const SizedBox(width: 8),
                           Text(
                             'Lưu cam kết tuần',
                             style: TextStyle(
-                              color: Colors.white,
+                              color: sem.textOnBrand,
                               fontWeight: FontWeight.w800,
                               fontSize: 16,
                             ),
@@ -473,7 +475,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
           end: Alignment.bottomRight,
           colors: [
             accent.withValues(alpha: 0.12),
-            AppColors.bgSecondary,
+            context.colors.card,
           ],
         ),
         border: Border.all(
@@ -510,7 +512,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
             child: Text(
               label,
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -528,7 +530,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
-                color: AppColors.bgTertiary,
+                color: context.colors.cardMuted,
                 border: Border.all(
                   color: accent.withValues(alpha: 0.35),
                 ),
@@ -537,7 +539,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
                 '$value',
                 textAlign: TextAlign.center,
                 style: AppTextStyles.h4.copyWith(
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                   fontWeight: FontWeight.w800,
                 ),
               ),
@@ -558,10 +560,10 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     final actual = (review['actual'] as Map?) ?? const {};
     final followRate = (review['followRate'] as num?)?.toInt() ?? 0;
     final rateColor = followRate >= 70
-        ? AppColors.successNeon
+        ? context.colors.success
         : followRate >= 40
-            ? AppColors.xpGold
-            : AppColors.orangeNeon;
+            ? context.colors.gold
+            : context.colors.warning;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -571,12 +573,12 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppColors.cyanNeon.withValues(alpha: 0.1),
-            AppColors.bgSecondary,
+            context.colors.info.withValues(alpha: 0.1),
+            context.colors.card,
           ],
         ),
         border: Border.all(
-          color: AppColors.cyanNeon.withValues(alpha: 0.28),
+          color: context.colors.info.withValues(alpha: 0.28),
         ),
         boxShadow: [
           BoxShadow(
@@ -597,17 +599,17 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      AppColors.cyanNeon.withValues(alpha: 0.4),
-                      AppColors.cyanNeon.withValues(alpha: 0.08),
+                      context.colors.info.withValues(alpha: 0.4),
+                      context.colors.info.withValues(alpha: 0.08),
                     ],
                   ),
                   border: Border.all(
-                    color: AppColors.cyanNeon.withValues(alpha: 0.35),
+                    color: context.colors.info.withValues(alpha: 0.35),
                   ),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.insights_rounded,
-                  color: AppColors.primaryLight,
+                  color: context.colors.brandStrong,
                   size: 20,
                 ),
               ),
@@ -616,7 +618,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
                 child: Text(
                   'Tổng kết tuần hiện tại',
                   style: AppTextStyles.labelLarge.copyWith(
-                    color: AppColors.textPrimary,
+                    color: context.colors.textPrimary,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -628,9 +630,9 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(14),
-              color: AppColors.bgTertiary,
+              color: context.colors.cardMuted,
               border: Border.all(
-                color: const Color(0x332D363D),
+                color: context.colors.border.withValues(alpha: 0.65),
               ),
             ),
             child: Row(
@@ -639,19 +641,19 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
                   icon: Icons.play_circle_outline_rounded,
                   label: 'Phiên',
                   value: '${actual['sessionCount'] ?? 0}',
-                  color: AppColors.orangeNeon,
+                  color: context.colors.warning,
                 ),
                 Container(
                   width: 1,
                   height: 28,
                   margin: const EdgeInsets.symmetric(horizontal: 10),
-                  color: AppColors.textTertiary.withValues(alpha: 0.35),
+                  color: context.colors.textTertiary.withValues(alpha: 0.35),
                 ),
                 _ReviewStatChip(
                   icon: Icons.menu_book_rounded,
                   label: 'Bài',
                   value: '${actual['lessonCount'] ?? 0}',
-                  color: AppColors.primaryLight,
+                  color: context.colors.brandStrong,
                 ),
               ],
             ),
@@ -662,7 +664,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
               Text(
                 'Bám kế hoạch',
                 style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -704,7 +706,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
             Text(
               (review['note'] ?? '').toString(),
               style: AppTextStyles.caption.copyWith(
-                color: AppColors.textTertiary,
+                color: context.colors.textTertiary,
                 height: 1.4,
               ),
             ),
@@ -750,11 +752,11 @@ class _StepperCircleButton extends StatelessWidget {
                     ],
                   )
                 : null,
-            color: enabled ? null : AppColors.bgTertiary,
+            color: enabled ? null : context.colors.cardMuted,
             border: Border.all(
               color: enabled
                   ? accent.withValues(alpha: 0.5)
-                  : AppColors.textTertiary.withValues(alpha: 0.25),
+                  : context.colors.textTertiary.withValues(alpha: 0.25),
             ),
             boxShadow: enabled
                 ? [
@@ -769,7 +771,7 @@ class _StepperCircleButton extends StatelessWidget {
           child: Icon(
             icon,
             size: 22,
-            color: enabled ? Colors.white : AppColors.textTertiary,
+            color: enabled ? context.colors.textOnBrand : context.colors.textTertiary,
           ),
         ),
       ),
@@ -804,14 +806,14 @@ class _ReviewStatChip extends StatelessWidget {
                 Text(
                   label,
                   style: AppTextStyles.caption.copyWith(
-                    color: AppColors.textTertiary,
+                    color: context.colors.textTertiary,
                     fontSize: 10,
                   ),
                 ),
                 Text(
                   value,
                   style: AppTextStyles.labelLarge.copyWith(
-                    color: AppColors.textPrimary,
+                    color: context.colors.textPrimary,
                     fontWeight: FontWeight.w800,
                   ),
                 ),

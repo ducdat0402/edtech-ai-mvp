@@ -71,15 +71,17 @@ class _AnalysisCompleteScreenState extends State<AnalysisCompleteScreen>
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: t.bg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
         title: Text('Kết quả phân tích',
-            style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
-        leading: const AppBarLeadingBackAndHome(
-          iconColor: AppColors.textSecondary,
+            style: AppTextStyles.h4.copyWith(color: t.textPrimary)),
+        leading: AppBarLeadingBackAndHome(
+          iconColor: t.textSecondary,
         ),
         leadingWidth: 112,
         automaticallyImplyLeading: false,
@@ -105,12 +107,12 @@ class _AnalysisCompleteScreenState extends State<AnalysisCompleteScreen>
               emissionFrequency: 0.03,
               numberOfParticles: 30,
               gravity: 0.2,
-              colors: const [
-                AppColors.purpleNeon,
-                AppColors.pinkNeon,
-                AppColors.cyanNeon,
-                AppColors.successNeon,
-                AppColors.xpGold,
+              colors: [
+                t.brand,
+                t.aiGradient.length > 1 ? t.aiGradient[1] : t.brandSoft,
+                t.info,
+                t.success,
+                t.gold,
               ],
             ),
           ),
@@ -120,6 +122,7 @@ class _AnalysisCompleteScreenState extends State<AnalysisCompleteScreen>
   }
 
   Widget _buildLoadingState() {
+    final t = context.colors;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -127,23 +130,22 @@ class _AnalysisCompleteScreenState extends State<AnalysisCompleteScreen>
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              gradient: AppGradients.primary,
+              gradient: LinearGradient(colors: t.heroGradient),
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.purpleNeon.withValues(alpha: 0.4),
+                  color: t.brand.withValues(alpha: 0.4),
                   blurRadius: 20,
                 ),
               ],
             ),
-            child:
-                const CircularProgressIndicator(color: AppColors.primaryLight),
+            child: CircularProgressIndicator(color: t.textOnBrand),
           ),
           const SizedBox(height: 24),
           Text(
             'Đang phân tích kết quả...',
             style: AppTextStyles.bodyLarge
-                .copyWith(color: AppColors.textSecondary),
+                .copyWith(color: t.textSecondary),
           ),
         ],
       ),
@@ -151,6 +153,7 @@ class _AnalysisCompleteScreenState extends State<AnalysisCompleteScreen>
   }
 
   Widget _buildErrorState() {
+    final t = context.colors;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -160,20 +163,20 @@ class _AnalysisCompleteScreenState extends State<AnalysisCompleteScreen>
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: AppColors.errorNeon.withValues(alpha: 0.15),
+                color: t.error.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.error_outline_rounded,
-                  size: 48, color: AppColors.errorNeon),
+              child: Icon(Icons.error_outline_rounded,
+                  size: 48, color: t.error),
             ),
             const SizedBox(height: 24),
             Text('Có lỗi xảy ra',
-                style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary)),
+                style: AppTextStyles.h3.copyWith(color: t.textPrimary)),
             const SizedBox(height: 8),
             Text(
               _error ?? '',
               style: AppTextStyles.bodyMedium
-                  .copyWith(color: AppColors.textSecondary),
+                  .copyWith(color: t.textSecondary),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -188,15 +191,17 @@ class _AnalysisCompleteScreenState extends State<AnalysisCompleteScreen>
   }
 
   Widget _buildNoDataState() {
+    final t = context.colors;
     return Center(
       child: Text(
         'Không có dữ liệu phân tích',
-        style: AppTextStyles.bodyLarge.copyWith(color: AppColors.textSecondary),
+        style: AppTextStyles.bodyLarge.copyWith(color: t.textSecondary),
       ),
     );
   }
 
   Widget _buildContent() {
+    final t = context.colors;
     final score = _analysisData!['score'] ?? 0;
     final level = _analysisData!['level'] ?? 'N/A';
     final strengths = _analysisData!['strengths'] as List? ?? [];
@@ -217,20 +222,20 @@ class _AnalysisCompleteScreenState extends State<AnalysisCompleteScreen>
             // Strengths
             if (strengths.isNotEmpty) ...[
               _buildSectionTitle('Điểm mạnh', Icons.check_circle_rounded,
-                  AppColors.successNeon),
+                  t.success),
               const SizedBox(height: 12),
               ...strengths.map((s) => _buildItemCard(
-                  s.toString(), AppColors.successNeon, Icons.check_rounded)),
+                  s.toString(), t.success, Icons.check_rounded)),
               const SizedBox(height: 24),
             ],
 
             // Weaknesses
             if (weaknesses.isNotEmpty) ...[
               _buildSectionTitle('Cần cải thiện', Icons.warning_rounded,
-                  AppColors.warningNeon),
+                  t.warning),
               const SizedBox(height: 12),
               ...weaknesses.map((w) => _buildItemCard(w.toString(),
-                  AppColors.warningNeon, Icons.priority_high_rounded)),
+                  t.warning, Icons.priority_high_rounded)),
               const SizedBox(height: 24),
             ],
 
@@ -244,6 +249,7 @@ class _AnalysisCompleteScreenState extends State<AnalysisCompleteScreen>
   }
 
   Widget _buildScoreCard(dynamic score, String level) {
+    final t = context.colors;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
@@ -252,12 +258,12 @@ class _AnalysisCompleteScreenState extends State<AnalysisCompleteScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppColors.purpleNeon.withValues(alpha: 0.2),
-            AppColors.pinkNeon.withValues(alpha: 0.15)
+            t.brand.withValues(alpha: 0.18),
+            t.aiGradient.last.withValues(alpha: 0.12),
           ],
         ),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0x332D363D)),
+        border: Border.all(color: t.border),
       ),
       child: Column(
         children: [
@@ -265,35 +271,35 @@ class _AnalysisCompleteScreenState extends State<AnalysisCompleteScreen>
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              gradient: AppGradients.primary,
+              gradient: LinearGradient(colors: t.heroGradient),
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.purpleNeon.withValues(alpha: 0.5),
+                  color: t.brand.withValues(alpha: 0.5),
                   blurRadius: 20,
                   spreadRadius: 2,
                 ),
               ],
             ),
-            child: const Icon(Icons.emoji_events_rounded,
-                color: Colors.white, size: 40),
+            child: Icon(Icons.emoji_events_rounded,
+                color: t.textOnBrand, size: 40),
           ),
           const SizedBox(height: 20),
 
           Text('Điểm của bạn',
               style: AppTextStyles.bodyMedium
-                  .copyWith(color: AppColors.textSecondary)),
+                  .copyWith(color: t.textSecondary)),
           const SizedBox(height: 8),
 
           // Score
           ShaderMask(
             shaderCallback: (bounds) =>
-                AppGradients.primary.createShader(bounds),
+                LinearGradient(colors: t.heroGradient).createShader(bounds),
             child: Text(
               '$score%',
               style: AppTextStyles.numberXLarge.copyWith(
                 fontSize: 64,
-                color: Colors.white,
+                color: t.textOnBrand,
               ),
             ),
           ),
@@ -303,18 +309,21 @@ class _AnalysisCompleteScreenState extends State<AnalysisCompleteScreen>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             decoration: BoxDecoration(
-              gradient: AppGradients.success,
+              gradient: LinearGradient(
+                colors: [t.success, t.brand],
+              ),
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.successNeon.withValues(alpha: 0.4),
+                  color: t.success.withValues(alpha: 0.4),
                   blurRadius: 12,
                 ),
               ],
             ),
             child: Text(
               'Trình độ: $level',
-              style: AppTextStyles.labelLarge.copyWith(color: Colors.white),
+              style: AppTextStyles.labelLarge
+                  .copyWith(color: t.textOnBrand),
             ),
           ),
         ],
@@ -323,6 +332,7 @@ class _AnalysisCompleteScreenState extends State<AnalysisCompleteScreen>
   }
 
   Widget _buildSectionTitle(String title, IconData icon, Color color) {
+    final t = context.colors;
     return Row(
       children: [
         Container(
@@ -334,13 +344,13 @@ class _AnalysisCompleteScreenState extends State<AnalysisCompleteScreen>
           child: Icon(icon, color: color, size: 20),
         ),
         const SizedBox(width: 12),
-        Text(title,
-            style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
+        Text(title, style: AppTextStyles.h4.copyWith(color: t.textPrimary)),
       ],
     );
   }
 
   Widget _buildItemCard(String text, Color color, IconData icon) {
+    final t = context.colors;
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(16),
@@ -364,7 +374,7 @@ class _AnalysisCompleteScreenState extends State<AnalysisCompleteScreen>
             child: Text(
               text,
               style: AppTextStyles.bodyMedium
-                  .copyWith(color: AppColors.textPrimary),
+                  .copyWith(color: t.textPrimary),
             ),
           ),
         ],

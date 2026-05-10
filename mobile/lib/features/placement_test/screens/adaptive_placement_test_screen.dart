@@ -184,8 +184,9 @@ class _AdaptivePlacementTestScreenState
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: t.bg,
       appBar: _isCompleted ? null : _buildAppBar(),
       body: Stack(
         children: [
@@ -208,12 +209,12 @@ class _AdaptivePlacementTestScreenState
               emissionFrequency: 0.05,
               numberOfParticles: 30,
               gravity: 0.1,
-              colors: const [
-                AppColors.purpleNeon,
-                AppColors.primaryLight,
-                AppColors.pinkNeon,
-                AppColors.xpGold,
-                AppColors.successNeon,
+              colors: [
+                t.brand,
+                t.brandSoft,
+                t.aiGradient.length > 1 ? t.aiGradient[1] : t.brand,
+                t.gold,
+                t.success,
               ],
             ),
           ),
@@ -223,6 +224,7 @@ class _AdaptivePlacementTestScreenState
   }
 
   PreferredSizeWidget _buildAppBar() {
+    final t = context.colors;
     // Progress based on answered questions
     final progressPercent = _totalQuestions > 0
         ? ((_currentQuestionIndex) / _totalQuestions * 100)
@@ -232,6 +234,7 @@ class _AdaptivePlacementTestScreenState
 
     return AppBar(
       backgroundColor: Colors.transparent,
+      surfaceTintColor: Colors.transparent,
       elevation: 0,
       leading: AppBarLeadingBackAndHome(
         onBack: () => _showExitConfirmation(),
@@ -243,7 +246,7 @@ class _AdaptivePlacementTestScreenState
           Text(
             '$progressPercent% hoàn thành',
             style: AppTextStyles.labelMedium
-                .copyWith(color: AppColors.textPrimary),
+                .copyWith(color: t.textPrimary),
           ),
           const SizedBox(height: 4),
           _buildProgressBar(),
@@ -279,6 +282,7 @@ class _AdaptivePlacementTestScreenState
   }
 
   Widget _buildProgressBar() {
+    final t = context.colors;
     // Clamp progress to max 1.0 (100%)
     final progress = _totalQuestions > 0
         ? ((_currentQuestionIndex + 1) / _totalQuestions).clamp(0.0, 1.0)
@@ -288,7 +292,7 @@ class _AdaptivePlacementTestScreenState
       width: 150,
       height: 6,
       decoration: BoxDecoration(
-        color: AppColors.bgTertiary,
+        color: t.cardMuted,
         borderRadius: BorderRadius.circular(3),
       ),
       child: FractionallySizedBox(
@@ -296,7 +300,7 @@ class _AdaptivePlacementTestScreenState
         widthFactor: progress,
         child: Container(
           decoration: BoxDecoration(
-            gradient: AppGradients.primary,
+            gradient: LinearGradient(colors: t.heroGradient),
             borderRadius: BorderRadius.circular(3),
           ),
         ),
@@ -305,22 +309,22 @@ class _AdaptivePlacementTestScreenState
   }
 
   Widget _buildLoadingState() {
+    final t = context.colors;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const CircularProgressIndicator(color: AppColors.primaryLight),
+          CircularProgressIndicator(color: t.brand),
           const SizedBox(height: 24),
           Text(
             'Đang chuẩn bị bài kiểm tra...',
             style: AppTextStyles.bodyMedium
-                .copyWith(color: AppColors.textSecondary),
+                .copyWith(color: t.textSecondary),
           ),
           const SizedBox(height: 8),
           Text(
             'Hệ thống đang phân tích môn học để tạo câu hỏi phù hợp',
-            style:
-                AppTextStyles.bodySmall.copyWith(color: AppColors.textTertiary),
+            style: AppTextStyles.bodySmall.copyWith(color: t.textTertiary),
             textAlign: TextAlign.center,
           ),
         ],
@@ -329,6 +333,7 @@ class _AdaptivePlacementTestScreenState
   }
 
   Widget _buildErrorState() {
+    final t = context.colors;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -338,22 +343,22 @@ class _AdaptivePlacementTestScreenState
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: AppColors.errorNeon.withValues(alpha: 0.15),
+                color: t.error.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.error_outline_rounded,
-                  size: 48, color: AppColors.errorNeon),
+              child:
+                  Icon(Icons.error_outline_rounded, size: 48, color: t.error),
             ),
             const SizedBox(height: 24),
             Text(
               'Không thể tải bài kiểm tra',
-              style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+              style: AppTextStyles.h4.copyWith(color: t.textPrimary),
             ),
             const SizedBox(height: 8),
             Text(
               _error ?? 'Đã xảy ra lỗi',
               style: AppTextStyles.bodySmall
-                  .copyWith(color: AppColors.textSecondary),
+                  .copyWith(color: t.textSecondary),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -369,6 +374,7 @@ class _AdaptivePlacementTestScreenState
   }
 
   Widget _buildTestContent() {
+    final t = context.colors;
     if (_currentQuestion == null) {
       return _buildLoadingState();
     }
@@ -388,14 +394,13 @@ class _AdaptivePlacementTestScreenState
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               margin: const EdgeInsets.only(bottom: 16),
               decoration: BoxDecoration(
-                color: AppColors.bgSecondary,
+                color: t.card,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0x332D363D)),
+                border: Border.all(color: t.border),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.topic_rounded,
-                      color: AppColors.primaryLight, size: 18),
+                  Icon(Icons.topic_rounded, color: t.brand, size: 18),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -403,7 +408,7 @@ class _AdaptivePlacementTestScreenState
                           ? '$_currentDomain > $_currentTopic'
                           : _currentTopic,
                       style: AppTextStyles.bodySmall
-                          .copyWith(color: AppColors.textSecondary),
+                          .copyWith(color: t.textSecondary),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -416,9 +421,9 @@ class _AdaptivePlacementTestScreenState
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: AppColors.bgSecondary,
+              color: t.card,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0x332D363D)),
+              border: Border.all(color: t.border),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -428,17 +433,17 @@ class _AdaptivePlacementTestScreenState
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        gradient: AppGradients.primary,
+                        gradient: LinearGradient(colors: t.heroGradient),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(Icons.help_outline_rounded,
-                          color: Colors.white, size: 24),
+                      child: Icon(Icons.help_outline_rounded,
+                          color: t.textOnBrand, size: 24),
                     ),
                     const SizedBox(width: 12),
                     Text(
                       'Câu hỏi',
                       style: AppTextStyles.labelLarge
-                          .copyWith(color: AppColors.textSecondary),
+                          .copyWith(color: t.textSecondary),
                     ),
                   ],
                 ),
@@ -446,7 +451,7 @@ class _AdaptivePlacementTestScreenState
                 Text(
                   question,
                   style: AppTextStyles.bodyLarge.copyWith(
-                    color: AppColors.textPrimary,
+                    color: t.textPrimary,
                     height: 1.5,
                   ),
                 ),
@@ -489,28 +494,29 @@ class _AdaptivePlacementTestScreenState
   }
 
   Widget _buildAnswerOption(int index, String option) {
+    final t = context.colors;
     final isSelected = _selectedAnswer == index;
     final isCorrectAnswer = _lastAnswerCorrect != null &&
         index == _currentQuestion!['correctAnswer'];
     final isWrongSelected = _lastAnswerCorrect == false && isSelected;
 
-    Color borderColor = const Color(0x332D363D);
-    Color bgColor = AppColors.bgSecondary;
-    Color textColor = AppColors.textPrimary;
+    Color borderColor = t.border;
+    Color bgColor = t.card;
+    Color textColor = t.textPrimary;
 
     if (_lastAnswerCorrect != null) {
       if (isCorrectAnswer) {
-        borderColor = AppColors.successNeon;
-        bgColor = AppColors.successNeon.withValues(alpha: 0.15);
-        textColor = AppColors.successNeon;
+        borderColor = t.success;
+        bgColor = t.success.withValues(alpha: 0.15);
+        textColor = t.success;
       } else if (isWrongSelected) {
-        borderColor = AppColors.errorNeon;
-        bgColor = AppColors.errorNeon.withValues(alpha: 0.15);
-        textColor = AppColors.errorNeon;
+        borderColor = t.error;
+        bgColor = t.error.withValues(alpha: 0.15);
+        textColor = t.error;
       }
     } else if (isSelected) {
-      borderColor = AppColors.purpleNeon;
-      bgColor = AppColors.purpleNeon.withValues(alpha: 0.15);
+      borderColor = t.brand;
+      bgColor = t.brand.withValues(alpha: 0.15);
     }
 
     return GestureDetector(
@@ -532,14 +538,14 @@ class _AdaptivePlacementTestScreenState
               decoration: BoxDecoration(
                 color: isSelected
                     ? borderColor.withValues(alpha: 0.2)
-                    : AppColors.bgTertiary,
+                    : t.cardMuted,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Center(
                 child: Text(
                   String.fromCharCode(65 + index), // A, B, C, D
                   style: AppTextStyles.labelLarge.copyWith(
-                    color: isSelected ? borderColor : AppColors.textSecondary,
+                    color: isSelected ? borderColor : t.textSecondary,
                   ),
                 ),
               ),
@@ -555,11 +561,9 @@ class _AdaptivePlacementTestScreenState
               ),
             ),
             if (_lastAnswerCorrect != null && isCorrectAnswer)
-              const Icon(Icons.check_circle_rounded,
-                  color: AppColors.successNeon, size: 24)
+              Icon(Icons.check_circle_rounded, color: t.success, size: 24)
             else if (isWrongSelected)
-              const Icon(Icons.cancel_rounded,
-                  color: AppColors.errorNeon, size: 24),
+              Icon(Icons.cancel_rounded, color: t.error, size: 24),
           ],
         ),
       ),
@@ -567,6 +571,7 @@ class _AdaptivePlacementTestScreenState
   }
 
   Widget _buildSkipOption() {
+    final t = context.colors;
     final isSelected = _selectedAnswer == -1; // -1 = skip
 
     // Don't show if already answered
@@ -587,11 +592,11 @@ class _AdaptivePlacementTestScreenState
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.warningNeon.withValues(alpha: 0.15)
-              : AppColors.bgTertiary.withValues(alpha: 0.5),
+              ? t.warning.withValues(alpha: 0.15)
+              : t.cardMuted.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? AppColors.warningNeon : const Color(0x332D363D),
+            color: isSelected ? t.warning : t.border,
             width: isSelected ? 2 : 1,
             style: BorderStyle.solid,
           ),
@@ -603,16 +608,16 @@ class _AdaptivePlacementTestScreenState
               height: 36,
               decoration: BoxDecoration(
                 color: isSelected
-                    ? AppColors.warningNeon.withValues(alpha: 0.2)
-                    : AppColors.bgTertiary,
+                    ? t.warning.withValues(alpha: 0.2)
+                    : t.cardMuted,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Center(
                 child: Icon(
                   Icons.skip_next_rounded,
                   color: isSelected
-                      ? AppColors.warningNeon
-                      : AppColors.textTertiary,
+                      ? t.warning
+                      : t.textTertiary,
                   size: 20,
                 ),
               ),
@@ -626,15 +631,15 @@ class _AdaptivePlacementTestScreenState
                     'Tôi không biết kiến thức này',
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: isSelected
-                          ? AppColors.warningNeon
-                          : AppColors.textSecondary,
+                          ? t.warning
+                          : t.textSecondary,
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     'Bỏ qua và chuyển sang chủ đề khác',
                     style: AppTextStyles.caption.copyWith(
-                      color: AppColors.textTertiary,
+                      color: t.textTertiary,
                     ),
                   ),
                 ],
@@ -647,17 +652,18 @@ class _AdaptivePlacementTestScreenState
   }
 
   Widget _buildFeedback() {
+    final t = context.colors;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: (_lastAnswerCorrect ?? false)
-            ? AppColors.successNeon.withValues(alpha: 0.1)
-            : AppColors.errorNeon.withValues(alpha: 0.1),
+            ? t.success.withValues(alpha: 0.1)
+            : t.error.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: (_lastAnswerCorrect ?? false)
-              ? AppColors.successNeon.withValues(alpha: 0.3)
-              : AppColors.errorNeon.withValues(alpha: 0.3),
+              ? t.success.withValues(alpha: 0.3)
+              : t.error.withValues(alpha: 0.3),
         ),
       ),
       child: Column(
@@ -670,8 +676,8 @@ class _AdaptivePlacementTestScreenState
                     ? Icons.check_circle_rounded
                     : Icons.cancel_rounded,
                 color: (_lastAnswerCorrect ?? false)
-                    ? AppColors.successNeon
-                    : AppColors.errorNeon,
+                    ? t.success
+                    : t.error,
                 size: 24,
               ),
               const SizedBox(width: 8),
@@ -679,8 +685,8 @@ class _AdaptivePlacementTestScreenState
                 (_lastAnswerCorrect ?? false) ? 'Chính xác!' : 'Chưa đúng',
                 style: AppTextStyles.labelLarge.copyWith(
                   color: (_lastAnswerCorrect ?? false)
-                      ? AppColors.successNeon
-                      : AppColors.errorNeon,
+                      ? t.success
+                      : t.error,
                 ),
               ),
             ],
@@ -690,7 +696,7 @@ class _AdaptivePlacementTestScreenState
             Text(
               _lastExplanation!,
               style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textSecondary,
+                color: t.textSecondary,
                 height: 1.5,
               ),
             ),
@@ -701,6 +707,7 @@ class _AdaptivePlacementTestScreenState
   }
 
   Widget _buildCompletedState() {
+    final t = context.colors;
     final score = _testResult?['score'] ?? 0;
     final level = _testResult?['level'] ?? 'beginner';
     final weakAreas =
@@ -718,30 +725,29 @@ class _AdaptivePlacementTestScreenState
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              gradient: AppGradients.primary,
+              gradient: LinearGradient(colors: t.heroGradient),
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.purpleNeon.withValues(alpha: 0.4),
+                  color: t.brand.withValues(alpha: 0.4),
                   blurRadius: 30,
                   spreadRadius: 5,
                 ),
               ],
             ),
-            child: const Icon(Icons.emoji_events_rounded,
-                color: Colors.white, size: 64),
+            child: Icon(Icons.emoji_events_rounded,
+                color: t.textOnBrand, size: 64),
           ),
 
           const SizedBox(height: 32),
 
           // Title
           ShaderMask(
-            shaderCallback: (bounds) => const LinearGradient(
-              colors: [AppColors.purpleNeon, AppColors.primaryLight],
-            ).createShader(bounds),
+            shaderCallback: (bounds) =>
+                LinearGradient(colors: t.heroGradient).createShader(bounds),
             child: Text(
               'Hoàn thành!',
-              style: AppTextStyles.h1.copyWith(color: Colors.white),
+              style: AppTextStyles.h1.copyWith(color: t.textOnBrand),
             ),
           ),
 
@@ -750,7 +756,7 @@ class _AdaptivePlacementTestScreenState
           Text(
             'Bạn đã hoàn thành bài kiểm tra đầu vào',
             style: AppTextStyles.bodyMedium
-                .copyWith(color: AppColors.textSecondary),
+                .copyWith(color: t.textSecondary),
             textAlign: TextAlign.center,
           ),
 
@@ -760,9 +766,9 @@ class _AdaptivePlacementTestScreenState
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: AppColors.bgSecondary,
+              color: t.card,
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: const Color(0x332D363D)),
+              border: Border.all(color: t.border),
             ),
             child: Column(
               children: [
@@ -778,11 +784,11 @@ class _AdaptivePlacementTestScreenState
                 Text(
                   '$_correctAnswers/$_currentQuestionIndex câu đúng',
                   style: AppTextStyles.bodyMedium
-                      .copyWith(color: AppColors.textSecondary),
+                      .copyWith(color: t.textSecondary),
                 ),
 
                 const SizedBox(height: 24),
-                const Divider(color: Color(0x332D363D)),
+                Divider(color: t.divider),
                 const SizedBox(height: 24),
 
                 // Level badge
@@ -802,12 +808,13 @@ class _AdaptivePlacementTestScreenState
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(_getLevelIcon(level), color: Colors.white, size: 24),
+                      Icon(_getLevelIcon(level),
+                          color: t.textOnBrand, size: 24),
                       const SizedBox(width: 8),
                       Text(
                         _getLevelLabel(level),
                         style: AppTextStyles.labelLarge
-                            .copyWith(color: Colors.white),
+                            .copyWith(color: t.textOnBrand),
                       ),
                     ],
                   ),
@@ -823,7 +830,7 @@ class _AdaptivePlacementTestScreenState
             _buildAreaSection(
               'Điểm mạnh',
               strongAreas,
-              AppColors.successNeon,
+              t.success,
               Icons.trending_up_rounded,
             ),
 
@@ -833,7 +840,7 @@ class _AdaptivePlacementTestScreenState
             _buildAreaSection(
               'Cần cải thiện',
               weakAreas,
-              AppColors.warningNeon,
+              t.warning,
               Icons.trending_down_rounded,
             ),
           ],
@@ -858,7 +865,7 @@ class _AdaptivePlacementTestScreenState
             child: Text(
               'Quay về trang chủ',
               style: AppTextStyles.labelMedium
-                  .copyWith(color: AppColors.textSecondary),
+                  .copyWith(color: t.textSecondary),
             ),
           ),
         ],
@@ -915,52 +922,55 @@ class _AdaptivePlacementTestScreenState
   void _showExitConfirmation() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.bgSecondary,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(
-          'Thoát bài kiểm tra?',
-          style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
-        ),
-        content: Text(
-          'Tiến trình của bạn sẽ không được lưu.',
-          style:
-              AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Tiếp tục làm bài',
-              style: AppTextStyles.labelMedium
-                  .copyWith(color: AppColors.textSecondary),
-            ),
+      builder: (ctx) {
+        final t = ctx.colors;
+        return AlertDialog(
+          backgroundColor: t.card,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text(
+            'Thoát bài kiểm tra?',
+            style: AppTextStyles.h4.copyWith(color: t.textPrimary),
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context);
-            },
-            child: Text(
-              'Thoát',
-              style: AppTextStyles.labelMedium
-                  .copyWith(color: AppColors.errorNeon),
-            ),
+          content: Text(
+            'Tiến trình của bạn sẽ không được lưu.',
+            style: AppTextStyles.bodyMedium.copyWith(color: t.textSecondary),
           ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(
+                'Tiếp tục làm bài',
+                style:
+                    AppTextStyles.labelMedium.copyWith(color: t.textSecondary),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                Navigator.pop(ctx);
+              },
+              child: Text(
+                'Thoát',
+                style: AppTextStyles.labelMedium.copyWith(color: t.error),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
   // Helper methods
   Color _getDifficultyColor() {
+    final t = context.colors;
     switch (_currentDifficulty) {
       case 'advanced':
-        return AppColors.errorNeon;
+        return t.error;
       case 'intermediate':
-        return AppColors.warningNeon;
+        return t.warning;
       default:
-        return AppColors.successNeon;
+        return t.success;
     }
   }
 
@@ -987,33 +997,33 @@ class _AdaptivePlacementTestScreenState
   }
 
   Color _getScoreColor(int score) {
-    if (score >= 80) return AppColors.successNeon;
-    if (score >= 60) return AppColors.warningNeon;
-    return AppColors.errorNeon;
+    final t = context.colors;
+    if (score >= 80) return t.success;
+    if (score >= 60) return t.warning;
+    return t.error;
   }
 
   Color _getLevelColor(String level) {
+    final t = context.colors;
     switch (level) {
       case 'advanced':
-        return AppColors.purpleNeon;
+        return t.brand;
       case 'intermediate':
-        return AppColors.primaryLight;
+        return t.gold;
       default:
-        return AppColors.successNeon;
+        return t.success;
     }
   }
 
   LinearGradient _getLevelGradient(String level) {
+    final t = context.colors;
     switch (level) {
       case 'advanced':
-        return const LinearGradient(
-            colors: [AppColors.purpleNeon, AppColors.primaryLight]);
+        return LinearGradient(colors: t.heroGradient);
       case 'intermediate':
-        return const LinearGradient(
-            colors: [AppColors.primaryLight, AppColors.successNeon]);
+        return LinearGradient(colors: [t.gold, t.success]);
       default:
-        return const LinearGradient(
-            colors: [AppColors.successNeon, AppColors.primaryLight]);
+        return LinearGradient(colors: [t.success, t.brand]);
     }
   }
 

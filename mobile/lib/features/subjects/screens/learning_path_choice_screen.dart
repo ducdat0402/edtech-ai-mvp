@@ -74,19 +74,20 @@ class _LearningPathChoiceScreenState extends State<LearningPathChoiceScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.colors;
     if (_isLoading) {
       return Scaffold(
-        backgroundColor: AppColors.bgPrimary,
+        backgroundColor: tokens.bg,
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const CircularProgressIndicator(color: AppColors.primaryLight),
+              CircularProgressIndicator(color: tokens.brand),
               const SizedBox(height: 16),
               Text(
                 'Đang kiểm tra lộ trình...',
                 style: AppTextStyles.bodyMedium
-                    .copyWith(color: AppColors.textSecondary),
+                    .copyWith(color: tokens.textSecondary),
               ),
             ],
           ),
@@ -94,13 +95,14 @@ class _LearningPathChoiceScreenState extends State<LearningPathChoiceScreen> {
       );
     }
     return Scaffold(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: tokens.bg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
         title: Text(
           'Tạo lộ trình học tập',
-          style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+          style: AppTextStyles.h4.copyWith(color: tokens.textPrimary),
         ),
         leading: AppBarLeadingBackAndHome(
           onBack: () {
@@ -120,7 +122,7 @@ class _LearningPathChoiceScreenState extends State<LearningPathChoiceScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header
-            _buildHeader(),
+            _buildHeader(context),
             const SizedBox(height: 32),
 
             // Option 1: AI Chat
@@ -132,7 +134,7 @@ class _LearningPathChoiceScreenState extends State<LearningPathChoiceScreen> {
               description:
                   'AI sẽ hỏi về kinh nghiệm, mục tiêu học tập và sở thích của bạn để tạo ra lộ trình cá nhân hóa.',
               icon: Icons.chat_bubble_rounded,
-              gradient: [AppColors.purpleNeon, AppColors.primaryLight],
+              gradient: tokens.heroGradient,
               duration: '5-10 phút',
               features: [
                 'Trò chuyện tự nhiên',
@@ -151,16 +153,16 @@ class _LearningPathChoiceScreenState extends State<LearningPathChoiceScreen> {
             // Divider with "hoặc"
             Row(
               children: [
-                const Expanded(child: Divider(color: Color(0x332D363D))),
+                Expanded(child: Divider(color: tokens.divider)),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Text(
                     'hoặc',
                     style: AppTextStyles.bodySmall
-                        .copyWith(color: AppColors.textTertiary),
+                        .copyWith(color: tokens.textTertiary),
                   ),
                 ),
-                const Expanded(child: Divider(color: Color(0x332D363D))),
+                Expanded(child: Divider(color: tokens.divider)),
               ],
             ),
 
@@ -174,7 +176,7 @@ class _LearningPathChoiceScreenState extends State<LearningPathChoiceScreen> {
               description:
                   'Bài test thích ứng sẽ đánh giá kiến thức của bạn qua 15-30 câu hỏi và tạo lộ trình dựa trên kết quả.',
               icon: Icons.quiz_rounded,
-              gradient: [AppColors.primaryLight, AppColors.successNeon],
+              gradient: [tokens.gold, tokens.success],
               duration: '15-25 phút',
               features: [
                 'Đánh giá chính xác',
@@ -194,27 +196,27 @@ class _LearningPathChoiceScreenState extends State<LearningPathChoiceScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.bgSecondary,
+                color: tokens.card,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0x332D363D)),
+                border: Border.all(color: tokens.border),
               ),
               child: Row(
                 children: [
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: AppColors.warningNeon.withValues(alpha: 0.15),
+                      color: tokens.warning.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Icon(Icons.info_outline_rounded,
-                        color: AppColors.warningNeon, size: 24),
+                    child: Icon(Icons.info_outline_rounded,
+                        color: tokens.warning, size: 24),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       'Bạn có thể thay đổi lộ trình sau bằng cách làm lại bài test hoặc chat với AI.',
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.textSecondary,
+                        color: tokens.textSecondary,
                         height: 1.4,
                       ),
                     ),
@@ -228,24 +230,25 @@ class _LearningPathChoiceScreenState extends State<LearningPathChoiceScreen> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
+    final t = context.colors;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ShaderMask(
-          shaderCallback: (bounds) => const LinearGradient(
-            colors: [AppColors.purpleNeon, AppColors.primaryLight],
+          shaderCallback: (bounds) => LinearGradient(
+            colors: t.heroGradient,
           ).createShader(bounds),
           child: Text(
             'Chọn cách tạo lộ trình',
-            style: AppTextStyles.h2.copyWith(color: Colors.white),
+            style: AppTextStyles.h2.copyWith(color: t.textOnBrand),
           ),
         ),
         const SizedBox(height: 12),
         Text(
           'Hãy chọn phương pháp phù hợp với bạn để tạo lộ trình học tập cá nhân hóa.',
           style: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.textSecondary,
+            color: t.textSecondary,
             height: 1.5,
           ),
         ),
@@ -264,14 +267,15 @@ class _LearningPathChoiceScreenState extends State<LearningPathChoiceScreen> {
     required List<String> features,
     required VoidCallback onTap,
   }) {
+    final t = context.colors;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: AppColors.bgSecondary,
+          color: t.card,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: const Color(0x332D363D)),
+          border: Border.all(color: t.border),
           boxShadow: [
             BoxShadow(
               color: gradient[0].withValues(alpha: 0.1),
@@ -299,7 +303,7 @@ class _LearningPathChoiceScreenState extends State<LearningPathChoiceScreen> {
                       ),
                     ],
                   ),
-                  child: Icon(icon, color: Colors.white, size: 28),
+                  child: Icon(icon, color: t.textOnBrand, size: 28),
                 ),
                 const SizedBox(width: 16),
 
@@ -311,13 +315,13 @@ class _LearningPathChoiceScreenState extends State<LearningPathChoiceScreen> {
                       Text(
                         title,
                         style: AppTextStyles.h4
-                            .copyWith(color: AppColors.textPrimary),
+                            .copyWith(color: t.textPrimary),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         subtitle,
                         style: AppTextStyles.bodySmall
-                            .copyWith(color: AppColors.textSecondary),
+                            .copyWith(color: t.textSecondary),
                       ),
                     ],
                   ),
@@ -342,13 +346,13 @@ class _LearningPathChoiceScreenState extends State<LearningPathChoiceScreen> {
             Text(
               description,
               style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textSecondary,
+                color: t.textSecondary,
                 height: 1.5,
               ),
             ),
 
             const SizedBox(height: 16),
-            const Divider(color: Color(0x332D363D)),
+            Divider(color: t.divider),
             const SizedBox(height: 16),
 
             // Duration and features
@@ -389,14 +393,14 @@ class _LearningPathChoiceScreenState extends State<LearningPathChoiceScreen> {
                         shaderCallback: (bounds) =>
                             LinearGradient(colors: gradient)
                                 .createShader(bounds),
-                        child: const Icon(Icons.check_circle_rounded,
-                            color: Colors.white, size: 18),
+                        child: Icon(Icons.check_circle_rounded,
+                            color: t.textOnBrand, size: 18),
                       ),
                       const SizedBox(width: 10),
                       Text(
                         feature,
                         style: AppTextStyles.bodySmall
-                            .copyWith(color: AppColors.textPrimary),
+                            .copyWith(color: t.textPrimary),
                       ),
                     ],
                   ),

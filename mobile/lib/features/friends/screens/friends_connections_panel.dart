@@ -27,6 +27,14 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
   bool _isLoading = true;
   String? _error;
 
+  Color _levelColor(BuildContext context, int level) {
+    final t = context.colors;
+    if (level >= 60) return t.warning;
+    if (level >= 35) return t.success;
+    if (level >= 15) return t.info;
+    return t.brand;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -90,21 +98,18 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
     if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: AppColors.purpleNeon),
-      );
+      return Center(child: CircularProgressIndicator(color: t.brand));
     }
     if (_error != null) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline,
-                color: AppColors.errorNeon, size: 48),
+            Icon(Icons.error_outline, color: t.error, size: 48),
             const SizedBox(height: 16),
-            Text(_error!,
-                style: const TextStyle(color: AppColors.textSecondary)),
+            Text(_error!, style: TextStyle(color: t.textSecondary)),
             const SizedBox(height: 16),
             ElevatedButton(onPressed: _loadData, child: const Text('Thử lại')),
           ],
@@ -121,12 +126,11 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
             children: [
               PopupMenuButton<String>(
                   tooltip: 'Thêm',
-                  icon: const Icon(Icons.more_horiz_rounded,
-                      color: AppColors.textPrimary),
-                  color: AppColors.bgSecondary,
+                  icon: Icon(Icons.more_horiz_rounded, color: t.textPrimary),
+                  color: t.card,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
-                    side: const BorderSide(color: Color(0x332D363D)),
+                    side: BorderSide(color: t.border),
                   ),
                   offset: const Offset(0, 8),
                   onSelected: (value) {
@@ -155,14 +159,14 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
                       child: Semantics(
                         label: 'Đã chặn',
                         button: true,
-                        child: const Row(
+                        child: Row(
                           children: [
                             Icon(Icons.block_rounded,
-                                size: 22, color: AppColors.textPrimary),
-                            SizedBox(width: 12),
+                                size: 22, color: t.textPrimary),
+                            const SizedBox(width: 12),
                             Text('Đã chặn',
                                 style: TextStyle(
-                                    color: AppColors.textPrimary,
+                                    color: t.textPrimary,
                                     fontWeight: FontWeight.w500)),
                           ],
                         ),
@@ -173,14 +177,14 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
                       child: Semantics(
                         label: 'Tin nhắn',
                         button: true,
-                        child: const Row(
+                        child: Row(
                           children: [
                             Icon(Icons.chat_rounded,
-                                size: 22, color: AppColors.textPrimary),
-                            SizedBox(width: 12),
+                                size: 22, color: t.textPrimary),
+                            const SizedBox(width: 12),
                             Text('Tin nhắn',
                                 style: TextStyle(
-                                    color: AppColors.textPrimary,
+                                    color: t.textPrimary,
                                     fontWeight: FontWeight.w500)),
                           ],
                         ),
@@ -191,14 +195,14 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
                       child: Semantics(
                         label: 'Tìm kiếm người dùng',
                         button: true,
-                        child: const Row(
+                        child: Row(
                           children: [
                             Icon(Icons.search_rounded,
-                                size: 22, color: AppColors.textPrimary),
-                            SizedBox(width: 12),
+                                size: 22, color: t.textPrimary),
+                            const SizedBox(width: 12),
                             Text('Tìm kiếm',
                                 style: TextStyle(
-                                    color: AppColors.textPrimary,
+                                    color: t.textPrimary,
                                     fontWeight: FontWeight.w500)),
                           ],
                         ),
@@ -209,14 +213,14 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
                       child: Semantics(
                         label: 'Hoạt động bạn bè',
                         button: true,
-                        child: const Row(
+                        child: Row(
                           children: [
                             Icon(Icons.timeline_rounded,
-                                size: 22, color: AppColors.textPrimary),
-                            SizedBox(width: 12),
+                                size: 22, color: t.textPrimary),
+                            const SizedBox(width: 12),
                             Text('Hoạt động',
                                 style: TextStyle(
-                                    color: AppColors.textPrimary,
+                                    color: t.textPrimary,
                                     fontWeight: FontWeight.w500)),
                           ],
                         ),
@@ -236,12 +240,12 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  AppColors.purpleNeon.withValues(alpha: 0.14),
-                  AppColors.bgSecondary,
+                  t.brand.withValues(alpha: 0.14),
+                  t.card,
                 ],
               ),
               border: Border.all(
-                color: AppColors.purpleNeon.withValues(alpha: 0.26),
+                color: t.brand.withValues(alpha: 0.26),
               ),
               boxShadow: [
                 BoxShadow(
@@ -260,20 +264,20 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
                 borderRadius: BorderRadius.circular(13),
                 gradient: LinearGradient(
                   colors: [
-                    AppColors.purpleNeon.withValues(alpha: 0.4),
-                    AppColors.purpleNeon.withValues(alpha: 0.12),
+                    t.brand.withValues(alpha: 0.4),
+                    t.brand.withValues(alpha: 0.12),
                   ],
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.purpleNeon.withValues(alpha: 0.22),
+                    color: t.brand.withValues(alpha: 0.22),
                     blurRadius: 6,
                     offset: const Offset(0, 2),
                   ),
                 ],
               ),
-              labelColor: Colors.white,
-              unselectedLabelColor: AppColors.textSecondary,
+              labelColor: t.textOnBrand,
+              unselectedLabelColor: t.textSecondary,
               tabs: [
                 const Tab(
                   height: 44,
@@ -309,6 +313,7 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
   }
 
   Widget _buildRequestsTabLabel() {
+    final t = context.colors;
     final receivedCount = (_requests?['received'] as List?)?.length ?? 0;
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -319,13 +324,13 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
             decoration: BoxDecoration(
-              color: AppColors.errorNeon,
+              color: t.error,
               borderRadius: BorderRadius.circular(10),
             ),
             child: Text(
               '$receivedCount',
-              style: const TextStyle(
-                  color: Colors.white,
+              style: TextStyle(
+                  color: Theme.of(context).colorScheme.onError,
                   fontSize: 10,
                   fontWeight: FontWeight.bold),
             ),
@@ -348,7 +353,7 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
 
     return RefreshIndicator(
       onRefresh: () => _loadDataForTab(0),
-      color: AppColors.purpleNeon,
+      color: context.colors.brand,
       child: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: _friends.length,
@@ -361,6 +366,7 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
   }
 
   Widget _buildFriendCard(Map<String, dynamic> friend) {
+    final t = context.colors;
     final level = friend['level'] ?? 1;
     final streak = friend['currentStreak'] ?? 0;
     final name = friend['fullName'] ?? friend['email'] ?? 'User';
@@ -374,12 +380,12 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppColors.primaryLight.withValues(alpha: 0.08),
-            AppColors.bgSecondary,
+            t.brand.withValues(alpha: 0.08),
+            t.card,
           ],
         ),
         border: Border.all(
-          color: AppColors.purpleNeon.withValues(alpha: 0.22),
+          color: t.brand.withValues(alpha: 0.22),
         ),
         boxShadow: [
           BoxShadow(
@@ -411,23 +417,21 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
                 },
         ),
         title: Text(name,
-            style: const TextStyle(
-                color: AppColors.textPrimary, fontWeight: FontWeight.w600)),
+            style: TextStyle(color: t.textPrimary, fontWeight: FontWeight.w600)),
         subtitle: Row(
           children: [
             Icon(Icons.trending_up_rounded,
-                size: 14, color: AppColors.getLevelColor(level)),
+                size: 14, color: _levelColor(context, level)),
             const SizedBox(width: 4),
             Text('Lv.$level',
                 style: TextStyle(
-                    color: AppColors.getLevelColor(level), fontSize: 12)),
+                    color: _levelColor(context, level), fontSize: 12)),
             const SizedBox(width: 12),
             if (streak > 0) ...[
               const Text('🔥', style: TextStyle(fontSize: 12)),
               const SizedBox(width: 2),
               Text('$streak ngày',
-                  style: const TextStyle(
-                      color: AppColors.textSecondary, fontSize: 12)),
+                  style: TextStyle(color: t.textSecondary, fontSize: 12)),
             ],
           ],
         ),
@@ -435,8 +439,7 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
           mainAxisSize: MainAxisSize.min,
           children: [
             IconButton(
-              icon: const Icon(Icons.chat_bubble_outline_rounded,
-                  color: AppColors.primaryLight),
+              icon: Icon(Icons.chat_bubble_outline_rounded, color: t.brand),
               tooltip: 'Nhắn tin',
               onPressed: () {
                 final id = friend['id'] as String?;
@@ -446,19 +449,19 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
               },
             ),
             PopupMenuButton<String>(
-              icon: const Icon(Icons.more_vert, color: AppColors.textSecondary),
+              icon: Icon(Icons.more_vert, color: t.textSecondary),
               tooltip: 'Thao tác',
-              color: AppColors.bgTertiary,
+              color: t.cardMuted,
               onSelected: (value) => _handleFriendAction(value, friend),
               itemBuilder: (_) => [
-                const PopupMenuItem(
+                PopupMenuItem(
                     value: 'unfriend',
                     child: Text('Hủy kết bạn',
-                        style: TextStyle(color: AppColors.errorNeon))),
-                const PopupMenuItem(
+                        style: TextStyle(color: t.error))),
+                PopupMenuItem(
                     value: 'block',
                     child: Text('Chặn người dùng',
-                        style: TextStyle(color: AppColors.errorNeon))),
+                        style: TextStyle(color: t.error))),
               ],
             ),
           ],
@@ -504,7 +507,7 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
 
     return RefreshIndicator(
       onRefresh: () => _loadDataForTab(1),
-      color: AppColors.purpleNeon,
+      color: context.colors.brand,
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -529,18 +532,19 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
   }
 
   Widget _buildSectionHeader(String title, IconData icon, int count) {
+    final t = context.colors;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(14),
         gradient: LinearGradient(
           colors: [
-            AppColors.purpleNeon.withValues(alpha: 0.12),
-            AppColors.bgSecondary,
+            t.brand.withValues(alpha: 0.12),
+            t.card,
           ],
         ),
         border: Border.all(
-          color: AppColors.purpleNeon.withValues(alpha: 0.2),
+          color: t.brand.withValues(alpha: 0.2),
         ),
       ),
       child: Row(
@@ -549,16 +553,16 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppColors.purpleNeon.withValues(alpha: 0.18),
+              color: t.brand.withValues(alpha: 0.18),
             ),
-            child: Icon(icon, color: AppColors.purpleNeon, size: 18),
+            child: Icon(icon, color: t.brand, size: 18),
           ),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               title,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
+              style: TextStyle(
+                color: t.textPrimary,
                 fontWeight: FontWeight.w800,
                 fontSize: 15,
                 letterSpacing: -0.2,
@@ -570,17 +574,17 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  AppColors.purpleNeon.withValues(alpha: 0.35),
-                  AppColors.purpleNeon.withValues(alpha: 0.12),
+                  t.brand.withValues(alpha: 0.35),
+                  t.brand.withValues(alpha: 0.12),
                 ],
               ),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: AppColors.purpleNeon.withValues(alpha: 0.45),
+                color: t.brand.withValues(alpha: 0.45),
               ),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.purpleNeon.withValues(alpha: 0.2),
+                  color: t.brand.withValues(alpha: 0.2),
                   blurRadius: 6,
                   offset: const Offset(0, 2),
                 ),
@@ -588,8 +592,8 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
             ),
             child: Text(
               '$count',
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: t.textOnBrand,
                 fontSize: 12,
                 fontWeight: FontWeight.w800,
               ),
@@ -601,6 +605,7 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
   }
 
   Widget _buildReceivedRequestCard(Map<String, dynamic> req) {
+    final t = context.colors;
     final name = req['fullName'] ?? req['email'] ?? 'User';
     final level = req['level'] ?? 1;
 
@@ -612,12 +617,12 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppColors.successNeon.withValues(alpha: 0.1),
-            AppColors.bgSecondary,
+            t.success.withValues(alpha: 0.1),
+            t.card,
           ],
         ),
         border: Border.all(
-          color: AppColors.purpleNeon.withValues(alpha: 0.35),
+          color: t.brand.withValues(alpha: 0.35),
         ),
         boxShadow: [
           BoxShadow(
@@ -632,11 +637,10 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
         child: Row(
           children: [
             CircleAvatar(
-              backgroundColor: AppColors.primaryLight.withValues(alpha: 0.2),
+              backgroundColor: t.brand.withValues(alpha: 0.2),
               child: Text(
                 (name as String).isNotEmpty ? name[0].toUpperCase() : '?',
-                style: const TextStyle(
-                    color: AppColors.primaryLight, fontWeight: FontWeight.bold),
+                style: TextStyle(color: t.brand, fontWeight: FontWeight.bold),
               ),
             ),
             const SizedBox(width: 12),
@@ -645,19 +649,18 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(name,
-                      style: const TextStyle(
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.w600)),
+                      style: TextStyle(
+                          color: t.textPrimary, fontWeight: FontWeight.w600)),
                   Text('Lv.$level',
                       style: TextStyle(
-                          color: AppColors.getLevelColor(level), fontSize: 12)),
+                          color: _levelColor(context, level), fontSize: 12)),
                 ],
               ),
             ),
-            _buildActionButton('Chấp nhận', AppColors.successGlow,
+            _buildActionButton('Chấp nhận', t.success,
                 () => _acceptRequest(req['friendshipId'])),
             const SizedBox(width: 8),
-            _buildActionButton('Từ chối', AppColors.errorGlow,
+            _buildActionButton('Từ chối', t.error,
                 () => _rejectRequest(req['friendshipId'])),
           ],
         ),
@@ -666,6 +669,7 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
   }
 
   Widget _buildSentRequestCard(Map<String, dynamic> req) {
+    final t = context.colors;
     final name = req['fullName'] ?? req['email'] ?? 'User';
     final level = req['level'] ?? 1;
 
@@ -677,12 +681,12 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppColors.orangeNeon.withValues(alpha: 0.08),
-            AppColors.bgSecondary,
+            t.warning.withValues(alpha: 0.08),
+            t.card,
           ],
         ),
         border: Border.all(
-          color: const Color(0x332D363D),
+          color: t.border,
         ),
         boxShadow: [
           BoxShadow(
@@ -697,11 +701,10 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
         child: Row(
           children: [
             CircleAvatar(
-              backgroundColor: AppColors.orangeNeon.withValues(alpha: 0.2),
+              backgroundColor: t.warning.withValues(alpha: 0.2),
               child: Text(
                 (name as String).isNotEmpty ? name[0].toUpperCase() : '?',
-                style: const TextStyle(
-                    color: AppColors.orangeNeon, fontWeight: FontWeight.bold),
+                style: TextStyle(color: t.warning, fontWeight: FontWeight.bold),
               ),
             ),
             const SizedBox(width: 12),
@@ -710,16 +713,14 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(name,
-                      style: const TextStyle(
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.w600)),
+                      style: TextStyle(
+                          color: t.textPrimary, fontWeight: FontWeight.w600)),
                   Text('Lv.$level • Đang chờ',
-                      style: const TextStyle(
-                          color: AppColors.textSecondary, fontSize: 12)),
+                      style: TextStyle(color: t.textSecondary, fontSize: 12)),
                 ],
               ),
             ),
-            _buildActionButton('Hủy', AppColors.textTertiary,
+            _buildActionButton('Hủy', t.textTertiary,
                 () => _cancelRequest(req['friendshipId'])),
           ],
         ),
@@ -785,6 +786,7 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
   // ─── Suggestions Tab ───────────────────────────────────────
 
   Widget _buildSuggestionsTab() {
+    final t = context.colors;
     if (_suggestions.isEmpty) {
       return EmptyStateWidget(
         icon: Icons.person_search_rounded,
@@ -794,8 +796,8 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
         action: OutlinedButton.icon(
           onPressed: _showSearchDialog,
           style: OutlinedButton.styleFrom(
-            foregroundColor: AppColors.purpleNeon,
-            side: const BorderSide(color: AppColors.purpleNeon, width: 1.2),
+            foregroundColor: t.brand,
+            side: BorderSide(color: t.brand, width: 1.2),
           ),
           icon: const Icon(Icons.search_rounded, size: 20),
           label: const Text('Tìm kiếm bạn bè'),
@@ -812,7 +814,7 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
 
     return RefreshIndicator(
       onRefresh: () => _loadDataForTab(2),
-      color: AppColors.purpleNeon,
+      color: t.brand,
       child: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: _suggestions.length + (weakOnly ? 1 : 0),
@@ -821,7 +823,7 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
             return Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: Material(
-                color: AppColors.bgSecondary,
+                color: t.card,
                 borderRadius: BorderRadius.circular(12),
                 child: Padding(
                   padding: const EdgeInsets.all(14),
@@ -829,17 +831,17 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Icon(Icons.info_outline_rounded,
-                          color: AppColors.primaryLight.withValues(alpha: 0.9),
+                          color: t.brand.withValues(alpha: 0.9),
                           size: 22),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               'Ít tín hiệu cá nhân hóa',
                               style: TextStyle(
-                                color: AppColors.textPrimary,
+                                color: t.textPrimary,
                                 fontWeight: FontWeight.w600,
                                 fontSize: 14,
                               ),
@@ -848,8 +850,7 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
                             Text(
                               'Danh sách dưới đây gợi ý theo mức độ tương đồng chung. Bạn có thể tìm theo tên để kết nối trực tiếp.',
                               style: TextStyle(
-                                color: AppColors.textSecondary.withValues(
-                                    alpha: 0.95),
+                                color: t.textSecondary.withValues(alpha: 0.95),
                                 fontSize: 13,
                                 height: 1.35,
                               ),
@@ -860,7 +861,7 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
                               icon: const Icon(Icons.search_rounded, size: 18),
                               label: const Text('Tìm kiếm'),
                               style: TextButton.styleFrom(
-                                foregroundColor: AppColors.purpleNeon,
+                                foregroundColor: t.brand,
                                 padding: EdgeInsets.zero,
                                 minimumSize: Size.zero,
                                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -904,26 +905,26 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
   }
 
   Widget _buildSuggestionCard(Map<String, dynamic> s) {
+    final t = context.colors;
     final name = s['fullName'] ?? s['email'] ?? 'User';
     final level = s['level'] ?? 1;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
+        color: t.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0x332D363D)),
+        border: Border.all(color: t.border),
       ),
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Row(
           children: [
             CircleAvatar(
-              backgroundColor: AppColors.pinkNeon.withValues(alpha: 0.2),
+              backgroundColor: t.brand.withValues(alpha: 0.2),
               child: Text(
                 (name as String).isNotEmpty ? name[0].toUpperCase() : '?',
-                style: const TextStyle(
-                    color: AppColors.pinkNeon, fontWeight: FontWeight.bold),
+                style: TextStyle(color: t.brand, fontWeight: FontWeight.bold),
               ),
             ),
             const SizedBox(width: 12),
@@ -932,14 +933,13 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(name,
-                      style: const TextStyle(
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.w600)),
+                      style: TextStyle(
+                          color: t.textPrimary, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 2),
                   Text(
                     _suggestionReasonLine(s),
                     style: TextStyle(
-                      color: AppColors.textSecondary.withValues(alpha: 0.95),
+                      color: t.textSecondary.withValues(alpha: 0.95),
                       fontSize: 12,
                       height: 1.3,
                     ),
@@ -948,7 +948,7 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
                   Text(
                     'Lv.$level',
                     style: TextStyle(
-                      color: AppColors.getLevelColor(level),
+                      color: _levelColor(context, level),
                       fontSize: 12,
                     ),
                   ),
@@ -956,7 +956,7 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
               ),
             ),
             _buildActionButton(
-                'Kết bạn', AppColors.purpleNeon, () => _sendRequest(s['id'])),
+                'Kết bạn', t.brand, () => _sendRequest(s['id'])),
           ],
         ),
       ),
@@ -1004,9 +1004,9 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
             }
 
             return AlertDialog(
-              backgroundColor: AppColors.bgSecondary,
-              title: const Text('Tìm kiếm người dùng',
-                  style: TextStyle(color: AppColors.textPrimary)),
+              backgroundColor: ctx.colors.card,
+              title: Text('Tìm kiếm người dùng',
+                  style: TextStyle(color: ctx.colors.textPrimary)),
               content: SizedBox(
                 width: double.maxFinite,
                 child: Column(
@@ -1015,15 +1015,14 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
                     TextField(
                       controller: searchController,
                       autofocus: true,
-                      style: const TextStyle(color: AppColors.textPrimary),
+                      style: TextStyle(color: ctx.colors.textPrimary),
                       decoration: InputDecoration(
                         hintText: 'Nhập tên hoặc email…',
-                        hintStyle:
-                            const TextStyle(color: AppColors.textTertiary),
-                        prefixIcon: const Icon(Icons.search,
-                            color: AppColors.textSecondary),
+                        hintStyle: TextStyle(color: ctx.colors.textTertiary),
+                        prefixIcon:
+                            Icon(Icons.search, color: ctx.colors.textSecondary),
                         filled: true,
-                        fillColor: AppColors.bgTertiary,
+                        fillColor: ctx.colors.cardMuted,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide.none,
@@ -1040,8 +1039,7 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
                                 searchController.text.length < 2
                                     ? 'Nhập ít nhất 2 ký tự'
                                     : 'Không tìm thấy',
-                                style: const TextStyle(
-                                    color: AppColors.textTertiary),
+                                style: TextStyle(color: ctx.colors.textTertiary),
                               ),
                             )
                           : ListView.builder(
@@ -1062,8 +1060,8 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
                     debounce?.cancel();
                     Navigator.pop(ctx);
                   },
-                  child: const Text('Đóng',
-                      style: TextStyle(color: AppColors.textSecondary)),
+                  child: Text('Đóng',
+                      style: TextStyle(color: ctx.colors.textSecondary)),
                 ),
               ],
             );
@@ -1075,6 +1073,7 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
 
   Widget _buildSearchResultTile(Map<String, dynamic> u,
       StateSetter setDialogState, List<dynamic> results) {
+    final t = context.colors;
     final name = u['fullName'] ?? u['email'] ?? 'User';
     final level = u['level'] ?? 1;
     final status = u['friendshipStatus'];
@@ -1085,21 +1084,19 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
 
     if (status == 'accepted') {
       actionLabel = 'Bạn bè';
-      actionColor = AppColors.successGlow;
+      actionColor = t.success;
       onAction = null;
     } else if (status == 'pending') {
       final isRequester = u['isRequester'] == true;
       actionLabel = isRequester ? 'Đã gửi' : 'Chấp nhận';
-      actionColor =
-          isRequester ? AppColors.textTertiary : AppColors.successGlow;
+      actionColor = isRequester ? t.textTertiary : t.success;
       onAction = isRequester
           ? null
           : () async {
               try {
-                await Provider.of<ApiService>(context, listen: false)
-                    .acceptFriendRequest(u['friendshipId']);
-                _showSnack('Đã chấp nhận!');
                 final api = Provider.of<ApiService>(context, listen: false);
+                await api.acceptFriendRequest(u['friendshipId']);
+                _showSnack('Đã chấp nhận!');
                 final r = await api.searchUsers(u['fullName'] ?? '');
                 setDialogState(() => results
                   ..clear()
@@ -1110,13 +1107,12 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
             };
     } else {
       actionLabel = 'Kết bạn';
-      actionColor = AppColors.purpleNeon;
+      actionColor = t.brand;
       onAction = () async {
         try {
-          await Provider.of<ApiService>(context, listen: false)
-              .sendFriendRequest(u['id']);
-          _showSnack('Đã gửi lời mời!');
           final api = Provider.of<ApiService>(context, listen: false);
+          await api.sendFriendRequest(u['id']);
+          _showSnack('Đã gửi lời mời!');
           final r = await api.searchUsers(u['fullName'] ?? '');
           setDialogState(() => results
             ..clear()
@@ -1130,23 +1126,22 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
-        color: AppColors.bgTertiary,
+        color: t.cardMuted,
         borderRadius: BorderRadius.circular(12),
       ),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: AppColors.primaryLight.withValues(alpha: 0.2),
+          backgroundColor: t.brand.withValues(alpha: 0.2),
           child: Text(
             (name as String).isNotEmpty ? name[0].toUpperCase() : '?',
-            style: const TextStyle(
-                color: AppColors.primaryLight, fontWeight: FontWeight.bold),
+            style: TextStyle(color: t.brand, fontWeight: FontWeight.bold),
           ),
         ),
         title: Text(name,
-            style: const TextStyle(color: AppColors.textPrimary, fontSize: 14)),
+            style: TextStyle(color: t.textPrimary, fontSize: 14)),
         subtitle: Text('Lv.$level',
             style:
-                TextStyle(color: AppColors.getLevelColor(level), fontSize: 12)),
+                TextStyle(color: _levelColor(context, level), fontSize: 12)),
         trailing: onAction != null
             ? _buildActionButton(actionLabel, actionColor, onAction)
             : Container(
@@ -1164,11 +1159,12 @@ class _FriendsConnectionsPanelState extends State<FriendsConnectionsPanel>
   }
 
   void _showSnack(String msg) {
+    final t = context.colors;
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(msg),
-        backgroundColor: AppColors.bgTertiary,
+        backgroundColor: t.cardMuted,
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 2),
       ),
@@ -1216,20 +1212,19 @@ class _FriendActivityPageState extends State<_FriendActivityPage> {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppColors.bgSecondary,
+        backgroundColor: t.card,
         leading: const AppBarLeadingBackAndHome(),
         leadingWidth: 112,
         automaticallyImplyLeading: false,
-        title: const Text('Hoạt động bạn bè',
-            style: TextStyle(color: AppColors.textPrimary)),
-        iconTheme: const IconThemeData(color: AppColors.textPrimary),
+        title: Text('Hoạt động bạn bè', style: TextStyle(color: t.textPrimary)),
+        iconTheme: IconThemeData(color: t.textPrimary),
       ),
       body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: AppColors.purpleNeon))
+          ? Center(child: CircularProgressIndicator(color: t.brand))
           : _activities.isEmpty
               ? const EmptyStateWidget(
                   icon: Icons.timeline_rounded,
@@ -1238,7 +1233,7 @@ class _FriendActivityPageState extends State<_FriendActivityPage> {
                 )
               : RefreshIndicator(
                   onRefresh: _load,
-                  color: AppColors.purpleNeon,
+                  color: t.brand,
                   child: ListView.builder(
                     padding: const EdgeInsets.all(16),
                     itemCount: _activities.length +
@@ -1251,8 +1246,8 @@ class _FriendActivityPageState extends State<_FriendActivityPage> {
                               _page++;
                               _loadMore();
                             },
-                            child: const Text('Xem thêm',
-                                style: TextStyle(color: AppColors.purpleNeon)),
+                            child: Text('Xem thêm',
+                                style: TextStyle(color: t.brand)),
                           ),
                         );
                       }
@@ -1276,6 +1271,7 @@ class _FriendActivityPageState extends State<_FriendActivityPage> {
   }
 
   Widget _buildActivityCard(Map<String, dynamic> a) {
+    final t = context.colors;
     final user = a['user'] as Map<String, dynamic>? ?? {};
     final name = user['fullName'] ?? user['email'] ?? 'User';
     final type = a['type'] as String? ?? '';
@@ -1288,9 +1284,9 @@ class _FriendActivityPageState extends State<_FriendActivityPage> {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
+        color: t.card,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0x332D363D)),
+        border: Border.all(color: t.border),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1299,7 +1295,7 @@ class _FriendActivityPageState extends State<_FriendActivityPage> {
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: AppColors.purpleNeon.withValues(alpha: 0.15),
+              color: t.brand.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(10),
             ),
             child:
@@ -1315,22 +1311,21 @@ class _FriendActivityPageState extends State<_FriendActivityPage> {
                     children: [
                       TextSpan(
                           text: '$name ',
-                          style: const TextStyle(
-                              color: AppColors.textPrimary,
+                          style: TextStyle(
+                              color: t.textPrimary,
                               fontWeight: FontWeight.bold,
                               fontSize: 13)),
                       TextSpan(
                           text: desc,
-                          style: const TextStyle(
-                              color: AppColors.textSecondary, fontSize: 13)),
+                          style:
+                              TextStyle(color: t.textSecondary, fontSize: 13)),
                     ],
                   ),
                 ),
                 if (createdAt != null) ...[
                   const SizedBox(height: 4),
                   Text(_timeAgo(createdAt),
-                      style: const TextStyle(
-                          color: AppColors.textTertiary, fontSize: 11)),
+                      style: TextStyle(color: t.textTertiary, fontSize: 11)),
                 ],
               ],
             ),

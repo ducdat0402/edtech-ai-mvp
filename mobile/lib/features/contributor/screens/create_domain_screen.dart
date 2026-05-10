@@ -93,7 +93,7 @@ class _CreateDomainScreenState extends State<CreateDomainScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text('Lỗi: $e'), backgroundColor: AppColors.errorNeon),
+            content: Text('Lỗi: $e'), backgroundColor: context.colors.error),
       );
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
@@ -105,7 +105,7 @@ class _CreateDomainScreenState extends State<CreateDomainScreen> {
       context: context,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.contributorBgSecondary,
+        backgroundColor: context.colors.card,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -113,15 +113,15 @@ class _CreateDomainScreenState extends State<CreateDomainScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.primaryLight.withAlpha(38),
+                color: context.colors.brandStrong.withAlpha(38),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.check_circle_outline,
-                  color: AppColors.primaryLight, size: 48),
+              child: Icon(Icons.check_circle_outline,
+                  color: context.colors.brandStrong, size: 48),
             ),
             const SizedBox(height: 16),
             Text(_isPrivateSubject ? 'Đã tạo domain!' : 'Đã gửi yêu cầu!',
-                style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
+                style: AppTextStyles.h4.copyWith(color: context.colors.textPrimary)),
             const SizedBox(height: 8),
             Text(
               _isPrivateSubject
@@ -129,7 +129,7 @@ class _CreateDomainScreenState extends State<CreateDomainScreen> {
                   : 'Domain "${_nameController.text.trim()}" cho môn ${widget.subjectName ?? 'học'} đang chờ Admin duyệt.',
               textAlign: TextAlign.center,
               style: AppTextStyles.bodyMedium
-                  .copyWith(color: AppColors.textSecondary),
+                  .copyWith(color: context.colors.textSecondary),
             ),
           ],
         ),
@@ -139,8 +139,8 @@ class _CreateDomainScreenState extends State<CreateDomainScreen> {
               Navigator.of(ctx).pop();
               context.pop(true);
             },
-            child: const Text('OK',
-                style: TextStyle(color: AppColors.contributorBlue)),
+            child: Text('OK',
+                style: TextStyle(color: context.colors.info)),
           ),
         ],
       ),
@@ -150,12 +150,12 @@ class _CreateDomainScreenState extends State<CreateDomainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.contributorBgPrimary,
+      backgroundColor: context.colors.bg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text('Tạo Domain Mới',
-            style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary)),
+            style: AppTextStyles.h4.copyWith(color: context.colors.textPrimary)),
         leading: const AppBarLeadingBackAndHome(),
         leadingWidth: 112,
         automaticallyImplyLeading: false,
@@ -173,15 +173,15 @@ class _CreateDomainScreenState extends State<CreateDomainScreen> {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: AppColors.primaryLight.withAlpha(25),
+                        color: context.colors.brandStrong.withAlpha(25),
                         borderRadius: BorderRadius.circular(14),
                         border: Border.all(
-                            color: AppColors.primaryLight.withAlpha(76)),
+                            color: context.colors.brandStrong.withAlpha(76)),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.folder_open,
-                              color: AppColors.primaryLight, size: 24),
+                          Icon(Icons.folder_open,
+                              color: context.colors.brandStrong, size: 24),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(
@@ -190,14 +190,14 @@ class _CreateDomainScreenState extends State<CreateDomainScreen> {
                                 Text(
                                   'Tạo Domain cho: ${widget.subjectName ?? 'môn học'}',
                                   style: AppTextStyles.labelMedium.copyWith(
-                                      color: AppColors.primaryLight,
+                                      color: context.colors.brandStrong,
                                       fontWeight: FontWeight.bold),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
                                   'Domain là nhóm các chủ đề/bài học. Ví dụ: "Cơ bản", "Nâng cao"...',
                                   style: AppTextStyles.bodySmall
-                                      .copyWith(color: AppColors.textSecondary),
+                                      .copyWith(color: context.colors.textSecondary),
                                 ),
                               ],
                             ),
@@ -295,19 +295,20 @@ class _CreateDomainScreenState extends State<CreateDomainScreen> {
                       child: ElevatedButton(
                         onPressed: _isSubmitting ? null : _handleSubmit,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.contributorBlue,
-                          foregroundColor: Colors.white,
+                          backgroundColor: context.colors.info,
+                          foregroundColor: context.colors.textOnBrand,
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14)),
                           disabledBackgroundColor:
-                              AppColors.contributorBlue.withAlpha(127),
+                              context.colors.info.withAlpha(127),
                         ),
                         child: _isSubmitting
-                            ? const SizedBox(
+                            ? SizedBox(
                                 width: 24,
                                 height: 24,
                                 child: CircularProgressIndicator(
-                                    strokeWidth: 2, color: Colors.white))
+                                    strokeWidth: 2,
+                                    color: context.colors.textOnBrand))
                             : Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
@@ -321,7 +322,7 @@ class _CreateDomainScreenState extends State<CreateDomainScreen> {
                                           ? 'Tạo domain'
                                           : 'Gửi yêu cầu duyệt',
                                       style: AppTextStyles.labelLarge.copyWith(
-                                          color: Colors.white,
+                                          color: context.colors.textOnBrand,
                                           fontWeight: FontWeight.bold)),
                                 ],
                               ),
@@ -337,7 +338,7 @@ class _CreateDomainScreenState extends State<CreateDomainScreen> {
   Widget _buildLabel(String text) {
     return Text(text,
         style: AppTextStyles.labelLarge.copyWith(
-            color: AppColors.textPrimary, fontWeight: FontWeight.w600));
+            color: context.colors.textPrimary, fontWeight: FontWeight.w600));
   }
 
   Widget _buildTextField({
@@ -350,26 +351,26 @@ class _CreateDomainScreenState extends State<CreateDomainScreen> {
       controller: controller,
       validator: validator,
       maxLines: maxLines,
-      style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary),
+      style: AppTextStyles.bodyMedium.copyWith(color: context.colors.textPrimary),
       decoration: InputDecoration(
         hintText: hint,
         hintStyle:
-            AppTextStyles.bodyMedium.copyWith(color: AppColors.textTertiary),
+            AppTextStyles.bodyMedium.copyWith(color: context.colors.textTertiary),
         filled: true,
-        fillColor: AppColors.contributorBgSecondary,
+        fillColor: context.colors.card,
         border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: AppColors.contributorBorder)),
+            borderSide: BorderSide(color: context.colors.border)),
         enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: AppColors.contributorBorder)),
+            borderSide: BorderSide(color: context.colors.border)),
         focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide:
-                const BorderSide(color: AppColors.contributorBlue, width: 2)),
+                BorderSide(color: context.colors.info, width: 2)),
         errorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: AppColors.errorNeon)),
+            borderSide: BorderSide(color: context.colors.error)),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
@@ -382,19 +383,19 @@ class _CreateDomainScreenState extends State<CreateDomainScreen> {
         'value': 'easy',
         'label': 'Dễ',
         'icon': Icons.sentiment_satisfied,
-        'color': AppColors.successNeon
+        'color': context.colors.success
       },
       {
         'value': 'medium',
         'label': 'Trung bình',
         'icon': Icons.sentiment_neutral,
-        'color': AppColors.orangeNeon
+        'color': context.colors.warning
       },
       {
         'value': 'hard',
         'label': 'Khó',
         'icon': Icons.sentiment_very_dissatisfied,
-        'color': AppColors.errorNeon
+        'color': context.colors.error
       },
     ];
 
@@ -411,23 +412,23 @@ class _CreateDomainScreenState extends State<CreateDomainScreen> {
               decoration: BoxDecoration(
                 color: isSelected
                     ? color.withAlpha(30)
-                    : AppColors.contributorBgSecondary,
+                    : context.colors.card,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: isSelected ? color : AppColors.contributorBorder,
+                  color: isSelected ? color : context.colors.border,
                   width: isSelected ? 2 : 1,
                 ),
               ),
               child: Column(
                 children: [
                   Icon(opt['icon'] as IconData,
-                      color: isSelected ? color : AppColors.textTertiary,
+                      color: isSelected ? color : context.colors.textTertiary,
                       size: 24),
                   const SizedBox(height: 4),
                   Text(
                     opt['label'] as String,
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: isSelected ? color : AppColors.textSecondary,
+                      color: isSelected ? color : context.colors.textSecondary,
                       fontWeight:
                           isSelected ? FontWeight.bold : FontWeight.normal,
                     ),
@@ -450,32 +451,32 @@ class _CreateDomainScreenState extends State<CreateDomainScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-        color: AppColors.contributorBgSecondary,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.contributorBorder),
+        border: Border.all(color: context.colors.border),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String?>(
           value: selectedId,
           isExpanded: true,
-          dropdownColor: AppColors.contributorBgSecondary,
+          dropdownColor: context.colors.card,
           style:
-              AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary),
+              AppTextStyles.bodyMedium.copyWith(color: context.colors.textPrimary),
           icon:
-              const Icon(Icons.arrow_drop_down, color: AppColors.textSecondary),
+              Icon(Icons.arrow_drop_down, color: context.colors.textSecondary),
           items: [
             DropdownMenuItem<String?>(
               value: null,
               child: Row(
                 children: [
-                  const Icon(Icons.first_page,
-                      size: 18, color: AppColors.contributorBlue),
+                  Icon(Icons.first_page,
+                      size: 18, color: context.colors.info),
                   const SizedBox(width: 8),
                   Flexible(
                     child: Text(
                       items.isEmpty ? emptyLabel : 'Đặt ở vị trí đầu tiên',
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.textPrimary,
+                        color: context.colors.textPrimary,
                         fontStyle:
                             items.isEmpty ? FontStyle.italic : FontStyle.normal,
                       ),
@@ -496,14 +497,14 @@ class _CreateDomainScreenState extends State<CreateDomainScreen> {
                       width: 22,
                       height: 22,
                       decoration: BoxDecoration(
-                        color: AppColors.contributorBlue.withAlpha(30),
+                        color: context.colors.info.withAlpha(30),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       alignment: Alignment.center,
                       child: Text(
                         '${idx + 1}',
                         style: AppTextStyles.bodySmall.copyWith(
-                            color: AppColors.contributorBlue,
+                            color: context.colors.info,
                             fontWeight: FontWeight.bold),
                       ),
                     ),
@@ -512,7 +513,7 @@ class _CreateDomainScreenState extends State<CreateDomainScreen> {
                       child: Text(
                         'Sau: ${item['name'] ?? ''}',
                         style: AppTextStyles.bodyMedium
-                            .copyWith(color: AppColors.textPrimary),
+                            .copyWith(color: context.colors.textPrimary),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -538,22 +539,22 @@ class _CreateDomainScreenState extends State<CreateDomainScreen> {
       controller: controller,
       keyboardType: TextInputType.number,
       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-      style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary),
+      style: AppTextStyles.bodyMedium.copyWith(color: context.colors.textPrimary),
       decoration: InputDecoration(
         prefixIcon: prefixIcon ??
-            Icon(icon!, color: iconColor ?? AppColors.textPrimary, size: 20),
+            Icon(icon!, color: iconColor ?? context.colors.textPrimary, size: 20),
         filled: true,
-        fillColor: AppColors.contributorBgSecondary,
+        fillColor: context.colors.card,
         border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: AppColors.contributorBorder)),
+            borderSide: BorderSide(color: context.colors.border)),
         enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: AppColors.contributorBorder)),
+            borderSide: BorderSide(color: context.colors.border)),
         focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide:
-                const BorderSide(color: AppColors.contributorBlue, width: 2)),
+                BorderSide(color: context.colors.info, width: 2)),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),

@@ -5,8 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:edtech_mobile/core/config/api_config.dart';
 import 'package:edtech_mobile/theme/widgets/gtu_coin_icon.dart';
 import 'package:edtech_mobile/theme/widgets/avatar_frame_ring.dart';
-import '../colors.dart';
+import '../level_palette.dart';
 import '../gradients.dart';
+import '../semantic_colors.dart';
 import '../text_styles.dart';
 
 /// Phân loại viên nang tiền tệ trên thanh HUD (gradient / highlight khác nhau).
@@ -27,6 +28,9 @@ class LevelBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final sem = context.colors;
+    final levelTint =
+        Color.lerp(LevelPalette.getLevelColor(level), sem.card, 0.45)!;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -35,11 +39,10 @@ class LevelBadge extends StatelessWidget {
           height: size,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            gradient: AppGradients.forLevelMuted(level),
+            gradient: AppGradients.forLevelMuted(level, surface: sem.card),
             boxShadow: [
               BoxShadow(
-                color: AppColors.tierAccentMuted(AppColors.getLevelColor(level))
-                    .withValues(alpha: 0.35),
+                color: levelTint.withValues(alpha: 0.35),
                 blurRadius: 10,
                 spreadRadius: 1,
               ),
@@ -62,7 +65,7 @@ class LevelBadge extends StatelessWidget {
           Text(
             'LEVEL',
             style: AppTextStyles.labelSmall.copyWith(
-              color: AppColors.tierAccentMuted(AppColors.getLevelColor(level)),
+              color: levelTint,
             ),
           ),
         ],
@@ -125,8 +128,6 @@ class LevelCard extends StatelessWidget {
 
   double get progress =>
       xpForNextLevel > 0 ? (currentXP / xpForNextLevel).clamp(0.0, 1.0) : 0.0;
-  Color get levelColor =>
-      AppColors.tierAccentMuted(AppColors.getLevelColor(level));
 
   bool get _showStripResources =>
       topBarStrip &&
@@ -136,6 +137,9 @@ class LevelCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final sem = context.colors;
+    final levelTint =
+        Color.lerp(LevelPalette.getLevelColor(level), sem.card, 0.45)!;
     final strip = topBarStrip;
     final tStrip = strip ? stripCollapseT.clamp(0.0, 1.0) : 0.0;
     final resolvedAvatar = ApiConfig.absoluteMediaUrl(avatarUrl);
@@ -392,9 +396,9 @@ class LevelCard extends StatelessWidget {
                                 _stripResourceChip(
                                   hudKind: _HudResourceKind.diamond,
                                   icon: Icons.diamond_rounded,
-                                  color: AppColors.cyanNeon,
+                                  color: sem.info,
                                   value: stripDiamonds!,
-                                  valueColor: AppColors.cyanNeon,
+                                  valueColor: sem.info,
                                   onTap: onStripDiamondsTap,
                                   iconSize: stripChipIcon,
                                   fontSize: stripChipFont,
@@ -403,9 +407,9 @@ class LevelCard extends StatelessWidget {
                                 _stripResourceChip(
                                   hudKind: _HudResourceKind.coin,
                                   iconWidget: GtuCoinIcon(size: stripChipIcon),
-                                  color: AppColors.coinGold,
+                                  color: sem.gold,
                                   value: stripCoins!,
-                                  valueColor: AppColors.coinGold,
+                                  valueColor: sem.gold,
                                   onTap: onStripCoinsTap,
                                   iconSize: stripChipIcon,
                                   fontSize: stripChipFont,
@@ -414,9 +418,9 @@ class LevelCard extends StatelessWidget {
                                 _stripResourceChip(
                                   hudKind: _HudResourceKind.streak,
                                   icon: Icons.local_fire_department_rounded,
-                                  color: AppColors.streakOrange,
+                                  color: sem.warning,
                                   value: stripStreak!,
-                                  valueColor: AppColors.streakOrange,
+                                  valueColor: sem.warning,
                                   suffix: '🔥',
                                   onTap: onStripStreakTap,
                                   iconSize: stripChipIcon,
@@ -474,7 +478,7 @@ class LevelCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: levelColor.withValues(alpha: 0.35),
+            color: levelTint.withValues(alpha: 0.35),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -934,7 +938,9 @@ class LevelTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = AppColors.tierAccentMuted(AppColors.getLevelColor(level));
+    final sem = context.colors;
+    final color =
+        Color.lerp(LevelPalette.getLevelColor(level), sem.card, 0.45)!;
 
     return Row(
       mainAxisSize: MainAxisSize.min,
