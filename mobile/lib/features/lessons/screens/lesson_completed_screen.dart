@@ -103,6 +103,8 @@ class _LessonCompletedScreenState extends State<LessonCompletedScreen> {
   @override
   Widget build(BuildContext context) {
     final t = context.colors;
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final heroHeight = (screenWidth * 0.42).clamp(142.0, 208.0);
     return Scaffold(
       backgroundColor: t.bg,
       appBar: AppBar(
@@ -122,10 +124,10 @@ class _LessonCompletedScreenState extends State<LessonCompletedScreen> {
             children: [
               Image.asset(
                 'assets/images/lesson_completed_hero.png',
-                height: 180,
+                height: heroHeight,
                 fit: BoxFit.contain,
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 12),
               Text(
                 'Hoàn thành bài học!',
                 textAlign: TextAlign.center,
@@ -134,7 +136,7 @@ class _LessonCompletedScreenState extends State<LessonCompletedScreen> {
                   fontWeight: FontWeight.w800,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
               Text(
                 widget.lessonTitle,
                 textAlign: TextAlign.center,
@@ -142,6 +144,8 @@ class _LessonCompletedScreenState extends State<LessonCompletedScreen> {
                   color: t.textPrimary,
                   fontWeight: FontWeight.w700,
                 ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
               if (_subtitle.isNotEmpty || _loadingMeta) ...[
                 const SizedBox(height: 4),
@@ -151,9 +155,11 @@ class _LessonCompletedScreenState extends State<LessonCompletedScreen> {
                   style: AppTextStyles.bodyMedium.copyWith(
                     color: t.textSecondary,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
-              const SizedBox(height: 22),
+              const SizedBox(height: 20),
               GridView.count(
                 crossAxisCount: 2,
                 shrinkWrap: true,
