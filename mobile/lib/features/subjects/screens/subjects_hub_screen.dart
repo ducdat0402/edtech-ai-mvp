@@ -111,12 +111,12 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
   }
 
   Future<void> _onLibraryContributeTab() async {
-    if (!_hasContributorRole) {
+    if (!_canUseLibraryRoleSwitch) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text(
-            'Đóng góp dành cho tài khoản contributor. Liên hệ admin để được cấp quyền.',
+            'Tài khoản hiện tại chưa hỗ trợ chuyển chế độ đóng góp.',
           ),
           backgroundColor: context.colors.info,
         ),
@@ -180,6 +180,10 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
       _profileData?['actualRole']?.toString() ?? _currentRole;
   bool get _hasContributorRole =>
       _actualRole == 'contributor' || _actualRole == 'admin';
+  bool get _canUseLibraryRoleSwitch =>
+      _actualRole == 'admin' ||
+      _currentRole == 'user' ||
+      _currentRole == 'contributor';
   bool get _isContributor => _hasContributorRole && _viewAsContributor;
 
   /// Surface tokens — contributor luôn palette dark semantic (kể cả app theme sáng).
@@ -452,7 +456,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
             searchController: _searchController,
             searchFocusNode: _searchFocusNode,
             onContributeTab: _onLibraryContributeTab,
-            canSwitchToContribute: _hasContributorRole,
+            canSwitchToContribute: _canUseLibraryRoleSwitch,
             presentLibraryCategorySlugs: _presentLibraryCategorySlugs,
             libraryCategoryFilter: _libraryCategoryFilter,
             onLibraryCategorySelected: (v) =>
