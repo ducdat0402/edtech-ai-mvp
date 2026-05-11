@@ -8,20 +8,9 @@ import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/core/widgets/bottom_nav_bar.dart';
 import 'package:edtech_mobile/theme/semantic_colors.dart';
 import 'package:edtech_mobile/theme/text_styles.dart';
-import 'package:edtech_mobile/theme/widgets/brand_header.dart';
-import 'package:edtech_mobile/features/subjects/widgets/library_category_chips.dart';
-import 'package:edtech_mobile/features/subjects/widgets/library_curved_header.dart';
 import 'package:edtech_mobile/features/subjects/widgets/library_featured_podium.dart';
-import 'package:edtech_mobile/features/subjects/widgets/library_search_bar.dart';
-import 'package:edtech_mobile/features/subjects/widgets/library_subject_group_row.dart';
+import 'package:edtech_mobile/features/subjects/widgets/library_page_sliver_body.dart';
 import 'package:edtech_mobile/features/subjects/widgets/library_ui_constants.dart';
-
-/// Nền contributor (không map 1:1 sang semantic light).
-abstract final class _ContributorSurface {
-  static const Color bgPrimary = Color(0xFF0A1218);
-  static const Color bgSecondary = Color(0xFF152028);
-  static const Color border = Color(0xFF1E3A5F);
-}
 
 class SubjectsHubScreen extends StatefulWidget {
   const SubjectsHubScreen({super.key});
@@ -39,13 +28,11 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
   Map<String, dynamic>? _profileData;
   bool _isSwitchingRole = false;
   bool _viewAsContributor = false;
-  String _subjectFilter = 'all'; // all | private | community | expert
   /// Lọc nhóm môn (mock "Nhóm môn học"); `all` = không lọc theo loại.
   String _subjectTypeGroup = 'all';
   String _libraryCategoryFilter = kLibraryCategoryAll;
   LibraryFeaturedSort _featuredSort = LibraryFeaturedSort.byLearners;
   List<Map<String, dynamic>> _subjects = [];
-  bool _showSearchField = false;
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
 
@@ -173,7 +160,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
         _viewAsContributor = _hasContributorRole;
         _loading = false;
       });
-      if (mounted) {
+      if (mounted && !_isContributor) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           _maybeShowSubjectTypesIntroSheet();
         });
@@ -192,19 +179,19 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
       _currentRole == 'contributor' || _currentRole == 'admin';
   bool get _isContributor => _hasContributorRole && _viewAsContributor;
 
-  /// Surface tokens — light learner dùng semantic; dark / contributor dùng nền tối.
+  /// Surface tokens — contributor luôn palette dark semantic (kể cả app theme sáng).
   Color get _bgPrimary {
-    if (_isContributor) return _ContributorSurface.bgPrimary;
+    if (_isContributor) return SemanticColors.dark.bg;
     return context.colors.bg;
   }
 
   Color get _bgSecondary {
-    if (_isContributor) return _ContributorSurface.bgSecondary;
+    if (_isContributor) return SemanticColors.dark.card;
     return context.colors.card;
   }
 
   Color get _borderColor {
-    if (_isContributor) return _ContributorSurface.border;
+    if (_isContributor) return SemanticColors.dark.border;
     return Theme.of(context).brightness == Brightness.dark
         ? const Color(0x332D363D)
         : context.colors.border;
@@ -324,7 +311,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           gridDelegate: _librarySubjectsGridDelegate(
-            MediaQuery.sizeOf(context).width - 32,
+            MediaQuery.sizeOf(context).width - 52,
           ),
           itemCount: items.length,
           itemBuilder: (context, index) => _buildSubjectTile(items[index]),
@@ -333,22 +320,42 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
     );
   }
 
-  Widget _buildLearnerLibraryScaffold(SemanticColors t) {
+  @override
+  Widget build(BuildContext context) {
     final sem = context.colors;
+    final t = _screenTokens;
+    final scaffoldBg = _isContributor ? _bgPrimary : sem.bg;
+
     if (_loading) {
       return Scaffold(
-        backgroundColor: sem.bg,
+        backgroundColor: scaffoldBg,
         body: Center(child: CircularProgressIndicator(color: t.brand)),
         bottomNavigationBar: const BottomNavBar(currentIndex: 1),
       );
     }
     if (_error != null) {
       return Scaffold(
-        backgroundColor: sem.bg,
-        appBar: AppBar(
-          backgroundColor: sem.card,
-          title: const Text('Thư viện'),
-        ),
+        backgroundColor: scaffoldBg,
+        appBar: _isContributor
+            ? AppBar(
+                backgroundColor: _bgPrimary,
+                elevation: 0,
+                automaticallyImplyLeading: false,
+                leading: AppBarLeadingBackAndHome(iconColor: t.textPrimary),
+                leadingWidth: 112,
+                title: Text(
+                  'Thư viện',
+                  style: TextStyle(
+                    color: t.textPrimary,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              )
+            : AppBar(
+                backgroundColor: sem.card,
+                title: const Text('Thư viện'),
+              ),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -375,330 +382,92 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
       );
     }
 
+    final libraryMode =
+        _isContributor ? LibraryPageMode.contributor : LibraryPageMode.learner;
+
+    final scrollSlivers = libraryMode == LibraryPageMode.contributor
+        ? LibraryPageSlivers.contributor(
+            screenTokens: t,
+            searchController: _searchController,
+            searchFocusNode: _searchFocusNode,
+            roleSwitcher: _buildRoleSwitcher(),
+            contributorBanner: _buildContributorBanner(),
+            subjects: _subjects,
+            filteredSubjects: _filteredSubjects,
+            typeSectionChildren: [
+              _buildTypeSection(
+                title: 'Môn học cá nhân',
+                sectionIcon: Icons.lock_rounded,
+                sectionTint: t.info,
+                summary:
+                    'Môn riêng — chỉ bạn thấy; bài học private miễn phí cho bạn.',
+                detail:
+                    'Chỉ bạn nhìn thấy môn học này. Bài học private miễn phí cho chính bạn. Muốn nâng lên cộng đồng/chuyên gia cần admin phê duyệt.',
+                items: _subjectsByType('private'),
+                onCreate: _showCreatePrivateDialog,
+              ),
+              const SizedBox(height: 12),
+              _buildTypeSection(
+                title: 'Môn học cộng đồng',
+                sectionIcon: Icons.groups_rounded,
+                sectionTint: t.gold,
+                summary:
+                    'Đóng góp bài được duyệt có thể mang lại thưởng hàng tháng.',
+                detail:
+                    'Mở khóa bằng 50 ${CurrencyLabels.gtuCoin} hoặc 50 kim cương mỗi bài. Môn có đóng góp của bạn sẽ được chia lợi nhuận theo tháng tùy số lượng và dạng bài đã đóng góp thành công.',
+                items: _subjectsByType('community'),
+                onCreate: _showCreateCommunityDialog,
+              ),
+              const SizedBox(height: 12),
+              _buildTypeSection(
+                title: 'Môn học chuyên gia',
+                sectionIcon: Icons.workspace_premium_rounded,
+                sectionTint: t.brand,
+                summary:
+                    'Nội dung chuyên sâu — mỗi bài mở bằng 50 kim cương; cần admin duyệt.',
+                detail:
+                    'Mỗi bài học mở khóa bằng 50 kim cương. Nội dung ở mức chuyên sâu, cần phê duyệt admin.',
+                items: _subjectsByType('expert'),
+                onCreate: _showCreateExpertDialog,
+              ),
+            ],
+          )
+        : LibraryPageSlivers.learner(
+            appSemantic: sem,
+            searchController: _searchController,
+            searchFocusNode: _searchFocusNode,
+            onContributeTab: _onLibraryContributeTab,
+            canSwitchToContribute: _hasContributorRole,
+            presentLibraryCategorySlugs: _presentLibraryCategorySlugs,
+            libraryCategoryFilter: _libraryCategoryFilter,
+            onLibraryCategorySelected: (v) =>
+                setState(() => _libraryCategoryFilter = v),
+            hubFilteredSubjects: _hubFilteredSubjects,
+            featuredSort: _featuredSort,
+            onFeaturedSortChanged: (s) => setState(() => _featuredSort = s),
+            onSubjectTap: _navigateToSubject,
+            subjectTypeGroup: _subjectTypeGroup,
+            subjectCountsByType: _subjectCountsByType,
+            onSubjectTypeGroupSelect: (type) {
+              setState(() {
+                _subjectTypeGroup =
+                    _subjectTypeGroup == type ? 'all' : type;
+              });
+            },
+            learnerGridSection: _buildLearnerLibraryGridSection(t),
+          );
+
     return Scaffold(
-      backgroundColor: sem.bg,
+      backgroundColor: scaffoldBg,
       body: RefreshIndicator(
         onRefresh: _loadData,
         color: t.brand,
         child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
-          slivers: [
-            SliverToBoxAdapter(
-              child: LibraryCurvedHeader(
-                studySelected: true,
-                contributeSelected: false,
-                onStudyTap: () {},
-                onContributeTap: _onLibraryContributeTab,
-                canSwitchToContribute: _hasContributorRole,
-              ),
-            ),
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(16, 20, 16, 48),
-              sliver: SliverList(
-                delegate: SliverChildListDelegate([
-                  LibrarySearchBar(
-                    controller: _searchController,
-                    focusNode: _searchFocusNode,
-                  ),
-                  const SizedBox(height: 16),
-                  LibraryCategoryChips(
-                    presentSlugs: _presentLibraryCategorySlugs,
-                    selected: _libraryCategoryFilter,
-                    onSelected: (v) => setState(() => _libraryCategoryFilter = v),
-                  ),
-                  const SizedBox(height: 20),
-                  if (_hubFilteredSubjects.isNotEmpty) ...[
-                    LibraryFeaturedPodium(
-                      subjects: _hubFilteredSubjects,
-                      sort: _featuredSort,
-                      onSortChanged: (s) => setState(() => _featuredSort = s),
-                      onSubjectTap: _navigateToSubject,
-                    ),
-                    const SizedBox(height: 24),
-                  ],
-                  LibrarySubjectGroupRow(
-                    selectedType: _subjectTypeGroup,
-                    countsByType: _subjectCountsByType,
-                    onSelectType: (type) {
-                      setState(() {
-                        _subjectTypeGroup =
-                            _subjectTypeGroup == type ? 'all' : type;
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  _buildLearnerLibraryGridSection(t),
-                ]),
-              ),
-            ),
-          ],
+          slivers: scrollSlivers,
         ),
       ),
       bottomNavigationBar: const BottomNavBar(currentIndex: 1),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final t = _screenTokens;
-    final brandHeaderEnabled = !isDark && !_isContributor;
-    final titleColor =
-        brandHeaderEnabled ? t.textOnBrand : t.textPrimary;
-    if (!_isContributor) {
-      return _buildLearnerLibraryScaffold(t);
-    }
-    return Scaffold(
-      backgroundColor: _bgPrimary,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: AppBarLeadingBackAndHome(
-          iconColor: brandHeaderEnabled ? t.textOnBrand : null,
-        ),
-        leadingWidth: 112,
-        automaticallyImplyLeading: false,
-        flexibleSpace: brandHeaderEnabled
-            ? const BrandHeader(
-                padding: EdgeInsets.zero,
-                child: SizedBox.shrink(),
-              )
-            : null,
-        title: Text(
-          'Thư viện',
-          style: TextStyle(
-            color: titleColor,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        actions: [
-          if (!_loading && _error == null)
-            IconButton(
-              tooltip: _showSearchField ? 'Đóng tìm kiếm' : 'Tìm kiếm môn học',
-              onPressed: () {
-                setState(() {
-                  _showSearchField = !_showSearchField;
-                  if (!_showSearchField) {
-                    _searchController.clear();
-                    _searchFocusNode.unfocus();
-                  }
-                });
-                if (_showSearchField) {
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    _searchFocusNode.requestFocus();
-                  });
-                }
-              },
-              icon: Icon(
-                _showSearchField ? Icons.close : Icons.search,
-                color: titleColor,
-              ),
-            ),
-        ],
-      ),
-      body: _loading
-          ? Center(
-              child: CircularProgressIndicator(color: t.brand))
-          : _error != null
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.error_outline,
-                            color: t.error, size: 44),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Không tải được danh sách môn học.\n$_error',
-                          textAlign: TextAlign.center,
-                          style:
-                              TextStyle(color: t.textSecondary),
-                        ),
-                        const SizedBox(height: 12),
-                        ElevatedButton(
-                          onPressed: _loadData,
-                          child: const Text('Thử lại'),
-                        ),
-                      ],
-                    ),
-                  ),
-                )
-              : Stack(
-                  alignment: Alignment.bottomCenter,
-                  children: [
-                    RefreshIndicator(
-                      onRefresh: _loadData,
-                      color: t.brand,
-                      child: CustomScrollView(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        slivers: [
-                      SliverPadding(
-                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-                        sliver: SliverList(
-                          delegate: SliverChildListDelegate([
-                            if (_showSearchField) ...[
-                              _buildSearchField(),
-                              const SizedBox(height: 12),
-                            ],
-                            _buildRoleSwitcher(),
-                            const SizedBox(height: 12),
-                            if (_isContributor) ...[
-                              _buildContributorBanner(),
-                              const SizedBox(height: 14),
-                            ] else ...[
-                              _buildLearnerFilterChips(),
-                              const SizedBox(height: 14),
-                            ],
-                          ]),
-                        ),
-                      ),
-                      if (_subjects.isEmpty)
-                        SliverFillRemaining(
-                          hasScrollBody: false,
-                          child: Center(
-                            child: Text(
-                              'Chưa có môn học nào',
-                              style: TextStyle(color: t.textSecondary),
-                            ),
-                          ),
-                        )
-                      else if (_filteredSubjects.isEmpty)
-                        SliverToBoxAdapter(
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(24, 32, 24, 48),
-                            child: Center(
-                              child: Text(
-                                'Không tìm thấy môn học phù hợp.\nThử từ khóa khác hoặc xóa ô tìm kiếm.',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: t.textSecondary,
-                                  fontSize: 14,
-                                  height: 1.4,
-                                ),
-                              ),
-                            ),
-                          ),
-                        )
-                      else
-                        SliverPadding(
-                          padding: const EdgeInsets.fromLTRB(14, 0, 14, 48),
-                          sliver: SliverList(
-                            delegate: SliverChildListDelegate([
-                              if (_isContributor) ...[
-                                _buildTypeSection(
-                                  title: 'Môn học cá nhân',
-                                  sectionIcon: Icons.lock_rounded,
-                                  sectionTint: t.info,
-                                  summary:
-                                      'Môn riêng — chỉ bạn thấy; bài học private miễn phí cho bạn.',
-                                  detail:
-                                      'Chỉ bạn nhìn thấy môn học này. Bài học private miễn phí cho chính bạn. Muốn nâng lên cộng đồng/chuyên gia cần admin phê duyệt.',
-                                  items: _subjectsByType('private'),
-                                  onCreate: _showCreatePrivateDialog,
-                                ),
-                                const SizedBox(height: 12),
-                                _buildTypeSection(
-                                  title: 'Môn học cộng đồng',
-                                  sectionIcon: Icons.groups_rounded,
-                                  sectionTint: t.gold,
-                                  summary:
-                                      'Đóng góp bài được duyệt có thể mang lại thưởng hàng tháng.',
-                                  detail:
-                                      'Mở khóa bằng 50 ${CurrencyLabels.gtuCoin} hoặc 50 kim cương mỗi bài. Môn có đóng góp của bạn sẽ được chia lợi nhuận theo tháng tùy số lượng và dạng bài đã đóng góp thành công.',
-                                  items: _subjectsByType('community'),
-                                  onCreate: _showCreateCommunityDialog,
-                                ),
-                                const SizedBox(height: 12),
-                                _buildTypeSection(
-                                  title: 'Môn học chuyên gia',
-                                  sectionIcon: Icons.workspace_premium_rounded,
-                                  sectionTint: t.brand,
-                                  summary:
-                                      'Nội dung chuyên sâu — mỗi bài mở bằng 50 kim cương; cần admin duyệt.',
-                                  detail:
-                                      'Mỗi bài học mở khóa bằng 50 kim cương. Nội dung ở mức chuyên sâu, cần phê duyệt admin.',
-                                  items: _subjectsByType('expert'),
-                                  onCreate: _showCreateExpertDialog,
-                                ),
-                              ] else ...[
-                                _buildLearnerSection(),
-                              ],
-                            ]),
-                          ),
-                        ),
-                        ],
-                      ),
-                    ),
-                    IgnorePointer(
-                      child: Container(
-                        height: 56,
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              _bgPrimary.withValues(alpha: 0),
-                              _bgPrimary.withValues(alpha: 0.94),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-      bottomNavigationBar: const BottomNavBar(currentIndex: 1),
-    );
-  }
-
-  Widget _buildSearchField() {
-    final t = _screenTokens;
-    return TextField(
-      controller: _searchController,
-      focusNode: _searchFocusNode,
-      style: TextStyle(color: t.textPrimary, fontSize: 15),
-      cursorColor: t.brand,
-      decoration: InputDecoration(
-        hintText: 'Tìm theo tên hoặc mô tả môn học…',
-        hintStyle: TextStyle(
-            color: t.textSecondary.withValues(alpha: 0.85),
-            fontSize: 14),
-        prefixIcon:
-            Icon(Icons.search, color: t.textSecondary, size: 22),
-        suffixIcon: _searchController.text.isEmpty
-            ? null
-            : IconButton(
-                tooltip: 'Xóa',
-                icon: Icon(Icons.clear, color: t.textSecondary),
-                onPressed: () {
-                  _searchController.clear();
-                  setState(() {});
-                },
-              ),
-        filled: true,
-        fillColor: _bgSecondary,
-        isDense: true,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
-        border: OutlineInputBorder(
-          borderRadius: const BorderRadius.all(Radius.circular(12)),
-          borderSide: BorderSide(color: _borderColor),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: const BorderRadius.all(Radius.circular(12)),
-          borderSide: BorderSide(color: _borderColor),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: const BorderRadius.all(Radius.circular(12)),
-          borderSide: BorderSide(
-            color: t.brand.withValues(alpha: 0.45),
-            width: 1,
-          ),
-        ),
-      ),
-      textInputAction: TextInputAction.search,
-      onSubmitted: (_) => _searchFocusNode.unfocus(),
     );
   }
 
@@ -708,7 +477,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
       decoration: BoxDecoration(
-        color: _ContributorSurface.bgSecondary,
+        color: _bgSecondary,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: t.info.withValues(alpha: 0.35),
@@ -758,82 +527,6 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLearnerFilterChips() {
-    final t = _screenTokens;
-    ChipThemeData chipTheme(Color accent) {
-      return ChipThemeData(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-          side: BorderSide(
-            color: accent.withValues(alpha: 0.35),
-          ),
-        ),
-        showCheckmark: false,
-        labelStyle: AppTextStyles.labelMedium,
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
-      );
-    }
-
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
-          Theme(
-            data: Theme.of(context).copyWith(
-              chipTheme: chipTheme(t.brand),
-            ),
-            child: ChoiceChip(
-              label: const Text('Tất cả'),
-              selected: _subjectFilter == 'all',
-              onSelected: (_) => setState(() => _subjectFilter = 'all'),
-              selectedColor: t.brand.withValues(alpha: 0.22),
-              backgroundColor: _bgSecondary,
-            ),
-          ),
-          const SizedBox(width: 10),
-          Theme(
-            data: Theme.of(context).copyWith(
-              chipTheme: chipTheme(t.info),
-            ),
-            child: ChoiceChip(
-              label: const Text('Cá nhân'),
-              selected: _subjectFilter == 'private',
-              onSelected: (_) => setState(() => _subjectFilter = 'private'),
-              selectedColor: t.info.withValues(alpha: 0.2),
-              backgroundColor: _bgSecondary,
-            ),
-          ),
-          const SizedBox(width: 10),
-          Theme(
-            data: Theme.of(context).copyWith(
-              chipTheme: chipTheme(t.gold),
-            ),
-            child: ChoiceChip(
-              label: const Text('Cộng đồng'),
-              selected: _subjectFilter == 'community',
-              onSelected: (_) => setState(() => _subjectFilter = 'community'),
-              selectedColor: t.gold.withValues(alpha: 0.22),
-              backgroundColor: _bgSecondary,
-            ),
-          ),
-          const SizedBox(width: 10),
-          Theme(
-            data: Theme.of(context).copyWith(
-              chipTheme: chipTheme(t.brand),
-            ),
-            child: ChoiceChip(
-              label: const Text('Chuyên gia'),
-              selected: _subjectFilter == 'expert',
-              onSelected: (_) => setState(() => _subjectFilter = 'expert'),
-              selectedColor: t.brand.withValues(alpha: 0.24),
-              backgroundColor: _bgSecondary,
             ),
           ),
         ],
@@ -959,131 +652,6 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildLearnerSection() {
-    final t = _screenTokens;
-    final selectedType = _subjectFilter;
-    final items = selectedType == 'all'
-        ? _filteredSubjects
-        : _filteredSubjects
-            .where((s) =>
-                (s['subjectType'] ?? 'community').toString() == selectedType)
-            .toList();
-
-    final title = selectedType == 'all'
-        ? 'Tất cả các môn'
-        : selectedType == 'private'
-            ? 'Môn học cá nhân'
-            : selectedType == 'community'
-                ? 'Môn học cộng đồng'
-                : 'Môn học chuyên gia';
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                t.brand.withValues(alpha: 0.16),
-                _bgSecondary,
-              ],
-            ),
-            border: Border.all(
-              color: t.brand.withValues(alpha: 0.28),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.28),
-                offset: const Offset(0, 4),
-                blurRadius: 10,
-              ),
-            ],
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(9),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      t.brand.withValues(alpha: 0.45),
-                      t.brand.withValues(alpha: 0.1),
-                    ],
-                  ),
-                  border: Border.all(
-                    color: t.textOnBrand.withValues(alpha: 0.1),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: t.brand.withValues(alpha: 0.2),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Icon(
-                  Icons.menu_book_rounded,
-                  color: t.onBrand,
-                  size: 22,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: AppTextStyles.h4.copyWith(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -0.2,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '${items.length} môn học',
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: t.textSecondary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-        if (items.isEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 20),
-            child: Text(
-              'Không có môn phù hợp với bộ lọc hiện tại.',
-              style: TextStyle(color: t.textSecondary),
-            ),
-          )
-        else
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: _librarySubjectsGridDelegate(
-              MediaQuery.sizeOf(context).width - 28,
-            ),
-            itemCount: items.length,
-            itemBuilder: (context, index) => _buildSubjectTile(items[index]),
-          ),
-      ],
     );
   }
 
@@ -1616,25 +1184,10 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 14),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            sectionTint.withValues(alpha: 0.14),
-            _bgSecondary,
-            _bgSecondary,
-          ],
-        ),
+        color: _bgSecondary,
         border: Border.all(
-          color: sectionTint.withValues(alpha: 0.28),
+          color: Color.lerp(_borderColor, sectionTint, 0.35)!,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.35),
-            offset: const Offset(0, 6),
-            blurRadius: 14,
-          ),
-        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

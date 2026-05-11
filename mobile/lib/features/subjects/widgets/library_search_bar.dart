@@ -7,15 +7,19 @@ class LibrarySearchBar extends StatelessWidget {
     required this.controller,
     required this.focusNode,
     this.hintText = 'Tìm kiếm môn học',
+    this.semantics,
   });
 
   final TextEditingController controller;
   final FocusNode focusNode;
   final String hintText;
 
+  /// Khi non-null (vd. contributor trên theme sáng), dùng palette này thay [BuildContext.colors].
+  final SemanticColors? semantics;
+
   @override
   Widget build(BuildContext context) {
-    final sem = context.colors;
+    final sem = semantics ?? context.colors;
     return ValueListenableBuilder<TextEditingValue>(
       valueListenable: controller,
       builder: (context, value, _) {

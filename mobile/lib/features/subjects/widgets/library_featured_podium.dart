@@ -1,6 +1,44 @@
 import 'package:flutter/material.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 
+({Color tint, Color badge}) _podiumRankColors(
+  SemanticColors sem,
+  Brightness brightness,
+  int rank,
+) {
+  final isDark = brightness == Brightness.dark;
+  if (!isDark) {
+    return switch (rank) {
+      1 => (
+          tint: const Color(0xFFFFF8E1),
+          badge: const Color(0xFFFFC107),
+        ),
+      2 => (
+          tint: const Color(0xFFE3F2FD),
+          badge: const Color(0xFF2196F3),
+        ),
+      _ => (
+          tint: const Color(0xFFFCE4EC),
+          badge: const Color(0xFFE91E63),
+        ),
+    };
+  }
+  return switch (rank) {
+    1 => (
+        tint: Color.lerp(sem.card, sem.gold, 0.14)!,
+        badge: sem.gold,
+      ),
+    2 => (
+        tint: Color.lerp(sem.card, sem.info, 0.2)!,
+        badge: sem.info,
+      ),
+    _ => (
+        tint: Color.lerp(sem.card, sem.error, 0.12)!,
+        badge: Color.lerp(sem.error, sem.brand, 0.25)!,
+      ),
+  };
+}
+
 enum LibraryFeaturedSort {
   byLearners,
   byName,
@@ -60,12 +98,16 @@ class LibraryFeaturedPodium extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final sem = context.colors;
+    final brightness = Theme.of(context).brightness;
     final top = _topThree();
     if (top.isEmpty) return const SizedBox.shrink();
 
     final first = top.isNotEmpty ? top[0] : null;
     final second = top.length > 1 ? top[1] : null;
     final third = top.length > 2 ? top[2] : null;
+    final c2 = _podiumRankColors(sem, brightness, 2);
+    final c1 = _podiumRankColors(sem, brightness, 1);
+    final c3 = _podiumRankColors(sem, brightness, 3);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -135,8 +177,9 @@ class LibraryFeaturedPodium extends StatelessWidget {
                   rank: 2,
                   subject: second,
                   height: 118,
-                  tint: const Color(0xFFE3F2FD),
-                  badgeColor: const Color(0xFF2196F3),
+                  tint: c2.tint,
+                  badgeColor: c2.badge,
+                  isDark: brightness == Brightness.dark,
                   onTap: second != null ? () => onSubjectTap(second) : null,
                 ),
               ),
@@ -146,8 +189,9 @@ class LibraryFeaturedPodium extends StatelessWidget {
                   rank: 1,
                   subject: first,
                   height: 152,
-                  tint: const Color(0xFFFFF8E1),
-                  badgeColor: const Color(0xFFFFC107),
+                  tint: c1.tint,
+                  badgeColor: c1.badge,
+                  isDark: brightness == Brightness.dark,
                   onTap: first != null ? () => onSubjectTap(first) : null,
                 ),
               ),
@@ -157,8 +201,9 @@ class LibraryFeaturedPodium extends StatelessWidget {
                   rank: 3,
                   subject: third,
                   height: 100,
-                  tint: const Color(0xFFFCE4EC),
-                  badgeColor: const Color(0xFFE91E63),
+                  tint: c3.tint,
+                  badgeColor: c3.badge,
+                  isDark: brightness == Brightness.dark,
                   onTap: third != null ? () => onSubjectTap(third) : null,
                 ),
               ),
@@ -177,6 +222,7 @@ class _PodiumCard extends StatelessWidget {
     required this.height,
     required this.tint,
     required this.badgeColor,
+    required this.isDark,
     this.onTap,
   });
 
@@ -185,6 +231,7 @@ class _PodiumCard extends StatelessWidget {
   final double height;
   final Color tint;
   final Color badgeColor;
+  final bool isDark;
   final VoidCallback? onTap;
 
   String _learnersShort(Map<String, dynamic>? s) {
@@ -241,7 +288,9 @@ class _PodiumCard extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.75),
+                          color: isDark
+                              ? sem.cardOverlay.withValues(alpha: 0.92)
+                              : Colors.white.withValues(alpha: 0.75),
                           borderRadius: BorderRadius.circular(999),
                         ),
                         child: Text(
@@ -266,7 +315,10 @@ class _PodiumCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: badgeColor,
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2),
+                    border: Border.all(
+                      color: isDark ? sem.border : Colors.white,
+                      width: 2,
+                    ),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withValues(alpha: 0.12),
