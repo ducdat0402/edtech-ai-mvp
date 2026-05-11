@@ -99,7 +99,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         key: _levelCardKey,
         title: 'Cấp độ & kinh nghiệm',
         description:
-            'Đây là cấp độ hiện tại của bạn. Hoàn thành bài học để nhận XP và lên cấp!',
+            'Cấp độ hiển thị dưới avatar. Hoàn thành bài học để nhận XP và lên cấp!',
         icon: Icons.military_tech,
         stepLabel: 'Bước 1/4',
       ),
@@ -107,7 +107,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         key: _statsRowKey,
         title: 'Tài nguyên của bạn',
         description:
-            'XP và kim cương nằm trên thanh đầu trang. Chạm vào kim cương để nạp thêm khi cần.',
+            'Kim cương, đồng GAMISTU và streak nằm dưới lời chào. Chạm kim cương để nạp; chạm đồng GAMISTU để mở Cửa hàng; chạm streak để xem tiến độ.',
         icon: Icons.account_balance_wallet,
         stepLabel: 'Bước 2/4',
       ),
@@ -335,13 +335,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       appBar: null,
       body: Stack(
         children: [
-          if (hasData)
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: _buildHeroHeader(stats),
-            ),
           Positioned.fill(
             child: Stack(
               children: [
@@ -405,6 +398,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ],
             ),
           ),
+          if (hasData)
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: _buildHeroHeader(stats),
+            ),
           if (_isRefreshing && hasData)
             Positioned(
               top: _kHeroHeaderHeight - 2,
@@ -430,9 +430,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildHeroHeader(Map<String, dynamic> stats) {
     final sem = context.colors;
-    final totalXP = (stats['totalXP'] as num?)?.toInt() ?? 0;
     final diamonds = (stats['totalDiamonds'] as num?)?.toInt() ??
         (stats['diamonds'] as num?)?.toInt() ??
+        0;
+    final totalCoins = (stats['totalCoins'] as num?)?.toInt() ?? 0;
+    final streak = (stats['currentStreak'] as num?)?.toInt() ??
+        (stats['streak'] as num?)?.toInt() ??
         0;
     final nameRaw = _userProfile?['fullName'] as String?;
     final displayName = (nameRaw != null && nameRaw.trim().isNotEmpty)
@@ -541,25 +544,34 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 const SizedBox(height: 8),
                 Row(
                   key: _statsRowKey,
-                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    SizedBox(
-                      width: 116,
-                      child: _buildHeroMetricChip(
-                        icon: Icons.star_rounded,
-                        iconColor: sem.gold,
-                        value: '$totalXP',
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    SizedBox(
-                      width: 126,
+                    Expanded(
                       child: _buildHeroMetricChip(
                         icon: Icons.diamond_rounded,
                         iconColor: sem.info,
                         value: '$diamonds',
                         trailingAdd: true,
                         onTap: () => context.push('/payment'),
+                        valueFontSize: 18,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _buildHeroMetricChip(
+                        leading: const GtuCoinIcon(size: 18),
+                        value: '$totalCoins',
+                        onTap: () => context.push('/shop'),
+                        valueFontSize: 18,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _buildHeroMetricChip(
+                        icon: Icons.local_fire_department_rounded,
+                        iconColor: sem.warning,
+                        value: '$streak',
+                        onTap: () => context.push('/currency'),
+                        valueFontSize: 18,
                       ),
                     ),
                   ],
@@ -573,16 +585,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildHeroMetricChip({
-    required IconData icon,
-    required Color iconColor,
+    IconData? icon,
+    Color? iconColor,
+    Widget? leading,
     required String value,
     bool trailingAdd = false,
     VoidCallback? onTap,
+    double valueFontSize = 21,
   }) {
     final sem = context.colors;
+    final Widget prefix;
+    if (leading != null) {
+      prefix = leading;
+    } else if (icon != null && iconColor != null) {
+      prefix = Icon(
+        icon,
+        size: 18,
+        color: iconColor.withValues(alpha: 0.98),
+      );
+    } else {
+      prefix = const SizedBox(width: 18, height: 18);
+    }
     final child = Container(
       height: 34,
-      padding: const EdgeInsets.symmetric(horizontal: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 6),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(999),
@@ -590,19 +616,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 19, color: iconColor.withValues(alpha: 0.98)),
-          const SizedBox(width: 5),
-          Text(
-            value,
-            style: AppTextStyles.bodyBold.copyWith(
-              color: sem.textOnBrand,
-              fontSize: 21,
-              fontWeight: FontWeight.w900,
+          prefix,
+          const SizedBox(width: 4),
+          Flexible(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                value,
+                maxLines: 1,
+                style: AppTextStyles.bodyBold.copyWith(
+                  color: sem.textOnBrand,
+                  fontSize: valueFontSize,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
             ),
           ),
           if (trailingAdd) ...[
-            const SizedBox(width: 6),
+            const SizedBox(width: 4),
             Container(
               width: 18,
               height: 18,
@@ -1101,7 +1134,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildMotivationCard(Map<String, dynamic> data) {
     final sem = context.colors;
-    final brandHi = Color.lerp(sem.brand, sem.textOnBrand, 0.55)!;
     final quote = data['quote'] as String? ?? '';
     final author = data['quoteAuthor'] as String? ?? '';
     final body = data['body'] as String? ?? '';
@@ -1111,145 +1143,69 @@ class _DashboardScreenState extends State<DashboardScreen> {
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(18),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            sem.brand.withValues(alpha: 0.06),
-            sem.card,
-            sem.cardOverlay.withValues(alpha: 0.92),
-          ],
-          stops: const [0.0, 0.42, 1.0],
-        ),
-        border: Border.all(
-          color: brandHi.withValues(alpha: 0.14),
-        ),
+        color: sem.card,
+        border: Border.all(color: sem.border),
         boxShadow: [
           BoxShadow(
-            color: sem.brand.withValues(alpha: 0.04),
-            blurRadius: 14,
-            offset: const Offset(0, 6),
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
-      child: Stack(
-        children: [
-          Positioned(
-            right: -6,
-            bottom: -4,
-            child: Icon(
-              Icons.format_quote_rounded,
-              size: 96,
-              color: sem.brand.withValues(alpha: 0.04),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (body.isNotEmpty) ...[
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: 42,
-                        height: 42,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(14),
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              brandHi.withValues(alpha: 0.55),
-                              sem.brand.withValues(alpha: 0.45),
-                            ],
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: sem.brand.withValues(alpha: 0.12),
-                              blurRadius: 8,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: Icon(
-                          Icons.auto_awesome_rounded,
-                          color: sem.textOnBrand,
-                          size: 23,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          body,
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            color: sem.textPrimary,
-                            height: 1.5,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ],
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (body.isNotEmpty) ...[
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.auto_awesome_rounded,
+                    size: 20,
+                    color: sem.brand,
                   ),
-                  if (quote.isNotEmpty) const SizedBox(height: 18),
-                ],
-                if (quote.isNotEmpty)
-                  IntrinsicHeight(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Container(
-                          width: 4,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(4),
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                sem.success.withValues(alpha: 0.45),
-                                sem.brand.withValues(alpha: 0.38),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '"$quote"',
-                                style: AppTextStyles.bodyLarge.copyWith(
-                                  color: sem.textPrimary,
-                                  fontStyle: FontStyle.italic,
-                                  height: 1.5,
-                                  fontWeight: FontWeight.w500,
-                                  letterSpacing: 0.2,
-                                ),
-                              ),
-                              if (author.isNotEmpty)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 10),
-                                  child: Text(
-                                    '— $author',
-                                    style: AppTextStyles.caption.copyWith(
-                                      color: sem.textTertiary,
-                                      fontWeight: FontWeight.w600,
-                                      letterSpacing: 0.2,
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                      ],
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      body,
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: sem.textPrimary,
+                        height: 1.45,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
-              ],
-            ),
-          ),
-        ],
+                ],
+              ),
+              if (quote.isNotEmpty) const SizedBox(height: 14),
+            ],
+            if (quote.isNotEmpty) ...[
+              Text(
+                '"$quote"',
+                style: AppTextStyles.bodyLarge.copyWith(
+                  color: sem.textPrimary,
+                  fontStyle: FontStyle.italic,
+                  height: 1.45,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              if (author.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(
+                    '— $author',
+                    style: AppTextStyles.caption.copyWith(
+                      color: sem.textSecondary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+            ],
+          ],
+        ),
       ),
     );
   }
@@ -1789,29 +1745,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }).length;
 
     final sem = context.colors;
-    final brandHi = Color.lerp(sem.brand, sem.textOnBrand, 0.55)!;
 
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: sem.brand.withValues(alpha: 0.11),
-        ),
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            sem.card,
-            sem.card.withValues(alpha: 0.92),
-            sem.cardOverlay.withValues(alpha: 0.85),
-          ],
-        ),
+        color: sem.card,
+        border: Border.all(color: sem.border),
         boxShadow: [
           BoxShadow(
-            color: sem.brand.withValues(alpha: 0.03),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
+            color: sem.brand.withValues(alpha: 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -1836,25 +1781,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       height: 40,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            sem.success.withValues(alpha: 0.5),
-                            sem.brand.withValues(alpha: 0.42),
-                          ],
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: sem.success.withValues(alpha: 0.1),
-                            blurRadius: 8,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
+                        color: sem.warning.withValues(alpha: 0.14),
+                        border: Border.all(color: sem.border),
                       ),
                       child: Icon(
                         Icons.emoji_events_rounded,
-                        color: sem.textOnBrand,
+                        color: sem.warning,
                         size: 22,
                       ),
                     ),
@@ -1876,11 +1808,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           vertical: 5,
                         ),
                         decoration: BoxDecoration(
-                          color: sem.info.withValues(alpha: 0.14),
+                          color: sem.cardMuted,
                           borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                            color: brandHi.withValues(alpha: 0.3),
-                          ),
+                          border: Border.all(color: sem.border),
                         ),
                         child: Text(
                           '$activeQuestCount đang làm',
@@ -2100,54 +2030,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final brandHi = Color.lerp(sem.brand, sem.textOnBrand, 0.55)!;
     final participationId = questWrapper['id'] as String?;
 
-    final Gradient? cardGradient;
+    final Color bg;
     final Color borderColor;
     final List<BoxShadow>? cardShadow;
-    final Color? cardColor;
 
     if (isClaimed) {
-      cardGradient = null;
-      cardColor = sem.cardMuted;
-      borderColor = const Color(0x442D363D);
+      bg = sem.cardMuted;
+      borderColor = sem.border;
       cardShadow = null;
     } else if (canClaim) {
-      cardGradient = LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [
-          sem.success.withValues(alpha: 0.14),
-          sem.cardMuted,
-          sem.cardOverlay.withValues(alpha: 0.95),
-        ],
-        stops: const [0.0, 0.55, 1.0],
-      );
-      cardColor = null;
-      borderColor = sem.success.withValues(alpha: 0.35);
+      bg = sem.success.withValues(alpha: 0.08);
+      borderColor = sem.success.withValues(alpha: 0.38);
       cardShadow = [
         BoxShadow(
-          color: sem.success.withValues(alpha: 0.08),
-          blurRadius: 10,
-          offset: const Offset(0, 4),
+          color: sem.success.withValues(alpha: 0.06),
+          blurRadius: 8,
+          offset: const Offset(0, 2),
         ),
       ];
     } else {
-      cardGradient = LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [
-          sem.info.withValues(alpha: 0.05),
-          sem.cardMuted,
-          sem.cardOverlay.withValues(alpha: 0.95),
-        ],
-        stops: const [0.0, 0.45, 1.0],
-      );
-      cardColor = null;
-      borderColor = sem.brand.withValues(alpha: 0.22);
+      bg = sem.card;
+      borderColor = sem.border;
       cardShadow = [
         BoxShadow(
-          color: sem.brand.withValues(alpha: 0.05),
-          blurRadius: 10,
-          offset: const Offset(0, 4),
+          color: Colors.black.withValues(alpha: 0.04),
+          blurRadius: 6,
+          offset: const Offset(0, 2),
         ),
       ];
     }
@@ -2173,8 +2081,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: Ink(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
-              gradient: cardGradient,
-              color: cardColor,
+              color: bg,
               border: Border.all(color: borderColor),
               boxShadow: cardShadow,
             ),
@@ -2186,25 +2093,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (!isClaimed && !canClaim)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 2, right: 8),
-                          child: Container(
-                            width: 4,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(4),
-                              gradient: LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [
-                                  sem.success.withValues(alpha: 0.5),
-                                  sem.brand.withValues(alpha: 0.42),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
                       Container(
                         width: 26,
                         height: 26,
@@ -2362,56 +2250,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     const SizedBox(height: 12),
                     ClipRRect(
                       borderRadius: BorderRadius.circular(999),
-                      child: Container(
-                        height: 18,
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: const Color(0x332D363D),
-                          ),
-                          color: sem.card,
-                        ),
-                        child: Stack(
-                          children: [
-                            LinearProgressIndicator(
-                              value: percent,
-                              minHeight: 18,
-                              backgroundColor: Colors.transparent,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                sem.success.withValues(alpha: 0.75),
-                              ),
-                            ),
-                            Center(
-                              child: FittedBox(
-                                fit: BoxFit.scaleDown,
-                                child: Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(horizontal: 8),
-                                  child: Text(
-                                    '${progressNum.toInt()} / ${targetNum.toInt()}',
-                                    style: AppTextStyles.caption.copyWith(
-                                      color: sem.textPrimary,
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                      child: LinearProgressIndicator(
+                        value: percent,
+                        minHeight: 8,
+                        backgroundColor: sem.cardMuted,
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(sem.gold),
                       ),
                     ),
-                    if (targetNum.toInt() >= 100) ...[
-                      const SizedBox(height: 6),
-                      Text(
-                        '${progressNum.toInt()} / ${targetNum.toInt()} hoàn thành',
-                        style: AppTextStyles.caption.copyWith(
-                          color: sem.textSecondary,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                        ),
+                    const SizedBox(height: 4),
+                    Text(
+                      targetNum.toInt() >= 100
+                          ? '${progressNum.toInt()} / ${targetNum.toInt()} hoàn thành'
+                          : '${progressNum.toInt()} / ${targetNum.toInt()}',
+                      style: AppTextStyles.caption.copyWith(
+                        color: sem.textSecondary,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
                       ),
-                    ],
+                    ),
                   ],
                 ],
               ),
@@ -2433,28 +2290,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
               if (index > 0)
                 Expanded(
                   child: Container(
-                    height: 4,
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    height: 3,
+                    margin: const EdgeInsets.symmetric(horizontal: 3),
                     decoration: BoxDecoration(
-                      color: unlocked
-                          ? sem.brand
-                          : sem.cardMuted.withValues(alpha: 0.9),
+                      color: unlocked ? sem.brand : sem.border,
                       borderRadius: BorderRadius.circular(99),
                     ),
                   ),
                 ),
               Container(
-                width: 30,
-                height: 30,
+                width: 26,
+                height: 26,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: unlocked
-                      ? sem.brand.withValues(alpha: 0.9)
-                      : sem.cardMuted.withValues(alpha: 0.9),
+                  color: unlocked ? sem.brand : sem.cardMuted,
+                  border: Border.all(
+                    color: unlocked ? sem.brand : sem.border,
+                  ),
                 ),
                 child: Icon(
                   Icons.card_giftcard_rounded,
-                  size: 16,
+                  size: 14,
                   color: unlocked ? sem.textOnBrand : sem.textTertiary,
                 ),
               ),
