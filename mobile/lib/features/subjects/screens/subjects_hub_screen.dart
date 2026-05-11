@@ -414,7 +414,6 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
                 _handleSwitchRole();
               }
             },
-            roleSwitcher: _buildRoleSwitcher(),
             contributorBanner: _buildContributorBanner(),
             subjects: _subjects,
             filteredSubjects: _filteredSubjects,
@@ -550,127 +549,6 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
               padding: const EdgeInsets.symmetric(vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRoleSwitcher() {
-    final t = _screenTokens;
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: _bgSecondary,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _borderColor),
-      ),
-      child: Row(
-        children: [
-          // Learner tab
-          Expanded(
-            child: GestureDetector(
-              onTap: _isSwitchingRole || !_isContributor
-                  ? null
-                  : () => _handleSwitchRole(),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                decoration: BoxDecoration(
-                  color: !_isContributor
-                      ? t.brand.withValues(alpha: 0.32)
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(12),
-                  border: !_isContributor
-                      ? Border.all(
-                          color: t.brand.withValues(alpha: 0.55),
-                        )
-                      : null,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.school_rounded,
-                      size: 18,
-                      color: !_isContributor
-                          ? t.brand
-                          : t.textTertiary,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Learner',
-                      style: AppTextStyles.labelMedium.copyWith(
-                        color: !_isContributor
-                            ? t.brand
-                            : t.textTertiary,
-                        fontWeight: !_isContributor
-                            ? FontWeight.bold
-                            : FontWeight.normal,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 4),
-          // Contributor tab
-          Expanded(
-            child: GestureDetector(
-              onTap: _isSwitchingRole || _isContributor
-                  ? null
-                  : () => _handleSwitchRole(),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                decoration: BoxDecoration(
-                  color: _isContributor
-                      ? t.info.withValues(alpha: 0.2)
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(12),
-                  border: _isContributor
-                      ? Border.all(
-                          color: t.info.withValues(alpha: 0.5),
-                        )
-                      : null,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    if (_isSwitchingRole && !_isContributor)
-                      SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: t.info,
-                        ),
-                      )
-                    else
-                      Icon(
-                        Icons.edit_note_rounded,
-                        size: 18,
-                        color: _isContributor
-                            ? t.info
-                            : t.textTertiary,
-                      ),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Contributor',
-                      style: AppTextStyles.labelMedium.copyWith(
-                        color: _isContributor
-                            ? t.info
-                            : t.textTertiary,
-                        fontWeight: _isContributor
-                            ? FontWeight.bold
-                            : FontWeight.normal,
-                      ),
-                    ),
-                  ],
-                ),
               ),
             ),
           ),
