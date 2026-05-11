@@ -33,7 +33,11 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   static const double _kSectionGap = 24;
   static const double _kSectionInnerPadding = 16;
-  static const double _kHeroHeaderHeight = 178;
+  /// Dùng làm padding đầu scroll / mép refresh trước khi đo được hero thật.
+  static const double _kHeroHeaderFallbackHeight = 172;
+
+  bool _heroMeasurePending = false;
+  double? _heroPaintedHeight;
 
   /// Khoảng cách thẻ chào/động lực → block tiếp (banner thường trống → tránh 24+24).
   static const double _kGapMotivationToNext = 10;
@@ -65,6 +69,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   // Tutorial keys
   final _levelCardKey = GlobalKey();
+  final GlobalKey _heroMeasureKey = GlobalKey();
   final _statsRowKey = GlobalKey();
   final _quickActionsKey = GlobalKey();
   final _bottomNavKey = GlobalKey();
@@ -89,6 +94,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void dispose() {
     _dashboardScrollController.dispose();
     super.dispose();
+  }
+
+  void _scheduleHeroHeightMeasure() {
+    if (_heroMeasurePending) return;
+    _heroMeasurePending = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _heroMeasurePending = false;
+      if (!mounted) return;
+      final ctx = _heroMeasureKey.currentContext;
+      if (ctx == null) return;
+      final ro = ctx.findRenderObject();
+      if (ro is! RenderBox || !ro.hasSize) return;
+      final h = ro.size.height;
+      if (_heroPaintedHeight == null ||
+          (h - _heroPaintedHeight!).abs() > 0.5) {
+        setState(() => _heroPaintedHeight = h);
+      }
+    });
   }
 
   void _showDashboardTutorial() {
@@ -322,6 +345,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final hasData = !_isLoading && _error == null && _dashboardData != null;
+    if (hasData) {
+      _scheduleHeroHeightMeasure();
+    }
     final sem = context.colors;
     final stats = hasData
         ? ((_dashboardData!['stats'] as Map<String, dynamic>?) ?? const {})
@@ -355,7 +381,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       physics: const AlwaysScrollableScrollPhysics(),
                       padding: EdgeInsets.fromLTRB(
                         _kSectionInnerPadding,
-                        hasData ? (_kHeroHeaderHeight - 42) : 12,
+                        hasData
+                            ? (_heroPaintedHeight ??
+                                _kHeroHeaderFallbackHeight)
+                            : 12,
                         _kSectionInnerPadding,
                         24,
                       ),
@@ -407,7 +436,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           if (_isRefreshing && hasData)
             Positioned(
-              top: _kHeroHeaderHeight - 2,
+              top: (_heroPaintedHeight ?? _kHeroHeaderFallbackHeight) - 2,
               left: 0,
               right: 0,
               child: SizedBox(
@@ -445,7 +474,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return KeyedSubtree(
       key: _levelCardKey,
       child: Container(
-        height: _kHeroHeaderHeight,
+        key: _heroMeasureKey,
+        width: double.infinity,
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
@@ -459,8 +489,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         child: SafeArea(
           bottom: false,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 40),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
