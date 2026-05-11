@@ -42,6 +42,8 @@ export class UserProgressController {
       progress: result.progress,
       rewards: result.rewards,
       totalRewards: { xp: totalXp, coins: totalCoins },
+      xpFromLesson: result.xpFromLesson,
+      currentStreak: result.currentStreak,
       lessonCompleted: result.lessonCompleted,
       topicCompleted: result.topicCompleted,
       domainCompleted: result.domainCompleted,

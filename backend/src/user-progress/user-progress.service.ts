@@ -103,18 +103,30 @@ export class UserProgressService {
     lessonCompleted: boolean;
     topicCompleted: boolean;
     domainCompleted: boolean;
+    currentStreak: number;
+    xpFromLesson: number;
   }> {
     const rewards: RewardEntry[] = [];
     let lessonCompleted = false;
     let topicCompleted = false;
     let domainCompleted = false;
+    let currentStreak = 0;
 
     // 1. Get or create progress for this node
     const progress = await this.getOrCreate(userId, nodeId);
 
     // Already completed this type? Return early
     if (progress.completedLessonTypes?.includes(lessonType)) {
-      return { progress, rewards, lessonCompleted: progress.isCompleted, topicCompleted: false, domainCompleted: false };
+      const currency = await this.currencyService.getOrCreate(userId);
+      return {
+        progress,
+        rewards,
+        lessonCompleted: progress.isCompleted,
+        topicCompleted: false,
+        domainCompleted: false,
+        currentStreak: currency.currentStreak ?? 0,
+        xpFromLesson: 0,
+      };
     }
 
     // 2. Add lesson type to completedLessonTypes
@@ -191,7 +203,8 @@ export class UserProgressService {
       }
 
       // Update streak
-      await this.currencyService.updateStreak(userId);
+      const updatedCurrency = await this.currencyService.updateStreak(userId);
+      currentStreak = updatedCurrency.currentStreak ?? 0;
 
       // Update quest progress
       try {
@@ -227,13 +240,27 @@ export class UserProgressService {
     }
 
     const savedProgress = await this.progressRepository.save(progress);
+    if (currentStreak == 0) {
+      const currency = await this.currencyService.getOrCreate(userId);
+      currentStreak = currency.currentStreak ?? 0;
+    }
+    const xpFromLesson =
+      rewards.find((reward) => reward.level === 'lesson')?.xp ?? 0;
 
     // Sync personal mind map (fire-and-forget, don't block response)
     this.syncPersonalMindMap(userId, nodeId, savedProgress.isCompleted).catch((err) => {
       console.error('Error syncing personal mind map:', err);
     });
 
-    return { progress: savedProgress, rewards, lessonCompleted, topicCompleted, domainCompleted };
+    return {
+      progress: savedProgress,
+      rewards,
+      lessonCompleted,
+      topicCompleted,
+      domainCompleted,
+      currentStreak,
+      xpFromLesson,
+    };
   }
 
   /**

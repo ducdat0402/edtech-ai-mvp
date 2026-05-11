@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:edtech_mobile/core/constants/currency_labels.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/widgets/ai_generated_notice.dart';
+import 'package:edtech_mobile/features/lessons/screens/lesson_completed_screen.dart';
 import 'package:edtech_mobile/theme/theme.dart';
 
 /// End Quiz Screen - shared quiz shown after completing any of the 4 lesson types.
@@ -54,6 +55,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
   bool _isSubmittingSelfLeadership = false;
   bool _selfLeadershipCheckedIn = false;
   Map<String, dynamic>? _nodeContributor;
+  final Stopwatch _quizStopwatch = Stopwatch();
 
   // ═══════════════════════════════════════════════════════════════════
   // ANIMATIONS
@@ -100,6 +102,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
       duration: const Duration(seconds: 3),
     );
 
+    _quizStopwatch.start();
     _loadQuiz();
   }
 
@@ -333,13 +336,46 @@ class _EndQuizScreenState extends State<EndQuizScreen>
     );
   }
 
-  /// Đóng màn test cuối bài + màn dạng bài hiện tại → quay lại màn 4 dạng bài (hoặc màn trước đó).
-  void _finishLessonTypeAndReturnToPicker() {
-    final nav = Navigator.of(context);
-    nav.pop(true);
-    if (nav.canPop()) {
-      nav.pop();
+  String _formatDuration(Duration duration) {
+    final minutes = duration.inMinutes;
+    final seconds = duration.inSeconds % 60;
+    return '$minutes:${seconds.toString().padLeft(2, '0')}';
+  }
+
+  Future<void> _openCompletedScreen() async {
+    if (_quizResult == null || _quizResult?['passed'] != true) return;
+    final apiService = Provider.of<ApiService>(context, listen: false);
+    Map<String, dynamic>? rewardData = _rewardData;
+    if ((rewardData == null || rewardData.isEmpty) &&
+        widget.lessonType != null &&
+        widget.lessonType!.isNotEmpty) {
+      try {
+        rewardData =
+            await apiService.completeLessonType(widget.nodeId, widget.lessonType!);
+      } catch (_) {
+        rewardData = null;
+      }
     }
+    if (!mounted) return;
+    _quizStopwatch.stop();
+    final accuracy = (_quizResult?['score'] as num?)?.toInt() ?? 0;
+    final xpFromLesson = (rewardData?['xpFromLesson'] as num?)?.toInt();
+    final totalRewards = rewardData?['totalRewards'] as Map<String, dynamic>?;
+    final xpEarned = xpFromLesson ?? (totalRewards?['xp'] as num?)?.toInt() ?? 0;
+    final streak = (rewardData?['currentStreak'] as num?)?.toInt() ?? 0;
+
+    await Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (_) => LessonCompletedScreen(
+          nodeId: widget.nodeId,
+          lessonTitle: widget.title,
+          accuracyPercent: accuracy,
+          xpEarned: xpEarned,
+          streak: streak,
+          durationLabel: _formatDuration(_quizStopwatch.elapsed),
+        ),
+      ),
+    );
   }
 
   Map<String, dynamic> _evaluateLocally() {
@@ -1563,7 +1599,7 @@ class _EndQuizScreenState extends State<EndQuizScreen>
                 Expanded(
                   child: GamingButton(
                     text: 'Hoàn thành',
-                    onPressed: _finishLessonTypeAndReturnToPicker,
+                    onPressed: _openCompletedScreen,
                     gradient: AppGradients.success,
                     glowColor: t.success,
                     icon: Icons.emoji_events_rounded,
@@ -1849,7 +1885,7 @@ class _ScoreCirclePainter extends CustomPainter {
           SemanticColors.dark.brand,
           SemanticColors.dark.error,
         ],
-        transform: GradientRotation(-pi / 2),
+        transform: const GradientRotation(-pi / 2),
       ).createShader(rect);
 
       final arcPaint = Paint()
