@@ -49,6 +49,11 @@ export class Subject {
     estimatedDays?: number;
     /** Optional cover shown on subject tiles (admin-set URL). */
     coverImageUrl?: string;
+    /**
+     * Thư viện: nhóm chip (Công nghệ / Tâm lý học / Kỹ năng / Khác).
+     * Client chỉ hiển thị chip cho slug đang có trong danh sách môn.
+     */
+    libraryCategory?: 'tech' | 'psychology' | 'skills' | 'other';
   };
 
   @Column({ type: 'jsonb', nullable: true })

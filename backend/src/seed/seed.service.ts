@@ -49,6 +49,7 @@ export class SeedService {
         icon: '🛡️',
         color: '#4CAF50',
         estimatedDays: 7,
+        libraryCategory: 'tech',
       },
       unlockConditions: {
         minCoin: 0,
@@ -66,6 +67,7 @@ export class SeedService {
         icon: '🔐',
         color: '#2196F3',
         estimatedDays: 30,
+        libraryCategory: 'tech',
       },
       unlockConditions: {
         minCoin: 20,

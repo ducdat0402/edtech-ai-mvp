@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
+import type { Subject } from '../subjects/entities/subject.entity';
 import { UsersService } from '../users/users.service';
 import { UserCurrencyService } from '../user-currency/user-currency.service';
 import { UserProgressService } from '../user-progress/user-progress.service';
@@ -33,6 +34,46 @@ export class DashboardService {
     @InjectRepository(Topic)
     private topicRepository: Repository<Topic>,
   ) {}
+
+  private normalizeLibraryCategory(
+    meta: Subject['metadata'] | null | undefined,
+  ): 'tech' | 'psychology' | 'skills' | 'other' {
+    const raw = meta?.libraryCategory;
+    if (
+      raw === 'tech' ||
+      raw === 'psychology' ||
+      raw === 'skills' ||
+      raw === 'other'
+    ) {
+      return raw;
+    }
+    return 'other';
+  }
+
+  /**
+   * Đếm distinct user có tiến độ hoặc đã hoàn thành ít nhất một node thuộc môn.
+   */
+  private async getActiveLearnerCountsBySubjectIds(
+    subjectIds: string[],
+  ): Promise<Map<string, number>> {
+    const map = new Map<string, number>();
+    if (subjectIds.length === 0) {
+      return map;
+    }
+    const rows = await this.progressRepository
+      .createQueryBuilder('up')
+      .select('ln."subjectId"', 'subjectId')
+      .addSelect('COUNT(DISTINCT up."userId")', 'cnt')
+      .innerJoin('learning_nodes', 'ln', 'ln.id = up."nodeId"')
+      .where('ln."subjectId" IN (:...ids)', { ids: subjectIds })
+      .andWhere('(up."progressPercentage" > 0 OR up."isCompleted" = true)')
+      .groupBy('ln."subjectId"')
+      .getRawMany<{ subjectId: string; cnt: string }>();
+    for (const r of rows) {
+      map.set(r.subjectId, Number(r.cnt) || 0);
+    }
+    return map;
+  }
 
   /**
    * Chỉ số thống kê + level — không load toàn bộ learning_nodes.
@@ -121,6 +162,10 @@ export class DashboardService {
       nodesBySubject.get(node.subjectId)!.push(node);
     }
 
+    const learnerCounts = await this.getActiveLearnerCountsBySubjectIds(
+      allSubjects.map((s) => s.id),
+    );
+
     // Build subjects info + active learning in one pass
     const allSubjectsWithInfo = [];
     const activeLearning = [];
@@ -184,6 +229,8 @@ export class DashboardService {
         requiredDiamonds: subject.unlockConditions?.minCoin || 0,
         userDiamonds: currency.diamonds ?? 0,
         userCoins: currency.coins,
+        libraryCategory: this.normalizeLibraryCategory(subject.metadata),
+        activeLearnerCount: learnerCounts.get(subject.id) ?? 0,
         contributorStats: {
           totalNodes: totalNodesCount,
           nodesWithContributor,

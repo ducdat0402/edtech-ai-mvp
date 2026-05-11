@@ -9,6 +9,12 @@ import 'package:edtech_mobile/core/widgets/bottom_nav_bar.dart';
 import 'package:edtech_mobile/theme/semantic_colors.dart';
 import 'package:edtech_mobile/theme/text_styles.dart';
 import 'package:edtech_mobile/theme/widgets/brand_header.dart';
+import 'package:edtech_mobile/features/subjects/widgets/library_category_chips.dart';
+import 'package:edtech_mobile/features/subjects/widgets/library_curved_header.dart';
+import 'package:edtech_mobile/features/subjects/widgets/library_featured_podium.dart';
+import 'package:edtech_mobile/features/subjects/widgets/library_search_bar.dart';
+import 'package:edtech_mobile/features/subjects/widgets/library_subject_group_row.dart';
+import 'package:edtech_mobile/features/subjects/widgets/library_ui_constants.dart';
 
 /// Nền contributor (không map 1:1 sang semantic light).
 abstract final class _ContributorSurface {
@@ -34,6 +40,10 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
   bool _isSwitchingRole = false;
   bool _viewAsContributor = false;
   String _subjectFilter = 'all'; // all | private | community | expert
+  /// Lọc nhóm môn (mock "Nhóm môn học"); `all` = không lọc theo loại.
+  String _subjectTypeGroup = 'all';
+  String _libraryCategoryFilter = kLibraryCategoryAll;
+  LibraryFeaturedSort _featuredSort = LibraryFeaturedSort.byLearners;
   List<Map<String, dynamic>> _subjects = [];
   bool _showSearchField = false;
   final TextEditingController _searchController = TextEditingController();
@@ -61,6 +71,78 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
       final desc = (s['description'] ?? '').toString().toLowerCase();
       return name.contains(q) || desc.contains(q);
     }).toList();
+  }
+
+  Set<String> get _presentLibraryCategorySlugs {
+    final out = <String>{};
+    for (final s in _subjects) {
+      out.add((s['libraryCategory'] ?? 'other').toString());
+    }
+    return out;
+  }
+
+  Map<String, int> get _subjectCountsByType {
+    int c(String t) => _subjects
+        .where((s) => (s['subjectType'] ?? 'community').toString() == t)
+        .length;
+    return {
+      'private': c('private'),
+      'community': c('community'),
+      'expert': c('expert'),
+    };
+  }
+
+  /// Thư viện learner mới: tìm kiếm + category + nhóm loại môn.
+  List<Map<String, dynamic>> get _hubFilteredSubjects {
+    var list = _filteredSubjects;
+    if (_libraryCategoryFilter != kLibraryCategoryAll) {
+      list = list
+          .where(
+            (s) =>
+                (s['libraryCategory'] ?? 'other').toString() ==
+                _libraryCategoryFilter,
+          )
+          .toList();
+    }
+    if (_subjectTypeGroup != 'all') {
+      list = list
+          .where(
+            (s) =>
+                (s['subjectType'] ?? 'community').toString() ==
+                _subjectTypeGroup,
+          )
+          .toList();
+    }
+    return list;
+  }
+
+  void _navigateToSubject(Map<String, dynamic> subject) {
+    final id = (subject['id'] ?? '').toString();
+    final name = (subject['name'] ?? 'Môn học').toString();
+    if (id.isEmpty) return;
+    if (_isContributor) {
+      context.push(
+        '/contributor/mind-map?subjectId=$id&subjectName=${Uri.encodeComponent(name)}',
+      );
+    } else {
+      context.push('/subjects/$id/intro');
+    }
+  }
+
+  Future<void> _onLibraryContributeTab() async {
+    if (!_hasContributorRole) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'Đóng góp dành cho tài khoản contributor. Liên hệ admin để được cấp quyền.',
+          ),
+          backgroundColor: context.colors.info,
+        ),
+      );
+      return;
+    }
+    await _handleSwitchRole();
   }
 
   List<Map<String, dynamic>> _subjectsByType(String type) {
@@ -201,6 +283,161 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
     }
   }
 
+  Widget _buildLearnerLibraryGridSection(SemanticColors t) {
+    final sem = context.colors;
+    final items = _hubFilteredSubjects;
+    if (_subjects.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 32),
+        child: Center(
+          child: Text(
+            'Chưa có môn học nào',
+            style: TextStyle(color: t.textSecondary),
+          ),
+        ),
+      );
+    }
+    if (items.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 32),
+        child: Center(
+          child: Text(
+            'Không có môn phù hợp với bộ lọc hoặc từ khóa.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: t.textSecondary, height: 1.35),
+          ),
+        ),
+      );
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Tất cả môn học',
+          style: AppTextStyles.h4.copyWith(
+            color: sem.textPrimary,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        const SizedBox(height: 12),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: _librarySubjectsGridDelegate(
+            MediaQuery.sizeOf(context).width - 32,
+          ),
+          itemCount: items.length,
+          itemBuilder: (context, index) => _buildSubjectTile(items[index]),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLearnerLibraryScaffold(SemanticColors t) {
+    final sem = context.colors;
+    if (_loading) {
+      return Scaffold(
+        backgroundColor: sem.bg,
+        body: Center(child: CircularProgressIndicator(color: t.brand)),
+        bottomNavigationBar: const BottomNavBar(currentIndex: 1),
+      );
+    }
+    if (_error != null) {
+      return Scaffold(
+        backgroundColor: sem.bg,
+        appBar: AppBar(
+          backgroundColor: sem.card,
+          title: const Text('Thư viện'),
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.error_outline, color: t.error, size: 44),
+                const SizedBox(height: 8),
+                Text(
+                  'Không tải được danh sách môn học.\n$_error',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: t.textSecondary),
+                ),
+                const SizedBox(height: 12),
+                ElevatedButton(
+                  onPressed: _loadData,
+                  child: const Text('Thử lại'),
+                ),
+              ],
+            ),
+          ),
+        ),
+        bottomNavigationBar: const BottomNavBar(currentIndex: 1),
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: sem.bg,
+      body: RefreshIndicator(
+        onRefresh: _loadData,
+        color: t.brand,
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            SliverToBoxAdapter(
+              child: LibraryCurvedHeader(
+                studySelected: true,
+                contributeSelected: false,
+                onStudyTap: () {},
+                onContributeTap: _onLibraryContributeTab,
+                canSwitchToContribute: _hasContributorRole,
+              ),
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(16, 20, 16, 48),
+              sliver: SliverList(
+                delegate: SliverChildListDelegate([
+                  LibrarySearchBar(
+                    controller: _searchController,
+                    focusNode: _searchFocusNode,
+                  ),
+                  const SizedBox(height: 16),
+                  LibraryCategoryChips(
+                    presentSlugs: _presentLibraryCategorySlugs,
+                    selected: _libraryCategoryFilter,
+                    onSelected: (v) => setState(() => _libraryCategoryFilter = v),
+                  ),
+                  const SizedBox(height: 20),
+                  if (_hubFilteredSubjects.isNotEmpty) ...[
+                    LibraryFeaturedPodium(
+                      subjects: _hubFilteredSubjects,
+                      sort: _featuredSort,
+                      onSortChanged: (s) => setState(() => _featuredSort = s),
+                      onSubjectTap: _navigateToSubject,
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+                  LibrarySubjectGroupRow(
+                    selectedType: _subjectTypeGroup,
+                    countsByType: _subjectCountsByType,
+                    onSelectType: (type) {
+                      setState(() {
+                        _subjectTypeGroup =
+                            _subjectTypeGroup == type ? 'all' : type;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  _buildLearnerLibraryGridSection(t),
+                ]),
+              ),
+            ),
+          ],
+        ),
+      ),
+      bottomNavigationBar: const BottomNavBar(currentIndex: 1),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -208,6 +445,9 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
     final brandHeaderEnabled = !isDark && !_isContributor;
     final titleColor =
         brandHeaderEnabled ? t.textOnBrand : t.textPrimary;
+    if (!_isContributor) {
+      return _buildLearnerLibraryScaffold(t);
+    }
     return Scaffold(
       backgroundColor: _bgPrimary,
       appBar: AppBar(
@@ -1202,7 +1442,6 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
 
   Widget _buildSubjectTile(Map<String, dynamic> subject) {
     final t = _screenTokens;
-    final id = (subject['id'] ?? '').toString();
     final name = (subject['name'] ?? 'Môn học').toString();
     final totalNodes = (subject['totalNodesCount'] as num?)?.toInt();
     final coverUrl = _customCoverUrl(subject);
@@ -1210,15 +1449,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
 
     const double d = 54;
 
-    void onTap() {
-      if (_isContributor) {
-        context.push(
-          '/contributor/mind-map?subjectId=$id&subjectName=${Uri.encodeComponent(name)}',
-        );
-      } else {
-        context.push('/subjects/$id/intro');
-      }
-    }
+    void onTap() => _navigateToSubject(subject);
 
     return Material(
       color: Colors.transparent,
