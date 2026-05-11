@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/features/subjects/widgets/library_category_chips.dart';
 import 'package:edtech_mobile/features/subjects/widgets/library_curved_header.dart';
 import 'package:edtech_mobile/features/subjects/widgets/library_featured_podium.dart';
@@ -121,6 +120,7 @@ abstract final class LibraryPageSlivers {
     required SemanticColors screenTokens,
     required TextEditingController searchController,
     required FocusNode searchFocusNode,
+    required VoidCallback onStudyTab,
     required Widget roleSwitcher,
     required Widget contributorBanner,
     required List<Map<String, dynamic>> subjects,
@@ -130,80 +130,62 @@ abstract final class LibraryPageSlivers {
     final t = screenTokens;
     return [
       SliverToBoxAdapter(
-        child: SafeArea(
-          bottom: false,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(4, 4, 8, 8),
-            child: Row(
-              children: [
-                AppBarLeadingBackAndHome(iconColor: t.textPrimary),
-                Expanded(
-                  child: Text(
-                    'Thư viện',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: t.textPrimary,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+        child: LibraryCurvedHeader(
+          studySelected: false,
+          contributeSelected: true,
+          onStudyTap: onStudyTab,
+          onContributeTap: () {},
+          canSwitchToContribute: true,
+        ),
+      ),
+      SliverToBoxAdapter(
+        child: LibraryLearnerOverlapSheet(
+          sem: t,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              LibrarySearchBar(
+                controller: searchController,
+                focusNode: searchFocusNode,
+                semantics: SemanticColors.dark,
+              ),
+              const SizedBox(height: 12),
+              roleSwitcher,
+              const SizedBox(height: 14),
+              contributorBanner,
+              const SizedBox(height: 16),
+              if (subjects.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  child: Center(
+                    child: Text(
+                      'Chưa có môn học nào',
+                      style: TextStyle(color: t.textSecondary),
                     ),
                   ),
-                ),
-                const SizedBox(width: 112),
-              ],
-            ),
+                )
+              else if (filteredSubjects.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(8, 12, 8, 18),
+                  child: Center(
+                    child: Text(
+                      'Không tìm thấy môn học phù hợp.\nThử từ khóa khác hoặc xóa ô tìm kiếm.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: t.textSecondary,
+                        fontSize: 14,
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                )
+              else
+                ...typeSectionChildren,
+            ],
           ),
         ),
       ),
-      SliverPadding(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-        sliver: SliverList(
-          delegate: SliverChildListDelegate([
-            LibrarySearchBar(
-              controller: searchController,
-              focusNode: searchFocusNode,
-              semantics: SemanticColors.dark,
-            ),
-            const SizedBox(height: 12),
-            roleSwitcher,
-            const SizedBox(height: 14),
-            contributorBanner,
-          ]),
-        ),
-      ),
-      if (subjects.isEmpty)
-        SliverFillRemaining(
-          hasScrollBody: false,
-          child: Center(
-            child: Text(
-              'Chưa có môn học nào',
-              style: TextStyle(color: t.textSecondary),
-            ),
-          ),
-        )
-      else if (filteredSubjects.isEmpty)
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 32, 24, 48),
-            child: Center(
-              child: Text(
-                'Không tìm thấy môn học phù hợp.\nThử từ khóa khác hoặc xóa ô tìm kiếm.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: t.textSecondary,
-                  fontSize: 14,
-                  height: 1.4,
-                ),
-              ),
-            ),
-          ),
-        )
-      else
-        SliverPadding(
-          padding: const EdgeInsets.fromLTRB(14, 0, 14, 48),
-          sliver: SliverList(
-            delegate: SliverChildListDelegate(typeSectionChildren),
-          ),
-        ),
+      const SliverToBoxAdapter(child: SizedBox(height: 32)),
     ];
   }
 }

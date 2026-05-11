@@ -409,6 +409,11 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
             screenTokens: t,
             searchController: _searchController,
             searchFocusNode: _searchFocusNode,
+            onStudyTab: () {
+              if (_isContributor) {
+                _handleSwitchRole();
+              }
+            },
             roleSwitcher: _buildRoleSwitcher(),
             contributorBanner: _buildContributorBanner(),
             subjects: _subjects,
