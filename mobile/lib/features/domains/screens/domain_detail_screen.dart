@@ -245,10 +245,9 @@ class _DomainDetailScreenState extends State<DomainDetailScreen> {
               TextButton.icon(
                 onPressed: () async {
                   final subjectId = _domainData!['subjectId'] as String?;
-                  final domainName = _domainData!['name'] as String? ?? '';
                   if (subjectId == null) return;
                   final result = await context.push(
-                    '/contributor/create-topic?subjectId=$subjectId&domainId=${widget.domainId}&domainName=${Uri.encodeComponent(domainName)}',
+                    '/library',
                   );
                   if (result == true) _loadDomain();
                 },
@@ -271,7 +270,6 @@ class _DomainDetailScreenState extends State<DomainDetailScreen> {
   Widget _buildAddTopicCard() {
     final t = context.colors;
     final subjectId = _domainData!['subjectId'] as String?;
-    final domainName = _domainData!['name'] as String? ?? '';
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 0,
@@ -286,7 +284,7 @@ class _DomainDetailScreenState extends State<DomainDetailScreen> {
         onTap: () async {
           if (subjectId == null) return;
           final result = await context.push(
-            '/contributor/create-topic?subjectId=$subjectId&domainId=${widget.domainId}&domainName=${Uri.encodeComponent(domainName)}',
+            '/library',
           );
           if (result == true) _loadDomain();
         },

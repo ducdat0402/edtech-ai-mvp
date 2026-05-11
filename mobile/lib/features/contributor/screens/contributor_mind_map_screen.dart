@@ -1060,30 +1060,23 @@ class _ContributorMindMapScreenState extends State<ContributorMindMapScreen>
   }
 
   Future<void> _addDomain() async {
-    final subjectName = _subjectData?['name'] ?? widget.subjectName ?? '';
     final result = await context.push(
-      '/contributor/create-domain?subjectId=${widget.subjectId}&subjectName=${Uri.encodeComponent(subjectName)}',
+      '/library',
     );
     if (result == true) _loadData();
   }
 
   Future<void> _addTopic(String domainId, String domainName) async {
     final result = await context.push(
-      '/contributor/create-topic?subjectId=${widget.subjectId}&domainId=$domainId&domainName=${Uri.encodeComponent(domainName)}',
+      '/library',
     );
     if (result == true) _loadData();
   }
 
   Future<void> _addLesson(String domainId, String topicName,
       {String? topicId}) async {
-    final queryParts = [
-      'subjectId=${widget.subjectId}',
-      'domainId=$domainId',
-      'topicName=${Uri.encodeComponent(topicName)}',
-    ];
-    if (topicId != null) queryParts.add('topicId=$topicId');
     final result = await context.push(
-      '/contributor/create-lesson?${queryParts.join('&')}',
+      '/library',
     );
     if (result == true) _loadData();
   }

@@ -117,7 +117,7 @@ class _MyPendingContributionsScreenState
           IconButton(
             icon: Icon(Icons.add_circle_outline,
                 color: sem.brandStrong),
-            onPressed: () => context.push('/contributor/create-subject'),
+            onPressed: () => context.push('/library'),
             tooltip: 'Tạo môn học mới',
           ),
         ],
@@ -143,7 +143,7 @@ class _MyPendingContributionsScreenState
                       ),
                     ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.push('/contributor/create-subject'),
+        onPressed: () => context.push('/library'),
         backgroundColor: sem.info,
         icon: Icon(Icons.add, color: sem.textOnBrand),
         label: Text('Tạo môn học',

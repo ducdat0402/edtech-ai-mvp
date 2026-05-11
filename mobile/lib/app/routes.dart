@@ -30,12 +30,6 @@ import 'package:edtech_mobile/features/profile/screens/competencies_screen.dart'
 import 'package:edtech_mobile/features/admin/screens/admin_panel_screen.dart';
 import 'package:edtech_mobile/features/learning_nodes/screens/my_contributions_screen.dart';
 import 'package:edtech_mobile/features/payment/screens/payment_screen.dart';
-import 'package:edtech_mobile/features/contributor/screens/create_subject_screen.dart';
-import 'package:edtech_mobile/features/contributor/screens/create_domain_screen.dart';
-import 'package:edtech_mobile/features/contributor/screens/create_topic_screen.dart';
-import 'package:edtech_mobile/features/contributor/screens/contributor_mind_map_screen.dart';
-import 'package:edtech_mobile/features/contributor/screens/create_lesson_screen.dart';
-import 'package:edtech_mobile/features/contributor/screens/my_pending_contributions_screen.dart';
 import 'package:edtech_mobile/features/lessons/screens/lesson_type_picker_screen.dart';
 import 'package:edtech_mobile/features/lessons/screens/image_quiz_lesson_screen.dart';
 import 'package:edtech_mobile/features/lessons/screens/image_gallery_lesson_screen.dart';
@@ -333,61 +327,27 @@ GoRouter createAppRouter(
       // Contributor routes
       GoRoute(
         path: '/contributor/mind-map',
-        builder: (context, state) {
-          final subjectId = state.uri.queryParameters['subjectId'] ?? '';
-          final subjectName = state.uri.queryParameters['subjectName'];
-          return ContributorMindMapScreen(
-            subjectId: subjectId,
-            subjectName: subjectName,
-          );
-        },
+        builder: (context, state) => const SubjectsHubScreen(),
       ),
       GoRoute(
         path: '/contributor/create-subject',
-        builder: (context, state) => const CreateSubjectScreen(),
+        builder: (context, state) => const SubjectsHubScreen(),
       ),
       GoRoute(
         path: '/contributor/create-domain',
-        builder: (context, state) {
-          final subjectId = state.uri.queryParameters['subjectId'] ?? '';
-          final subjectName = state.uri.queryParameters['subjectName'];
-          return CreateDomainScreen(
-            subjectId: subjectId,
-            subjectName: subjectName,
-          );
-        },
+        builder: (context, state) => const SubjectsHubScreen(),
       ),
       GoRoute(
         path: '/contributor/create-topic',
-        builder: (context, state) {
-          final subjectId = state.uri.queryParameters['subjectId'] ?? '';
-          final domainId = state.uri.queryParameters['domainId'] ?? '';
-          final domainName = state.uri.queryParameters['domainName'];
-          return CreateTopicScreen(
-            subjectId: subjectId,
-            domainId: domainId,
-            domainName: domainName,
-          );
-        },
+        builder: (context, state) => const SubjectsHubScreen(),
       ),
       GoRoute(
         path: '/contributor/create-lesson',
-        builder: (context, state) {
-          final subjectId = state.uri.queryParameters['subjectId'] ?? '';
-          final domainId = state.uri.queryParameters['domainId'] ?? '';
-          final topicId = state.uri.queryParameters['topicId'] ?? '';
-          final topicName = state.uri.queryParameters['topicName'];
-          return CreateLessonScreen(
-            subjectId: subjectId,
-            domainId: domainId,
-            topicId: topicId,
-            topicName: topicName,
-          );
-        },
+        builder: (context, state) => const SubjectsHubScreen(),
       ),
       GoRoute(
         path: '/contributor/my-contributions',
-        builder: (context, state) => const MyPendingContributionsScreen(),
+        builder: (context, state) => const SubjectsHubScreen(),
       ),
       // Lesson Type Picker / Direct editor (for contributors adding lesson type content)
       GoRoute(

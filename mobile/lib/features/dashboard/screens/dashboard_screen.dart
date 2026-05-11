@@ -2617,7 +2617,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             if (_isContributor) ...[
               const SizedBox(width: 4),
               GestureDetector(
-                onTap: () => context.push('/contributor/my-contributions'),
+                onTap: () => context.push('/library/my-contributions'),
                 child: Row(
                   children: [
                     Icon(Icons.list_alt, size: 16, color: sem.info),
@@ -2882,7 +2882,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         child: InkWell(
           onTap: () {
             HapticFeedback.lightImpact();
-            context.push('/contributor/create-subject');
+            context.push('/library');
           },
           borderRadius: BorderRadius.circular(12),
           child: Center(

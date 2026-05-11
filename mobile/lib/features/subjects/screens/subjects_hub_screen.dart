@@ -6,6 +6,7 @@ import 'package:edtech_mobile/core/constants/currency_labels.dart';
 import 'package:edtech_mobile/core/services/api_service.dart';
 import 'package:edtech_mobile/core/widgets/app_bar_leading_back_home.dart';
 import 'package:edtech_mobile/core/widgets/bottom_nav_bar.dart';
+import 'package:edtech_mobile/core/services/role_preview_service.dart';
 import 'package:edtech_mobile/theme/semantic_colors.dart';
 import 'package:edtech_mobile/theme/text_styles.dart';
 import 'package:edtech_mobile/features/subjects/widgets/library_featured_podium.dart';
@@ -105,15 +106,8 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
 
   void _navigateToSubject(Map<String, dynamic> subject) {
     final id = (subject['id'] ?? '').toString();
-    final name = (subject['name'] ?? 'Môn học').toString();
     if (id.isEmpty) return;
-    if (_isContributor) {
-      context.push(
-        '/contributor/mind-map?subjectId=$id&subjectName=${Uri.encodeComponent(name)}',
-      );
-    } else {
-      context.push('/subjects/$id/intro');
-    }
+    context.push('/subjects/$id/intro');
   }
 
   Future<void> _onLibraryContributeTab() async {
@@ -152,12 +146,19 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
       final dashboard = results[0];
       final profile = results[1];
       final rawSubjects = dashboard['subjects'] as List? ?? const [];
+      final profileMap = Map<String, dynamic>.from(profile as Map);
+      final role = profileMap['role']?.toString() ?? 'user';
+      final actualRole = profileMap['actualRole']?.toString() ?? role;
+      final canContribute = actualRole == 'contributor' || actualRole == 'admin';
+      final viewAsContributor = actualRole == 'admin'
+          ? !RolePreviewService.adminPreviewLearnerEnabled
+          : role == 'contributor';
       setState(() {
         _subjects = rawSubjects
             .map((e) => Map<String, dynamic>.from(e as Map))
             .toList();
-        _profileData = Map<String, dynamic>.from(profile as Map);
-        _viewAsContributor = _hasContributorRole;
+        _profileData = profileMap;
+        _viewAsContributor = canContribute ? viewAsContributor : false;
         _loading = false;
       });
       if (mounted && !_isContributor) {
@@ -175,8 +176,10 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
 
   // === Role helpers ===
   String get _currentRole => _profileData?['role']?.toString() ?? 'user';
+  String get _actualRole =>
+      _profileData?['actualRole']?.toString() ?? _currentRole;
   bool get _hasContributorRole =>
-      _currentRole == 'contributor' || _currentRole == 'admin';
+      _actualRole == 'contributor' || _actualRole == 'admin';
   bool get _isContributor => _hasContributorRole && _viewAsContributor;
 
   /// Surface tokens — contributor luôn palette dark semantic (kể cả app theme sáng).
@@ -210,11 +213,23 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
 
     // Admin: backend không cho đổi role qua endpoint switch-role (sẽ trả 400).
     // Vì vậy ta chỉ toggle "view mode" trong UI.
-    if (_currentRole == 'admin') {
+    if (_actualRole == 'admin') {
+      final nextViewAsContributor = !_viewAsContributor;
+      setState(() => _isSwitchingRole = true);
+      await RolePreviewService.setAdminPreviewLearnerEnabled(
+        !nextViewAsContributor,
+      );
+      if (!mounted) return;
       setState(() {
-        _isSwitchingRole = true;
-        _viewAsContributor = !_viewAsContributor;
+        _viewAsContributor = nextViewAsContributor;
+        _profileData = {
+          ...?_profileData,
+          'actualRole': 'admin',
+          'role': nextViewAsContributor ? 'admin' : 'user',
+          'rolePreview': nextViewAsContributor ? null : 'learner',
+        };
       });
+      if (!mounted) return;
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -229,7 +244,7 @@ class _SubjectsHubScreenState extends State<SubjectsHubScreen> {
           ),
         );
       }
-      if (mounted) setState(() => _isSwitchingRole = false);
+      setState(() => _isSwitchingRole = false);
       return;
     }
 

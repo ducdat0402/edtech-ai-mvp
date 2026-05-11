@@ -94,7 +94,7 @@ class _CreateSubjectScreenState extends State<CreateSubjectScreen> {
           TextButton(
             onPressed: () {
               Navigator.of(ctx).pop();
-              context.push('/contributor/my-contributions');
+              context.push('/library/my-contributions');
             },
             child: Text(
               'Xem đóng góp',

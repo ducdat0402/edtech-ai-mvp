@@ -25,7 +25,8 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
   String? _error;
   String _userRole = 'user';
 
-  bool get _isContributor => _userRole == 'contributor' || _userRole == 'admin';
+  bool get _isContributor =>
+      _userRole == 'contributor' || _userRole == 'admin';
 
   // Mind map interaction state
   int _currentLevel = 1;
@@ -386,7 +387,6 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
 
   Widget _buildContributorQuickAccess() {
     final t = context.colors;
-    final subjectName = _introData?['subject']?['name'] as String? ?? '';
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -396,9 +396,7 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
       ),
       child: InkWell(
         onTap: () async {
-          await context.push(
-            '/contributor/mind-map?subjectId=${widget.subjectId}&subjectName=${Uri.encodeComponent(subjectName)}',
-          );
+          await context.push('/library');
           // Reload data when returning from mind map editor
           _loadSubjectIntro();
         },
@@ -493,11 +491,8 @@ class _SubjectIntroScreenState extends State<SubjectIntroScreen> {
                 isSelected: false,
                 onTap: () async {
                   if (_isContributor) {
-                    // Contributor: navigate to mind map editor
-                    final subjectName = _introData?['subject']?['name'] ?? '';
-                    await context.push(
-                      '/contributor/mind-map?subjectId=${widget.subjectId}&subjectName=${Uri.encodeComponent(subjectName)}',
-                    );
+                    // Contributor: unified contributor experience inside Library.
+                    await context.push('/library');
                     // Reload data when returning from mind map editor
                     _loadSubjectIntro();
                     return;

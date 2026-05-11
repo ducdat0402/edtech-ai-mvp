@@ -772,7 +772,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               subtitle:
                   'Xem đóng góp môn học, domain, topic & trạng thái duyệt',
               color: context.colors.info,
-              onTap: () => context.push('/contributor/my-contributions'),
+              onTap: () => context.push('/library/my-contributions'),
             ),
 
           Column(

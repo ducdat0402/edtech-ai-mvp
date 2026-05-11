@@ -124,7 +124,7 @@ class _DomainsListScreenState extends State<DomainsListScreen> {
           ? FloatingActionButton(
               onPressed: () async {
                 final result = await context.push(
-                  '/contributor/create-domain?subjectId=${widget.subjectId}&subjectName=${Uri.encodeComponent(widget.subjectName ?? '')}',
+                  '/library',
                 );
                 if (result == true) _loadData();
               },
@@ -150,7 +150,7 @@ class _DomainsListScreenState extends State<DomainsListScreen> {
       child: InkWell(
         onTap: () async {
           final result = await context.push(
-            '/contributor/create-domain?subjectId=${widget.subjectId}&subjectName=${Uri.encodeComponent(widget.subjectName ?? '')}',
+            '/library',
           );
           if (result == true) _loadData();
         },

@@ -268,9 +268,7 @@ class _MyCommunityContributionsScreenState
       progressLabel: progressLabel,
       onTap: id.isEmpty
           ? () {}
-          : () => context.push(
-                '/contributor/mind-map?subjectId=$id&subjectName=${Uri.encodeComponent(name)}',
-              ),
+          : () => context.push('/library'),
     );
   }
 
